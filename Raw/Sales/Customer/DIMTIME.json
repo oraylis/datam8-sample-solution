@@ -1,0 +1,228 @@
+{
+  "type": "raw",
+  "entity": {
+    "dataModule": "Customer",
+    "dataProduct": "Sales",
+    "name": "DIMTIME",
+    "displayName": "DIMTIME",
+    "parameters": [],
+    "tags": [],
+    "attribute": [
+      {
+        "name": "TIMEKEY",
+        "type": "NUMBER",
+        "charLength": 22,
+        "charSet": "",
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "FULLDATEALTERNATEKEY",
+        "type": "TIMESTAMP",
+        "charLength": 11,
+        "charSet": "",
+        "scale": 6,
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "DAYNUMBEROFWEEK",
+        "type": "NUMBER",
+        "charLength": 22,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "ENGLISHDAYNAMEOFWEEK",
+        "type": "VARCHAR2",
+        "charLength": 10,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "SPANISHDAYNAMEOFWEEK",
+        "type": "VARCHAR2",
+        "charLength": 10,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "FRENCHDAYNAMEOFWEEK",
+        "type": "VARCHAR2",
+        "charLength": 10,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "DAYNUMBEROFMONTH",
+        "type": "NUMBER",
+        "charLength": 22,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "DAYNUMBEROFYEAR",
+        "type": "NUMBER",
+        "charLength": 22,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "WEEKNUMBEROFYEAR",
+        "type": "NUMBER",
+        "charLength": 22,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "ENGLISHMONTHNAME",
+        "type": "VARCHAR2",
+        "charLength": 10,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "SPANISHMONTHNAME",
+        "type": "VARCHAR2",
+        "charLength": 10,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "FRENCHMONTHNAME",
+        "type": "VARCHAR2",
+        "charLength": 10,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "MONTHNUMBEROFYEAR",
+        "type": "NUMBER",
+        "charLength": 22,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "CALENDARQUARTER",
+        "type": "NUMBER",
+        "charLength": 22,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "CALENDARYEAR",
+        "type": "CHAR",
+        "charLength": 4,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "CALENDARSEMESTER",
+        "type": "NUMBER",
+        "charLength": 22,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "FISCALQUARTER",
+        "type": "NUMBER",
+        "charLength": 22,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "FISCALYEAR",
+        "type": "CHAR",
+        "charLength": 4,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      },
+      {
+        "name": "FISCALSEMESTER",
+        "type": "NUMBER",
+        "charLength": 22,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-06-27 20:26:28"
+      }
+    ]
+  },
+  "function": {
+    "dataSource": "OracleDev",
+    "sourceLocation": "DATAM8.DIMTIME"
+  }
+}

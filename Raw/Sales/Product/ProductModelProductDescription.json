@@ -1,0 +1,72 @@
+{
+  "type": "raw",
+  "entity": {
+    "dataModule": "Product",
+    "dataProduct": "Sales",
+    "name": "ProductModelProductDescription",
+    "displayName": "Product Model Product Description",
+    "parameters": [],
+    "tags": [],
+    "attribute": [
+      {
+        "name": "ProductModelID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "ProductDescriptionID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "Culture",
+        "type": "nchar",
+        "charLength": 6,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "rowguid",
+        "type": "uniqueidentifier",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "ModifiedDate",
+        "type": "datetime",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      }
+    ]
+  },
+  "function": {
+    "dataSource": "AdventureWorks",
+    "sourceLocation": "[SalesLT].[ProductModelProductDescription]"
+  }
+}

@@ -1,0 +1,59 @@
+{%- macro common_variables(zone_name, entity, sp) -%}
+{%- set relative = "../../../../000-utils" if entity else "." %}
+# DBTITLE 1,Initialize Migration Framework
+# MAGIC %run {{ relative }}/MigrationFramework
+
+# COMMAND ----------
+
+dbutils.widgets.text("sandbox", "_", "Sandbox")
+dbutils.widgets.dropdown(
+    "run_mode",
+    "INFO",
+    ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+    "Run Mode",
+)
+
+# COMMAND ----------
+
+env = spark.conf.get("datam8.environment")
+catalog_name = spark.conf.get("datam8.catalog.name", spark.catalog.currentCatalog())
+owner = spark.conf.get("datam8.catalog.owner")
+run_mode = dbutils.widgets.get("run_mode")
+sandbox = dbutils.widgets.get("sandbox")
+
+# COMMAND ----------
+
+# DBTITLE 1,Get variable values
+# configsif entity else none 
+data_lake_name = spark.conf.get("datam8.datalake.name", "{{ sp.datalake_name["dev"] }}")
+container_name = spark.conf.get("datam8.datalake.container.name", "{{ sp.datalake_container_name["dev"] }}")
+raw_zone = spark.conf.get("datam8.zone.raw.name", "raw")
+stage_zone = spark.conf.get("datam8.zone.stage.name", "stage")
+core_zone = spark.conf.get("datam8.zone.core.name", "core")
+curated_zone = spark.conf.get("datam8.zone.curated.name", "curated")
+zone = {{ zone_name }}_zone
+
+# static values
+MAX_VALID_TO_DATE = "2999-12-31"
+
+{%- set table = entity.model_object.entity if entity else none %}
+{% if table -%}
+data_product = "{{ table.dataProduct }}"
+data_module = "{{ table.dataModule }}"
+table_name = "{{ table.name }}"
+full_table_name = "%s_%s_%s" % (data_product, data_module, table_name)
+{%- endif %}
+
+# COMMAND ----------
+
+catalog = Catalog(catalog_name)
+catalog.schema = zone
+catalog.set_active()
+
+if not catalog.is_unity_enabled:
+  spark.conf.set(
+    "fs.azure.account.key.%s.dfs.core.windows.net" % data_lake_name,
+    dbutils.secrets.get("{{ sp.secret_scope_name }}", "fs-azure-account-key-%s-dfs-core-windows-net" % data_lake_name),
+  )
+
+{%- endmacro -%}

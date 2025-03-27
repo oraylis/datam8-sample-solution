@@ -1,0 +1,70 @@
+{
+  "type": "raw",
+  "entity": {
+    "dataModule": "Product",
+    "dataProduct": "Sales",
+    "name": "ProductModel",
+    "displayName": "Product Model",
+    "parameters": [],
+    "tags": [],
+    "attribute": [
+      {
+        "name": "ProductModelID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "Name",
+        "type": "nvarchar",
+        "charLength": 50,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "CatalogDescription",
+        "type": "xml",
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "rowguid",
+        "type": "uniqueidentifier",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "ModifiedDate",
+        "type": "datetime",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      }
+    ]
+  },
+  "function": {
+    "dataSource": "AdventureWorks",
+    "sourceLocation": "[SalesLT].[ProductModel]"
+  }
+}

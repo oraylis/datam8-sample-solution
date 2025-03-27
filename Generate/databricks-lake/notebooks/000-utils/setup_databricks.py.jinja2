@@ -1,0 +1,53 @@
+{% import 'macro/common_python_snippets.py.jinja2' as py_snippets %}
+{% set file_path = helper.build_path("notebooks", SystemProperties.utils_folder, "Setup_Databricks") %}
+>>>>>>>>>> {{ file_path }}.py | py
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # Initial setup
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # Initialize base settings
+
+# COMMAND ----------
+
+{{ py_snippets.common_variables("logging", none, SystemProperties) }}
+
+# COMMAND ----------
+
+base_location = "abfss://%(container)s@%(storage)s.dfs.core.windows.net/" % {
+  "container": container_name,
+  "storage": data_lake_name,
+}
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Create databases & volumes
+
+# COMMAND ----------
+
+zones = [
+  "raw",
+  "stage",
+  "core",
+  "curated",
+]
+
+for zone in zones:
+    location = "%(base)s/%(database)s" % {
+      "base": base_location,
+      "database": zone,
+    }
+    # catalog.create_schema_if_not_exists(zone, location=location)
+    catalog.create_schema_if_not_exists(zone)  # TODO: define managed or unmanaged?
+    catalog.set_schema_owner(zone, owner=owner)
+
+catalog.create_volume_if_not_exists(
+    volume_name="__files", 
+    schema_name="raw", 
+    # location=base_location + "raw/__files",  # TODO: define managed or unmanaged?
+    owner=owner
+)
+<<<<<<<<<< {{ file_path }}.py | py

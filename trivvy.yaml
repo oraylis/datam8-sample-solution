@@ -1,0 +1,29 @@
+format: table
+report: all
+
+severity:
+  - UNKNOWN
+  - LOW
+  - MEDIUM
+  - HIGH
+  - CRITICAL
+
+scan:
+  offline-scan: true
+
+  skip-dirs:
+    - tests
+
+  scanners:
+    - vuln
+    - misconfig
+    - secret
+    - license
+
+db:
+  skip-update: false
+  no-progress: true
+
+misconfiguration:
+  scanners:
+    - terraform

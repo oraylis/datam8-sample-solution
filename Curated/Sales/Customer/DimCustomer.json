@@ -1,0 +1,91 @@
+{
+  "type": "curated",
+  "entity": {
+    "dataModule": "Customer",
+    "dataProduct": "Sales",
+    "name": "DimCustomer",
+    "displayName": "Customer",
+    "parameters": [],
+    "tags": [],
+    "attribute": [
+      {
+        "name": "CustomerSID",
+        "attributeType": "SID",
+        "dataType": "long",
+        "businessKeyNo": 1,
+        "tags": [],
+        "refactorNames": [],
+        "history": "BK"
+      },
+      {
+        "name": "DisplayName",
+        "attributeType": "Name",
+        "dataType": "string",
+        "tags": [],
+        "refactorNames": [
+          "CustomerName"
+        ],
+        "history": "SCD1"
+      },
+      {
+        "name": "AddressType",
+        "attributeType": "Text",
+        "dataType": "string",
+        "tags": [],
+        "refactorNames": [],
+        "history": "SCD1"
+      },
+      {
+        "name": "Address",
+        "attributeType": "Text",
+        "dataType": "string",
+        "tags": [],
+        "refactorNames": [],
+        "history": "SCD1"
+      },
+      {
+        "name": "PostalCode",
+        "attributeType": "Text",
+        "dataType": "string",
+        "tags": [],
+        "history": "SCD1"
+      },
+      {
+        "name": "CityName",
+        "attributeType": "Name",
+        "dataType": "string",
+        "tags": [],
+        "history": "SCD1"
+      },
+      {
+        "name": "CountryName",
+        "attributeType": "Name",
+        "dataType": "string",
+        "tags": [],
+        "history": "SCD1"
+      }
+    ],
+    "relationship": [],
+    "refactorNames": [
+      "Customer"
+    ]
+  },
+  "function": [
+    {
+      "name": "Customer_Compute",
+      "merge_type": "replace",
+      "frequency": "no_restriction",
+      "source": [
+        {
+          "dm8l": "/Core/Sales/Customer/Customer"
+        },
+        {
+          "dm8l": "/Core/Sales/Customer/CustomerAddress"
+        },
+        {
+          "dm8l": "/Core/Sales/Other/Address"
+        }
+      ]
+    }
+  ]
+}

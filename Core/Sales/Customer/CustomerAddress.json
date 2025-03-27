@@ -1,0 +1,134 @@
+{
+  "type": "core",
+  "entity": {
+    "dataModule": "Customer",
+    "dataProduct": "Sales",
+    "name": "CustomerAddress",
+    "displayName": "CustomerAddress",
+    "parameters": [],
+    "tags": [],
+    "attribute": [
+      {
+        "name": "_CustomerAddressBK",
+        "attributeType": "ID",
+        "dataType": "string",
+        "businessKeyNo": 1,
+        "tags": [],
+        "refactorNames": [
+          "_CustomerBK"
+        ],
+        "history": "BK"
+      },
+      {
+        "name": "_CustomerAddressSID",
+        "attributeType": "SID",
+        "dataType": "long",
+        "tags": [],
+        "refactorNames": [
+          "_CustomerSID"
+        ],
+        "history": "SK"
+      },
+      {
+        "name": "AddressID",
+        "displayName": "AddressID",
+        "attributeType": "ID",
+        "dataType": "int",
+        "nullable": false,
+        "tags": [],
+        "refactorNames": [
+          "AddressID",
+          "AddressSID"
+        ],
+        "history": "SCD1"
+      },
+      {
+        "name": "CustomerID",
+        "displayName": "",
+        "attributeType": "ID",
+        "dataType": "int",
+        "nullable": false,
+        "tags": [],
+        "refactorNames": [
+          "CustomerBK",
+          "CustomerID",
+          "CustomerSID"
+        ],
+        "history": "SCD0"
+      },
+      {
+        "name": "AddressType",
+        "displayName": "AddressType",
+        "attributeType": "Text",
+        "dataType": "string",
+        "charLength": 50,
+        "nullable": false,
+        "tags": [],
+        "refactorNames": [
+          "AddressType",
+          "AddressTypeName"
+        ],
+        "history": "SCD1"
+      }
+    ],
+    "relationship": [],
+    "refactorNames": []
+  },
+  "function": {
+    "source": [
+      {
+        "dm8l": "#",
+        "mapping": [
+          {
+            "name": "CustomerID",
+            "sourceComputation": "Default",
+            "sourceName": "CustomerID"
+          },
+          {
+            "name": "AddressID",
+            "sourceComputation": "Default",
+            "sourceName": "AddressID"
+          },
+          {
+            "name": "AddressType",
+            "sourceComputation": "Default",
+            "sourceName": "AddressType"
+          },
+          {
+            "name": "_CustomerAddressSID",
+            "sourceComputation": "Default",
+            "sourceName": "_CustomerSID"
+          },
+          {
+            "name": "_CustomerAddressBK",
+            "sourceComputation": "Concat(CustomerID, '|', AddressID)",
+            "sourceName": "_CustomerBK"
+          }
+        ]
+      },
+      {
+        "dm8l": "/Stage/Sales/Customer/CustomerAddress",
+        "mapping": [
+          {
+            "name": "CustomerID",
+            "sourceName": "CustomerID"
+          },
+          {
+            "name": "AddressID",
+            "sourceName": "AddressID"
+          },
+          {
+            "name": "AddressType",
+            "sourceName": "AddressType"
+          },
+          {
+            "sourceName": "rowguid"
+          },
+          {
+            "sourceName": "ModifiedDate"
+          }
+        ]
+      }
+    ]
+  }
+}

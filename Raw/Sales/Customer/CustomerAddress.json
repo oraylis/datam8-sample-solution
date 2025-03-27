@@ -1,0 +1,72 @@
+{
+  "type": "raw",
+  "entity": {
+    "dataModule": "Customer",
+    "dataProduct": "Sales",
+    "name": "CustomerAddress",
+    "displayName": "Customer Address",
+    "parameters": [],
+    "tags": [],
+    "attribute": [
+      {
+        "name": "CustomerID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "AddressID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "AddressType",
+        "type": "nvarchar",
+        "charLength": 50,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "rowguid",
+        "type": "uniqueidentifier",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "ModifiedDate",
+        "type": "datetime",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      }
+    ]
+  },
+  "function": {
+    "dataSource": "AdventureWorks",
+    "sourceLocation": "[SalesLT].[CustomerAddress]"
+  }
+}

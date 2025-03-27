@@ -1,0 +1,63 @@
+{
+    "type": "stage",
+    "entity": {
+        "dataModule": "Product",
+        "dataProduct": "Sales",
+        "name": "ProductModelProductDescription",
+        "displayName": "Product_Model_Product_Description",
+        "attribute": [
+            {
+                "name": "ProductModelID",
+                "type": "int",
+                "nullable": false
+            },
+            {
+                "name": "ProductDescriptionID",
+                "type": "int",
+                "nullable": false
+            },
+            {
+                "name": "Culture",
+                "type": "string",
+                "charLength": 6,
+                "nullable": false
+            },
+            {
+                "name": "rowguid",
+                "type": "uniqueidentifier",
+                "nullable": false
+            },
+            {
+                "name": "ModifiedDate",
+                "type": "datetime",
+                "nullable": false
+            }
+        ]
+    },
+    "function": {
+        "dataSource": "__meta__",
+        "sourceLocation": "raw/Sales/Product/ProductModelProductDescription",
+        "attributeMapping": [
+            {
+                "source": "ProductModelID",
+                "target": "ProductModelID"
+            },
+            {
+                "source": "ProductDescriptionID",
+                "target": "ProductDescriptionID"
+            },
+            {
+                "source": "Culture",
+                "target": "Culture"
+            },
+            {
+                "source": "rowguid",
+                "target": "rowguid"
+            },
+            {
+                "source": "ModifiedDate",
+                "target": "ModifiedDate"
+            }
+        ]
+    }
+}

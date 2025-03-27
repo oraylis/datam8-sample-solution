@@ -1,0 +1,94 @@
+{%- set file_path = helper.build_path("databricks") %}
+>>>>>>>>>> {{ file_path }}.yml | yaml
+# This is a Databricks asset bundle definition for automation_smaple_solution.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: automation_sample_solution
+
+sync:
+  include:
+    - notebooks/
+
+permissions:
+  - group_name: ${var.owner}
+    level: "CAN_MANAGE"
+{%- for p in SystemProperties().permissions %}
+  - group_name: {{p.group_name}}
+    level: {{p.level}}
+{%- endfor %}
+# all defaults are preset with dev values
+variables:
+  notebook_path:
+    description: Location of the notebooks withint the bundle
+    default: 'files/notebooks'
+  catalog_name:
+    description: The name of the unity catalog
+    default: {{ SystemProperties.catalog_name["dev"] }}
+  environment:
+    description: The logical environment
+    default: dev
+  owner:
+    description: The default owner of all created databricks objects
+    default: {{ SystemProperties.owner["dev"] }}
+  run_as_service_principal:
+    description: The service principal id used to run all jobs
+    default: {{ SystemProperties.run_as_service_principal["dev"] }}
+  datalake_name:
+    description: The storage account name
+    default: {{ SystemProperties.datalake_name["dev"] }}
+  datalake_container_name:
+    description: The storage account container name
+    default: {{ SystemProperties.datalake_container_name["dev"] }}
+  unpause_schedules:
+    description: Override the default schedule status
+    default: PAUSED
+
+targets:
+  # The 'dev' target, used for development. This is the default.
+  dev-personal:
+    # We use 'mode: development' to indicate this is a personal development copy:
+    # - Deployed resources get prefixed with '[dev my_user_name]'
+    # - Any job schedules and triggers are paused by default
+    # - The 'development' mode is used for Delta Live Tables pipelines
+    mode: development
+    default: true
+    workspace:
+      host: https://adb-{{ SystemProperties.databricks_workspace_id["dev"] }}.azuredatabricks.net
+      root_path: ~/.bundle/${bundle.name}/${bundle.target}
+
+  dev:
+    presets:
+      name_prefix: "[${bundle.target}] "      # prefix all resource names with testing_
+      pipelines_development: true  # set development to true for pipelines
+      trigger_pause_status: PAUSED # set pause_status to PAUSED for all triggers and schedules
+      jobs_max_concurrent_runs: 10 # set max_concurrent runs to 10 for all jobs
+      tags:
+        dev: ${bundle.target}
+    workspace:
+      host: https://adb-{{ SystemProperties.databricks_workspace_id["dev"] }}.azuredatabricks.net
+      root_path: {{ SystemProperties.etl_folder }}/${bundle.name}/${bundle.target}
+    run_as:
+      service_principal_name: ${var.run_as_service_principal}
+
+  # INFO: add more targets if necessary
+
+  # The 'prod' target, used for production deployments.
+  prod:
+    # We use 'mode: production' to indicate this is a production deployment.
+    # Doing so enables strict verification of the settings below.
+    mode: production
+    variables:
+      environment: prod
+      owner: {{ SystemProperties.owner["prod"] }}
+      catalog_name: {{ SystemProperties.catalog_name["prod"] }}
+      datalake_name: {{ SystemProperties.datalake_name["prod"] }}
+      datalake_container_name: {{ SystemProperties.datalake_container_name["prod"] }}
+      run_as_service_principal: {{ SystemProperties.run_as_service_principal["prod"] }}
+      unpause_schedules: UNPAUSED
+    workspace:
+      host: https://adb-{{ SystemProperties.databricks_workspace_id["prod"] }}.azuredatabricks.net
+      root_path: {{ SystemProperties.etl_folder }}/${bundle.name}/${bundle.target}
+    run_as:
+      service_principal_name: ${var.run_as_service_principal}
+
+<<<<<<<<<< {{ file_path }}.yml | yaml

@@ -1,0 +1,104 @@
+{
+    "type": "stage",
+    "entity": {
+        "dataModule": "Other",
+        "dataProduct": "Sales",
+        "name": "Address",
+        "displayName": "Address",
+        "attribute": [
+            {
+                "name": "AddressID",
+                "type": "int",
+                "nullable": false
+            },
+            {
+                "name": "AddressLine1",
+                "type": "string",
+                "charLength": 60,
+                "nullable": false
+            },
+            {
+                "name": "AddressLine2",
+                "type": "string",
+                "charLength": 60,
+                "nullable": true
+            },
+            {
+                "name": "City",
+                "type": "string",
+                "charLength": 30,
+                "nullable": false
+            },
+            {
+                "name": "StateProvince",
+                "type": "string",
+                "charLength": 50,
+                "nullable": false
+            },
+            {
+                "name": "CountryRegion",
+                "type": "string",
+                "charLength": 50,
+                "nullable": false
+            },
+            {
+                "name": "PostalCode",
+                "type": "string",
+                "charLength": 15,
+                "nullable": false
+            },
+            {
+                "name": "rowguid",
+                "type": "uniqueidentifier",
+                "nullable": false
+            },
+            {
+                "name": "ModifiedDate",
+                "type": "datetime",
+                "nullable": false
+            }
+        ]
+    },
+    "function": {
+        "dataSource": "__meta__",
+        "sourceLocation": "raw/Sales/Other/Address",
+        "attributeMapping": [
+            {
+                "source": "AddressID",
+                "target": "AddressID"
+            },
+            {
+                "source": "AddressLine1",
+                "target": "AddressLine1"
+            },
+            {
+                "source": "AddressLine2",
+                "target": "AddressLine2"
+            },
+            {
+                "source": "City",
+                "target": "City"
+            },
+            {
+                "source": "StateProvince",
+                "target": "StateProvince"
+            },
+            {
+                "source": "CountryRegion",
+                "target": "CountryRegion"
+            },
+            {
+                "source": "PostalCode",
+                "target": "PostalCode"
+            },
+            {
+                "source": "rowguid",
+                "target": "rowguid"
+            },
+            {
+                "source": "ModifiedDate",
+                "target": "ModifiedDate"
+            }
+        ]
+    }
+}

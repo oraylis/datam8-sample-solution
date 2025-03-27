@@ -1,0 +1,196 @@
+{
+    "type": "stage",
+    "entity": {
+        "dataModule": "Customer",
+        "dataProduct": "Sales",
+        "name": "DIMTIME",
+        "displayName": "DIMTIME",
+        "attribute": [
+            {
+                "name": "TIMEKEY",
+                "type": "int",
+                "nullable": false
+            },
+            {
+                "name": "FULLDATEALTERNATEKEY",
+                "type": "datetime",
+                "nullable": true
+            },
+            {
+                "name": "DAYNUMBEROFWEEK",
+                "type": "int",
+                "nullable": true
+            },
+            {
+                "name": "ENGLISHDAYNAMEOFWEEK",
+                "type": "string",
+                "charLength": 10,
+                "nullable": true
+            },
+            {
+                "name": "SPANISHDAYNAMEOFWEEK",
+                "type": "string",
+                "charLength": 10,
+                "nullable": true
+            },
+            {
+                "name": "FRENCHDAYNAMEOFWEEK",
+                "type": "string",
+                "charLength": 10,
+                "nullable": true
+            },
+            {
+                "name": "DAYNUMBEROFMONTH",
+                "type": "int",
+                "nullable": true
+            },
+            {
+                "name": "DAYNUMBEROFYEAR",
+                "type": "int",
+                "nullable": true
+            },
+            {
+                "name": "WEEKNUMBEROFYEAR",
+                "type": "int",
+                "nullable": true
+            },
+            {
+                "name": "ENGLISHMONTHNAME",
+                "type": "string",
+                "charLength": 10,
+                "nullable": true
+            },
+            {
+                "name": "SPANISHMONTHNAME",
+                "type": "string",
+                "charLength": 10,
+                "nullable": true
+            },
+            {
+                "name": "FRENCHMONTHNAME",
+                "type": "string",
+                "charLength": 10,
+                "nullable": true
+            },
+            {
+                "name": "MONTHNUMBEROFYEAR",
+                "type": "int",
+                "nullable": true
+            },
+            {
+                "name": "CALENDARQUARTER",
+                "type": "int",
+                "nullable": true
+            },
+            {
+                "name": "CALENDARYEAR",
+                "type": "string",
+                "charLength": 4,
+                "nullable": true
+            },
+            {
+                "name": "CALENDARSEMESTER",
+                "type": "int",
+                "nullable": true
+            },
+            {
+                "name": "FISCALQUARTER",
+                "type": "int",
+                "nullable": true
+            },
+            {
+                "name": "FISCALYEAR",
+                "type": "string",
+                "charLength": 4,
+                "nullable": true
+            },
+            {
+                "name": "FISCALSEMESTER",
+                "type": "int",
+                "nullable": true
+            }
+        ]
+    },
+    "function": {
+        "dataSource": "__meta__",
+        "sourceLocation": "raw/Sales/Customer/DIMTIME",
+        "attributeMapping": [
+            {
+                "source": "TIMEKEY",
+                "target": "TIMEKEY"
+            },
+            {
+                "source": "FULLDATEALTERNATEKEY",
+                "target": "FULLDATEALTERNATEKEY"
+            },
+            {
+                "source": "DAYNUMBEROFWEEK",
+                "target": "DAYNUMBEROFWEEK"
+            },
+            {
+                "source": "ENGLISHDAYNAMEOFWEEK",
+                "target": "ENGLISHDAYNAMEOFWEEK"
+            },
+            {
+                "source": "SPANISHDAYNAMEOFWEEK",
+                "target": "SPANISHDAYNAMEOFWEEK"
+            },
+            {
+                "source": "FRENCHDAYNAMEOFWEEK",
+                "target": "FRENCHDAYNAMEOFWEEK"
+            },
+            {
+                "source": "DAYNUMBEROFMONTH",
+                "target": "DAYNUMBEROFMONTH"
+            },
+            {
+                "source": "DAYNUMBEROFYEAR",
+                "target": "DAYNUMBEROFYEAR"
+            },
+            {
+                "source": "WEEKNUMBEROFYEAR",
+                "target": "WEEKNUMBEROFYEAR"
+            },
+            {
+                "source": "ENGLISHMONTHNAME",
+                "target": "ENGLISHMONTHNAME"
+            },
+            {
+                "source": "SPANISHMONTHNAME",
+                "target": "SPANISHMONTHNAME"
+            },
+            {
+                "source": "FRENCHMONTHNAME",
+                "target": "FRENCHMONTHNAME"
+            },
+            {
+                "source": "MONTHNUMBEROFYEAR",
+                "target": "MONTHNUMBEROFYEAR"
+            },
+            {
+                "source": "CALENDARQUARTER",
+                "target": "CALENDARQUARTER"
+            },
+            {
+                "source": "CALENDARYEAR",
+                "target": "CALENDARYEAR"
+            },
+            {
+                "source": "CALENDARSEMESTER",
+                "target": "CALENDARSEMESTER"
+            },
+            {
+                "source": "FISCALQUARTER",
+                "target": "FISCALQUARTER"
+            },
+            {
+                "source": "FISCALYEAR",
+                "target": "FISCALYEAR"
+            },
+            {
+                "source": "FISCALSEMESTER",
+                "target": "FISCALSEMESTER"
+            }
+        ]
+    }
+}

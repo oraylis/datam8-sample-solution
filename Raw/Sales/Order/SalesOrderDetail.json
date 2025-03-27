@@ -1,0 +1,125 @@
+{
+  "type": "raw",
+  "entity": {
+    "dataModule": "Order",
+    "dataProduct": "Sales",
+    "name": "SalesOrderDetail",
+    "displayName": "Sales Order Detail",
+    "parameters": [],
+    "tags": [],
+    "attribute": [
+      {
+        "name": "SalesOrderID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "SalesOrderDetailID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "OrderQty",
+        "type": "smallint",
+        "charSet": "",
+        "precision": 5,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "ProductID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "UnitPrice",
+        "type": "money",
+        "charSet": "",
+        "precision": 19,
+        "scale": 4,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "UnitPriceDiscount",
+        "type": "money",
+        "charSet": "",
+        "precision": 19,
+        "scale": 4,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "LineTotal",
+        "type": "numeric",
+        "charSet": "",
+        "precision": 38,
+        "scale": 6,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "rowguid",
+        "type": "uniqueidentifier",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [
+          "ignore"
+        ],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "ModifiedDate",
+        "type": "datetime",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [
+          "delta"
+        ],
+        "dateModified": "2024-03-22 11:19:51"
+      }
+    ]
+  },
+  "function": {
+    "dataSource": "AdventureWorks",
+    "sourceLocation": "[SalesLT].[SalesOrderDetail]"
+  }
+}

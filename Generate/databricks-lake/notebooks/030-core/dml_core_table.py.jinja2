@@ -1,0 +1,282 @@
+# Macro Import ----------
+{% import 'macro/column_declaration_core.jinja2' as column_declaration %}
+{% import 'macro/common_python_snippets.py.jinja2' as py_snippets %}
+
+{% for entity in model.get_core_entity_list() %}
+{% set table = entity.model_object.entity %}
+{% set full_table_name = entity.model_object.entity.dataProduct + "_" + entity.model_object.entity.dataModule + "_" + entity.model_object.entity.name %}
+{%- set file_path = helper.build_path("notebooks", SystemProperties().core_folder, "dml", table.dataProduct, table.dataModule, table.name)%}
+>>>>>>>>>> {{ file_path }}.py | py
+{%- set bk_cols = custom_functions.list_bk_columns(entity.model_object) %}
+{%- set scd0_cols = custom_functions.list_scd0_columns(entity.model_object) %}
+{%- set scd1_cols = custom_functions.list_scd1_columns(entity.model_object) %}
+{%- set scd2_cols = custom_functions.list_scd2_columns(entity.model_object) %}
+{%- set has_scd1 = len(scd1_cols) > 0 %}
+{%- set has_scd2 = len(scd2_cols) > 0 %}
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # DML for {{entity.model_object.type.value}}.{{full_table_name}}
+# MAGIC History configuration of this entity
+# MAGIC - __Business Key Columns__: {{bk_cols}} # noqa: E501
+# MAGIC - __SCD0 columns__: {{scd0_cols}} # noqa: E501
+# MAGIC - __SCD1 columns__: {{scd1_cols}} # noqa: E501
+# MAGIC - __SCD2 columns__: {{scd2_cols}} # noqa: E501
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # Initialize base settings
+
+# COMMAND ----------
+
+{{ py_snippets.common_variables(entity.model_object.type.value, entity, SystemProperties) }}
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # Read from STAGE
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Get latest data from CORE
+
+# COMMAND ----------
+{% for source in entity.model_object.function.source if source.dm8l != "#"%}
+# MAGIC %md
+# MAGIC ### Max timestamp for source table '{{source.dm8l}}'
+
+# COMMAND ----------
+
+max_stage: dict = {}
+max_stage["{{source.dm8l.replace("/", "_")[1:]}}"] = spark.sql("""
+SELECT
+  NVL(MAX(__InsertTimestampStageUTC), CAST("1970-01-01" AS TIMESTAMP)) AS MaxStage
+FROM `%(catalog)s`.`%(database)s`.`{{full_table_name}}`
+WHERE __SourceTable_BK = "%(source_locator)s"
+""" % {
+  "catalog": catalog.name,
+  "database": core_zone,
+  "source_locator": "{{ source.dm8l }}",
+}).first()[0]
+
+# COMMAND ----------
+{% endfor %}
+# MAGIC %md
+# MAGIC ## Get delta from STAGE
+
+# COMMAND ----------
+
+source_delta_df_list = []
+
+# COMMAND ----------
+{%- for source in entity.model_object.function.source if source.dm8l != "#" -%}
+{%- set stage_object = model.lookup_stage_entity(locator=source.dm8l) -%}
+{%- set stage_table = stage_object.model_object.entity %}
+
+# MAGIC %md
+# MAGIC ### Delta from source table '{{source.dm8l}}'
+
+# COMMAND ----------
+
+source_delta_{{ loop.index }}_df = spark.sql("""
+SELECT
+    -- business columns
+    {%- for column in source.mapping if column.name %}
+    `{{ column.sourceName }}` AS `{{column.name}}`,
+    {%- endfor %}
+    -- technical columns
+    "%(source_locator)s" AS __SourceTable_BK,
+    __InsertTimestampUTC AS __ValidFrom,
+    to_timestamp('%(max_valid_to_date)s') AS __ValidTo,
+    current_timestamp() AS __InserTimestampUTC,
+    current_timestamp() AS __UpdateTimestampUTC,
+    __InsertTimestampUTC AS __InsertTimestampStageUTC
+FROM `%(catalog)s`.`%(database)s`.`%(table)s`
+WHERE __InsertTimestampUTC > '%(max_stage_timestamp)s'
+  AND __InsertTimestampUTC = (
+    SELECT max(__InsertTimestampUTC)
+    FROM `%(catalog)s`.`%(database)s`.`%(table)s`
+  )
+""" % {
+  "catalog": catalog.name,
+  "database": stage_zone,
+  "table": "{{ stage_table.dataProduct }}_{{ stage_table.dataModule }}_{{ helper.cleanup_name(stage_table.name) }}",
+  "max_valid_to_date": MAX_VALID_TO_DATE,
+  "max_stage_timestamp": max_stage["{{ source.dm8l.replace("/", "_")[1:] }}"],
+  "source_locator": "{{ source.dm8l }}",
+})
+
+source_delta_df_list.append(source_delta_{{ loop.index }}_df)
+
+# COMMAND ----------
+
+{%- endfor %}
+
+# MAGIC %md
+# MAGIC ### Union deltas from sources
+
+# COMMAND ----------
+
+for idx, df in enumerate(source_delta_df_list):
+    if idx == 0:
+        union_df = df
+    else:
+        union_df = union_df.union(df)
+
+union_df.createOrReplaceTempView("union_df")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # Apply computed columns
+
+# COMMAND ----------
+
+enriched_df = spark.sql("""
+SELECT *
+{%- for source in entity.model_object.function.source if source.dm8l == "#" -%}
+  {%- for column in source.mapping if not column.sourceComputation == "Default" %}
+  , {{ column.sourceComputation }} AS {{ column.name }}
+  {%- endfor -%}
+{%- endfor %}
+FROM union_df
+""")
+enriched_df.createOrReplaceTempView("enriched_df")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # Merge into {{entity.model_object.type.value}}
+
+# COMMAND ----------
+
+{%- if has_scd2 %}
+# MAGIC %md
+# MAGIC ## Update old SCD 2 records
+
+# COMMAND ----------
+
+spark.sql("""
+MERGE INTO `%(catalog)s`.`%(database)s`.`{{ full_table_name }}` AS tgt
+USING enriched_df AS src
+ON
+  {% for bk_col_name in bk_cols %}
+    {%- if not loop.first -%} AND {%- endif -%}
+  tgt.`{{bk_col_name}}` <=> src.`{{bk_col_name}}`
+  {% endfor -%}
+  AND tgt.__SourceTable_BK <=> src.__SourceTable_BK
+WHEN MATCHED
+  AND tgt.__ValidTo = to_timestamp("%(max_valid_to_date)s")
+  -- SCD 2 columns
+  AND (
+  {%- for scd2_col_name in scd2_cols %}
+    {% if loop.first %}   {% else %}OR {% endif -%}
+    NOT tgt.`{{scd2_col_name}}` <=> src.`{{scd2_col_name}}`
+  {%- endfor %}
+  )
+THEN UPDATE SET
+  tgt.__ValidTo = src.__ValidFrom,
+  tgt.__UpdateTimestampUTC = src.__UpdateTimestampUTC
+""" % {
+  "catalog": catalog.name,
+  "database": core_zone,
+  "max_valid_to_date": MAX_VALID_TO_DATE,
+}).display()
+
+# COMMAND ----------
+{%- endif %}
+
+# MAGIC %md
+# MAGIC ## Insert new records
+
+# COMMAND ----------
+
+spark.sql("""
+MERGE INTO `%(catalog)s`.`%(database)s`.`{{ full_table_name }}` AS tgt
+USING enriched_df AS src
+ON
+  {%- for bk_col_name in bk_cols %}
+  {% if not loop.first %}AND {% endif -%}
+  tgt.`{{bk_col_name}}` <=> src.`{{bk_col_name}}`
+  {%- endfor %}
+  AND tgt.__SourceTable_BK <=> src.__SourceTable_BK
+  {%- if has_scd2 %}
+  AND tgt.__ValidTo = to_timestamp('%(max_valid_to_date)s')
+  {%- endif %}
+WHEN NOT MATCHED
+THEN INSERT (
+{%- for column in entity.model_object.entity.attribute if "SK" != column.history.value %}
+  `{{column.name}}`,
+{%- endfor %}
+  -- technical columns
+  __SourceTable_BK,
+  {%- if has_scd2 %}
+  __ValidFrom,
+  __ValidTo,
+  {%- endif %}
+  __InsertTimestampUTC,
+  __UpdateTimestampUTC,
+  __InsertTimestampStageUTC,
+) VALUES (
+{%- for column in entity.model_object.entity.attribute if "SK" != column.history.value %}
+  src.`{{column.name}}`,
+{%- endfor %}
+  -- technical columns
+  src.__SourceTable_BK,
+  {%- if has_scd2 %}
+  src.__ValidFrom,
+  src.__ValidTo,
+  {%- endif %}
+  src.__InserTimestampUTC,
+  src.__UpdateTimestampUTC,
+  src.__InsertTimestampStageUTC
+)
+""" % {
+  "catalog": catalog.name,
+  "database": core_zone,
+  {%- if has_scd2 %}
+  "max_valid_to_date": MAX_VALID_TO_DATE,
+  {%- endif %}
+}).display()
+
+# COMMAND ----------
+
+{%- if has_scd1 %}
+# MAGIC %md
+# MAGIC ## Update SCD 1 records
+
+# COMMAND ----------
+
+spark.sql("""
+MERGE INTO `%(catalog)s`.`%(database)s`.`{{ full_table_name }}` AS tgt
+USING enriched_df AS src
+ON
+  {%- for bk_col_name in bk_cols %}
+  {% if not loop.first %}AND {% endif -%}
+  tgt.`{{bk_col_name}}` <=> src.`{{bk_col_name}}`
+  {%- endfor %}
+  AND tgt.__SourceTable_BK <=> src.__SourceTable_BK
+WHEN MATCHED
+  -- SCD 1 columns
+  AND (
+  {%- for scd1_col_name in scd1_cols %}
+    {% if loop.first %}   {% else %}OR {% endif -%}
+    NOT tgt.`{{scd1_col_name}}` <=> src.`{{scd1_col_name}}`
+  {%- endfor %}
+  )
+THEN UPDATE SET
+  {%- for scd1_col_name in scd1_cols %}
+  tgt.`{{scd1_col_name}}` = src.`{{scd1_col_name}}`,
+  {%- endfor %}
+  tgt.__UpdateTimestampUTC = src.__UpdateTimestampUTC
+""" % {
+  "catalog": catalog.name,
+  "database": core_zone,
+}).display()
+
+# COMMAND ----------
+{%- endif %}
+
+<<<<<<<<<< {{ file_path }}.py | py
+{%- endfor -%}

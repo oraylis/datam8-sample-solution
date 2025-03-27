@@ -1,0 +1,95 @@
+{
+    "type": "stage",
+    "entity": {
+        "dataModule": "Order",
+        "dataProduct": "Sales",
+        "name": "SalesOrderDetail",
+        "displayName": "Sales_Order_Detail",
+        "attribute": [
+            {
+                "name": "SalesOrderID",
+                "type": "int",
+                "nullable": false
+            },
+            {
+                "name": "SalesOrderDetailID",
+                "type": "int",
+                "nullable": false
+            },
+            {
+                "name": "OrderQty",
+                "type": "short",
+                "nullable": false
+            },
+            {
+                "name": "ProductID",
+                "type": "int",
+                "nullable": false
+            },
+            {
+                "name": "UnitPrice",
+                "type": "money",
+                "nullable": false
+            },
+            {
+                "name": "UnitPriceDiscount",
+                "type": "money",
+                "nullable": false
+            },
+            {
+                "name": "LineTotal",
+                "type": "decimal",
+                "precision": 38,
+                "scale": 6,
+                "nullable": false
+            },
+            {
+                "name": "ModifiedDate",
+                "type": "datetime",
+                "nullable": false
+            }
+        ]
+    },
+    "function": {
+        "dataSource": "__meta__",
+        "sourceLocation": "raw/Sales/Order/SalesOrderDetail",
+        "attributeMapping": [
+            {
+                "source": "SalesOrderID",
+                "target": "SalesOrderID"
+            },
+            {
+                "source": "SalesOrderDetailID",
+                "target": "SalesOrderDetailID"
+            },
+            {
+                "source": "OrderQty",
+                "target": "OrderQty"
+            },
+            {
+                "source": "ProductID",
+                "target": "ProductID"
+            },
+            {
+                "source": "UnitPrice",
+                "target": "UnitPrice"
+            },
+            {
+                "source": "UnitPriceDiscount",
+                "target": "UnitPriceDiscount"
+            },
+            {
+                "source": "LineTotal",
+                "target": "LineTotal"
+            },
+            {
+                "source": "rowguid",
+                "target": "rowguid"
+            },
+            {
+                "source": "ModifiedDate",
+                "target": "ModifiedDate"
+            }
+        ]
+    }
+}

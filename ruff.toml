@@ -1,0 +1,19 @@
+line-length = 120
+
+# Enable pycodestyle rules.
+lint.select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F"
+]
+
+builtins = ["spark","sqlContext","dbutils", "Catalog", "Table"]
+
+# Never enforce...
+# F821 = undefined name
+# ignore = ["F821"]
+
+# Always autofix, but never try to fix `F401` (unused imports).
+fix = false
+lint.unfixable = ["F401"]

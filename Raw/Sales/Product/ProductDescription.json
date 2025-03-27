@@ -1,0 +1,60 @@
+{
+  "type": "raw",
+  "entity": {
+    "dataModule": "Product",
+    "dataProduct": "Sales",
+    "name": "ProductDescription",
+    "displayName": "Product Description",
+    "parameters": [],
+    "tags": [],
+    "attribute": [
+      {
+        "name": "ProductDescriptionID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "Description",
+        "type": "nvarchar",
+        "charLength": 400,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "rowguid",
+        "type": "uniqueidentifier",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "ModifiedDate",
+        "type": "datetime",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      }
+    ]
+  },
+  "function": {
+    "dataSource": "AdventureWorks",
+    "sourceLocation": "[SalesLT].[ProductDescription]"
+  }
+}

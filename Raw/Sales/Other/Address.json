@@ -1,0 +1,115 @@
+{
+  "type": "raw",
+  "entity": {
+    "dataModule": "Other",
+    "dataProduct": "Sales",
+    "name": "Address",
+    "displayName": "Address",
+    "parameters": [],
+    "tags": [],
+    "attribute": [
+      {
+        "name": "AddressID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:20:40"
+      },
+      {
+        "name": "AddressLine1",
+        "type": "nvarchar",
+        "charLength": 60,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:20:40"
+      },
+      {
+        "name": "AddressLine2",
+        "type": "nvarchar",
+        "charLength": 60,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:20:40"
+      },
+      {
+        "name": "City",
+        "type": "nvarchar",
+        "charLength": 30,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:20:40"
+      },
+      {
+        "name": "StateProvince",
+        "type": "nvarchar",
+        "charLength": 50,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:20:40"
+      },
+      {
+        "name": "CountryRegion",
+        "type": "nvarchar",
+        "charLength": 50,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:20:40"
+      },
+      {
+        "name": "PostalCode",
+        "type": "nvarchar",
+        "charLength": 15,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:20:40"
+      },
+      {
+        "name": "rowguid",
+        "type": "uniqueidentifier",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:20:40"
+      },
+      {
+        "name": "ModifiedDate",
+        "type": "datetime",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:20:40"
+      }
+    ]
+  },
+  "function": {
+    "dataSource": "AdventureWorks",
+    "sourceLocation": "[SalesLT].[Address]"
+  }
+}

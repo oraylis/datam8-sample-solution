@@ -1,0 +1,11 @@
+# DBTITLE 1,Call migrate_schema method
+try:
+    table_instance = catalog.create_table_from_ddl(
+        full_table_name="%s.%s" % (zone, full_table_name),
+        ddl=ddl,
+    )
+    table_instance.owner = owner
+
+    print("Table sucessfully created.")
+except Exception as e:
+    print(f"Creation of table failed: {e}")

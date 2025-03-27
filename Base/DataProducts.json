@@ -1,0 +1,40 @@
+{
+  "items": [
+    {
+      "name": "Sales",
+      "displayName": "All Entities for Sales",
+      "module": [
+        {
+          "name": "Customer",
+          "displayName": "Customer module"
+        },
+        {
+          "name": "Product",
+          "displayName": "Product module"
+        },
+        {
+          "name": "Other",
+          "displayName": "Other module"
+        },
+        {
+          "name": "Order",
+          "displayName": "Order module"
+        }
+      ]
+    },
+    {
+      "name": "HR",
+      "displayName": "All Entities for Human Resources",
+      "module": [
+        {
+          "name": "Employee",
+          "displayName": "Employee module"
+        },
+        {
+          "name": "Payroll",
+          "displayName": "Payroll module"
+        }
+      ]
+    }
+  ]
+}

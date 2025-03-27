@@ -1,0 +1,286 @@
+{
+  "type": "core",
+  "entity": {
+    "dataModule": "Customer",
+    "dataProduct": "Sales",
+    "name": "Customer",
+    "displayName": "Customer",
+    "parameters": [],
+    "tags": [],
+    "attribute": [
+      {
+        "name": "_CustomerBK",
+        "attributeType": "ID",
+        "dataType": "int",
+        "businessKeyNo": 1,
+        "tags": [],
+        "refactorNames": [],
+        "history": "BK"
+      },
+      {
+        "name": "_CustomerSID",
+        "attributeType": "SID",
+        "dataType": "long",
+        "tags": [],
+        "refactorNames": [],
+        "history": "SK"
+      },
+      {
+        "name": "CustomerID",
+        "attributeType": "ID",
+        "dataType": "int",
+        "tags": [],
+        "refactorNames": [],
+        "history": "SCD0"
+      },
+      {
+        "name": "CompanyHistName",
+        "attributeType": "Name",
+        "dataType": "string",
+        "tags": [],
+        "refactorNames": [],
+        "history": "SCD2"
+      },
+      {
+        "name": "CompanyName",
+        "displayName": "Firma",
+        "attributeType": "Name",
+        "dataType": "string",
+        "charLength": 128,
+        "nullable": true,
+        "tags": [],
+        "refactorNames": [
+          "Firma"
+        ],
+        "history": "SCD1"
+      },
+      {
+        "name": "CustomerEMail",
+        "displayName": "Email",
+        "attributeType": "EMail",
+        "dataType": "string",
+        "charLength": 50,
+        "nullable": true,
+        "tags": [],
+        "refactorNames": [
+          "Email",
+          "CustomerEmail"
+        ],
+        "history": "SCD1"
+      },
+      {
+        "name": "CustomerHistEMail",
+        "attributeType": "EMail",
+        "dataType": "string",
+        "tags": [],
+        "refactorNames": [],
+        "history": "SCD2"
+      },
+      {
+        "name": "DisplayName",
+        "attributeType": "Name",
+        "dataType": "string",
+        "tags": [],
+        "refactorNames": [],
+        "history": "SCD1"
+      },
+      {
+        "name": "FirstName",
+        "displayName": "Vorname",
+        "attributeType": "Name",
+        "dataType": "string",
+        "charLength": 50,
+        "nullable": false,
+        "tags": [],
+        "refactorNames": [
+          "Vorname"
+        ],
+        "history": "SCD1"
+      },
+      {
+        "name": "LastName",
+        "displayName": "Nachname",
+        "attributeType": "Name",
+        "dataType": "string",
+        "charLength": 50,
+        "nullable": true,
+        "tags": [],
+        "refactorNames": [
+          "Nachname"
+        ],
+        "history": "SCD1"
+      }
+    ],
+    "relationship": [],
+    "refactorNames": []
+  },
+  "function": {
+    "source": [
+      {
+        "dm8l": "#",
+        "mapping": [
+          {
+            "name": "CustomerEMail",
+            "sourceComputation": "Default",
+            "sourceName": "CustomerEmail"
+          },
+          {
+            "name": "CompanyName",
+            "sourceComputation": "Default",
+            "sourceName": "CompanyName"
+          },
+          {
+            "name": "CustomerID",
+            "sourceComputation": "Default",
+            "sourceName": "CustomerID"
+          },
+          {
+            "name": "LastName",
+            "sourceComputation": "Default",
+            "sourceName": "LastName"
+          },
+          {
+            "name": "FirstName",
+            "sourceComputation": "Default",
+            "sourceName": "FirstName"
+          },
+          {
+            "name": "_CustomerSID",
+            "sourceComputation": "Default",
+            "sourceName": "CustomerSID"
+          },
+          {
+            "name": "_CustomerBK",
+            "sourceComputation": "CustomerID",
+            "sourceName": "_CustomerBK"
+          },
+          {
+            "name": "DisplayName",
+            "sourceComputation": "Concat(LastName, ', ', FirstName)",
+            "sourceName": "DisplayName"
+          },
+          {
+            "name": "CompanyHistName",
+            "sourceComputation": "CompanyName",
+            "sourceName": "CompanyHistName"
+          },
+          {
+            "name": "CustomerHistEMail",
+            "sourceComputation": "CustomerEMail",
+            "sourceName": "CustomerHistEMail"
+          }
+        ]
+      },
+      {
+        "dm8l": "/Stage/Sales/Customer/Customer_DE",
+        "mapping": [
+          {
+            "name": "CustomerID",
+            "sourceName": "KundenID"
+          },
+          {
+            "sourceName": "NamensTyp"
+          },
+          {
+            "sourceName": "Titel"
+          },
+          {
+            "name": "FirstName",
+            "sourceName": "Vorname"
+          },
+          {
+            "sourceName": "Nameszusatz1"
+          },
+          {
+            "name": "LastName",
+            "sourceName": "Nachname"
+          },
+          {
+            "sourceName": "Namenszusatz2"
+          },
+          {
+            "name": "CompanyName",
+            "sourceName": "Firma"
+          },
+          {
+            "sourceName": "Verkaeufer"
+          },
+          {
+            "name": "CustomerEMail",
+            "sourceName": "Email"
+          },
+          {
+            "sourceName": "Telefon"
+          },
+          {
+            "sourceName": "PasswordHash"
+          },
+          {
+            "sourceName": "PasswordSalt"
+          },
+          {
+            "sourceName": "rowguid"
+          },
+          {
+            "sourceName": "GeaendertAm"
+          }
+        ]
+      },
+      {
+        "dm8l": "/Stage/Sales/Customer/Customer_EN",
+        "mapping": [
+          {
+            "name": "CustomerID",
+            "sourceName": "CustomerID"
+          },
+          {
+            "sourceName": "NameStyle"
+          },
+          {
+            "sourceName": "Title"
+          },
+          {
+            "name": "FirstName",
+            "sourceName": "FirstName"
+          },
+          {
+            "sourceName": "MiddleName"
+          },
+          {
+            "name": "LastName",
+            "sourceName": "LastName"
+          },
+          {
+            "sourceName": "Suffix"
+          },
+          {
+            "name": "CompanyName",
+            "sourceName": "CompanyName"
+          },
+          {
+            "sourceName": "SalesPerson"
+          },
+          {
+            "name": "CustomerEMail",
+            "sourceName": "EmailAddress"
+          },
+          {
+            "sourceName": "Phone"
+          },
+          {
+            "sourceName": "PasswordHash"
+          },
+          {
+            "sourceName": "PasswordSalt"
+          },
+          {
+            "sourceName": "rowguid"
+          },
+          {
+            "sourceName": "ModifiedDate"
+          }
+        ]
+      }
+    ]
+  }
+}

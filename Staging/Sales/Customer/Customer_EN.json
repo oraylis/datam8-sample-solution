@@ -1,0 +1,163 @@
+{
+    "type": "stage",
+    "entity": {
+        "dataModule": "Customer",
+        "dataProduct": "Sales",
+        "name": "Customer_EN",
+        "displayName": "Customer__EN",
+        "attribute": [
+            {
+                "name": "CustomerID",
+                "type": "int",
+                "nullable": false
+            },
+            {
+                "name": "NameStyle",
+                "type": "bit",
+                "nullable": false
+            },
+            {
+                "name": "Title",
+                "type": "string",
+                "charLength": 8,
+                "nullable": true
+            },
+            {
+                "name": "FirstName",
+                "type": "string",
+                "charLength": 50,
+                "nullable": false
+            },
+            {
+                "name": "MiddleName",
+                "type": "string",
+                "charLength": 50,
+                "nullable": true
+            },
+            {
+                "name": "LastName",
+                "type": "string",
+                "charLength": 50,
+                "nullable": false
+            },
+            {
+                "name": "Suffix",
+                "type": "string",
+                "charLength": 10,
+                "nullable": true
+            },
+            {
+                "name": "CompanyName",
+                "type": "string",
+                "charLength": 128,
+                "nullable": true
+            },
+            {
+                "name": "SalesPerson",
+                "type": "string",
+                "charLength": 256,
+                "nullable": true
+            },
+            {
+                "name": "EmailAddress",
+                "type": "string",
+                "charLength": 50,
+                "nullable": true
+            },
+            {
+                "name": "Phone",
+                "type": "string",
+                "charLength": 25,
+                "nullable": true
+            },
+            {
+                "name": "PasswordHash",
+                "type": "string",
+                "charLength": 128,
+                "nullable": false
+            },
+            {
+                "name": "PasswordSalt",
+                "type": "string",
+                "charLength": 10,
+                "nullable": false
+            },
+            {
+                "name": "rowguid",
+                "type": "uniqueidentifier",
+                "nullable": false
+            },
+            {
+                "name": "ModifiedDate",
+                "type": "datetime",
+                "nullable": false
+            }
+        ]
+    },
+    "function": {
+        "dataSource": "__meta__",
+        "sourceLocation": "raw/Sales/Customer/Customer_EN",
+        "attributeMapping": [
+            {
+                "source": "CustomerID",
+                "target": "CustomerID"
+            },
+            {
+                "source": "NameStyle",
+                "target": "NameStyle"
+            },
+            {
+                "source": "Title",
+                "target": "Title"
+            },
+            {
+                "source": "FirstName",
+                "target": "FirstName"
+            },
+            {
+                "source": "MiddleName",
+                "target": "MiddleName"
+            },
+            {
+                "source": "LastName",
+                "target": "LastName"
+            },
+            {
+                "source": "Suffix",
+                "target": "Suffix"
+            },
+            {
+                "source": "CompanyName",
+                "target": "CompanyName"
+            },
+            {
+                "source": "SalesPerson",
+                "target": "SalesPerson"
+            },
+            {
+                "source": "EmailAddress",
+                "target": "EmailAddress"
+            },
+            {
+                "source": "Phone",
+                "target": "Phone"
+            },
+            {
+                "source": "PasswordHash",
+                "target": "PasswordHash"
+            },
+            {
+                "source": "PasswordSalt",
+                "target": "PasswordSalt"
+            },
+            {
+                "source": "rowguid",
+                "target": "rowguid"
+            },
+            {
+                "source": "ModifiedDate",
+                "target": "ModifiedDate"
+            }
+        ]
+    }
+}

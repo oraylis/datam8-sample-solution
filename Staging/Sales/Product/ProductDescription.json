@@ -1,0 +1,54 @@
+{
+    "type": "stage",
+    "entity": {
+        "dataModule": "Product",
+        "dataProduct": "Sales",
+        "name": "ProductDescription",
+        "displayName": "Product_Description",
+        "attribute": [
+            {
+                "name": "ProductDescriptionID",
+                "type": "int",
+                "nullable": false
+            },
+            {
+                "name": "Description",
+                "type": "string",
+                "charLength": 400,
+                "nullable": false
+            },
+            {
+                "name": "rowguid",
+                "type": "uniqueidentifier",
+                "nullable": false
+            },
+            {
+                "name": "ModifiedDate",
+                "type": "datetime",
+                "nullable": false
+            }
+        ]
+    },
+    "function": {
+        "dataSource": "__meta__",
+        "sourceLocation": "raw/Sales/Product/ProductDescription",
+        "attributeMapping": [
+            {
+                "source": "ProductDescriptionID",
+                "target": "ProductDescriptionID"
+            },
+            {
+                "source": "Description",
+                "target": "Description"
+            },
+            {
+                "source": "rowguid",
+                "target": "rowguid"
+            },
+            {
+                "source": "ModifiedDate",
+                "target": "ModifiedDate"
+            }
+        ]
+    }
+}

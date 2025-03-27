@@ -1,0 +1,165 @@
+# Macro Import ----------
+{% import 'macro/column_declaration_curated.py.jinja2' as column_declaration %}
+{% import 'macro/common_python_snippets.py.jinja2' as py_snippets %}
+
+{% for entity in model.get_curated_entity_list() %}
+{% set table = entity.model_object.entity %}
+{% set full_table_name = entity.model_object.entity.dataProduct + "_" + entity.model_object.entity.dataModule + "_" + entity.model_object.entity.name %}
+{%- set file_path = helper.build_path("notebooks", SystemProperties().curated_folder, "dml", table.dataProduct, table.dataModule, table.name)%}
+
+{%- for function in entity.model_object.function %}
+>>>>>>>>>> {{ file_path }}_functions/{{ function.name }}.py
+{% include "Curated/%s/%s/%s/%s.py" % (table.dataProduct, table.dataModule, table.name, function.name) %}
+<<<<<<<<<<
+{%- endfor %}
+
+>>>>>>>>>> {{ file_path }}.py
+{%- set bk_cols = custom_functions.list_bk_columns(entity.model_object) %}
+{%- set scd0_cols = custom_functions.list_scd0_columns(entity.model_object) %}
+{%- set scd1_cols = custom_functions.list_scd1_columns(entity.model_object) %}
+{%- set scd2_cols = custom_functions.list_scd2_columns(entity.model_object) %}
+{%- set has_scd1 = len(scd1_cols) > 0 %}
+{%- set has_scd2 = len(scd2_cols) > 0 %}
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # DML for {{entity.model_object.type.value}}.{{full_table_name}}
+# MAGIC History configuration of this entity
+# MAGIC - __Business Key Columns__: {{bk_cols}}
+# MAGIC - __SCD0 columns__: {{scd0_cols}}
+# MAGIC - __SCD1 columns__: {{scd1_cols}}
+# MAGIC - __SCD2 columns__: {{scd2_cols}}
+
+# COMMAND ----------
+
+from pyspark.sql import functions as F
+from delta import DeltaTable  # noqa: F401
+
+# COMMAND ----------
+
+{{ py_snippets.common_variables(entity.model_object.type.value, entity, SystemProperties) }}
+
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Execute functions
+
+# COMMAND ----------
+
+table_name = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
+  "catalog": catalog.name,
+  "schema": curated_zone,
+  "table": full_table_name,
+}
+
+functions = {}
+
+{%- for function in entity.model_object.function %}
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### {{ function.name }}
+
+# COMMAND ----------
+
+functions["{{ function.name }}"] = {{ json.dumps(function.to_dict(), indent=2) }}
+
+# COMMAND ----------
+
+# MAGIC %run ./{{ table.name }}_functions/{{ function.name }}
+
+{%- if str(function.merge_type) != "MergeType.SELF" %}
+
+# COMMAND ----------
+
+business_function = business_function.withColumns({  # noqa: F821
+  "__BusinessFunction": F.lit("{{ function.name }}"),
+  "__InsertTimestampUTC": F.current_timestamp(),
+})
+functions["{{ function.name }}"]["df"] = business_function  # noqa: F501
+{%- endif %}
+
+# COMMAND ----------
+{%- if str(function.merge_type) == "MergeType.MERGE" %}
+
+# MAGIC %md
+# MAGIC # Merge into {{entity.model_object.type.value}}
+
+# COMMAND ----------
+
+delta_table = DeltaTable.forName(spark, table_name)
+
+merge_builder = (
+    delta_table.alias("target")
+    .merge(
+        functions["{{ function.name }}"]["df"].alias("source"),
+        condition="""
+        {%- for column in bk_cols %}
+            {%- if not loop.first %}
+            AND source.`{{column}}` = target.`{{column}}`
+            {%- else %}
+            source.`{{column}}` = target.`{{column}}`
+            {%- endif %}
+        {%- endfor %}
+            AND source.`__BusinessFunction` = target.`__BusinessFunction`
+        """
+    )
+    .whenNotMatchedInsert(
+        values={   
+            {%- for column in table.attribute %}
+            "{{column.name}}": "source.`{{column.name}}`",
+            {%- endfor %}
+            "__BusinessFunction": "source.__BusinessFunction",
+            "__insertTimestampUTC": "source.__InsertTimestampUTC",
+            "__updateTimestampUTC": "source.__InsertTimestampUTC",
+        }
+    )
+    .whenMatchedUpdate(
+        condition="""
+            1 <> 1
+        {%- for column in table.attribute %}
+            {%- if column.name not in bk_col %}
+            OR source.`{{column.name}}` != target.`{{column.name}}`
+            {%- endif %}
+        {%- endfor %}  
+        """,
+        set={
+            {%- for column in table.attribute %}
+                {%- if column.name not in bk_list%}
+            "target.{{column.name}}": "source.{{column.name}}",
+                {%- endif %}
+            {%- endfor %}
+            "__updateTimestampUTC": "source.__InsertTimestampUTC",
+        }  
+    )
+)
+
+merge_builder.execute()
+
+{%- elif str(function.merge_type) == "MergeType.REPLACE" %}
+
+(
+    functions["{{ function.name }}"]["df"]
+    .withColumns({
+        "__UpdateTimestampUTC": F.current_timestamp(),
+    })
+    .write.saveAsTable(table_name, mode="overwrite")
+)
+
+{%- elif str(function.merge_type) == "MergeType.SELF" %}
+
+# MAGIC %md
+# MAGIC result is directly written by business function
+# MAGIC all load logic is defined within the business function
+
+{%- else %}
+
+raise NotImplementedError("merge type {{ function.merge_type }} not implemented")
+
+{%- endif -%}
+
+{%- endfor %}
+
+<<<<<<<<<< {{ file_path }}.py
+{%- endfor -%}

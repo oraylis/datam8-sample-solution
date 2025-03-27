@@ -1,0 +1,215 @@
+{
+    "type": "stage",
+    "entity": {
+        "dataModule": "Order",
+        "dataProduct": "Sales",
+        "name": "SalesOrderHeader",
+        "displayName": "Sales_Order_Header",
+        "attribute": [
+            {
+                "name": "SalesOrderID",
+                "type": "int",
+                "nullable": false
+            },
+            {
+                "name": "RevisionNumber",
+                "type": "byte",
+                "nullable": false
+            },
+            {
+                "name": "OrderDate",
+                "type": "datetime",
+                "nullable": false
+            },
+            {
+                "name": "DueDate",
+                "type": "datetime",
+                "nullable": false
+            },
+            {
+                "name": "ShipDate",
+                "type": "datetime",
+                "nullable": true
+            },
+            {
+                "name": "Status",
+                "type": "byte",
+                "nullable": false
+            },
+            {
+                "name": "OnlineOrderFlag",
+                "type": "bit",
+                "nullable": false
+            },
+            {
+                "name": "SalesOrderNumber",
+                "type": "string",
+                "charLength": 25,
+                "nullable": false
+            },
+            {
+                "name": "PurchaseOrderNumber",
+                "type": "string",
+                "charLength": 25,
+                "nullable": true
+            },
+            {
+                "name": "AccountNumber",
+                "type": "string",
+                "charLength": 15,
+                "nullable": true
+            },
+            {
+                "name": "CustomerID",
+                "type": "int",
+                "nullable": false
+            },
+            {
+                "name": "ShipToAddressID",
+                "type": "int",
+                "nullable": true
+            },
+            {
+                "name": "BillToAddressID",
+                "type": "int",
+                "nullable": true
+            },
+            {
+                "name": "ShipMethod",
+                "type": "string",
+                "charLength": 50,
+                "nullable": false
+            },
+            {
+                "name": "CreditCardApprovalCode",
+                "type": "string",
+                "charLength": 15,
+                "nullable": true
+            },
+            {
+                "name": "SubTotal",
+                "type": "money",
+                "nullable": false
+            },
+            {
+                "name": "TaxAmt",
+                "type": "money",
+                "nullable": false
+            },
+            {
+                "name": "Freight",
+                "type": "money",
+                "nullable": false
+            },
+            {
+                "name": "TotalDue",
+                "type": "money",
+                "nullable": false
+            },
+            {
+                "name": "Comment",
+                "type": "string",
+                "nullable": true
+            },
+            {
+                "name": "ModifiedDate",
+                "type": "datetime",
+                "nullable": false
+            }
+        ]
+    },
+    "function": {
+        "dataSource": "__meta__",
+        "sourceLocation": "raw/Sales/Order/SalesOrderHeader",
+        "attributeMapping": [
+            {
+                "source": "SalesOrderID",
+                "target": "SalesOrderID"
+            },
+            {
+                "source": "RevisionNumber",
+                "target": "RevisionNumber"
+            },
+            {
+                "source": "OrderDate",
+                "target": "OrderDate"
+            },
+            {
+                "source": "DueDate",
+                "target": "DueDate"
+            },
+            {
+                "source": "ShipDate",
+                "target": "ShipDate"
+            },
+            {
+                "source": "Status",
+                "target": "Status"
+            },
+            {
+                "source": "OnlineOrderFlag",
+                "target": "OnlineOrderFlag"
+            },
+            {
+                "source": "SalesOrderNumber",
+                "target": "SalesOrderNumber"
+            },
+            {
+                "source": "PurchaseOrderNumber",
+                "target": "PurchaseOrderNumber"
+            },
+            {
+                "source": "AccountNumber",
+                "target": "AccountNumber"
+            },
+            {
+                "source": "CustomerID",
+                "target": "CustomerID"
+            },
+            {
+                "source": "ShipToAddressID",
+                "target": "ShipToAddressID"
+            },
+            {
+                "source": "BillToAddressID",
+                "target": "BillToAddressID"
+            },
+            {
+                "source": "ShipMethod",
+                "target": "ShipMethod"
+            },
+            {
+                "source": "CreditCardApprovalCode",
+                "target": "CreditCardApprovalCode"
+            },
+            {
+                "source": "SubTotal",
+                "target": "SubTotal"
+            },
+            {
+                "source": "TaxAmt",
+                "target": "TaxAmt"
+            },
+            {
+                "source": "Freight",
+                "target": "Freight"
+            },
+            {
+                "source": "TotalDue",
+                "target": "TotalDue"
+            },
+            {
+                "source": "Comment",
+                "target": "Comment"
+            },
+            {
+                "source": "rowguid",
+                "target": "rowguid"
+            },
+            {
+                "source": "ModifiedDate",
+                "target": "ModifiedDate"
+            }
+        ]
+    }
+}

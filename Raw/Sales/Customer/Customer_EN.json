@@ -1,0 +1,180 @@
+{
+  "type": "raw",
+  "entity": {
+    "dataModule": "Customer",
+    "dataProduct": "Sales",
+    "name": "Customer_EN",
+    "displayName": "Customer _EN",
+    "parameters": [],
+    "tags": [],
+    "attribute": [
+      {
+        "name": "CustomerID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "NameStyle",
+        "type": "bit",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "Title",
+        "type": "nvarchar",
+        "charLength": 8,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "FirstName",
+        "type": "nvarchar",
+        "charLength": 50,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "MiddleName",
+        "type": "nvarchar",
+        "charLength": 50,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "LastName",
+        "type": "nvarchar",
+        "charLength": 50,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "Suffix",
+        "type": "nvarchar",
+        "charLength": 10,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "CompanyName",
+        "type": "nvarchar",
+        "charLength": 128,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "SalesPerson",
+        "type": "nvarchar",
+        "charLength": 256,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "EmailAddress",
+        "type": "nvarchar",
+        "charLength": 50,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "Phone",
+        "type": "nvarchar",
+        "charLength": 25,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "PasswordHash",
+        "type": "varchar",
+        "charLength": 128,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "PasswordSalt",
+        "type": "varchar",
+        "charLength": 10,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "rowguid",
+        "type": "uniqueidentifier",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      },
+      {
+        "name": "ModifiedDate",
+        "type": "datetime",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:17:37"
+      }
+    ]
+  },
+  "function": {
+    "dataSource": "AdventureWorks",
+    "sourceLocation": "[SalesLT].[Customer_EN]"
+  }
+}

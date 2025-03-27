@@ -1,0 +1,63 @@
+{
+    "type": "stage",
+    "entity": {
+        "dataModule": "Customer",
+        "dataProduct": "Sales",
+        "name": "CustomerAddress",
+        "displayName": "Customer_Address",
+        "attribute": [
+            {
+                "name": "CustomerID",
+                "type": "int",
+                "nullable": false
+            },
+            {
+                "name": "AddressID",
+                "type": "int",
+                "nullable": false
+            },
+            {
+                "name": "AddressType",
+                "type": "string",
+                "charLength": 50,
+                "nullable": false
+            },
+            {
+                "name": "rowguid",
+                "type": "uniqueidentifier",
+                "nullable": false
+            },
+            {
+                "name": "ModifiedDate",
+                "type": "datetime",
+                "nullable": false
+            }
+        ]
+    },
+    "function": {
+        "dataSource": "__meta__",
+        "sourceLocation": "raw/Sales/Customer/CustomerAddress",
+        "attributeMapping": [
+            {
+                "source": "CustomerID",
+                "target": "CustomerID"
+            },
+            {
+                "source": "AddressID",
+                "target": "AddressID"
+            },
+            {
+                "source": "AddressType",
+                "target": "AddressType"
+            },
+            {
+                "source": "rowguid",
+                "target": "rowguid"
+            },
+            {
+                "source": "ModifiedDate",
+                "target": "ModifiedDate"
+            }
+        ]
+    }
+}

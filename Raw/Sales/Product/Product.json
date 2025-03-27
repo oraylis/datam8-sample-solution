@@ -1,0 +1,204 @@
+{
+  "type": "raw",
+  "entity": {
+    "dataModule": "Product",
+    "dataProduct": "Sales",
+    "name": "Product",
+    "displayName": "Product",
+    "parameters": [],
+    "tags": [],
+    "attribute": [
+      {
+        "name": "ProductID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "Name",
+        "type": "nvarchar",
+        "charLength": 50,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "ProductNumber",
+        "type": "nvarchar",
+        "charLength": 25,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "Color",
+        "type": "nvarchar",
+        "charLength": 15,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "StandardCost",
+        "type": "money",
+        "charSet": "",
+        "precision": 19,
+        "scale": 4,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "ListPrice",
+        "type": "money",
+        "charSet": "",
+        "precision": 19,
+        "scale": 4,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "Size",
+        "type": "nvarchar",
+        "charLength": 5,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "Weight",
+        "type": "decimal",
+        "charSet": "",
+        "precision": 8,
+        "scale": 2,
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "ProductCategoryID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "ProductModelID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "SellStartDate",
+        "type": "datetime",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "SellEndDate",
+        "type": "datetime",
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "DiscontinuedDate",
+        "type": "datetime",
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "ThumbNailPhoto",
+        "type": "varbinary",
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "ThumbnailPhotoFileName",
+        "type": "nvarchar",
+        "charLength": 50,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "rowguid",
+        "type": "uniqueidentifier",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      },
+      {
+        "name": "ModifiedDate",
+        "type": "datetime",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:21:43"
+      }
+    ]
+  },
+  "function": {
+    "dataSource": "AdventureWorks",
+    "sourceLocation": "[SalesLT].[Product]"
+  }
+}

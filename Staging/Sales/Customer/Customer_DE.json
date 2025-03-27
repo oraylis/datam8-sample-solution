@@ -1,0 +1,163 @@
+{
+    "type": "stage",
+    "entity": {
+        "dataModule": "Customer",
+        "dataProduct": "Sales",
+        "name": "Customer_DE",
+        "displayName": "Customer__DE",
+        "attribute": [
+            {
+                "name": "KundenID",
+                "type": "int",
+                "nullable": false
+            },
+            {
+                "name": "NamensTyp",
+                "type": "bit",
+                "nullable": false
+            },
+            {
+                "name": "Titel",
+                "type": "string",
+                "charLength": 8,
+                "nullable": true
+            },
+            {
+                "name": "Vorname",
+                "type": "string",
+                "charLength": 50,
+                "nullable": false
+            },
+            {
+                "name": "Nameszusatz1",
+                "type": "string",
+                "charLength": 50,
+                "nullable": true
+            },
+            {
+                "name": "Nachname",
+                "type": "string",
+                "charLength": 50,
+                "nullable": false
+            },
+            {
+                "name": "Namenszusatz2",
+                "type": "string",
+                "charLength": 10,
+                "nullable": true
+            },
+            {
+                "name": "Firma",
+                "type": "string",
+                "charLength": 128,
+                "nullable": true
+            },
+            {
+                "name": "Verkaeufer",
+                "type": "string",
+                "charLength": 256,
+                "nullable": true
+            },
+            {
+                "name": "Email",
+                "type": "string",
+                "charLength": 50,
+                "nullable": true
+            },
+            {
+                "name": "Telefon",
+                "type": "string",
+                "charLength": 25,
+                "nullable": true
+            },
+            {
+                "name": "PasswordHash",
+                "type": "string",
+                "charLength": 128,
+                "nullable": false
+            },
+            {
+                "name": "PasswordSalt",
+                "type": "string",
+                "charLength": 10,
+                "nullable": false
+            },
+            {
+                "name": "rowguid",
+                "type": "uniqueidentifier",
+                "nullable": false
+            },
+            {
+                "name": "GeaendertAm",
+                "type": "datetime",
+                "nullable": false
+            }
+        ]
+    },
+    "function": {
+        "dataSource": "__meta__",
+        "sourceLocation": "raw/Sales/Customer/Customer_DE",
+        "attributeMapping": [
+            {
+                "source": "KundenID",
+                "target": "KundenID"
+            },
+            {
+                "source": "NamensTyp",
+                "target": "NamensTyp"
+            },
+            {
+                "source": "Titel",
+                "target": "Titel"
+            },
+            {
+                "source": "Vorname",
+                "target": "Vorname"
+            },
+            {
+                "source": "Nameszusatz1",
+                "target": "Nameszusatz1"
+            },
+            {
+                "source": "Nachname",
+                "target": "Nachname"
+            },
+            {
+                "source": "Namenszusatz2",
+                "target": "Namenszusatz2"
+            },
+            {
+                "source": "Firma",
+                "target": "Firma"
+            },
+            {
+                "source": "Verkaeufer",
+                "target": "Verkaeufer"
+            },
+            {
+                "source": "Email",
+                "target": "Email"
+            },
+            {
+                "source": "Telefon",
+                "target": "Telefon"
+            },
+            {
+                "source": "PasswordHash",
+                "target": "PasswordHash"
+            },
+            {
+                "source": "PasswordSalt",
+                "target": "PasswordSalt"
+            },
+            {
+                "source": "rowguid",
+                "target": "rowguid"
+            },
+            {
+                "source": "GeaendertAm",
+                "target": "GeaendertAm"
+            }
+        ]
+    }
+}

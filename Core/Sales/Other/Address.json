@@ -1,0 +1,210 @@
+{
+  "type": "core",
+  "entity": {
+    "dataModule": "Other",
+    "dataProduct": "Sales",
+    "name": "Address",
+    "displayName": "Address",
+    "parameters": [],
+    "tags": [],
+    "attribute": [
+      {
+        "name": "_AddressBK",
+        "attributeType": "ID",
+        "dataType": "int",
+        "businessKeyNo": 1,
+        "tags": [],
+        "refactorNames": [],
+        "history": "BK"
+      },
+      {
+        "name": "_AddressSID",
+        "attributeType": "SID",
+        "dataType": "long",
+        "tags": [],
+        "refactorNames": [],
+        "history": "SK"
+      },
+      {
+        "name": "AddressID",
+        "displayName": "AddressID",
+        "attributeType": "ID",
+        "dataType": "int",
+        "nullable": false,
+        "tags": [],
+        "refactorNames": [],
+        "history": "SCD1"
+      },
+      {
+        "name": "AddressLine1",
+        "displayName": "AddressLine1",
+        "attributeType": "Text",
+        "dataType": "string",
+        "charLength": 60,
+        "nullable": false,
+        "tags": [],
+        "refactorNames": [
+          "AddressLine1",
+          "AddressLine1Name"
+        ],
+        "history": "SCD1"
+      },
+      {
+        "name": "AddressLine2",
+        "displayName": "AddressLine2",
+        "attributeType": "Text",
+        "dataType": "string",
+        "charLength": 60,
+        "nullable": true,
+        "tags": [],
+        "refactorNames": [],
+        "history": "SCD1"
+      },
+      {
+        "name": "CityName",
+        "displayName": "City",
+        "attributeType": "Name",
+        "dataType": "string",
+        "charLength": 30,
+        "nullable": false,
+        "tags": [],
+        "refactorNames": [
+          "City"
+        ],
+        "history": "SCD1"
+      },
+      {
+        "name": "CountryRegionName",
+        "displayName": "CountryRegion",
+        "attributeType": "Name",
+        "dataType": "string",
+        "charLength": 50,
+        "nullable": false,
+        "tags": [],
+        "refactorNames": [
+          "CountryRegion"
+        ],
+        "history": "SCD1"
+      },
+      {
+        "name": "PostalCode",
+        "displayName": "PostalCode",
+        "attributeType": "Text",
+        "dataType": "string",
+        "charLength": 15,
+        "nullable": false,
+        "tags": [],
+        "refactorNames": [],
+        "history": "SCD1"
+      },
+      {
+        "name": "StateProvinceName",
+        "displayName": "StateProvince",
+        "attributeType": "Name",
+        "dataType": "string",
+        "charLength": 50,
+        "nullable": false,
+        "tags": [],
+        "refactorNames": [
+          "StateProvince"
+        ],
+        "history": "SCD1"
+      }
+    ],
+    "relationship": [],
+    "refactorNames": []
+  },
+  "function": {
+    "source": [
+      {
+        "dm8l": "#",
+        "mapping": [
+          {
+            "name": "AddressID",
+            "sourceComputation": "Default",
+            "sourceName": "AddressID"
+          },
+          {
+            "name": "AddressLine1",
+            "sourceComputation": "Default",
+            "sourceName": "AddressLine1"
+          },
+          {
+            "name": "AddressLine2",
+            "sourceComputation": "Default",
+            "sourceName": "AddressLine2"
+          },
+          {
+            "name": "CityName",
+            "sourceComputation": "Default",
+            "sourceName": "City"
+          },
+          {
+            "name": "StateProvinceName",
+            "sourceComputation": "Default",
+            "sourceName": "StateProvince"
+          },
+          {
+            "name": "CountryRegionName",
+            "sourceComputation": "Default",
+            "sourceName": "CountryRegion"
+          },
+          {
+            "name": "PostalCode",
+            "sourceComputation": "Default",
+            "sourceName": "PostalCode"
+          },
+          {
+            "name": "_AddressSID",
+            "sourceComputation": "Default",
+            "sourceName": "_AddressSID"
+          },
+          {
+            "name": "_AddressBK",
+            "sourceComputation": "AddressID",
+            "sourceName": "_AddressBK"
+          }
+        ]
+      },
+      {
+        "dm8l": "/Stage/Sales/Other/Address",
+        "mapping": [
+          {
+            "name": "AddressID",
+            "sourceName": "AddressID"
+          },
+          {
+            "name": "AddressLine1",
+            "sourceName": "AddressLine1"
+          },
+          {
+            "name": "AddressLine2",
+            "sourceName": "AddressLine2"
+          },
+          {
+            "name": "CityName",
+            "sourceName": "City"
+          },
+          {
+            "name": "StateProvinceName",
+            "sourceName": "StateProvince"
+          },
+          {
+            "name": "CountryRegionName",
+            "sourceName": "CountryRegion"
+          },
+          {
+            "name": "PostalCode",
+            "sourceName": "PostalCode"
+          },
+          {
+            "sourceName": "rowguid"
+          },
+          {
+            "sourceName": "ModifiedDate"
+          }
+        ]
+      }
+    ]
+  }
+}

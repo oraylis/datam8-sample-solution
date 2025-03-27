@@ -1,0 +1,177 @@
+{
+    "type": "stage",
+    "entity": {
+        "dataModule": "Product",
+        "dataProduct": "Sales",
+        "name": "Product",
+        "displayName": "Product",
+        "attribute": [
+            {
+                "name": "ProductID",
+                "type": "int",
+                "nullable": false
+            },
+            {
+                "name": "Name",
+                "type": "string",
+                "charLength": 50,
+                "nullable": false
+            },
+            {
+                "name": "ProductNumber",
+                "type": "string",
+                "charLength": 25,
+                "nullable": false
+            },
+            {
+                "name": "Color",
+                "type": "string",
+                "charLength": 15,
+                "nullable": true
+            },
+            {
+                "name": "StandardCost",
+                "type": "money",
+                "nullable": false
+            },
+            {
+                "name": "ListPrice",
+                "type": "money",
+                "nullable": false
+            },
+            {
+                "name": "Size",
+                "type": "string",
+                "charLength": 5,
+                "nullable": true
+            },
+            {
+                "name": "Weight",
+                "type": "decimal",
+                "precision": 8,
+                "scale": 2,
+                "nullable": true
+            },
+            {
+                "name": "ProductCategoryID",
+                "type": "int",
+                "nullable": true
+            },
+            {
+                "name": "ProductModelID",
+                "type": "int",
+                "nullable": true
+            },
+            {
+                "name": "SellStartDate",
+                "type": "datetime",
+                "nullable": false
+            },
+            {
+                "name": "SellEndDate",
+                "type": "datetime",
+                "nullable": true
+            },
+            {
+                "name": "DiscontinuedDate",
+                "type": "datetime",
+                "nullable": true
+            },
+            {
+                "name": "ThumbNailPhoto",
+                "type": "binary",
+                "nullable": true
+            },
+            {
+                "name": "ThumbnailPhotoFileName",
+                "type": "string",
+                "charLength": 50,
+                "nullable": true
+            },
+            {
+                "name": "rowguid",
+                "type": "uniqueidentifier",
+                "nullable": false
+            },
+            {
+                "name": "ModifiedDate",
+                "type": "datetime",
+                "nullable": false
+            }
+        ]
+    },
+    "function": {
+        "dataSource": "__meta__",
+        "sourceLocation": "raw/Sales/Product/Product",
+        "attributeMapping": [
+            {
+                "source": "ProductID",
+                "target": "ProductID"
+            },
+            {
+                "source": "Name",
+                "target": "Name"
+            },
+            {
+                "source": "ProductNumber",
+                "target": "ProductNumber"
+            },
+            {
+                "source": "Color",
+                "target": "Color"
+            },
+            {
+                "source": "StandardCost",
+                "target": "StandardCost"
+            },
+            {
+                "source": "ListPrice",
+                "target": "ListPrice"
+            },
+            {
+                "source": "Size",
+                "target": "Size"
+            },
+            {
+                "source": "Weight",
+                "target": "Weight"
+            },
+            {
+                "source": "ProductCategoryID",
+                "target": "ProductCategoryID"
+            },
+            {
+                "source": "ProductModelID",
+                "target": "ProductModelID"
+            },
+            {
+                "source": "SellStartDate",
+                "target": "SellStartDate"
+            },
+            {
+                "source": "SellEndDate",
+                "target": "SellEndDate"
+            },
+            {
+                "source": "DiscontinuedDate",
+                "target": "DiscontinuedDate"
+            },
+            {
+                "source": "ThumbNailPhoto",
+                "target": "ThumbNailPhoto"
+            },
+            {
+                "source": "ThumbnailPhotoFileName",
+                "target": "ThumbnailPhotoFileName"
+            },
+            {
+                "source": "rowguid",
+                "target": "rowguid"
+            },
+            {
+                "source": "ModifiedDate",
+                "target": "ModifiedDate"
+            }
+        ]
+    }
+}

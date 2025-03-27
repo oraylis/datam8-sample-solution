@@ -1,0 +1,345 @@
+{
+  "type": "dataSource",
+  "items": [
+    {
+      "ExtendedProperties": {
+        "RememberPassword": "false"
+      },
+      "name": "AdventureWorks",
+      "displayName": "Adventure Works Demo Database",
+      "type": "SqlDataSource",
+      "connectionString": "Data Source=tcp:datam80sql.database.windows.net,1433;Initial Catalog=adventureworks;User ID=sqladmin;Encrypt=True;Trust Server Certificate=True",
+      "dataTypeMapping": [
+        {
+          "sourceType": "bigint",
+          "targetType": "long"
+        },
+        {
+          "sourceType": "binary",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "bit",
+          "targetType": "bit"
+        },
+        {
+          "sourceType": "char",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "date",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "datetime",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "datetime2",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "datetimeoffset",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "decimal",
+          "targetType": "decimal"
+        },
+        {
+          "sourceType": "float",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "geography",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "geometry",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "hierarchyid",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "image",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "int",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "money",
+          "targetType": "money"
+        },
+        {
+          "sourceType": "nchar",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "ntext",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "numeric",
+          "targetType": "decimal"
+        },
+        {
+          "sourceType": "nvarchar",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "real",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "smalldatetime",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "smallint",
+          "targetType": "short"
+        },
+        {
+          "sourceType": "smallmoney",
+          "targetType": "money"
+        },
+        {
+          "sourceType": "sql_variant",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "sysname",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "text",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "time",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "timestamp",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "tinyint",
+          "targetType": "byte"
+        },
+        {
+          "sourceType": "uniqueidentifier",
+          "targetType": "uniqueidentifier"
+        },
+        {
+          "sourceType": "varbinary",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "varchar",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "xml",
+          "targetType": "string"
+        }
+      ]
+    },
+    {
+      "ExtendedProperties": {
+        "RememberPassword": "false"
+      },
+      "name": "ExternalStorage",
+      "displayName": "datam80adl",
+      "type": "LakeSource",
+      "connectionString": "StorageAccountName=datam80adl;StoragePath=drop;AuthenticationMethod=AccountKey",
+      "dataTypeMapping": [
+        {
+          "sourceType": "boolean",
+          "targetType": "bit"
+        },
+        {
+          "sourceType": "float",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "double",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "datetimeoffset",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "bytearray",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "string",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "uuid",
+          "targetType": "uniqueidentifier"
+        },
+        {
+          "sourceType": "decimal",
+          "targetType": "decimal"
+        },
+        {
+          "sourceType": "interval",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "json",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "enum",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "map",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "list",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "int",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "int16",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "int32",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "int64",
+          "targetType": "long"
+        },
+        {
+          "sourceType": "time",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "timestamp",
+          "targetType": "long"
+        }
+      ]
+    },
+    {
+      "ExtendedProperties": {
+        "RememberPassword": "false"
+      },
+      "name": "OracleDev",
+      "type": "OracleDataSource",
+      "connectionString": "Host=datam80ora.westeurope.cloudapp.azure.com;Port=1521;ConnectionType=Service;Connection=datam8test;User=datam8",
+      "dataTypeMapping": [
+        {
+          "sourceType": "array",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "blob",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "char",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "clob",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "date",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "float",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "intervalds",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "intervalym",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "long",
+          "targetType": "long"
+        },
+        {
+          "sourceType": "nchar",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "nclob",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "number",
+          "targetType": "long"
+        },
+        {
+          "sourceType": "nvarchar2",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "raw",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "real",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "ref",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "struct",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "timestamp",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "varchar2",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "number",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "NUMBER",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "TIMESTAMP",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "VARCHAR2",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "CHAR",
+          "targetType": "string"
+        }
+      ]
+    }
+  ]
+}

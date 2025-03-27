@@ -1,0 +1,266 @@
+{
+  "type": "raw",
+  "entity": {
+    "dataModule": "Order",
+    "dataProduct": "Sales",
+    "name": "SalesOrderHeader",
+    "displayName": "Sales Order Header",
+    "parameters": [],
+    "tags": [],
+    "attribute": [
+      {
+        "name": "SalesOrderID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "RevisionNumber",
+        "type": "tinyint",
+        "charSet": "",
+        "precision": 3,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "OrderDate",
+        "type": "datetime",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "DueDate",
+        "type": "datetime",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "ShipDate",
+        "type": "datetime",
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "Status",
+        "type": "tinyint",
+        "charSet": "",
+        "precision": 3,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "OnlineOrderFlag",
+        "type": "bit",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "SalesOrderNumber",
+        "type": "nvarchar",
+        "charLength": 25,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "PurchaseOrderNumber",
+        "type": "nvarchar",
+        "charLength": 25,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "AccountNumber",
+        "type": "nvarchar",
+        "charLength": 15,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "CustomerID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "ShipToAddressID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "BillToAddressID",
+        "type": "int",
+        "charSet": "",
+        "precision": 10,
+        "scale": 0,
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "ShipMethod",
+        "type": "nvarchar",
+        "charLength": 50,
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "CreditCardApprovalCode",
+        "type": "varchar",
+        "charLength": 15,
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "SubTotal",
+        "type": "money",
+        "charSet": "",
+        "precision": 19,
+        "scale": 4,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "TaxAmt",
+        "type": "money",
+        "charSet": "",
+        "precision": 19,
+        "scale": 4,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "Freight",
+        "type": "money",
+        "charSet": "",
+        "precision": 19,
+        "scale": 4,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "TotalDue",
+        "type": "money",
+        "charSet": "",
+        "precision": 19,
+        "scale": 4,
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "Comment",
+        "type": "nvarchar",
+        "charSet": "",
+        "nullable": true,
+        "unitName": "",
+        "unitType": "",
+        "tags": [],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "rowguid",
+        "type": "uniqueidentifier",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [
+          "ignore"
+        ],
+        "dateModified": "2024-03-22 11:19:51"
+      },
+      {
+        "name": "ModifiedDate",
+        "type": "datetime",
+        "charSet": "",
+        "nullable": false,
+        "unitName": "",
+        "unitType": "",
+        "tags": [
+          "delta"
+        ],
+        "dateModified": "2024-03-22 11:19:51"
+      }
+    ]
+  },
+  "function": {
+    "dataSource": "AdventureWorks",
+    "sourceLocation": "[SalesLT].[SalesOrderHeader]"
+  }
+}
