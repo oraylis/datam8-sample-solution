@@ -1,20 +1,8 @@
-{%- macro ddl_column_declaration(model, attributes) -%}
+{%- macro ddl_column_declaration(payload) -%}
     -- Table columns
-    {%- for column in attributes -%}
-        {%- set data_type = model.data_types.get_data_type(column.type) %}
-        {%- set precision_scale = "" %}
-        {%- set nullability = "" if column.nullable else " NOT NULL" %}
-        {%- if data_type.hasPrecision -%}
-            {%- set precision_scale = "(%s" % (38 if column.precision is none else column.precision) -%}
-            {%- if data_type.hasScale -%}
-                {%- set precision_scale = precision_scale + ",%s" % (18 if column.scale is none else column.scale) -%}
-            {%- endif -%}
-            {%- set precision_scale = precision_scale + ")" -%}
-        {%- endif -%}
+    {%- for column in payload -%}
         {%- set prefix = "," if not loop.first %}
-        {%- set column_name = "`%s`" % column.name %}
-        {%- set type = data_type.parquetType + precision_scale %}
-{{ "%-4s%-25s %-10s %-5s" | format(prefix, column_name, type, nullability) }}
+{{ "%-4s%-25s %-10s %-5s" | format(prefix, column.name, column.type, column.nullability) }}
     {%- endfor %}
 
     -- Technical columns
@@ -24,53 +12,34 @@
 ,   `__InsertTimestampUTC`    timestamp   NOT NULL
 {%- endmacro %}
 
-{%- macro ddl_struct_type(model, attributes) -%}
+{%- macro ddl_struct_type(payload) -%}
 # DBTITLE 1, Define dataframe
-schema = StructType([
-{%- for column in attributes -%}
-    {%- set data_type = model.data_types.get_data_type(column.type) -%}
-    {%- set parquet_type = data_type.parquetType %}
-    {%- set type_details = "" %}
-    {%- set precision = "" %}
-    {%- set scale = "" %}
-    {%- if data_type.hasPrecision %}
-        {%- set precision = 38 if column.precision is none else column.precision %}
-        {%- if data_type.hasScale %}
-            {%- set scale = ",%s" % (18 if column.scale is none else column.scale) %}
-        {%- endif -%}
-        {%- set type_details = "(%s%s)" % (precision, scale) %}
-    {%- endif -%}
-    {%- set type = parquet_type + type_details %}
-    StructField("{{ column.name }}", StructType.fromDDL("{{type}}"), {{ column.nullable if column.nullable is not none else False }}),
+schema = StructType(
+    [
+{%- for column in payload %}
+        StructField("{{ column.name }}", StructType.fromDDL("{{column.type}}"), {{ column.nullable if column.nullable is not none else False }}),
 {%- endfor %}
-    StructField("__Year", ShortType(), False),
-    StructField("__Month", ByteType(), False),
-    StructField("__Day", ByteType(), False),
-    StructField("__InsertTimestampUTC", TimestampType(), False),
-    ])
+        StructField("__Year", ShortType(), False),
+        StructField("__Month", ByteType(), False),
+        StructField("__Day", ByteType(), False),
+        StructField("__InsertTimestampUTC", TimestampType(), False),
+    ]
+)
 {%- endmacro %}
 
-{%- macro dml_column_declaration(model, column, source_name = None) -%}
- {%- set data_type_object = model.data_types.get_data_type(column.type) -%}
-    {%- set data_type = data_type_object.parquetType.upper() -%}
-    {%- set precision_scale = "" -%}
-    {%- if data_type_object.hasPrecision %}
-        {%- set precision_scale = "(%s" % (column.precision if column.precision != None else 38) -%}
-        {%- if data_type_object.hasScale -%}
-            {%- set precision_scale = precision_scale + ", %s" % (column.scale if column.scale != None else 18) -%}
-        {%- endif %}
-        {%- set precision_scale = precision_scale + ")" -%}
-    {%- endif %}
-    -- {{column.name}}
-    TRY_CAST(`{{source_name or column.name}}` AS {{data_type}}{{precision_scale}}) AS `{{column.name}}`,
+{%- macro dml_column_declaration(payload) -%}
+    {%- for column in payload %}
+    -- {{ column.name }}
+    TRY_CAST(`{{ column.source_name }}` AS {{ column.type }}) AS `{{column.name}}`,
     CASE
         {% if column.nullable -%}
-        WHEN `{{source_name or column.name}}` IS NULL THEN 0 -- NULLable COLUMN
+        WHEN `{{ column.source_name }}` IS NULL THEN 0 -- NULLable COLUMN
         {% else -%}
-        WHEN `{{source_name or column.name}}` IS NULL THEN  1 -- NOT NULL COLUMN
+        WHEN `{{ column.source_name }}` IS NULL THEN  1 -- NOT NULL COLUMN
         {%- endif %}
-        WHEN TRY_CAST(`{{source_name or column.name}}` AS {{data_type}}{{precision_scale}}) IS NULL THEN 1 -- NOT ABLE TO CAST
+        WHEN TRY_CAST(`{{ column.source_name }}` AS {{ column.type }}) IS NULL THEN 1 -- NOT ABLE TO CAST
         ELSE 0 -- ALL GOOD
-    END AS `{{column.name}}_hasCastError`,
+    END AS `{{ column.name }}_hasCastError`,
+    {%- endfor %}
 {%- endmacro -%}
 

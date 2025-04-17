@@ -3,19 +3,16 @@
 {% import 'macro/common_python_snippets.py.jinja2' as py_snippets %}
 
 # Set Gobal Variable for macro input ----------
-{%- set input_model = model %}
-{%- set stage_entity_list = model.get_stage_entity_list() %}
-{%- set raw_entity_list = model.get_raw_entity_list() %}
+{%- set payload = Payload(model) %}
+{%- set table_payload = payload.get_payload_dml_stage() %}
 
-{%- for entity in stage_entity_list %}
-    {%- set table = entity.model_object.entity %}
-    {%- set raw_table = custom_functions.get_table_from_list(table, raw_entity_list) %}
-    {%- set file_path = helper.build_path("notebooks", SystemProperties.stage_folder, "dml", table.dataProduct, table.dataModule, table.name) %}
-    {%- set attribute_mappings = helper.attribute_mapping_to_dict(entity.model_object.function.attributeMapping) %}
->>>>>>>>>> {{ file_path }}.py | py
+{%- for entity in table_payload %}
+    {%- set column_payload = payload.get_dml_stage_column(entity.locator) %}
+
+>>>>>>>>>> {{ entity.file_path }}.py | py
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DML for {{entity.model_object.type.value}}.{{table.dataProduct}}_{{table.dataModule}}_{{table.name}}
+# MAGIC # DML for {{ entity.layer_full_table_name }}
 
 # COMMAND ----------
 
@@ -24,21 +21,21 @@
 
 # COMMAND ----------
 
-{{ py_snippets.common_variables(entity.model_object.type.value, entity, SystemProperties) }}
+{{ py_snippets.common_variables(entity.layer_name, entity.table, SystemProperties) }}
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC # Read from RAW
 # MAGIC ## Source Table tags
-{%- for tag in raw_table.tags %}
+{%- for tag in entity.raw_table.tags %}
     # MAGIC - {{ tag }}
 {%- endfor %}
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Get latest data from '{{entity.model_object.type.value}}'
+# MAGIC ## Get latest data from '{{ entity.layer_name }}'
 
 # COMMAND ----------
 
@@ -62,18 +59,18 @@ if catalog.is_unity_enabled:
     raw_path = "/Volumes/%(catalog)s/%(zone)s/__files/%(product)s/%(module)s/%(table)s" % {
         "catalog": catalog_name,
         "zone": raw_zone,
-        "product": "{{table.dataProduct}}",
-        "module": "{{table.dataModule}}",
-        "table": "{{table.name}}",
+        "product": "{{ entity.table.dataProduct }}",
+        "module": "{{ entity.table.dataModule }}",
+        "table": "{{ entity.table.name }}",
     }
 else:
     raw_path = "abfss://%(container)s@%(lake)s.dfs.core.windows.net/%(zone)s/%(product)s/%(module)s/%(table)s" % {  # noqa: E501
         "container": container_name,
         "lake": data_lake_name,
         "zone": raw_zone,
-        "product": "{{ table.dataProduct }}",
-        "module": "{{ table.dataModule }}",
-        "table": "{{ table.name }}",
+        "product": "{{ entity.table.dataProduct }}",
+        "module": "{{ entity.table.dataModule }}",
+        "table": "{{ entity.table.name }}",
     }
 
 raw_df = spark.read.format("delta") \
@@ -102,9 +99,7 @@ typed_table_df = spark.sql(
     f"""
 SELECT
     -- Table columns
-{%- for column in table.attribute %}
-    {{- column_declaration.dml_column_declaration(model=input_model, column=column, source_name=attribute_mappings[column.name]) -}}
-{%- endfor %}
+    {{- column_declaration.dml_column_declaration(column_payload) -}}
     -- Technical columns
     CAST(__YEAR AS SMALLINT) AS __Year,
     CAST(__MONTH AS TINYINT) AS __Month,
@@ -127,8 +122,8 @@ typed_table_df.createOrReplaceTempView("typed_table_df")
 poison_df = spark.sql("""
 SELECT
     -- Table columns
-{%- for column in table.attribute %}
-    {{column.name}},
+{%- for column in entity.table.attribute %}
+    `{{ column.name }}`,
 {%- endfor %}
     -- Technical columns
     __Year,
@@ -137,11 +132,11 @@ SELECT
     __InsertTimestampUTC
 FROM typed_table_df
 WHERE
-{%- for column in table.attribute %}
+{%- for column in entity.table.attribute %}
     {%- if not loop.first %}
-    OR {{column.name}}_hasCastError > 0
+    OR `{{ column.name }}_hasCastError` > 0
     {%- else %}
-    {{column.name}}_hasCastError > 0
+    `{{ column.name }}_hasCastError` > 0
     {%- endif %}
 {%- endfor %}
 """)
@@ -153,7 +148,7 @@ if poison_df_count > 0:
     (
         poison_df.write.partitionBy("__Year", "__Month", "__Day", "__InsertTimestampUTC")
         .mode("append")
-        .parquet(f"abfss://{container_name}@{data_lake_name}.dfs.core.windows.net/{stage_zone}/{{table.dataProduct}}/{{table.dataModule}}/{{table.name}}_poison")
+        .parquet(f"abfss://{container_name}@{data_lake_name}.dfs.core.windows.net/{stage_zone}/{{entity.table.dataProduct}}/{{entity.table.dataModule}}/{{entity.table.name}}_poison")
     )
     print(
         "Extracted %s poison records in extraction" % (poison_df_count)
@@ -173,8 +168,8 @@ else:
 clean_df = spark.sql("""
 SELECT
     -- Table columns
-{%- for column in table.attribute %}
-    {{column.name}},
+{%- for column in entity.table.attribute %}
+    `{{ column.name }}`,
 {%- endfor %}
     -- Technical columns
     __Year,
@@ -183,11 +178,11 @@ SELECT
     __InsertTimestampUTC
 FROM typed_table_df
 WHERE
-{%- for column in table.attribute %}
+{%- for column in entity.table.attribute %}
     {%- if not loop.first %}
-    AND {{column.name}}_hasCastError == 0
+    AND `{{ column.name }}_hasCastError` == 0
     {%- else %}
-    {{column.name}}_hasCastError == 0
+    `{{ column.name }}_hasCastError` == 0
     {%- endif %}
 {%- endfor %}
 """)
@@ -196,17 +191,17 @@ clean_df.createOrReplaceTempView("clean_df")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Insert into '{{entity.model_object.type.value}}'
+# MAGIC ## Insert into '{{ entity.layer_full_table_name }}'
 
 # COMMAND ----------
 
 spark.sql("""
-INSERT INTO `%(catalog)s`.`%(database)s`.`{{table.dataProduct}}_{{table.dataModule}}_{{ helper.cleanup_name(table.name) }}`
+INSERT INTO `%(catalog)s`.`%(database)s`.`{{entity.table.dataProduct}}_{{entity.table.dataModule}}_{{ helper.cleanup_name(entity.table.name) }}`
 TABLE clean_df
 """ % {
   "catalog": catalog.name,
   "database": stage_zone,
 })
 
-<<<<<<<<<< {{ file_path }}.py | py
+<<<<<<<<<<
 {%- endfor -%}

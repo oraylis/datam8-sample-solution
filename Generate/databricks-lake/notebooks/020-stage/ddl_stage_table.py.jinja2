@@ -2,16 +2,15 @@
 {% import 'macro/column_declaration_stage.jinja2' as column_declaration %}
 {% import "macro/common_python_snippets.py.jinja2" as py_snippets %}
 
-{%- for entity in model.get_stage_entity_list() %}
-  {%- set table = entity.model_object.entity %}
-  {%- set layer_name = entity.model_object.type.value %}
-  {%- set full_table_name = table.dataProduct + "_" + table.dataModule + "_" + table.name %}
-  {%- set layer_full_table_name = layer_name + "." + full_table_name %}
-  {%- set file_path = helper.build_path("notebooks", SystemProperties().stage_folder, "ddl", table.dataProduct, table.dataModule, table.name) %}
->>>>>>>>>> {{ file_path }}.py | py
+{%- set payload = Payload(model) %}
+{%- set table_payload = payload.get_payload_ddl_stage() %}
+
+{%- for entity in table_payload %}
+    {%- set column_payload = payload.get_ddl_stage_column(entity.locator) %}
+>>>>>>>>>> {{ entity.file_path }}.py | py
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DDL for {{entity.model_object.type.value}}.{{full_table_name}}
+# MAGIC # DDL for {{ entity.layer_full_table_name }}
 
 # COMMAND ----------
 
@@ -24,11 +23,11 @@
 
 # COMMAND ----------
 
-{{ py_snippets.common_variables(entity.model_object.type.value, entity, SystemProperties) }}
+{{ py_snippets.common_variables(entity.layer_name, entity.table, SystemProperties) }}
 
 # COMMAND ----------
 
-{{- column_declaration.ddl_struct_type(model, table.attribute) }}
+{{ column_declaration.ddl_struct_type(column_payload) }}
 
 # COMMAND ----------
 
@@ -51,7 +50,7 @@ new_partitions = (
 ddl = """
 CREATE TABLE `%(catalog)s`.`%(schema)s`.`%(table)s`
 (
-    {{ column_declaration.ddl_column_declaration(model, table.attribute) }}
+    {{ column_declaration.ddl_column_declaration(column_payload) }}
 )
 USING DELTA
 PARTITIONED BY (
@@ -76,5 +75,5 @@ refactored_columns = []
 
 # COMMAND ----------
 
-<<<<<<<<<< {{ file_path }}.py | py
+<<<<<<<<<<
 {%- endfor -%}

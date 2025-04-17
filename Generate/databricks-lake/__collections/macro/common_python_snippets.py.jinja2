@@ -36,11 +36,10 @@ zone = {{ zone_name }}_zone
 # static values
 MAX_VALID_TO_DATE = "2999-12-31"
 
-{%- set table = entity.model_object.entity if entity else none %}
-{% if table -%}
-data_product = "{{ table.dataProduct }}"
-data_module = "{{ table.dataModule }}"
-table_name = "{{ table.name }}"
+{% if entity -%}
+data_product = "{{ entity.dataProduct }}"
+data_module = "{{ entity.dataModule }}"
+table_name = "{{ entity.name }}"
 full_table_name = "%s_%s_%s" % (data_product, data_module, table_name)
 {%- endif %}
 
