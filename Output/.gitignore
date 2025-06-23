@@ -1,8 +1,0 @@
-
-.databricks
-
-# remove all files
-*
-
-# allow the gitignore file
-!.gitignore

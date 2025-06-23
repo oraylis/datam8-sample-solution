@@ -1,0 +1,89 @@
+# This is a Databricks asset bundle definition for automation_smaple_solution.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: automation_sample_solution
+
+sync:
+  include:
+    - notebooks/
+
+permissions:
+  - group_name: ${var.owner}
+    level: "CAN_MANAGE"
+  - group_name: datam8_sample_dev_operations
+    level: CAN_RUN
+# all defaults are preset with dev values
+variables:
+  notebook_path:
+    description: Location of the notebooks withint the bundle
+    default: 'files/notebooks'
+  catalog_name:
+    description: The name of the unity catalog
+    default: datam8_sample_dev
+  environment:
+    description: The logical environment
+    default: dev
+  owner:
+    description: The default owner of all created databricks objects
+    default: datam8_sample_dev_owner
+  run_as_service_principal:
+    description: The service principal id used to run all jobs
+    default: 33ae34c4-68ce-4e17-a7cc-ac989f810750
+  datalake_name:
+    description: The storage account name
+    default: datam80adl0dev
+  datalake_container_name:
+    description: The storage account container name
+    default: lakehousesample
+  unpause_schedules:
+    description: Override the default schedule status
+    default: PAUSED
+
+targets:
+  # The 'dev' target, used for development. This is the default.
+  dev-personal:
+    # We use 'mode: development' to indicate this is a personal development copy:
+    # - Deployed resources get prefixed with '[dev my_user_name]'
+    # - Any job schedules and triggers are paused by default
+    # - The 'development' mode is used for Delta Live Tables pipelines
+    mode: development
+    default: true
+    workspace:
+      host: https://adb-7233594485007442.67.azuredatabricks.net
+      root_path: ~/.bundle/${bundle.name}/${bundle.target}
+
+  dev:
+    presets:
+      name_prefix: "[${bundle.target}] "      # prefix all resource names with testing_
+      pipelines_development: true  # set development to true for pipelines
+      trigger_pause_status: PAUSED # set pause_status to PAUSED for all triggers and schedules
+      jobs_max_concurrent_runs: 10 # set max_concurrent runs to 10 for all jobs
+      tags:
+        dev: ${bundle.target}
+    workspace:
+      host: https://adb-7233594485007442.67.azuredatabricks.net
+      root_path: /etl/${bundle.name}/${bundle.target}
+    run_as:
+      service_principal_name: ${var.run_as_service_principal}
+
+  # INFO: add more targets if necessary
+
+  # The 'prod' target, used for production deployments.
+  prod:
+    # We use 'mode: production' to indicate this is a production deployment.
+    # Doing so enables strict verification of the settings below.
+    mode: production
+    variables:
+      environment: prod
+      owner: datam8_sample_dev_owner
+      catalog_name: datam8_sample_dev
+      datalake_name: datam80adl0dev
+      datalake_container_name: lakehousesample
+      run_as_service_principal: 8ccc6336-212c-47c8-8c77-7dac0cb69cb0
+      unpause_schedules: UNPAUSED
+    workspace:
+      host: https://adb-6773292217826798.73.azuredatabricks.net
+      root_path: /etl/${bundle.name}/${bundle.target}
+    run_as:
+      service_principal_name: ${var.run_as_service_principal}
+

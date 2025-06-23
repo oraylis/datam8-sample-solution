@@ -1,0 +1,419 @@
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # DML for stage.Sales_Product_Product
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # Initialize base settings
+
+# COMMAND ----------
+
+
+# DBTITLE 1,Initialize Migration Framework
+# MAGIC %run ../../../../000-utils/MigrationFramework
+
+# COMMAND ----------
+
+dbutils.widgets.text("sandbox", "_", "Sandbox")
+dbutils.widgets.dropdown(
+    "run_mode",
+    "INFO",
+    ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+    "Run Mode",
+)
+
+# COMMAND ----------
+
+env = spark.conf.get("datam8.environment")
+catalog_name = spark.conf.get(
+    "datam8.catalog.name", spark.catalog.currentCatalog())
+owner = spark.conf.get("datam8.catalog.owner")
+run_mode = dbutils.widgets.get("run_mode")
+sandbox = dbutils.widgets.get("sandbox")
+
+# COMMAND ----------
+
+# DBTITLE 1,Get variable values
+# configsif entity else none
+data_lake_name = spark.conf.get("datam8.datalake.name", "datam80adl0dev")
+container_name = spark.conf.get(
+    "datam8.datalake.container.name", "lakehousesample")
+raw_zone = spark.conf.get("datam8.zone.raw.name", "raw")
+stage_zone = spark.conf.get("datam8.zone.stage.name", "stage")
+core_zone = spark.conf.get("datam8.zone.core.name", "core")
+curated_zone = spark.conf.get("datam8.zone.curated.name", "curated")
+zone = stage_zone
+
+# static values
+MAX_VALID_TO_DATE = "2999-12-31"
+data_product = "Sales"
+data_module = "Product"
+table_name = "Product"
+full_table_name = "%s_%s_%s" % (data_product, data_module, table_name)
+
+# COMMAND ----------
+
+catalog = Catalog(catalog_name)
+catalog.schema = zone
+catalog.set_active()
+
+if not catalog.is_unity_enabled:
+    spark.conf.set(
+        "fs.azure.account.key.%s.dfs.core.windows.net" % data_lake_name,
+        dbutils.secrets.get(
+            "akv_standard", "fs-azure-account-key-%s-dfs-core-windows-net" % data_lake_name),
+    )
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # Read from RAW
+# MAGIC ## Source Table tags
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Get latest data from 'stage'
+
+# COMMAND ----------
+
+last_partition_df = spark.sql(
+    f"""
+    select nvl(max(__InsertTimestampUTC), to_timestamp('1970-01-01', 'yyyy-MM-dd')) as LastPartition
+    from {stage_zone}.{full_table_name}
+"""
+)
+last_partition = last_partition_df.first()[0]
+print(f"Last partition in '{stage_zone}': {last_partition}")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Get delta from RAW
+
+# COMMAND ----------
+
+if catalog.is_unity_enabled:
+    raw_path = "/Volumes/%(catalog)s/%(zone)s/__files/%(product)s/%(module)s/%(table)s" % {
+        "catalog": catalog_name,
+        "zone": raw_zone,
+        "product": "Sales",
+        "module": "Product",
+        "table": "Product",
+    }
+else:
+    raw_path = "abfss://%(container)s@%(lake)s.dfs.core.windows.net/%(zone)s/%(product)s/%(module)s/%(table)s" % {  # noqa: E501
+        "container": container_name,
+        "lake": data_lake_name,
+        "zone": raw_zone,
+        "product": "Sales",
+        "module": "Product",
+        "table": "Product",
+    }
+
+raw_df = spark.read.format("delta") \
+    .load(raw_path) \
+    .filter("__InsertTimestampUTC > '%s'" % last_partition)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # Write to STAGE
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Enforce data types
+# MAGIC * Enforce data types
+# MAGIC * Identify records with non enforcable data types
+
+# COMMAND ----------
+
+raw_df.createOrReplaceTempView("raw_df")
+
+# COMMAND ----------
+
+typed_table_df = spark.sql(
+    f"""
+SELECT
+    -- Table columns
+    -- ProductID
+    TRY_CAST(`ProductID` AS INT) AS `ProductID`,
+    CASE
+        WHEN `ProductID` IS NULL THEN  1 -- NOT NULL COLUMN
+        WHEN TRY_CAST(`ProductID` AS INT) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `ProductID_hasCastError`,
+    -- Name
+    TRY_CAST(`Name` AS STRING) AS `Name`,
+    CASE
+        WHEN `Name` IS NULL THEN  1 -- NOT NULL COLUMN
+        WHEN TRY_CAST(`Name` AS STRING) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `Name_hasCastError`,
+    -- ProductNumber
+    TRY_CAST(`ProductNumber` AS STRING) AS `ProductNumber`,
+    CASE
+        WHEN `ProductNumber` IS NULL THEN  1 -- NOT NULL COLUMN
+        WHEN TRY_CAST(`ProductNumber` AS STRING) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `ProductNumber_hasCastError`,
+    -- Color
+    TRY_CAST(`Color` AS STRING) AS `Color`,
+    CASE
+        WHEN `Color` IS NULL THEN 0 -- NULLable COLUMN
+        
+        WHEN TRY_CAST(`Color` AS STRING) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `Color_hasCastError`,
+    -- StandardCost
+    TRY_CAST(`StandardCost` AS DECIMAL(19,4)) AS `StandardCost`,
+    CASE
+        WHEN `StandardCost` IS NULL THEN  1 -- NOT NULL COLUMN
+        WHEN TRY_CAST(`StandardCost` AS DECIMAL(19,4)) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `StandardCost_hasCastError`,
+    -- ListPrice
+    TRY_CAST(`ListPrice` AS DECIMAL(19,4)) AS `ListPrice`,
+    CASE
+        WHEN `ListPrice` IS NULL THEN  1 -- NOT NULL COLUMN
+        WHEN TRY_CAST(`ListPrice` AS DECIMAL(19,4)) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `ListPrice_hasCastError`,
+    -- Size
+    TRY_CAST(`Size` AS STRING) AS `Size`,
+    CASE
+        WHEN `Size` IS NULL THEN 0 -- NULLable COLUMN
+        
+        WHEN TRY_CAST(`Size` AS STRING) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `Size_hasCastError`,
+    -- Weight
+    TRY_CAST(`Weight` AS DECIMAL(8, 2)) AS `Weight`,
+    CASE
+        WHEN `Weight` IS NULL THEN 0 -- NULLable COLUMN
+        
+        WHEN TRY_CAST(`Weight` AS DECIMAL(8, 2)) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `Weight_hasCastError`,
+    -- ProductCategoryID
+    TRY_CAST(`ProductCategoryID` AS INT) AS `ProductCategoryID`,
+    CASE
+        WHEN `ProductCategoryID` IS NULL THEN 0 -- NULLable COLUMN
+        
+        WHEN TRY_CAST(`ProductCategoryID` AS INT) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `ProductCategoryID_hasCastError`,
+    -- ProductModelID
+    TRY_CAST(`ProductModelID` AS INT) AS `ProductModelID`,
+    CASE
+        WHEN `ProductModelID` IS NULL THEN 0 -- NULLable COLUMN
+        
+        WHEN TRY_CAST(`ProductModelID` AS INT) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `ProductModelID_hasCastError`,
+    -- SellStartDate
+    TRY_CAST(`SellStartDate` AS TIMESTAMP) AS `SellStartDate`,
+    CASE
+        WHEN `SellStartDate` IS NULL THEN  1 -- NOT NULL COLUMN
+        WHEN TRY_CAST(`SellStartDate` AS TIMESTAMP) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `SellStartDate_hasCastError`,
+    -- SellEndDate
+    TRY_CAST(`SellEndDate` AS TIMESTAMP) AS `SellEndDate`,
+    CASE
+        WHEN `SellEndDate` IS NULL THEN 0 -- NULLable COLUMN
+        
+        WHEN TRY_CAST(`SellEndDate` AS TIMESTAMP) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `SellEndDate_hasCastError`,
+    -- DiscontinuedDate
+    TRY_CAST(`DiscontinuedDate` AS TIMESTAMP) AS `DiscontinuedDate`,
+    CASE
+        WHEN `DiscontinuedDate` IS NULL THEN 0 -- NULLable COLUMN
+        
+        WHEN TRY_CAST(`DiscontinuedDate` AS TIMESTAMP) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `DiscontinuedDate_hasCastError`,
+    -- ThumbNailPhoto
+    TRY_CAST(`ThumbNailPhoto` AS BINARY) AS `ThumbNailPhoto`,
+    CASE
+        WHEN `ThumbNailPhoto` IS NULL THEN 0 -- NULLable COLUMN
+        
+        WHEN TRY_CAST(`ThumbNailPhoto` AS BINARY) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `ThumbNailPhoto_hasCastError`,
+    -- ThumbnailPhotoFileName
+    TRY_CAST(`ThumbnailPhotoFileName` AS STRING) AS `ThumbnailPhotoFileName`,
+    CASE
+        WHEN `ThumbnailPhotoFileName` IS NULL THEN 0 -- NULLable COLUMN
+        
+        WHEN TRY_CAST(`ThumbnailPhotoFileName` AS STRING) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `ThumbnailPhotoFileName_hasCastError`,
+    -- rowguid
+    TRY_CAST(`rowguid` AS STRING) AS `rowguid`,
+    CASE
+        WHEN `rowguid` IS NULL THEN  1 -- NOT NULL COLUMN
+        WHEN TRY_CAST(`rowguid` AS STRING) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `rowguid_hasCastError`,
+    -- ModifiedDate
+    TRY_CAST(`ModifiedDate` AS TIMESTAMP) AS `ModifiedDate`,
+    CASE
+        WHEN `ModifiedDate` IS NULL THEN  1 -- NOT NULL COLUMN
+        WHEN TRY_CAST(`ModifiedDate` AS TIMESTAMP) IS NULL THEN 1 -- NOT ABLE TO CAST
+        ELSE 0 -- ALL GOOD
+    END AS `ModifiedDate_hasCastError`,
+    -- Technical columns
+    CAST(__YEAR AS SMALLINT) AS __Year,
+    CAST(__MONTH AS TINYINT) AS __Month,
+    CAST(__DAY AS TINYINT) AS __Day,
+    CAST(__InsertTimestampUTC AS TIMESTAMP) AS __InsertTimestampUTC
+FROM raw_df
+"""
+)
+typed_table_df.createOrReplaceTempView("typed_table_df")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Extract poison records
+# MAGIC * Extract poison records
+# MAGIC * Write to poison table
+
+# COMMAND ----------
+
+poison_df = spark.sql("""
+SELECT
+    -- Table columns
+    ProductID,
+    Name,
+    ProductNumber,
+    Color,
+    StandardCost,
+    ListPrice,
+    Size,
+    Weight,
+    ProductCategoryID,
+    ProductModelID,
+    SellStartDate,
+    SellEndDate,
+    DiscontinuedDate,
+    ThumbNailPhoto,
+    ThumbnailPhotoFileName,
+    rowguid,
+    ModifiedDate,
+    -- Technical columns
+    __Year,
+    __Month,
+    __Day,
+    __InsertTimestampUTC
+FROM typed_table_df
+WHERE
+    ProductID_hasCastError > 0
+    OR Name_hasCastError > 0
+    OR ProductNumber_hasCastError > 0
+    OR Color_hasCastError > 0
+    OR StandardCost_hasCastError > 0
+    OR ListPrice_hasCastError > 0
+    OR Size_hasCastError > 0
+    OR Weight_hasCastError > 0
+    OR ProductCategoryID_hasCastError > 0
+    OR ProductModelID_hasCastError > 0
+    OR SellStartDate_hasCastError > 0
+    OR SellEndDate_hasCastError > 0
+    OR DiscontinuedDate_hasCastError > 0
+    OR ThumbNailPhoto_hasCastError > 0
+    OR ThumbnailPhotoFileName_hasCastError > 0
+    OR rowguid_hasCastError > 0
+    OR ModifiedDate_hasCastError > 0
+""")
+
+# COMMAND ----------
+
+poison_df_count = poison_df.count()
+if poison_df_count > 0:
+    (
+        poison_df.write.partitionBy(
+            "__Year", "__Month", "__Day", "__InsertTimestampUTC")
+        .mode("append")
+        .parquet(f"abfss://{container_name}@{data_lake_name}.dfs.core.windows.net/{stage_zone}/Sales/Product/Product_poison")
+    )
+    print(
+        "Extracted %s poison records in extraction" % (poison_df_count)
+    )
+else:
+    print("No poison records present")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Extract valid records
+# MAGIC * Extract valid records
+# MAGIC * Write to target table
+
+# COMMAND ----------
+
+clean_df = spark.sql("""
+SELECT
+    -- Table columns
+    ProductID,
+    Name,
+    ProductNumber,
+    Color,
+    StandardCost,
+    ListPrice,
+    Size,
+    Weight,
+    ProductCategoryID,
+    ProductModelID,
+    SellStartDate,
+    SellEndDate,
+    DiscontinuedDate,
+    ThumbNailPhoto,
+    ThumbnailPhotoFileName,
+    rowguid,
+    ModifiedDate,
+    -- Technical columns
+    __Year,
+    __Month,
+    __Day,
+    __InsertTimestampUTC
+FROM typed_table_df
+WHERE
+    ProductID_hasCastError == 0
+    AND Name_hasCastError == 0
+    AND ProductNumber_hasCastError == 0
+    AND Color_hasCastError == 0
+    AND StandardCost_hasCastError == 0
+    AND ListPrice_hasCastError == 0
+    AND Size_hasCastError == 0
+    AND Weight_hasCastError == 0
+    AND ProductCategoryID_hasCastError == 0
+    AND ProductModelID_hasCastError == 0
+    AND SellStartDate_hasCastError == 0
+    AND SellEndDate_hasCastError == 0
+    AND DiscontinuedDate_hasCastError == 0
+    AND ThumbNailPhoto_hasCastError == 0
+    AND ThumbnailPhotoFileName_hasCastError == 0
+    AND rowguid_hasCastError == 0
+    AND ModifiedDate_hasCastError == 0
+""")
+clean_df.createOrReplaceTempView("clean_df")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Insert into 'stage'
+
+# COMMAND ----------
+
+spark.sql("""
+INSERT INTO `%(catalog)s`.`%(database)s`.`Sales_Product_Product`
+TABLE clean_df
+""" % {
+    "catalog": catalog.name,
+    "database": stage_zone,
+})
