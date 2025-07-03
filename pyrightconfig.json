@@ -1,0 +1,7 @@
+{
+  "include": [
+    "./Generate/databricks-lake/__modules/",
+  ],
+  "venvPath": ".venv",
+  "venv": "."
+}

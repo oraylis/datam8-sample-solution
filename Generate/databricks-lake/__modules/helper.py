@@ -1,7 +1,8 @@
-import re
 import json
 import math
+import re
 from typing import Any
+from dm8gen.Generated.StageModelEntry import AttributesMapping
 
 
 class Helper:
@@ -95,11 +96,11 @@ class Helper:
         return Helper.cleanup_path(n)
 
     @staticmethod
-    def attribute_mapping_to_dict(attribute_mapping: list[dict]) -> dict:
+    def attribute_mapping_to_dict(attribute_mapping: list[AttributesMapping]) -> dict:
         """Converts a list of attribute mappings into a dictionary.
 
         Args:
-            attribute_mapping (list): List of dictionaries representing attribute mappings.
+            attribute_mapping (AttributesMapping): List of dictionaries representing attribute mappings.
 
         Returns:
             dict: Dictionary with attribute mappings.

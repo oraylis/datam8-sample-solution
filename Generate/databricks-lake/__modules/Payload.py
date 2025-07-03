@@ -1,14 +1,24 @@
-from dm8gen.Factory import Model, StageEntityFactory, RawEntityFactory
-from dm8gen.Generated.StageModelEntry import StageEntity, Type as StageType, StageFunction
-from dm8gen.Generated.RawModelEntry import RawEntity
-from dm8gen.Generated.DataTypes import DataType
-from helper import Helper
-from system_properties import SystemProperties
 from dataclasses import dataclass
 from typing import cast
 
+from dm8gen.Factory import Model, StageEntityFactory
+from dm8gen.Generated.DataTypes import DataType
+from dm8gen.Generated.RawModelEntry import RawEntity
+from dm8gen.Generated.StageModelEntry import StageEntity, StageFunction
+from dm8gen.Generated.StageModelEntry import Type as StageType
+from helper import Helper
+from system_properties import SystemProperties
+
 
 class Payload:
+    """Logic to create jinja2 payloads from DataM8 models.
+
+    Attributes
+    ----------
+    model : Model
+        The datam8 used to create jinja2 payloads.
+    """
+
     def __init__(self, model: Model):
         self.model = model
 
@@ -23,6 +33,13 @@ class Payload:
         raw_table: RawEntity | None = None
 
     def get_payload_ddl_stage(self) -> list[StagePayload]:
+        """Create payload for DDL stage templates.
+        
+        Returns
+        -------
+        list[StagePayload]
+            A list of `StagePayload` objects to render in templates.
+        """
         entity_list: list[tuple[StageEntity, StageType, str]] = [
             (entity.model_object.entity, entity.model_object.type, entity.locator)
             for entity in self.model.get_stage_entity_list()
@@ -99,7 +116,7 @@ class Payload:
 
         payload: list[Payload.StageColumnDDL] = []
 
-        for column in entity.model_object.entity.attribute:
+        for column in cast(Attribute, entity.model_object.entity.attribute):
             data_type = cast(DataType, self.model.data_types.get_data_type(column.type))
             _parquet_type = data_type.parquetType
             nullabiltiy = "" if column.nullable else " NOT NULL"

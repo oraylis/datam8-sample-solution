@@ -1,6 +1,7 @@
 import json
 import os
 import math
+from dm8gen.Generated.StageModelEntry import StageEntity
 
 
 class CustomFunctions:
@@ -97,11 +98,11 @@ class CustomFunctions:
         return result
 
     @staticmethod
-    def get_table_from_list(table: str, entity_list: list):
+    def get_table_from_list(table: StageEntity, entity_list: list):
         """Get a table from a list of entities.
 
         Args:
-            table (str): Table to retrieve.
+            table (StageEntity): Table to retrieve.
             entity_list (list): List of entities.
 
         Returns:
