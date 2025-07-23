@@ -1,53 +1,116 @@
 {
-    "type": "stage",
+    "$schema": "../datam8-model/schema/ModelDataEntity.json",
+    "type": "entity",
     "entity": {
-        "dataModule": "Product",
-        "dataProduct": "Sales",
         "name": "ProductDescription",
         "displayName": "Product_Description",
+        "description": "Product description text entity",
+        "tags": [],
+        "parameters": [],
         "attribute": [
             {
+                "ordinalNumber": 1,
                 "name": "ProductDescriptionID",
-                "type": "int",
-                "nullable": false
+                "displayName": "ProductDescriptionID",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": false,
+                "type": "BK",
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 2,
                 "name": "Description",
-                "type": "string",
+                "displayName": "Description",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 400,
-                "nullable": false
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 3,
                 "name": "rowguid",
-                "type": "uniqueidentifier",
-                "nullable": false
+                "displayName": "rowguid",
+                "description": "",
+                "attributeType": "",
+                "dataType": "uniqueidentifier",
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 4,
                 "name": "ModifiedDate",
-                "type": "datetime",
-                "nullable": false
+                "displayName": "ModifiedDate",
+                "description": "",
+                "attributeType": "",
+                "dataType": "datetime",
+                "nullable": false,
+                "tags": []
             }
         ]
     },
-    "function": {
-        "dataSource": "__meta__",
-        "sourceLocation": "raw/Sales/Product/ProductDescription",
-        "attributeMapping": [
-            {
-                "source": "ProductDescriptionID",
-                "target": "ProductDescriptionID"
+    "functions": {
+        "trigger": {
+            "mode": "schedule",
+            "schedule": {
+                "cronExpression": "0 1 * * *",
+                "timezone": "UTC",
+                "maxRetries": 3
+            }
+        },
+        "store": {
+            "write_mode": "merge",
+            "merge": {
+                "business_key": [
+                    "ProductDescriptionID"
+                ],
+                "sequential": true
             },
-            {
-                "source": "Description",
-                "target": "Description"
+            "layout": {
+                "type": "liquid_clustering",
+                "keys": [
+                    "ProductDescriptionID"
+                ]
             },
+            "maintenance": {
+                "retention": "7 days"
+            }
+        },
+        "sources": [
             {
-                "source": "rowguid",
-                "target": "rowguid"
-            },
-            {
-                "source": "ModifiedDate",
-                "target": "ModifiedDate"
+                "type": "source",
+                "source": {
+                    "dataSource": "AdventureWorks",
+                    "sourceLocation": "[SalesLT].[ProductDescription]",
+                    "extract": {
+                        "type": "delta",
+                        "delta": {
+                            "column": "ModifiedDate"
+                        }
+                    },
+                    "mapping": [
+                        {
+                            "targetName": "ProductDescriptionID",
+                            "sourceName": "[ProductDescriptionID]"
+                        },
+                        {
+                            "targetName": "Description",
+                            "sourceName": "[Description]"
+                        },
+                        {
+                            "targetName": "rowguid",
+                            "sourceName": "[rowguid]"
+                        },
+                        {
+                            "targetName": "ModifiedDate",
+                            "sourceName": "[ModifiedDate]"
+                        }
+                    ]
+                }
             }
         ]
     }

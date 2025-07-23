@@ -1,62 +1,136 @@
 {
-    "type": "stage",
+    "$schema": "../datam8-model/schema/ModelDataEntity.json",
+    "type": "entity",
     "entity": {
-        "dataModule": "Product",
-        "dataProduct": "Sales",
         "name": "ProductModelProductDescription",
         "displayName": "Product_Model_Product_Description",
+        "description": "Product model to description relationship entity",
+        "tags": [],
+        "parameters": [],
         "attribute": [
             {
+                "ordinalNumber": 1,
                 "name": "ProductModelID",
-                "type": "int",
-                "nullable": false
+                "displayName": "ProductModelID",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": false,
+                "type": "BK",
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 2,
                 "name": "ProductDescriptionID",
-                "type": "int",
-                "nullable": false
+                "displayName": "ProductDescriptionID",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": false,
+                "type": "BK",
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 3,
                 "name": "Culture",
-                "type": "string",
+                "displayName": "Culture",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 6,
-                "nullable": false
+                "nullable": false,
+                "type": "BK",
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 4,
                 "name": "rowguid",
-                "type": "uniqueidentifier",
-                "nullable": false
+                "displayName": "rowguid",
+                "description": "",
+                "attributeType": "",
+                "dataType": "uniqueidentifier",
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 5,
                 "name": "ModifiedDate",
-                "type": "datetime",
-                "nullable": false
+                "displayName": "ModifiedDate",
+                "description": "",
+                "attributeType": "",
+                "dataType": "datetime",
+                "nullable": false,
+                "tags": []
             }
         ]
     },
-    "function": {
-        "dataSource": "__meta__",
-        "sourceLocation": "raw/Sales/Product/ProductModelProductDescription",
-        "attributeMapping": [
-            {
-                "source": "ProductModelID",
-                "target": "ProductModelID"
+    "functions": {
+        "trigger": {
+            "mode": "schedule",
+            "schedule": {
+                "cronExpression": "0 1 * * *",
+                "timezone": "UTC",
+                "maxRetries": 3
+            }
+        },
+        "store": {
+            "write_mode": "merge",
+            "merge": {
+                "business_key": [
+                    "ProductModelID",
+                    "ProductDescriptionID",
+                    "Culture"
+                ],
+                "sequential": true
             },
-            {
-                "source": "ProductDescriptionID",
-                "target": "ProductDescriptionID"
+            "layout": {
+                "type": "liquid_clustering",
+                "keys": [
+                    "ProductModelID"
+                ]
             },
+            "maintenance": {
+                "retention": "7 days"
+            }
+        },
+        "sources": [
             {
-                "source": "Culture",
-                "target": "Culture"
-            },
-            {
-                "source": "rowguid",
-                "target": "rowguid"
-            },
-            {
-                "source": "ModifiedDate",
-                "target": "ModifiedDate"
+                "type": "source",
+                "source": {
+                    "dataSource": "AdventureWorks",
+                    "sourceLocation": "[SalesLT].[ProductModelProductDescription]",
+                    "extract": {
+                        "type": "delta",
+                        "delta": {
+                            "column": "ModifiedDate"
+                        }
+                    },
+                    "mapping": [
+                        {
+                            "targetName": "ProductModelID",
+                            "sourceName": "[ProductModelID]"
+                        },
+                        {
+                            "targetName": "ProductDescriptionID",
+                            "sourceName": "[ProductDescriptionID]"
+                        },
+                        {
+                            "targetName": "Culture",
+                            "sourceName": "[Culture]"
+                        },
+                        {
+                            "targetName": "rowguid",
+                            "sourceName": "[rowguid]"
+                        },
+                        {
+                            "targetName": "ModifiedDate",
+                            "sourceName": "[ModifiedDate]"
+                        }
+                    ]
+                }
             }
         ]
     }
