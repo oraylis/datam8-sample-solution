@@ -1,195 +1,331 @@
 {
-    "type": "stage",
+    "$schema": "../datam8-model/schema/ModelDataEntity.json",
+    "type": "entity",
     "entity": {
-        "dataModule": "Customer",
-        "dataProduct": "Sales",
         "name": "DIMTIME",
         "displayName": "DIMTIME",
+        "description": "Time dimension entity for calendar and fiscal dates",
+        "tags": [],
+        "parameters": [],
         "attribute": [
             {
+                "ordinalNumber": 1,
                 "name": "TIMEKEY",
-                "type": "int",
-                "nullable": false
+                "displayName": "TIMEKEY",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": false,
+                "type": "BK",
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 2,
                 "name": "FULLDATEALTERNATEKEY",
-                "type": "datetime",
-                "nullable": true
+                "displayName": "FULLDATEALTERNATEKEY",
+                "description": "",
+                "attributeType": "",
+                "dataType": "datetime",
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 3,
                 "name": "DAYNUMBEROFWEEK",
-                "type": "int",
-                "nullable": true
+                "displayName": "DAYNUMBEROFWEEK",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 4,
                 "name": "ENGLISHDAYNAMEOFWEEK",
-                "type": "string",
+                "displayName": "ENGLISHDAYNAMEOFWEEK",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 10,
-                "nullable": true
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 5,
                 "name": "SPANISHDAYNAMEOFWEEK",
-                "type": "string",
+                "displayName": "SPANISHDAYNAMEOFWEEK",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 10,
-                "nullable": true
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 6,
                 "name": "FRENCHDAYNAMEOFWEEK",
-                "type": "string",
+                "displayName": "FRENCHDAYNAMEOFWEEK",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 10,
-                "nullable": true
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 7,
                 "name": "DAYNUMBEROFMONTH",
-                "type": "int",
-                "nullable": true
+                "displayName": "DAYNUMBEROFMONTH",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 8,
                 "name": "DAYNUMBEROFYEAR",
-                "type": "int",
-                "nullable": true
+                "displayName": "DAYNUMBEROFYEAR",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 9,
                 "name": "WEEKNUMBEROFYEAR",
-                "type": "int",
-                "nullable": true
+                "displayName": "WEEKNUMBEROFYEAR",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 10,
                 "name": "ENGLISHMONTHNAME",
-                "type": "string",
+                "displayName": "ENGLISHMONTHNAME",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 10,
-                "nullable": true
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 11,
                 "name": "SPANISHMONTHNAME",
-                "type": "string",
+                "displayName": "SPANISHMONTHNAME",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 10,
-                "nullable": true
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 12,
                 "name": "FRENCHMONTHNAME",
-                "type": "string",
+                "displayName": "FRENCHMONTHNAME",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 10,
-                "nullable": true
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 13,
                 "name": "MONTHNUMBEROFYEAR",
-                "type": "int",
-                "nullable": true
+                "displayName": "MONTHNUMBEROFYEAR",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 14,
                 "name": "CALENDARQUARTER",
-                "type": "int",
-                "nullable": true
+                "displayName": "CALENDARQUARTER",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 15,
                 "name": "CALENDARYEAR",
-                "type": "string",
+                "displayName": "CALENDARYEAR",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 4,
-                "nullable": true
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 16,
                 "name": "CALENDARSEMESTER",
-                "type": "int",
-                "nullable": true
+                "displayName": "CALENDARSEMESTER",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 17,
                 "name": "FISCALQUARTER",
-                "type": "int",
-                "nullable": true
+                "displayName": "FISCALQUARTER",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 18,
                 "name": "FISCALYEAR",
-                "type": "string",
+                "displayName": "FISCALYEAR",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 4,
-                "nullable": true
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 19,
                 "name": "FISCALSEMESTER",
-                "type": "int",
-                "nullable": true
+                "displayName": "FISCALSEMESTER",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": true,
+                "tags": []
             }
         ]
     },
-    "function": {
-        "dataSource": "__meta__",
-        "sourceLocation": "raw/Sales/Customer/DIMTIME",
-        "attributeMapping": [
-            {
-                "source": "TIMEKEY",
-                "target": "TIMEKEY"
+    "functions": {
+        "trigger": {
+            "mode": "schedule",
+            "schedule": {
+                "cronExpression": "0 1 * * *",
+                "timezone": "UTC",
+                "maxRetries": 3
+            }
+        },
+        "store": {
+            "write_mode": "merge",
+            "merge": {
+                "business_key": [
+                    "TIMEKEY"
+                ],
+                "sequential": true
             },
-            {
-                "source": "FULLDATEALTERNATEKEY",
-                "target": "FULLDATEALTERNATEKEY"
+            "layout": {
+                "type": "liquid_clustering",
+                "keys": [
+                    "TIMEKEY"
+                ]
             },
+            "maintenance": {
+                "retention": "7 days"
+            }
+        },
+        "sources": [
             {
-                "source": "DAYNUMBEROFWEEK",
-                "target": "DAYNUMBEROFWEEK"
-            },
-            {
-                "source": "ENGLISHDAYNAMEOFWEEK",
-                "target": "ENGLISHDAYNAMEOFWEEK"
-            },
-            {
-                "source": "SPANISHDAYNAMEOFWEEK",
-                "target": "SPANISHDAYNAMEOFWEEK"
-            },
-            {
-                "source": "FRENCHDAYNAMEOFWEEK",
-                "target": "FRENCHDAYNAMEOFWEEK"
-            },
-            {
-                "source": "DAYNUMBEROFMONTH",
-                "target": "DAYNUMBEROFMONTH"
-            },
-            {
-                "source": "DAYNUMBEROFYEAR",
-                "target": "DAYNUMBEROFYEAR"
-            },
-            {
-                "source": "WEEKNUMBEROFYEAR",
-                "target": "WEEKNUMBEROFYEAR"
-            },
-            {
-                "source": "ENGLISHMONTHNAME",
-                "target": "ENGLISHMONTHNAME"
-            },
-            {
-                "source": "SPANISHMONTHNAME",
-                "target": "SPANISHMONTHNAME"
-            },
-            {
-                "source": "FRENCHMONTHNAME",
-                "target": "FRENCHMONTHNAME"
-            },
-            {
-                "source": "MONTHNUMBEROFYEAR",
-                "target": "MONTHNUMBEROFYEAR"
-            },
-            {
-                "source": "CALENDARQUARTER",
-                "target": "CALENDARQUARTER"
-            },
-            {
-                "source": "CALENDARYEAR",
-                "target": "CALENDARYEAR"
-            },
-            {
-                "source": "CALENDARSEMESTER",
-                "target": "CALENDARSEMESTER"
-            },
-            {
-                "source": "FISCALQUARTER",
-                "target": "FISCALQUARTER"
-            },
-            {
-                "source": "FISCALYEAR",
-                "target": "FISCALYEAR"
-            },
-            {
-                "source": "FISCALSEMESTER",
-                "target": "FISCALSEMESTER"
+                "type": "source",
+                "source": {
+                    "dataSource": "AdventureWorks",
+                    "sourceLocation": "[dbo].[DIMTIME]",
+                    "extract": {
+                        "type": "full",
+                        "full": {}
+                    },
+                    "mapping": [
+                        {
+                            "targetName": "TIMEKEY",
+                            "sourceName": "[TIMEKEY]"
+                        },
+                        {
+                            "targetName": "FULLDATEALTERNATEKEY",
+                            "sourceName": "[FULLDATEALTERNATEKEY]"
+                        },
+                        {
+                            "targetName": "DAYNUMBEROFWEEK",
+                            "sourceName": "[DAYNUMBEROFWEEK]"
+                        },
+                        {
+                            "targetName": "ENGLISHDAYNAMEOFWEEK",
+                            "sourceName": "[ENGLISHDAYNAMEOFWEEK]"
+                        },
+                        {
+                            "targetName": "SPANISHDAYNAMEOFWEEK",
+                            "sourceName": "[SPANISHDAYNAMEOFWEEK]"
+                        },
+                        {
+                            "targetName": "FRENCHDAYNAMEOFWEEK",
+                            "sourceName": "[FRENCHDAYNAMEOFWEEK]"
+                        },
+                        {
+                            "targetName": "DAYNUMBEROFMONTH",
+                            "sourceName": "[DAYNUMBEROFMONTH]"
+                        },
+                        {
+                            "targetName": "DAYNUMBEROFYEAR",
+                            "sourceName": "[DAYNUMBEROFYEAR]"
+                        },
+                        {
+                            "targetName": "WEEKNUMBEROFYEAR",
+                            "sourceName": "[WEEKNUMBEROFYEAR]"
+                        },
+                        {
+                            "targetName": "ENGLISHMONTHNAME",
+                            "sourceName": "[ENGLISHMONTHNAME]"
+                        },
+                        {
+                            "targetName": "SPANISHMONTHNAME",
+                            "sourceName": "[SPANISHMONTHNAME]"
+                        },
+                        {
+                            "targetName": "FRENCHMONTHNAME",
+                            "sourceName": "[FRENCHMONTHNAME]"
+                        },
+                        {
+                            "targetName": "MONTHNUMBEROFYEAR",
+                            "sourceName": "[MONTHNUMBEROFYEAR]"
+                        },
+                        {
+                            "targetName": "CALENDARQUARTER",
+                            "sourceName": "[CALENDARQUARTER]"
+                        },
+                        {
+                            "targetName": "CALENDARYEAR",
+                            "sourceName": "[CALENDARYEAR]"
+                        },
+                        {
+                            "targetName": "CALENDARSEMESTER",
+                            "sourceName": "[CALENDARSEMESTER]"
+                        },
+                        {
+                            "targetName": "FISCALQUARTER",
+                            "sourceName": "[FISCALQUARTER]"
+                        },
+                        {
+                            "targetName": "FISCALYEAR",
+                            "sourceName": "[FISCALYEAR]"
+                        },
+                        {
+                            "targetName": "FISCALSEMESTER",
+                            "sourceName": "[FISCALSEMESTER]"
+                        }
+                    ]
+                }
             }
         ]
     }

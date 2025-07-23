@@ -1,62 +1,130 @@
 {
-    "type": "stage",
+    "$schema": "../datam8-model/schema/ModelDataEntity.json",
+    "type": "entity",
     "entity": {
-        "dataModule": "Product",
-        "dataProduct": "Sales",
         "name": "ProductCategory",
         "displayName": "Product_Category",
+        "description": "Product category hierarchy entity",
+        "tags": [],
+        "parameters": [],
         "attribute": [
             {
+                "ordinalNumber": 1,
                 "name": "ProductCategoryID",
-                "type": "int",
-                "nullable": false
+                "displayName": "ProductCategoryID",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": false,
+                "type": "BK",
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 2,
                 "name": "ParentProductCategoryID",
-                "type": "int",
-                "nullable": true
+                "displayName": "ParentProductCategoryID",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 3,
                 "name": "Name",
-                "type": "string",
+                "displayName": "Name",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 50,
-                "nullable": false
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 4,
                 "name": "rowguid",
-                "type": "uniqueidentifier",
-                "nullable": false
+                "displayName": "rowguid",
+                "description": "",
+                "attributeType": "",
+                "dataType": "uniqueidentifier",
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 5,
                 "name": "ModifiedDate",
-                "type": "datetime",
-                "nullable": false
+                "displayName": "ModifiedDate",
+                "description": "",
+                "attributeType": "",
+                "dataType": "datetime",
+                "nullable": false,
+                "tags": []
             }
         ]
     },
-    "function": {
-        "dataSource": "__meta__",
-        "sourceLocation": "raw/Sales/Product/ProductCategory",
-        "attributeMapping": [
-            {
-                "source": "ProductCategoryID",
-                "target": "ProductCategoryID"
+    "functions": {
+        "trigger": {
+            "mode": "schedule",
+            "schedule": {
+                "cronExpression": "0 1 * * *",
+                "timezone": "UTC",
+                "maxRetries": 3
+            }
+        },
+        "store": {
+            "write_mode": "merge",
+            "merge": {
+                "business_key": [
+                    "ProductCategoryID"
+                ],
+                "sequential": true
             },
-            {
-                "source": "ParentProductCategoryID",
-                "target": "ParentProductCategoryID"
+            "layout": {
+                "type": "liquid_clustering",
+                "keys": [
+                    "ProductCategoryID"
+                ]
             },
+            "maintenance": {
+                "retention": "7 days"
+            }
+        },
+        "sources": [
             {
-                "source": "Name",
-                "target": "Name"
-            },
-            {
-                "source": "rowguid",
-                "target": "rowguid"
-            },
-            {
-                "source": "ModifiedDate",
-                "target": "ModifiedDate"
+                "type": "source",
+                "source": {
+                    "dataSource": "AdventureWorks",
+                    "sourceLocation": "[SalesLT].[ProductCategory]",
+                    "extract": {
+                        "type": "delta",
+                        "delta": {
+                            "column": "ModifiedDate"
+                        }
+                    },
+                    "mapping": [
+                        {
+                            "targetName": "ProductCategoryID",
+                            "sourceName": "[ProductCategoryID]"
+                        },
+                        {
+                            "targetName": "ParentProductCategoryID",
+                            "sourceName": "[ParentProductCategoryID]"
+                        },
+                        {
+                            "targetName": "Name",
+                            "sourceName": "[Name]"
+                        },
+                        {
+                            "targetName": "rowguid",
+                            "sourceName": "[rowguid]"
+                        },
+                        {
+                            "targetName": "ModifiedDate",
+                            "sourceName": "[ModifiedDate]"
+                        }
+                    ]
+                }
             }
         ]
     }

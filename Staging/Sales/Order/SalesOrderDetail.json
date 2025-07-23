@@ -1,94 +1,190 @@
 {
-    "type": "stage",
+    "$schema": "../datam8-model/schema/ModelDataEntity.json",
+    "type": "entity",
     "entity": {
-        "dataModule": "Order",
-        "dataProduct": "Sales",
         "name": "SalesOrderDetail",
         "displayName": "Sales_Order_Detail",
+        "description": "Sales order line item details entity",
+        "tags": [],
+        "parameters": [],
         "attribute": [
             {
+                "ordinalNumber": 1,
                 "name": "SalesOrderID",
-                "type": "int",
-                "nullable": false
+                "displayName": "SalesOrderID",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": false,
+                "type": "BK",
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 2,
                 "name": "SalesOrderDetailID",
-                "type": "int",
-                "nullable": false
+                "displayName": "SalesOrderDetailID",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": false,
+                "type": "BK",
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 3,
                 "name": "OrderQty",
-                "type": "short",
-                "nullable": false
+                "displayName": "OrderQty",
+                "description": "",
+                "attributeType": "",
+                "dataType": "short",
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 4,
                 "name": "ProductID",
-                "type": "int",
-                "nullable": false
+                "displayName": "ProductID",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 5,
                 "name": "UnitPrice",
-                "type": "money",
-                "nullable": false
+                "displayName": "UnitPrice",
+                "description": "",
+                "attributeType": "",
+                "dataType": "money",
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 6,
                 "name": "UnitPriceDiscount",
-                "type": "money",
-                "nullable": false
+                "displayName": "UnitPriceDiscount",
+                "description": "",
+                "attributeType": "",
+                "dataType": "money",
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 7,
                 "name": "LineTotal",
-                "type": "decimal",
+                "displayName": "LineTotal",
+                "description": "",
+                "attributeType": "",
+                "dataType": "decimal",
                 "precision": 38,
                 "scale": 6,
-                "nullable": false
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 8,
+                "name": "rowguid",
+                "displayName": "rowguid",
+                "description": "",
+                "attributeType": "",
+                "dataType": "uniqueidentifier",
+                "nullable": false,
+                "tags": []
+            },
+            {
+                "ordinalNumber": 9,
                 "name": "ModifiedDate",
-                "type": "datetime",
-                "nullable": false
+                "displayName": "ModifiedDate",
+                "description": "",
+                "attributeType": "",
+                "dataType": "datetime",
+                "nullable": false,
+                "tags": []
             }
         ]
     },
-    "function": {
-        "dataSource": "__meta__",
-        "sourceLocation": "raw/Sales/Order/SalesOrderDetail",
-        "attributeMapping": [
-            {
-                "source": "SalesOrderID",
-                "target": "SalesOrderID"
+    "functions": {
+        "trigger": {
+            "mode": "schedule",
+            "schedule": {
+                "cronExpression": "0 1 * * *",
+                "timezone": "UTC",
+                "maxRetries": 3
+            }
+        },
+        "store": {
+            "write_mode": "merge",
+            "merge": {
+                "business_key": [
+                    "SalesOrderID",
+                    "SalesOrderDetailID"
+                ],
+                "sequential": true
             },
-            {
-                "source": "SalesOrderDetailID",
-                "target": "SalesOrderDetailID"
+            "layout": {
+                "type": "liquid_clustering",
+                "keys": [
+                    "SalesOrderID"
+                ]
             },
+            "maintenance": {
+                "retention": "7 days"
+            }
+        },
+        "sources": [
             {
-                "source": "OrderQty",
-                "target": "OrderQty"
-            },
-            {
-                "source": "ProductID",
-                "target": "ProductID"
-            },
-            {
-                "source": "UnitPrice",
-                "target": "UnitPrice"
-            },
-            {
-                "source": "UnitPriceDiscount",
-                "target": "UnitPriceDiscount"
-            },
-            {
-                "source": "LineTotal",
-                "target": "LineTotal"
-            },
-            {
-                "source": "rowguid",
-                "target": "rowguid"
-            },
-            {
-                "source": "ModifiedDate",
-                "target": "ModifiedDate"
+                "type": "source",
+                "source": {
+                    "dataSource": "AdventureWorks",
+                    "sourceLocation": "[SalesLT].[SalesOrderDetail]",
+                    "extract": {
+                        "type": "delta",
+                        "delta": {
+                            "column": "ModifiedDate"
+                        }
+                    },
+                    "mapping": [
+                        {
+                            "targetName": "SalesOrderID",
+                            "sourceName": "[SalesOrderID]"
+                        },
+                        {
+                            "targetName": "SalesOrderDetailID",
+                            "sourceName": "[SalesOrderDetailID]"
+                        },
+                        {
+                            "targetName": "OrderQty",
+                            "sourceName": "[OrderQty]"
+                        },
+                        {
+                            "targetName": "ProductID",
+                            "sourceName": "[ProductID]"
+                        },
+                        {
+                            "targetName": "UnitPrice",
+                            "sourceName": "[UnitPrice]"
+                        },
+                        {
+                            "targetName": "UnitPriceDiscount",
+                            "sourceName": "[UnitPriceDiscount]"
+                        },
+                        {
+                            "targetName": "LineTotal",
+                            "sourceName": "[LineTotal]"
+                        },
+                        {
+                            "targetName": "rowguid",
+                            "sourceName": "[rowguid]"
+                        },
+                        {
+                            "targetName": "ModifiedDate",
+                            "sourceName": "[ModifiedDate]"
+                        }
+                    ]
+                }
             }
         ]
     }

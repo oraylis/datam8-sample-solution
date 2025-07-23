@@ -1,162 +1,293 @@
 {
-    "type": "stage",
+    "$schema": "../datam8-model/schema/ModelDataEntity.json",
+    "type": "entity",
     "entity": {
-        "dataModule": "Customer",
-        "dataProduct": "Sales",
         "name": "Customer_EN",
         "displayName": "Customer__EN",
+        "description": "Core customer information entity (English)",
+        "tags": [],
+        "parameters": [],
         "attribute": [
             {
+                "ordinalNumber": 1,
                 "name": "CustomerID",
-                "type": "int",
-                "nullable": false
+                "displayName": "CustomerID",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": false,
+                "type": "BK",
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 2,
                 "name": "NameStyle",
-                "type": "bit",
-                "nullable": false
+                "displayName": "NameStyle",
+                "description": "",
+                "attributeType": "",
+                "dataType": "bit",
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 3,
                 "name": "Title",
-                "type": "string",
+                "displayName": "Title",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 8,
-                "nullable": true
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 4,
                 "name": "FirstName",
-                "type": "string",
+                "displayName": "FirstName",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 50,
-                "nullable": false
+                "nullable": false,
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 5,
                 "name": "MiddleName",
-                "type": "string",
+                "displayName": "MiddleName",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 50,
-                "nullable": true
+                "nullable": true,
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 6,
                 "name": "LastName",
-                "type": "string",
+                "displayName": "LastName",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 50,
-                "nullable": false
+                "nullable": false,
+                "type": "SCD2",
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 7,
                 "name": "Suffix",
-                "type": "string",
+                "displayName": "Suffix",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 10,
-                "nullable": true
+                "nullable": true,
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 8,
                 "name": "CompanyName",
-                "type": "string",
+                "displayName": "CompanyName",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 128,
-                "nullable": true
+                "nullable": true,
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 9,
                 "name": "SalesPerson",
-                "type": "string",
+                "displayName": "SalesPerson",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 256,
-                "nullable": true
+                "nullable": true,
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 10,
                 "name": "EmailAddress",
-                "type": "string",
+                "displayName": "EmailAddress",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 50,
-                "nullable": true
+                "nullable": true,
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 11,
                 "name": "Phone",
-                "type": "string",
+                "displayName": "Phone",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 25,
-                "nullable": true
+                "nullable": true,
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 12,
                 "name": "PasswordHash",
-                "type": "string",
+                "displayName": "PasswordHash",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 128,
-                "nullable": false
+                "nullable": false,
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 13,
                 "name": "PasswordSalt",
-                "type": "string",
+                "displayName": "PasswordSalt",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 10,
-                "nullable": false
+                "nullable": false,
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 14,
                 "name": "rowguid",
-                "type": "uniqueidentifier",
-                "nullable": false
+                "displayName": "rowguid",
+                "description": "",
+                "attributeType": "",
+                "dataType": "uniqueidentifier",
+                "nullable": false,
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 15,
                 "name": "ModifiedDate",
-                "type": "datetime",
-                "nullable": false
+                "displayName": "ModifiedDate",
+                "description": "",
+                "attributeType": "",
+                "dataType": "datetime",
+                "nullable": false,
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             }
         ]
     },
-    "function": {
-        "dataSource": "__meta__",
-        "sourceLocation": "raw/Sales/Customer/Customer_EN",
-        "attributeMapping": [
-            {
-                "source": "CustomerID",
-                "target": "CustomerID"
+    "functions": {
+        "trigger": {
+            "mode": "schedule",
+            "schedule": {
+                "cronExpression": "0 1 * * *",
+                "timezone": "UTC",
+                "maxRetries": 3
+            }
+        },
+        "store": {
+            "write_mode": "merge",
+            "merge": {
+                "business_key": [
+                    "CustomerID"
+                ],
+                "sequential": true
             },
-            {
-                "source": "NameStyle",
-                "target": "NameStyle"
+            "layout": {
+                "type": "liquid_clustering",
+                "keys": [
+                    "CustomerID"
+                ]
             },
+            "maintenance": {
+                "retention": "7 days"
+            }
+        },
+        "sources": [
             {
-                "source": "Title",
-                "target": "Title"
-            },
-            {
-                "source": "FirstName",
-                "target": "FirstName"
-            },
-            {
-                "source": "MiddleName",
-                "target": "MiddleName"
-            },
-            {
-                "source": "LastName",
-                "target": "LastName"
-            },
-            {
-                "source": "Suffix",
-                "target": "Suffix"
-            },
-            {
-                "source": "CompanyName",
-                "target": "CompanyName"
-            },
-            {
-                "source": "SalesPerson",
-                "target": "SalesPerson"
-            },
-            {
-                "source": "EmailAddress",
-                "target": "EmailAddress"
-            },
-            {
-                "source": "Phone",
-                "target": "Phone"
-            },
-            {
-                "source": "PasswordHash",
-                "target": "PasswordHash"
-            },
-            {
-                "source": "PasswordSalt",
-                "target": "PasswordSalt"
-            },
-            {
-                "source": "rowguid",
-                "target": "rowguid"
-            },
-            {
-                "source": "ModifiedDate",
-                "target": "ModifiedDate"
+                "type": "source",
+                "source": {
+                    "dataSource": "AdventureWorks",
+                    "sourceLocation": "[SalesLT].[Customer_EN]",
+                    "extract": {
+                        "type": "delta",
+                        "delta": {
+                            "column": "ModifiedDate"
+                        }
+                    },
+                    "mapping": [
+                        {
+                            "targetName": "CustomerID",
+                            "sourceName": "[CustomerID]"
+                        },
+                        {
+                            "targetName": "NameStyle",
+                            "sourceName": "[NameStyle]"
+                        },
+                        {
+                            "targetName": "Title",
+                            "sourceName": "[Title]"
+                        },
+                        {
+                            "targetName": "FirstName",
+                            "sourceName": "[FirstName]"
+                        },
+                        {
+                            "targetName": "MiddleName",
+                            "sourceName": "[MiddleName]"
+                        },
+                        {
+                            "targetName": "LastName",
+                            "sourceName": "[LastName]"
+                        },
+                        {
+                            "targetName": "Suffix",
+                            "sourceName": "[Suffix]"
+                        },
+                        {
+                            "targetName": "CompanyName",
+                            "sourceName": "[CompanyName]"
+                        },
+                        {
+                            "targetName": "SalesPerson",
+                            "sourceName": "[SalesPerson]"
+                        },
+                        {
+                            "targetName": "EmailAddress",
+                            "sourceName": "[EmailAddress]"
+                        },
+                        {
+                            "targetName": "Phone",
+                            "sourceName": "[Phone]"
+                        },
+                        {
+                            "targetName": "PasswordHash",
+                            "sourceName": "[PasswordHash]"
+                        },
+                        {
+                            "targetName": "PasswordSalt",
+                            "sourceName": "[PasswordSalt]"
+                        },
+                        {
+                            "targetName": "rowguid",
+                            "sourceName": "[rowguid]"
+                        },
+                        {
+                            "targetName": "ModifiedDate",
+                            "sourceName": "[ModifiedDate]"
+                        }
+                    ]
+                }
             }
         ]
     }

@@ -1,176 +1,304 @@
 {
-    "type": "stage",
+    "$schema": "../datam8-model/schema/ModelDataEntity.json",
+    "type": "entity",
     "entity": {
-        "dataModule": "Product",
-        "dataProduct": "Sales",
         "name": "Product",
         "displayName": "Product",
+        "description": "Product catalog entity",
+        "tags": [],
+        "parameters": [],
         "attribute": [
             {
+                "ordinalNumber": 1,
                 "name": "ProductID",
-                "type": "int",
-                "nullable": false
+                "displayName": "ProductID",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": false,
+                "type": "BK",
+                "tags": [],
+                "dateModified": "2025-03-28 16:16:38"
             },
             {
+                "ordinalNumber": 2,
                 "name": "Name",
-                "type": "string",
+                "displayName": "Name",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 50,
-                "nullable": false
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 3,
                 "name": "ProductNumber",
-                "type": "string",
+                "displayName": "ProductNumber",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 25,
-                "nullable": false
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 4,
                 "name": "Color",
-                "type": "string",
+                "displayName": "Color",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 15,
-                "nullable": true
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 5,
                 "name": "StandardCost",
-                "type": "money",
-                "nullable": false
+                "displayName": "StandardCost",
+                "description": "",
+                "attributeType": "",
+                "dataType": "money",
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 6,
                 "name": "ListPrice",
-                "type": "money",
-                "nullable": false
+                "displayName": "ListPrice",
+                "description": "",
+                "attributeType": "",
+                "dataType": "money",
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 7,
                 "name": "Size",
-                "type": "string",
+                "displayName": "Size",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 5,
-                "nullable": true
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 8,
                 "name": "Weight",
-                "type": "decimal",
+                "displayName": "Weight",
+                "description": "",
+                "attributeType": "",
+                "dataType": "decimal",
                 "precision": 8,
                 "scale": 2,
-                "nullable": true
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 9,
                 "name": "ProductCategoryID",
-                "type": "int",
-                "nullable": true
+                "displayName": "ProductCategoryID",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 10,
                 "name": "ProductModelID",
-                "type": "int",
-                "nullable": true
+                "displayName": "ProductModelID",
+                "description": "",
+                "attributeType": "",
+                "dataType": "int",
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 11,
                 "name": "SellStartDate",
-                "type": "datetime",
-                "nullable": false
+                "displayName": "SellStartDate",
+                "description": "",
+                "attributeType": "",
+                "dataType": "datetime",
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 12,
                 "name": "SellEndDate",
-                "type": "datetime",
-                "nullable": true
+                "displayName": "SellEndDate",
+                "description": "",
+                "attributeType": "",
+                "dataType": "datetime",
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 13,
                 "name": "DiscontinuedDate",
-                "type": "datetime",
-                "nullable": true
+                "displayName": "DiscontinuedDate",
+                "description": "",
+                "attributeType": "",
+                "dataType": "datetime",
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 14,
                 "name": "ThumbNailPhoto",
-                "type": "binary",
-                "nullable": true
+                "displayName": "ThumbNailPhoto",
+                "description": "",
+                "attributeType": "",
+                "dataType": "binary",
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 15,
                 "name": "ThumbnailPhotoFileName",
-                "type": "string",
+                "displayName": "ThumbnailPhotoFileName",
+                "description": "",
+                "attributeType": "",
+                "dataType": "string",
                 "charLength": 50,
-                "nullable": true
+                "nullable": true,
+                "tags": []
             },
             {
+                "ordinalNumber": 16,
                 "name": "rowguid",
-                "type": "uniqueidentifier",
-                "nullable": false
+                "displayName": "rowguid",
+                "description": "",
+                "attributeType": "",
+                "dataType": "uniqueidentifier",
+                "nullable": false,
+                "tags": []
             },
             {
+                "ordinalNumber": 17,
                 "name": "ModifiedDate",
-                "type": "datetime",
-                "nullable": false
+                "displayName": "ModifiedDate",
+                "description": "",
+                "attributeType": "",
+                "dataType": "datetime",
+                "nullable": false,
+                "tags": []
             }
         ]
     },
-    "function": {
-        "dataSource": "__meta__",
-        "sourceLocation": "raw/Sales/Product/Product",
-        "attributeMapping": [
-            {
-                "source": "ProductID",
-                "target": "ProductID"
+    "functions": {
+        "trigger": {
+            "mode": "schedule",
+            "schedule": {
+                "cronExpression": "0 1 * * *",
+                "timezone": "UTC",
+                "maxRetries": 3
+            }
+        },
+        "store": {
+            "write_mode": "merge",
+            "merge": {
+                "business_key": [
+                    "ProductID"
+                ],
+                "sequential": true
             },
-            {
-                "source": "Name",
-                "target": "Name"
+            "layout": {
+                "type": "liquid_clustering",
+                "keys": [
+                    "ProductID"
+                ]
             },
+            "maintenance": {
+                "retention": "7 days"
+            }
+        },
+        "sources": [
             {
-                "source": "ProductNumber",
-                "target": "ProductNumber"
-            },
-            {
-                "source": "Color",
-                "target": "Color"
-            },
-            {
-                "source": "StandardCost",
-                "target": "StandardCost"
-            },
-            {
-                "source": "ListPrice",
-                "target": "ListPrice"
-            },
-            {
-                "source": "Size",
-                "target": "Size"
-            },
-            {
-                "source": "Weight",
-                "target": "Weight"
-            },
-            {
-                "source": "ProductCategoryID",
-                "target": "ProductCategoryID"
-            },
-            {
-                "source": "ProductModelID",
-                "target": "ProductModelID"
-            },
-            {
-                "source": "SellStartDate",
-                "target": "SellStartDate"
-            },
-            {
-                "source": "SellEndDate",
-                "target": "SellEndDate"
-            },
-            {
-                "source": "DiscontinuedDate",
-                "target": "DiscontinuedDate"
-            },
-            {
-                "source": "ThumbNailPhoto",
-                "target": "ThumbNailPhoto"
-            },
-            {
-                "source": "ThumbnailPhotoFileName",
-                "target": "ThumbnailPhotoFileName"
-            },
-            {
-                "source": "rowguid",
-                "target": "rowguid"
-            },
-            {
-                "source": "ModifiedDate",
-                "target": "ModifiedDate"
+                "type": "source",
+                "source": {
+                    "dataSource": "AdventureWorks",
+                    "sourceLocation": "[SalesLT].[Product]",
+                    "extract": {
+                        "type": "delta",
+                        "delta": {
+                            "column": "ModifiedDate"
+                        }
+                    },
+                    "mapping": [
+                        {
+                            "targetName": "ProductID",
+                            "sourceName": "[ProductID]"
+                        },
+                        {
+                            "targetName": "Name",
+                            "sourceName": "[Name]"
+                        },
+                        {
+                            "targetName": "ProductNumber",
+                            "sourceName": "[ProductNumber]"
+                        },
+                        {
+                            "targetName": "Color",
+                            "sourceName": "[Color]"
+                        },
+                        {
+                            "targetName": "StandardCost",
+                            "sourceName": "[StandardCost]"
+                        },
+                        {
+                            "targetName": "ListPrice",
+                            "sourceName": "[ListPrice]"
+                        },
+                        {
+                            "targetName": "Size",
+                            "sourceName": "[Size]"
+                        },
+                        {
+                            "targetName": "Weight",
+                            "sourceName": "[Weight]"
+                        },
+                        {
+                            "targetName": "ProductCategoryID",
+                            "sourceName": "[ProductCategoryID]"
+                        },
+                        {
+                            "targetName": "ProductModelID",
+                            "sourceName": "[ProductModelID]"
+                        },
+                        {
+                            "targetName": "SellStartDate",
+                            "sourceName": "[SellStartDate]"
+                        },
+                        {
+                            "targetName": "SellEndDate",
+                            "sourceName": "[SellEndDate]"
+                        },
+                        {
+                            "targetName": "DiscontinuedDate",
+                            "sourceName": "[DiscontinuedDate]"
+                        },
+                        {
+                            "targetName": "ThumbNailPhoto",
+                            "sourceName": "[ThumbNailPhoto]"
+                        },
+                        {
+                            "targetName": "ThumbnailPhotoFileName",
+                            "sourceName": "[ThumbnailPhotoFileName]"
+                        },
+                        {
+                            "targetName": "rowguid",
+                            "sourceName": "[rowguid]"
+                        },
+                        {
+                            "targetName": "ModifiedDate",
+                            "sourceName": "[ModifiedDate]"
+                        }
+                    ]
+                }
             }
         ]
     }
