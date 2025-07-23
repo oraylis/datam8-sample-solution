@@ -1,6 +1,7 @@
 {
+  "$schema": "../datam8-model/schema/DataSources.json",
   "type": "dataSource",
-  "items": [
+  "dataSources": [
     {
       "ExtendedProperties": {
         "RememberPassword": "false"

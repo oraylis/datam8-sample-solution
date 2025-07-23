@@ -16,7 +16,6 @@
         "attributeType": "ID",
         "dataType": "string",
         "nullable": false,
-        "businessKeyNo": 1,
         "type": "BK",
         "tags": [],
         "refactorNames": [
@@ -87,9 +86,7 @@
         ],
         "dateModified": "2025-03-28 16:16:38"
       }
-    ],
-    "relationship": [],
-    "refactorNames": []
+    ]
   },
   "functions": {
     "trigger": {
