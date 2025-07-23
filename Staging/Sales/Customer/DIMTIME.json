@@ -241,8 +241,8 @@
             {
                 "type": "source",
                 "source": {
-                    "dataSource": "AdventureWorks",
-                    "sourceLocation": "[dbo].[DIMTIME]",
+                    "dataSource": "OracleDev",
+                    "sourceLocation": "[DATAM8].[DIMTIME]",
                     "extract": {
                         "type": "full",
                         "full": {}
