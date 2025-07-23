@@ -153,46 +153,47 @@
       }
     },
     "sources": [
-      
       {
         "type": "model",
-        "dm8l": "/Staging/Sales/Other/Address",
-        "mapping": [
-          {
-            "name": "AddressID",
-            "sourceName": "AddressID"
-          },
-          {
-            "name": "AddressLine1",
-            "sourceName": "AddressLine1"
-          },
-          {
-            "name": "AddressLine2",
-            "sourceName": "AddressLine2"
-          },
-          {
-            "name": "CityName",
-            "sourceName": "City"
-          },
-          {
-            "name": "StateProvinceName",
-            "sourceName": "StateProvince"
-          },
-          {
-            "name": "CountryRegionName",
-            "sourceName": "CountryRegion"
-          },
-          {
-            "name": "PostalCode",
-            "sourceName": "PostalCode"
-          },
-          {
-            "sourceName": "rowguid"
-          },
-          {
-            "sourceName": "ModifiedDate"
-          }
-        ]
+        "model": {
+          "dm8l": "/Staging/Sales/Other/Address",
+          "mapping": [
+            {
+              "name": "AddressID",
+              "sourceName": "AddressID"
+            },
+            {
+              "name": "AddressLine1",
+              "sourceName": "AddressLine1"
+            },
+            {
+              "name": "AddressLine2",
+              "sourceName": "AddressLine2"
+            },
+            {
+              "name": "CityName",
+              "sourceName": "City"
+            },
+            {
+              "name": "StateProvinceName",
+              "sourceName": "StateProvince"
+            },
+            {
+              "name": "CountryRegionName",
+              "sourceName": "CountryRegion"
+            },
+            {
+              "name": "PostalCode",
+              "sourceName": "PostalCode"
+            },
+            {
+              "sourceName": "rowguid"
+            },
+            {
+              "sourceName": "ModifiedDate"
+            }
+          ]
+        }
       }
     ],
     "transformations": [

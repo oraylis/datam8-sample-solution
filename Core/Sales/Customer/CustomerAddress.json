@@ -105,30 +105,31 @@
       }
     },
     "sources": [
-      
       {
         "type": "model",
-        "dm8l": "/Staging/Sales/Customer/CustomerAddress",
-        "mapping": [
-          {
-            "name": "CustomerID",
-            "sourceName": "CustomerID"
-          },
-          {
-            "name": "AddressID",
-            "sourceName": "AddressID"
-          },
-          {
-            "name": "AddressType",
-            "sourceName": "AddressType"
-          },
-          {
-            "sourceName": "rowguid"
-          },
-          {
-            "sourceName": "ModifiedDate"
-          }
-        ]
+        "model": {
+          "dm8l": "/Staging/Sales/Customer/CustomerAddress",
+          "mapping": [
+            {
+              "name": "CustomerID",
+              "sourceName": "CustomerID"
+            },
+            {
+              "name": "AddressID",
+              "sourceName": "AddressID"
+            },
+            {
+              "name": "AddressType",
+              "sourceName": "AddressType"
+            },
+            {
+              "sourceName": "rowguid"
+            },
+            {
+              "sourceName": "ModifiedDate"
+            }
+          ]
+        }
       }
     ],
     "transformations": [
