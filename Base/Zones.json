@@ -1,5 +1,5 @@
 {
-  "$schema": "../datam8-model/schema/Zones.json",
+  "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/Zones.json",
   "type": "zone",
   "zones": [
     {
