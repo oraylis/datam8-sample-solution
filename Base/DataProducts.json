@@ -1,5 +1,7 @@
 {
-  "items": [
+  "$schema": "../datam8-model/schema/DataProducts.json",
+  "type": "dataProduct",
+  "dataProducts": [
     {
       "name": "Sales",
       "displayName": "All Entities for Sales",

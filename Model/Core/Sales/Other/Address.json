@@ -16,7 +16,6 @@
         "attributeType": "ID",
         "dataType": "int",
         "nullable": false,
-        "businessKeyNo": 1,
         "type": "BK",
         "tags": [],
         "refactorNames": [],
@@ -135,9 +134,7 @@
           "StateProvince"
         ]
       }
-    ],
-    "relationship": [],
-    "refactorNames": []
+    ]
   },
   "functions": {
     "trigger": {

@@ -1,10 +1,11 @@
 {
+  "$schema": "../datam8-model/schema/DataTypes.json",
   "type": "dataType",
-  "items": [
+  "dataTypes": [
     {
       "name": "string",
       "displayName": "Unicode String (UTF-8) with char lenght",
-      "purpose": "#",
+      "description": "#",
       "hasCharLen": true,
       "hasPrecision": false,
       "hasScale": false,
@@ -50,7 +51,7 @@
     {
       "name": "double",
       "displayName": "Floating point with double precision",
-      "purpose": "Test 2",
+      "description": "Test 2",
       "hasCharLen": false,
       "hasPrecision": false,
       "hasScale": false,
