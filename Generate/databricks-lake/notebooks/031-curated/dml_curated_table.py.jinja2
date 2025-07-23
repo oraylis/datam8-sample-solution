@@ -1,28 +1,65 @@
 # Macro Import ----------
-{% import 'macro/column_declaration_curated.py.jinja2' as column_declaration %}
-{% import 'macro/common_python_snippets.py.jinja2' as py_snippets %}
+{% import 'databricks-lake/__collections/macro/column_declaration_curated.py.jinja2' as column_declaration %}
+{% import 'databricks-lake/__collections/macro/common_python_snippets.py.jinja2' as py_snippets %}
 
 {% for entity in model.get_curated_entity_list() %}
-{% set table = entity.model_object.entity %}
-{% set full_table_name = entity.model_object.entity.dataProduct + "_" + entity.model_object.entity.dataModule + "_" + entity.model_object.entity.name %}
-{%- set file_path = helper.build_path("notebooks", SystemProperties().curated_folder, "dml", table.dataProduct, table.dataModule, table.name)%}
+{%- if entity.model_object and entity.model_object.function is defined %}
+  {# V1 structure #}
+  {%- set table = entity.model_object.entity %}
+  {%- set entity_type = entity.model_object.type.value %}
+  {%- set data_product = table.dataProduct %}
+  {%- set data_module = table.dataModule %}
+  {%- set entity_name = table.name %}
+{%- else %}
+  {# V2 unified structure - entity is UnifiedEntityFactory #}
+  {%- set table = entity.entity %}
+  {%- set entity_type = "curated" %}
+  {%- set data_product = entity.data_product %}
+  {%- set data_module = entity.data_module %}
+  {%- set entity_name = entity.entity_name %}
+{%- endif %}
+{% set full_table_name = data_product|string + "_" + data_module|string + "_" + entity_name|string %}
+{%- set file_path = helper.build_path("notebooks", SystemProperties().curated_folder, "dml", data_product|string, data_module|string, entity_name|string)%}
 
-{%- for function in entity.model_object.function %}
+{%- if entity.model_object and entity.model_object.function is defined %}
+  {# V1 structure #}
+  {%- for function in entity.model_object.function %}
 >>>>>>>>>> {{ file_path }}_functions/{{ function.name }}.py
-{% include "Curated/%s/%s/%s/%s.py" % (table.dataProduct, table.dataModule, table.name, function.name) %}
+{% include "Curated/%s/%s/%s/%s.py" % (data_product, data_module, entity_name, function.name) %}
 <<<<<<<<<<
-{%- endfor %}
+  {%- endfor %}
+{%- else %}
+  {# V2 structure - use UnifiedEntityFactory functions #}
+  {%- if entity.functions and entity.functions.transformations %}
+    {%- for transformation in entity.functions.transformations %}
+      {%- if transformation.function and transformation.function.source %}
+>>>>>>>>>> {{ file_path }}_functions/{{ transformation.name }}.py
+{% include "Curated/%s/%s/%s/%s.py" % (data_product, data_module, entity_name, transformation.name) %}
+<<<<<<<<<<
+      {%- endif %}
+    {%- endfor %}
+  {%- endif %}
+{%- endif %}
 
 >>>>>>>>>> {{ file_path }}.py
-{%- set bk_cols = custom_functions.list_bk_columns(entity.model_object) %}
-{%- set scd0_cols = custom_functions.list_scd0_columns(entity.model_object) %}
-{%- set scd1_cols = custom_functions.list_scd1_columns(entity.model_object) %}
-{%- set scd2_cols = custom_functions.list_scd2_columns(entity.model_object) %}
+{%- if entity.model_object and entity.model_object.function is defined %}
+  {# V1 structure - use model_object #}
+  {%- set bk_cols = custom_functions.list_bk_columns(entity.model_object) %}
+  {%- set scd0_cols = custom_functions.list_scd0_columns(entity.model_object) %}
+  {%- set scd1_cols = custom_functions.list_scd1_columns(entity.model_object) %}
+  {%- set scd2_cols = custom_functions.list_scd2_columns(entity.model_object) %}
+{%- else %}
+  {# V2 structure - use UnifiedEntityFactory #}
+  {%- set bk_cols = custom_functions.list_bk_columns(entity) %}
+  {%- set scd0_cols = custom_functions.list_scd0_columns(entity) %}
+  {%- set scd1_cols = custom_functions.list_scd1_columns(entity) %}
+  {%- set scd2_cols = custom_functions.list_scd2_columns(entity) %}
+{%- endif %}
 {%- set has_scd1 = len(scd1_cols) > 0 %}
 {%- set has_scd2 = len(scd2_cols) > 0 %}
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DML for {{entity.model_object.type.value}}.{{full_table_name}}
+# MAGIC # DML for {{entity_type}}.{{full_table_name}}
 # MAGIC History configuration of this entity
 # MAGIC - __Business Key Columns__: {{bk_cols}}
 # MAGIC - __SCD0 columns__: {{scd0_cols}}
@@ -36,7 +73,7 @@ from delta import DeltaTable  # noqa: F401
 
 # COMMAND ----------
 
-{{ py_snippets.common_variables(entity.model_object.type.value, entity, SystemProperties) }}
+{{ py_snippets.common_variables(entity_type, entity, SystemProperties) }}
 
 
 # COMMAND ----------
@@ -84,7 +121,7 @@ functions["{{ function.name }}"]["df"] = business_function  # noqa: F501
 {%- if str(function.merge_type) == "MergeType.MERGE" %}
 
 # MAGIC %md
-# MAGIC # Merge into {{entity.model_object.type.value}}
+# MAGIC # Merge into {{entity_type}}
 
 # COMMAND ----------
 

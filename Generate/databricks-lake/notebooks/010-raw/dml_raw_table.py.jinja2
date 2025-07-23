@@ -1,12 +1,27 @@
-{% import 'macro/common_python_snippets.py.jinja2' as py_snippets %}
+{% import 'databricks-lake/__collections/macro/common_python_snippets.py.jinja2' as py_snippets %}
 
 {%- for entity in model.get_raw_entity_list() %}
-  {%- set table = entity.model_object.entity %}
-  {%- set file_path = helper.build_path("notebooks", SystemProperties().raw_folder, "dml", table.dataProduct, table.dataModule, table.name) %}
+  {%- if entity.model_object %}
+    {# V1 structure #}
+    {%- set table = entity.model_object.entity %}
+    {%- set entity_type = entity.model_object.type.value %}
+    {%- set data_product = table.dataProduct %}
+    {%- set data_module = table.dataModule %}
+    {%- set entity_name = table.name %}
+  {%- else %}
+    {# V2 unified structure - entity is UnifiedEntityFactory #}
+    {%- set table = entity.entity %}
+    {%- set entity_type = "raw" %}
+    {%- set data_product = entity.data_product %}
+    {%- set data_module = entity.data_module %}
+    {%- set entity_name = entity.entity_name %}
+  {%- endif %}
+{# Ensure all variables are strings #}
+  {%- set file_path = helper.build_path("notebooks", SystemProperties().raw_folder, "dml", data_product|string, data_module|string, entity_name|string) %}
 >>>>>>>>>> {{ file_path }}.py | py
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DML for {{entity.model_object.type.value}}.{{table.dataProduct}}_{{table.dataModule}}_{{table.name}}
+# MAGIC # DML for {{entity_type}}.{{data_product}}_{{data_module}}_{{entity_name}}
 
 # COMMAND ----------
 
@@ -17,15 +32,17 @@
 
 # MAGIC %md
 # MAGIC ## Tables Tag
+{%- if table.tags %}
 {%- for tag in table.tags %}
 # MAGIC - {{tag}}
 {%- endfor %}
+{%- endif %}
 
 # COMMAND ----------
 
 # DBTITLE 1,Get variable values
 
-{{ py_snippets.common_variables(entity.model_object.type.value, entity, SystemProperties) }}
+{{ py_snippets.common_variables(entity_type, entity, SystemProperties) }}
 
 # COMMAND ----------
 
@@ -58,7 +75,7 @@ else:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # Retrieve max delta criteria from '{{entity.model_object.type.value}}'
+# MAGIC # Retrieve max delta criteria from '{{entity_type}}'
 
 # COMMAND ----------
 try:
@@ -70,8 +87,21 @@ except Exception as _:
   query_filter = ""
 {%- endif %}
 
-{%- set entitySourceLocation = entity.model_object.function.sourceLocation %}
-{%- set entityDataSource = entity.model_object.function.dataSource %}
+{%- if entity.model_object and entity.model_object.function is defined %}
+  {# V1 structure #}
+  {%- set entitySourceLocation = entity.model_object.function.sourceLocation %}
+  {%- set entityDataSource = entity.model_object.function.dataSource %}
+{%- else %}
+  {# V2 structure - get from first system source #}
+  {%- set primary_source = entity.system_sources[0] if entity.system_sources else None %}
+  {%- if primary_source %}
+    {%- set entitySourceLocation = primary_source.source.sourceLocation %}
+    {%- set entityDataSource = primary_source.source.dataSource %}
+  {%- else %}
+    {%- set entitySourceLocation = "unknown" %}
+    {%- set entityDataSource = "unknown" %}
+  {%- endif %}
+{%- endif %}
 {%- set dataSource = model.data_sources.get_datasource(entityDataSource) %}
   {%- if dataSource.type == 'SqlDataSource' %}
   {% include 'notebooks/010-raw/includes/dml_raw_table_sqldatasource.py.jinja2.include' %}
@@ -81,7 +111,7 @@ except Exception as _:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # Write to '{{entity.model_object.type.value}}'
+# MAGIC # Write to '{{entity_type}}'
 
 # COMMAND ----------
 

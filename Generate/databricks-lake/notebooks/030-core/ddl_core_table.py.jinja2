@@ -1,21 +1,34 @@
 # Macro Import ----------
-{% import 'macro/column_declaration_core.jinja2' as column_declaration %}
-{% import "macro/common_python_snippets.py.jinja2" as py_snippets %}
+{% import 'databricks-lake/__collections/macro/column_declaration_core.jinja2' as column_declaration %}
+{% import "databricks-lake/__collections/macro/common_python_snippets.py.jinja2" as py_snippets %}
 
 {%- for entity in model.get_core_entity_list() %}
-{%- set table = entity.model_object.entity %}
-{%- set layer_name = entity.model_object.type.value %}
-{%- set full_table_name = table.dataProduct + "_" + table.dataModule + "_" + table.name %}
+{%- if entity.model_object %}
+  {# V1 structure #}
+  {%- set table = entity.model_object.entity %}
+  {%- set layer_name = entity.model_object.type.value %}
+  {%- set data_product = table.dataProduct %}
+  {%- set data_module = table.dataModule %}
+  {%- set entity_name = table.name %}
+{%- else %}
+  {# V2 unified structure - entity is UnifiedEntityFactory #}
+  {%- set table = entity.entity %}
+  {%- set layer_name = "core" %}
+  {%- set data_product = entity.data_product %}
+  {%- set data_module = entity.data_module %}
+  {%- set entity_name = entity.entity_name %}
+{%- endif %}
+{%- set full_table_name = data_product|string + "_" + data_module|string + "_" + entity_name|string %}
 {%- set layer_full_table_name = layer_name + "." + full_table_name %}
-{%- set file_path = helper.build_path("notebooks", SystemProperties().core_folder, "ddl", table.dataProduct, table.dataModule, table.name) %}
+{%- set file_path = helper.build_path("notebooks", SystemProperties().core_folder, "ddl", data_product|string, data_module|string, entity_name|string) %}
 >>>>>>>>>> {{ file_path }}.py | py
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DDL for {{entity.model_object.type.value}}.{{full_table_name}}
+# MAGIC # DDL for {{layer_name}}.{{full_table_name}}
 
 # COMMAND ----------
 
-{% include "__collections/include/ddl_type_mapping.py.jinja2" %}
+{% include "databricks-lake/__collections/include/ddl_type_mapping.py.jinja2" %}
 
 # COMMAND ----------
 
@@ -24,7 +37,7 @@
 
 # COMMAND ----------
 
-{{ py_snippets.common_variables(entity.model_object.type.value, entity, SystemProperties) }}
+{{ py_snippets.common_variables(layer_name, entity, SystemProperties) }}
 
 # COMMAND ----------
 
@@ -82,7 +95,7 @@ refactored_columns = [
 
 # COMMAND ----------
 
-{% include "__collections/include/ddl_schema_migration.py.jinja" %}
+{% include "databricks-lake/__collections/include/ddl_schema_migration.py.jinja" %}
 
 # COMMAND ----------
 

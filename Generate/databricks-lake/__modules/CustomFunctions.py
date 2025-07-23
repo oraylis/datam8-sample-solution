@@ -17,15 +17,18 @@ class CustomFunctions:
         Returns:
             list[str]: List of data modules for the specified data product.
         """
-        return list(
-            set(
-                [
-                    x.model_object.entity.dataModule
-                    for x in entity_list
-                    if x.model_object.entity.dataProduct == data_product
-                ]
-            )
-        )
+        result = []
+        for x in entity_list:
+            # Check if v1 or v2 entity structure
+            if hasattr(x, 'model_object') and hasattr(x.model_object, 'entity') and hasattr(x.model_object.entity, 'dataProduct'):
+                # V1 structure
+                if x.model_object.entity.dataProduct == data_product:
+                    result.append(x.model_object.entity.dataModule)
+            elif hasattr(x, 'data_product') and hasattr(x, 'data_module'):
+                # V2 structure (UnifiedEntityFactory)
+                if x.data_product == data_product:
+                    result.append(x.data_module)
+        return list(set(result))
 
     @staticmethod
     def get_data_products(entity_list: list) -> list[str]:
@@ -37,7 +40,16 @@ class CustomFunctions:
         Returns:
             list[str]: List of unique data products.
         """
-        return list(set([x.model_object.entity.dataProduct for x in entity_list]))
+        result = []
+        for x in entity_list:
+            # Check if v1 or v2 entity structure
+            if hasattr(x, 'model_object') and hasattr(x.model_object, 'entity') and hasattr(x.model_object.entity, 'dataProduct'):
+                # V1 structure
+                result.append(x.model_object.entity.dataProduct)
+            elif hasattr(x, 'data_product'):
+                # V2 structure (UnifiedEntityFactory)
+                result.append(x.data_product)
+        return list(set(result))
 
     @staticmethod
     def get_entities_for_module(data_product: str, module: str, entity_list: list) -> list:
@@ -120,44 +132,92 @@ class CustomFunctions:
         """List all BK columns.
 
         Args:
-            model_object: An model_object entity from DataM8
+            model_object: An model_object entity from DataM8 (v1) or UnifiedEntityFactory (v2)
         Returns:
             list: the list if BK columns names. an empty list if no BK column exists.
         """
-        return [col.name for col in model_object.entity.attribute if col.history.value == "BK"]
+        if not hasattr(model_object, 'entity') or not hasattr(model_object.entity, 'attribute'):
+            return []
+            
+        result = []
+        for col in model_object.entity.attribute:
+            # Check if v1 structure (has history attribute)
+            if hasattr(col, 'history') and hasattr(col.history, 'value'):
+                if col.history.value == "BK":
+                    result.append(col.name)
+            # Check if v2 structure (has type attribute directly)
+            elif hasattr(col, 'type') and col.type == "BK":
+                result.append(col.name)
+        return result
 
     @staticmethod
     def list_scd0_columns(model_object) -> list[str]:
         """List all SCD0 columns.
 
         Args:
-            model_object: An model_object entity from DataM8
+            model_object: An model_object entity from DataM8 (v1) or UnifiedEntityFactory (v2)
         Returns:
             list: the list if SCD0 columns names. an empty list if no SCD0 column exists.
         """
-        return [col.name for col in model_object.entity.attribute if col.history.value == "SCD0"]
+        if not hasattr(model_object, 'entity') or not hasattr(model_object.entity, 'attribute'):
+            return []
+            
+        result = []
+        for col in model_object.entity.attribute:
+            # Check if v1 structure (has history attribute)
+            if hasattr(col, 'history') and hasattr(col.history, 'value'):
+                if col.history.value == "SCD0":
+                    result.append(col.name)
+            # Check if v2 structure (has type attribute directly)
+            elif hasattr(col, 'type') and col.type == "SCD0":
+                result.append(col.name)
+        return result
 
     @staticmethod
     def list_scd1_columns(model_object) -> list[str]:
         """List all SCD1 columns.
 
         Args:
-            model_object: An model_object entity from DataM8
+            model_object: An model_object entity from DataM8 (v1) or UnifiedEntityFactory (v2)
         Returns:
             list: the list if SCD1 columns names. an empty list if no SCD1 column exists.
         """
-        return [col.name for col in model_object.entity.attribute if col.history.value == "SCD1"]
+        if not hasattr(model_object, 'entity') or not hasattr(model_object.entity, 'attribute'):
+            return []
+            
+        result = []
+        for col in model_object.entity.attribute:
+            # Check if v1 structure (has history attribute)
+            if hasattr(col, 'history') and hasattr(col.history, 'value'):
+                if col.history.value == "SCD1":
+                    result.append(col.name)
+            # Check if v2 structure (has type attribute directly)
+            elif hasattr(col, 'type') and col.type == "SCD1":
+                result.append(col.name)
+        return result
 
     @staticmethod
     def list_scd2_columns(model_object) -> list[str]:
         """List all SCD2 columns.
 
         Args:
-            model_object: An model_object entity from DataM8
+            model_object: An model_object entity from DataM8 (v1) or UnifiedEntityFactory (v2)
         Returns:
             list: the list if SCD2 columns names. an empty list if no SCD2 column exists.
         """
-        return [col.name for col in model_object.entity.attribute if col.history.value == "SCD2"]
+        if not hasattr(model_object, 'entity') or not hasattr(model_object.entity, 'attribute'):
+            return []
+            
+        result = []
+        for col in model_object.entity.attribute:
+            # Check if v1 structure (has history attribute)
+            if hasattr(col, 'history') and hasattr(col.history, 'value'):
+                if col.history.value == "SCD2":
+                    result.append(col.name)
+            # Check if v2 structure (has type attribute directly)
+            elif hasattr(col, 'type') and col.type == "SCD2":
+                result.append(col.name)
+        return result
 
 
 def get_dict_modules() -> dict:
