@@ -1,285 +1,169 @@
 {
-  "type": "core",
+  "$schema": "../datam8-model/schema/ModelDataEntity.json",
+  "type": "entity",
   "entity": {
-    "dataModule": "Customer",
-    "dataProduct": "Sales",
     "name": "Customer",
     "displayName": "Customer",
-    "parameters": [],
+    "description": "",
     "tags": [],
+    "parameters": [],
     "attribute": [
       {
+        "ordinalNumber": 1,
         "name": "_CustomerBK",
+        "displayName": "_CustomerBK",
+        "description": "",
         "attributeType": "ID",
         "dataType": "int",
-        "businessKeyNo": 1,
+        "nullable": false,
+        "type": "BK",
         "tags": [],
-        "refactorNames": [],
-        "history": "BK"
+        "dateModified": "2025-03-28 16:16:38"
       },
       {
+        "ordinalNumber": 2,
         "name": "_CustomerSID",
+        "displayName": "_CustomerSID",
+        "description": "",
         "attributeType": "SID",
         "dataType": "long",
-        "tags": [],
-        "refactorNames": [],
-        "history": "SK"
+        "nullable": false,
+        "type": "SK",
+        "tags": []
       },
       {
+        "ordinalNumber": 3,
         "name": "CustomerID",
+        "displayName": "CustomerID",
+        "description": "",
         "attributeType": "ID",
         "dataType": "int",
-        "tags": [],
-        "refactorNames": [],
-        "history": "SCD0"
+        "charLength": 8,
+        "nullable": true,
+        "tags": []
       },
       {
+        "ordinalNumber": 4,
         "name": "CompanyHistName",
+        "displayName": "CompanyHistName",
+        "description": "",
         "attributeType": "Name",
         "dataType": "string",
+        "nullable": true,
+        "type": "SCD2",
         "tags": [],
-        "refactorNames": [],
-        "history": "SCD2"
+        "dateModified": "2025-03-28 16:16:38"
       },
       {
+        "ordinalNumber": 5,
         "name": "CompanyName",
         "displayName": "Firma",
+        "description": "",
         "attributeType": "Name",
         "dataType": "string",
         "charLength": 128,
         "nullable": true,
         "tags": [],
-        "refactorNames": [
-          "Firma"
-        ],
-        "history": "SCD1"
+        "dateModified": "2025-03-28 16:16:38"
       },
       {
+        "ordinalNumber": 6,
         "name": "CustomerEMail",
-        "displayName": "Email",
-        "attributeType": "EMail",
+        "displayName": "CustomerEMail",
+        "description": "",
+        "attributeType": "Email",
         "dataType": "string",
         "charLength": 50,
         "nullable": true,
         "tags": [],
-        "refactorNames": [
-          "Email",
-          "CustomerEmail"
-        ],
-        "history": "SCD1"
+        "dateModified": "2025-03-28 16:16:38"
       },
       {
+        "ordinalNumber": 7,
         "name": "CustomerHistEMail",
-        "attributeType": "EMail",
+        "displayName": "CustomerHistEMail",
+        "description": "",
+        "attributeType": "Email",
         "dataType": "string",
+        "charLength": 10,
+        "nullable": true,
+        "type": "SCD2",
         "tags": [],
-        "refactorNames": [],
-        "history": "SCD2"
+        "dateModified": "2025-03-28 16:16:38"
       },
       {
+        "ordinalNumber": 8,
         "name": "DisplayName",
+        "displayName": "DisplayName",
+        "description": "",
         "attributeType": "Name",
         "dataType": "string",
+        "charLength": 128,
+        "nullable": true,
         "tags": [],
-        "refactorNames": [],
-        "history": "SCD1"
+        "dateModified": "2025-03-28 16:16:38"
       },
       {
+        "ordinalNumber": 9,
         "name": "FirstName",
         "displayName": "Vorname",
-        "attributeType": "Name",
-        "dataType": "string",
-        "charLength": 50,
-        "nullable": false,
-        "tags": [],
-        "refactorNames": [
-          "Vorname"
-        ],
-        "history": "SCD1"
-      },
-      {
-        "name": "LastName",
-        "displayName": "Nachname",
+        "description": "",
         "attributeType": "Name",
         "dataType": "string",
         "charLength": 50,
         "nullable": true,
         "tags": [],
-        "refactorNames": [
-          "Nachname"
-        ],
-        "history": "SCD1"
+        "dateModified": "2025-03-28 16:16:38"
+      },
+      {
+        "ordinalNumber": 10,
+        "name": "LastName",
+        "displayName": "Nachname",
+        "description": "",
+        "attributeType": "Name",
+        "dataType": "string",
+        "charLength": 50,
+        "nullable": true,
+        "tags": [],
+        "dateModified": "2025-03-28 16:16:38"
+      }
+    ]
+  },
+  "functions": {
+    "trigger": {
+      "mode": "children"
+    },
+    "store": {
+      "write_mode": "overwrite",
+      "layout": {
+        "type": "liquid_clustering",
+        "keys": [
+          "_CustomerSID"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "type": "model",
+        "model": {
+          "dm8l": "/Staging/Sales/Customer_DE"
+        }
+      },
+      {
+        "type": "model",
+        "model": {
+          "dm8l": "/Staging/Sales/Customer_EN"
+        }
       }
     ],
-    "relationship": [],
-    "refactorNames": []
-  },
-  "function": {
-    "source": [
+    "transformations": [
       {
-        "dm8l": "#",
-        "mapping": [
-          {
-            "name": "CustomerEMail",
-            "sourceComputation": "Default",
-            "sourceName": "CustomerEmail"
-          },
-          {
-            "name": "CompanyName",
-            "sourceComputation": "Default",
-            "sourceName": "CompanyName"
-          },
-          {
-            "name": "CustomerID",
-            "sourceComputation": "Default",
-            "sourceName": "CustomerID"
-          },
-          {
-            "name": "LastName",
-            "sourceComputation": "Default",
-            "sourceName": "LastName"
-          },
-          {
-            "name": "FirstName",
-            "sourceComputation": "Default",
-            "sourceName": "FirstName"
-          },
-          {
-            "name": "_CustomerSID",
-            "sourceComputation": "Default",
-            "sourceName": "CustomerSID"
-          },
-          {
-            "name": "_CustomerBK",
-            "sourceComputation": "CustomerID",
-            "sourceName": "_CustomerBK"
-          },
-          {
-            "name": "DisplayName",
-            "sourceComputation": "Concat(LastName, ', ', FirstName)",
-            "sourceName": "DisplayName"
-          },
-          {
-            "name": "CompanyHistName",
-            "sourceComputation": "CompanyName",
-            "sourceName": "CompanyHistName"
-          },
-          {
-            "name": "CustomerHistEMail",
-            "sourceComputation": "CustomerEMail",
-            "sourceName": "CustomerHistEMail"
-          }
-        ]
-      },
-      {
-        "dm8l": "/Stage/Sales/Customer/Customer_DE",
-        "mapping": [
-          {
-            "name": "CustomerID",
-            "sourceName": "KundenID"
-          },
-          {
-            "sourceName": "NamensTyp"
-          },
-          {
-            "sourceName": "Titel"
-          },
-          {
-            "name": "FirstName",
-            "sourceName": "Vorname"
-          },
-          {
-            "sourceName": "Nameszusatz1"
-          },
-          {
-            "name": "LastName",
-            "sourceName": "Nachname"
-          },
-          {
-            "sourceName": "Namenszusatz2"
-          },
-          {
-            "name": "CompanyName",
-            "sourceName": "Firma"
-          },
-          {
-            "sourceName": "Verkaeufer"
-          },
-          {
-            "name": "CustomerEMail",
-            "sourceName": "Email"
-          },
-          {
-            "sourceName": "Telefon"
-          },
-          {
-            "sourceName": "PasswordHash"
-          },
-          {
-            "sourceName": "PasswordSalt"
-          },
-          {
-            "sourceName": "rowguid"
-          },
-          {
-            "sourceName": "GeaendertAm"
-          }
-        ]
-      },
-      {
-        "dm8l": "/Stage/Sales/Customer/Customer_EN",
-        "mapping": [
-          {
-            "name": "CustomerID",
-            "sourceName": "CustomerID"
-          },
-          {
-            "sourceName": "NameStyle"
-          },
-          {
-            "sourceName": "Title"
-          },
-          {
-            "name": "FirstName",
-            "sourceName": "FirstName"
-          },
-          {
-            "sourceName": "MiddleName"
-          },
-          {
-            "name": "LastName",
-            "sourceName": "LastName"
-          },
-          {
-            "sourceName": "Suffix"
-          },
-          {
-            "name": "CompanyName",
-            "sourceName": "CompanyName"
-          },
-          {
-            "sourceName": "SalesPerson"
-          },
-          {
-            "name": "CustomerEMail",
-            "sourceName": "EmailAddress"
-          },
-          {
-            "sourceName": "Phone"
-          },
-          {
-            "sourceName": "PasswordHash"
-          },
-          {
-            "sourceName": "PasswordSalt"
-          },
-          {
-            "sourceName": "rowguid"
-          },
-          {
-            "sourceName": "ModifiedDate"
-          }
-        ]
+        "stepNo": 1,
+        "kind": "function",
+        "name": "transform_first_step",
+        "function": {
+          "source": "Customer.py"
+        }
       }
     ]
   }
