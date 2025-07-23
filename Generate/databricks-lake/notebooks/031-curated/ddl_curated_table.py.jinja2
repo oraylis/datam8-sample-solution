@@ -1,6 +1,6 @@
 # Macro Import ----------
-{% import 'macro/column_declaration_curated.py.jinja2' as column_declaration %}
-{% import "macro/common_python_snippets.py.jinja2" as py_snippets %}
+{% import 'databricks-lake/__collections/macro/column_declaration_curated.py.jinja2' as column_declaration %}
+{% import "databricks-lake/__collections/macro/common_python_snippets.py.jinja2" as py_snippets %}
 
 {%- for entity in model.get_curated_entity_list() %}
 {%- set table = entity.model_object.entity %}
@@ -13,7 +13,7 @@
 
 # COMMAND ----------
 
-{% include "__collections/include/ddl_type_mapping.py.jinja2" %}
+{% include "databricks-lake/__collections/include/ddl_type_mapping.py.jinja2" %}
 
 # COMMAND ----------
 
@@ -85,7 +85,7 @@ refactored_columns = [
 
 # COMMAND ----------
 
-{% include "__collections/include/ddl_schema_migration.py.jinja" %}
+{% include "databricks-lake/__collections/include/ddl_schema_migration.py.jinja" %}
 
 # COMMAND ----------
 

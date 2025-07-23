@@ -1,6 +1,6 @@
 # Macro Import ----------
-{% import 'macro/column_declaration_stage.jinja2' as column_declaration %}
-{% import 'macro/common_python_snippets.py.jinja2' as py_snippets %}
+{% import 'databricks-lake/__collections/macro/column_declaration_stage.jinja2' as column_declaration %}
+{% import 'databricks-lake/__collections/macro/common_python_snippets.py.jinja2' as py_snippets %}
 
 # Set Gobal Variable for macro input ----------
 {%- set input_model = model %}
@@ -8,14 +8,30 @@
 {%- set raw_entity_list = model.get_raw_entity_list() %}
 
 {%- for entity in stage_entity_list %}
-    {%- set table = entity.model_object.entity %}
-    {%- set raw_table = custom_functions.get_table_from_list(table, raw_entity_list) %}
-    {%- set file_path = helper.build_path("notebooks", SystemProperties.stage_folder, "dml", table.dataProduct, table.dataModule, table.name) %}
-    {%- set attribute_mappings = helper.attribute_mapping_to_dict(entity.model_object.function.attributeMapping) %}
+    {%- if entity.model_object %}
+      {# V1 structure #}
+      {%- set table = entity.model_object.entity %}
+      {%- set layer_name = entity.model_object.type.value %}
+      {%- set data_product = table.dataProduct %}
+      {%- set data_module = table.dataModule %}
+      {%- set entity_name = table.name %}
+      {%- set raw_table = custom_functions.get_table_from_list(table, raw_entity_list) %}
+      {%- set attribute_mappings = helper.attribute_mapping_to_dict(entity.model_object.function.attributeMapping) %}
+    {%- else %}
+      {# V2 unified structure - entity is UnifiedEntityFactory #}
+      {%- set table = entity.entity %}
+      {%- set layer_name = "stage" %}
+      {%- set data_product = entity.data_product %}
+      {%- set data_module = entity.data_module %}
+      {%- set entity_name = entity.entity_name %}
+      {%- set raw_table = None %}  {# V2 doesn't have separate raw table lookup #}
+      {%- set attribute_mappings = {} %}  {# V2 has attribute mappings in sources #}
+    {%- endif %}
+    {%- set file_path = helper.build_path("notebooks", SystemProperties.stage_folder, "dml", data_product|string, data_module|string, entity_name|string) %}
 >>>>>>>>>> {{ file_path }}.py | py
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DML for {{entity.model_object.type.value}}.{{table.dataProduct}}_{{table.dataModule}}_{{table.name}}
+# MAGIC # DML for {{layer_name}}.{{data_product}}_{{data_module}}_{{entity_name}}
 
 # COMMAND ----------
 
@@ -24,21 +40,27 @@
 
 # COMMAND ----------
 
-{{ py_snippets.common_variables(entity.model_object.type.value, entity, SystemProperties) }}
+{{ py_snippets.common_variables(layer_name, entity, SystemProperties) }}
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC # Read from RAW
 # MAGIC ## Source Table tags
-{%- for tag in raw_table.tags %}
+{%- if raw_table and raw_table.tags %}
+  {%- for tag in raw_table.tags %}
     # MAGIC - {{ tag }}
-{%- endfor %}
+  {%- endfor %}
+{%- elif table.tags %}
+  {%- for tag in table.tags %}
+    # MAGIC - {{ tag }}
+  {%- endfor %}
+{%- endif %}
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Get latest data from '{{entity.model_object.type.value}}'
+# MAGIC ## Get latest data from '{{layer_name}}'
 
 # COMMAND ----------
 
@@ -196,7 +218,7 @@ clean_df.createOrReplaceTempView("clean_df")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Insert into '{{entity.model_object.type.value}}'
+# MAGIC ## Insert into '{{layer_name}}'
 
 # COMMAND ----------
 
