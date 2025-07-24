@@ -4,7 +4,7 @@
 
 # Set Global Variable for macro input ----------
 {%- set input_model = model %}
-{%- set stage_entity_list = model.get_stage_entity_list() %}
+{%- set stage_entity_list = model.get_entity_list_by_layer('stage') %}
 
 {%- for entity in stage_entity_list %}
   {# V2 unified structure - entity is UnifiedEntityFactory #}

@@ -2,7 +2,7 @@
 {% import 'databricks-lake/__collections/macro/column_declaration_curated.py.jinja2' as column_declaration %}
 {% import 'databricks-lake/__collections/macro/common_python_snippets.py.jinja2' as py_snippets %}
 
-{% for entity in model.get_curated_entity_list() %}
+{% for entity in model.get_entity_list_by_layer('curated') %}
 {# V2 unified structure - entity is UnifiedEntityFactory #}
 {%- set table = entity.entity %}
 {%- set entity_type = "curated" %}
