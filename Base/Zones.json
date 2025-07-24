@@ -3,10 +3,10 @@
   "type": "zone",
   "zones": [
     {
-      "name": "Raw",
+      "name": "Staging",
       "targeName": "Bronze",
-      "displayName": "Raw Data Layer",
-      "localFolderName": "010-Raw"
+      "displayName": "Staging Data Layer",
+      "localFolderName": "010-Staging"
     },
     {
       "name": "Core",

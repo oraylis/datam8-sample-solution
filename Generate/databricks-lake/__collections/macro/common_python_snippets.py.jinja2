@@ -1,4 +1,4 @@
-{%- macro common_variables(zone_name, entity, sp) -%}
+{%- macro common_variables(zone_name, entity, sp, model=None) -%}
 {%- set relative = "../../../../000-utils" if entity else "." %}
 # DBTITLE 1,Initialize Migration Framework
 # MAGIC %run {{ relative }}/MigrationFramework
@@ -27,11 +27,27 @@ sandbox = dbutils.widgets.get("sandbox")
 # configsif entity else none 
 data_lake_name = spark.conf.get("datam8.datalake.name", "{{ sp.datalake_name["dev"] }}")
 container_name = spark.conf.get("datam8.datalake.container.name", "{{ sp.datalake_container_name["dev"] }}")
+
+# Zone configuration using model.zones if available
+{%- if model %}
+raw_zone = spark.conf.get("datam8.zone.raw.name", "raw")
+stage_zone = spark.conf.get("datam8.zone.stage.name", "{{ model.zones.get_target_name('Staging') or 'stage' }}")
+core_zone = spark.conf.get("datam8.zone.core.name", "{{ model.zones.get_target_name('Core') or 'core' }}")
+curated_zone = spark.conf.get("datam8.zone.curated.name", "{{ model.zones.get_target_name('Curated') or 'curated' }}")
+
+# Debug: Show zone mappings
+print(f"Zone mappings from model.zones: Staging→{{ model.zones.get_target_name('Staging') }}, Core→{{ model.zones.get_target_name('Core') }}, Curated→{{ model.zones.get_target_name('Curated') }}")
+{%- else %}
+# Fallback configuration when model is not available
 raw_zone = spark.conf.get("datam8.zone.raw.name", "raw")
 stage_zone = spark.conf.get("datam8.zone.stage.name", "stage")
 core_zone = spark.conf.get("datam8.zone.core.name", "core")
 curated_zone = spark.conf.get("datam8.zone.curated.name", "curated")
+print("Using fallback zone configuration (model.zones not available)")
+{%- endif %}
+
 zone = {{ zone_name }}_zone
+print(f"Using zone: {{ zone_name }} → {zone}")
 
 # static values
 MAX_VALID_TO_DATE = "2999-12-31"

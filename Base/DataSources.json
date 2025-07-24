@@ -24,6 +24,10 @@
           "targetType": "bit"
         },
         {
+          "sourceType": "string",
+          "targetType": "string"
+        },
+        {
           "sourceType": "char",
           "targetType": "string"
         },
@@ -100,6 +104,10 @@
           "targetType": "datetime"
         },
         {
+          "sourceType": "short",
+          "targetType": "short"
+        },
+        {
           "sourceType": "smallint",
           "targetType": "short"
         },
@@ -126,6 +134,10 @@
         {
           "sourceType": "timestamp",
           "targetType": "binary"
+        },
+        {
+          "sourceType": "byte",
+          "targetType": "byte"
         },
         {
           "sourceType": "tinyint",
@@ -253,6 +265,10 @@
           "targetType": "binary"
         },
         {
+          "sourceType": "string",
+          "targetType": "string"
+        },
+        {
           "sourceType": "char",
           "targetType": "string"
         },
@@ -321,12 +337,20 @@
           "targetType": "string"
         },
         {
+          "sourceType": "int",
+          "targetType": "int"
+        },
+        {
           "sourceType": "number",
           "targetType": "int"
         },
         {
           "sourceType": "NUMBER",
           "targetType": "int"
+        },
+        {
+          "sourceType": "datetime",
+          "targetType": "datetime"
         },
         {
           "sourceType": "TIMESTAMP",
