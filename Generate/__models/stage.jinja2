@@ -1,28 +1,31 @@
 {%- for entity in model.get_raw_entity_list() %}
-	{%- if entity.model_type == "raw"  %}
-        {% set ename = entity.model_object.entity.name %}
-        {% set edisplayName = helper.cleanup_name(entity.model_object.entity.displayName) %}
-        {% set edataModule = entity.model_object.entity.dataModule %}
-        {% set edataProduct = entity.model_object.entity.dataProduct %}
-		{% set edataSource = entity.model_object.function.dataSource %}
+	{# V2: Generate stage model from raw entity using UnifiedEntityFactory #}
+	{%- if entity.system_sources %}
+        {% set ename = entity.entity_name %}
+        {% set edisplayName = helper.cleanup_name(entity.entity.displayName) %}
+        {% set edataModule = entity.data_module %}
+        {% set edataProduct = entity.data_product %}
+        {# V2: Get first system source for data source info #}
+        {% set primary_source = entity.system_sources[0] %}
+		{% set edataSource = primary_source.source.dataSource %}
         {% set datasource = model.data_sources.get_datasource(edataSource) %}
         {% set file_path = "%s/%s/%s" % (edataProduct, edataModule, ename) %}
 >>>>>>>>>> {{ file_path }}.json|JSON
 {
-    "type": "stage",
+    "$schema": "../../../schemas/ModelDataEntity.json",
+    "type": "entity",
     "entity": {
-        "dataModule": "{{edataModule}}",
-        "dataProduct": "{{edataProduct}}",
         "name": "{{ helper.translate_umlaute(ename) }}",
         "displayName": "{{edisplayName}}",
         "attribute": [
-{%- for a in entity.model_object.entity.attribute if not "ignore" in a.tags %}
+{%- for a in entity.attributes if not "ignore" in (a.tags or []) %}
                 {
-                    {% set mapped_data_type = model.data_sources.get_datasource_target_type(edataSource, a.type) %}
+                    {% set mapped_data_type = model.data_sources.get_datasource_target_type(edataSource, a.dataType) %}
                     {% set data_type = model.data_types.get_data_type(mapped_data_type.value if mapped_data_type.value is defined else mapped_data_type) %}
 
-                    "name": "{{ helper.cleanup_name(a.name) }}"
-                    ,"type": "{{mapped_data_type}}"
+                    "name": "{{ helper.cleanup_name(a.name) }}",
+                    "dataType": "{{mapped_data_type}}",
+                    "type": "{{ a.type.value if a.type else 'SCD1' }}"
         {%- if data_type.hasCharLen == true %} 
         	{%- if a.charLength != None %} 
         		{%- if a.charLength > 0 %} 
@@ -43,25 +46,31 @@
         {%- if a.nullable != None %} 
                     ,"nullable": {{json.dumps(a.nullable)}}
         {%- endif %}
+        {%- if a.ordinalNumber != None %} 
+                    ,"ordinalNumber": {{a.ordinalNumber}}
+        {%- endif %}
                 {{ "}" if loop.last else "}," }}
     {%- else %}
 {%- endfor %}            
         ]
     },
-    "function": {
-        "dataSource" : "__meta__",
-        "sourceLocation": "raw/{{edataProduct}}/{{edataModule}}/{{ename}}",
-        "attributeMapping": [
-{%- for a in entity.model_object.entity.attribute %}            
+    "functions": {
+        "sources": [
             {
-                "source": "{{a.name}}",
-                "target": "{{ helper.cleanup_name(a.name) }}"
-    {%- if loop.last %}
-            }
-    {%- else %}
-            },
-    {%- endif %}
+                "type": "source",
+                "source": {
+                    "dataSource": "{{ primary_source.source.dataSource }}",
+                    "sourceLocation": "{{ primary_source.source.sourceLocation }}",
+                    "mapping": [
+{%- for a in entity.attributes %}            
+                        {
+                            "sourceName": "{{a.name}}",
+                            "name": "{{ helper.cleanup_name(a.name) }}"
+                {{ "}" if loop.last else "}," }}
 {%- endfor %}            
+                    ]
+                }
+            }
         ]
     }
 }
