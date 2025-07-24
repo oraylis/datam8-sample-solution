@@ -32,7 +32,7 @@
 
 # COMMAND ----------
 
-{{ py_snippets.common_variables(layer_name, entity, SystemProperties) }}
+{{ py_snippets.common_variables(layer_name, entity, SystemProperties, model) }}
 
 # COMMAND ----------
 
@@ -66,7 +66,7 @@ PARTITIONED BY (
 {%- endif %}
 """ % {
     "catalog": catalog.name,
-    "schema": zone,
+    "schema": zone,  # Uses ZonesFactory target name via zone_mapping
     "table": full_table_name,
 }
 
