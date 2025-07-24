@@ -1,6 +1,6 @@
 {% import 'databricks-lake/__collections/macro/common_python_snippets.py.jinja2' as py_snippets %}
 
-{%- for entity in model.get_raw_entity_list() %}
+{%- for entity in model.get_entity_list_by_layer('raw') %}
   {# V2 unified structure - entity is UnifiedEntityFactory #}
   {%- set table = entity.entity %}
   {%- set entity_type = "raw" %}
