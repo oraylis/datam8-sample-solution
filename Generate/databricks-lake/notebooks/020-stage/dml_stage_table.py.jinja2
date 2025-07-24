@@ -2,32 +2,18 @@
 {% import 'databricks-lake/__collections/macro/column_declaration_stage.jinja2' as column_declaration %}
 {% import 'databricks-lake/__collections/macro/common_python_snippets.py.jinja2' as py_snippets %}
 
-# Set Gobal Variable for macro input ----------
+# Set Global Variable for macro input ----------
 {%- set input_model = model %}
 {%- set stage_entity_list = model.get_stage_entity_list() %}
-{%- set raw_entity_list = model.get_raw_entity_list() %}
 
 {%- for entity in stage_entity_list %}
-    {%- if entity.model_object and entity.model_object.entity.dataProduct is defined %}
-      {# V1 structure #}
-      {%- set table = entity.model_object.entity %}
-      {%- set layer_name = entity.model_object.type.value %}
-      {%- set data_product = table.dataProduct %}
-      {%- set data_module = table.dataModule %}
-      {%- set entity_name = table.name %}
-      {%- set raw_table = custom_functions.get_table_from_list(table, raw_entity_list) %}
-      {%- set attribute_mappings = helper.attribute_mapping_to_dict(entity.model_object.function.attributeMapping) %}
-    {%- else %}
-      {# V2 unified structure - entity is UnifiedEntityFactory #}
-      {%- set table = entity.entity %}
-      {%- set layer_name = "stage" %}
-      {%- set data_product = entity.data_product %}
-      {%- set data_module = entity.data_module %}
-      {%- set entity_name = entity.entity_name %}
-      {%- set raw_table = None %}  {# V2 doesn't have separate raw table lookup #}
-      {%- set attribute_mappings = {} %}  {# V2 has attribute mappings in sources #}
-    {%- endif %}
-    {%- set file_path = helper.build_path("notebooks", SystemProperties.stage_folder, "dml", data_product|string, data_module|string, entity_name|string) %}
+  {# V2 unified structure - entity is UnifiedEntityFactory #}
+  {%- set table = entity.entity %}
+  {%- set layer_name = "stage" %}
+  {%- set data_product = entity.data_product %}
+  {%- set data_module = entity.data_module %}
+  {%- set entity_name = entity.entity_name %}
+  {%- set file_path = helper.build_path("notebooks", SystemProperties.stage_folder, "dml", data_product|string, data_module|string, entity_name|string) %}
 >>>>>>>>>> {{ file_path }}.py | py
 # Databricks notebook source
 # MAGIC %md
@@ -47,11 +33,7 @@
 # MAGIC %md
 # MAGIC # Read from RAW
 # MAGIC ## Source Table tags
-{%- if raw_table and raw_table.tags %}
-  {%- for tag in raw_table.tags %}
-    # MAGIC - {{ tag }}
-  {%- endfor %}
-{%- elif table.tags %}
+{%- if table.tags %}
   {%- for tag in table.tags %}
     # MAGIC - {{ tag }}
   {%- endfor %}
@@ -84,18 +66,18 @@ if catalog.is_unity_enabled:
     raw_path = "/Volumes/%(catalog)s/%(zone)s/__files/%(product)s/%(module)s/%(table)s" % {
         "catalog": catalog_name,
         "zone": raw_zone,
-        "product": "{{table.dataProduct}}",
-        "module": "{{table.dataModule}}",
-        "table": "{{table.name}}",
+        "product": "{{data_product}}",
+        "module": "{{data_module}}",
+        "table": "{{entity_name}}",
     }
 else:
     raw_path = "abfss://%(container)s@%(lake)s.dfs.core.windows.net/%(zone)s/%(product)s/%(module)s/%(table)s" % {  # noqa: E501
         "container": container_name,
         "lake": data_lake_name,
         "zone": raw_zone,
-        "product": "{{ table.dataProduct }}",
-        "module": "{{ table.dataModule }}",
-        "table": "{{ table.name }}",
+        "product": "{{ data_product }}",
+        "module": "{{ data_module }}",
+        "table": "{{ entity_name }}",
     }
 
 raw_df = spark.read.format("delta") \
@@ -125,7 +107,7 @@ typed_table_df = spark.sql(
 SELECT
     -- Table columns
 {%- for column in table.attribute %}
-    {{- column_declaration.dml_column_declaration(model=input_model, column=column, source_name=attribute_mappings[column.name]) -}}
+    {{- column_declaration.dml_column_declaration(model=input_model, column=column) -}}
 {%- endfor %}
     -- Technical columns
     CAST(__YEAR AS SMALLINT) AS __Year,
@@ -175,7 +157,7 @@ if poison_df_count > 0:
     (
         poison_df.write.partitionBy("__Year", "__Month", "__Day", "__InsertTimestampUTC")
         .mode("append")
-        .parquet(f"abfss://{container_name}@{data_lake_name}.dfs.core.windows.net/{stage_zone}/{{table.dataProduct}}/{{table.dataModule}}/{{table.name}}_poison")
+        .parquet(f"abfss://{container_name}@{data_lake_name}.dfs.core.windows.net/{stage_zone}/{{data_product}}/{{data_module}}/{{entity_name}}_poison")
     )
     print(
         "Extracted %s poison records in extraction" % (poison_df_count)
@@ -223,7 +205,7 @@ clean_df.createOrReplaceTempView("clean_df")
 # COMMAND ----------
 
 spark.sql("""
-INSERT INTO `%(catalog)s`.`%(database)s`.`{{table.dataProduct}}_{{table.dataModule}}_{{ helper.cleanup_name(table.name) }}`
+INSERT INTO `%(catalog)s`.`%(database)s`.`{{data_product}}_{{data_module}}_{{ helper.cleanup_name(entity_name) }}`
 TABLE clean_df
 """ % {
   "catalog": catalog.name,

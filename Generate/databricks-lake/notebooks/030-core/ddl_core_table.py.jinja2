@@ -3,21 +3,12 @@
 {% import "databricks-lake/__collections/macro/common_python_snippets.py.jinja2" as py_snippets %}
 
 {%- for entity in model.get_core_entity_list() %}
-{%- if entity.model_object %}
-  {# V1 structure #}
-  {%- set table = entity.model_object.entity %}
-  {%- set layer_name = entity.model_object.type.value %}
-  {%- set data_product = table.dataProduct %}
-  {%- set data_module = table.dataModule %}
-  {%- set entity_name = table.name %}
-{%- else %}
-  {# V2 unified structure - entity is UnifiedEntityFactory #}
-  {%- set table = entity.entity %}
-  {%- set layer_name = "core" %}
-  {%- set data_product = entity.data_product %}
-  {%- set data_module = entity.data_module %}
-  {%- set entity_name = entity.entity_name %}
-{%- endif %}
+{# V2 unified structure - entity is UnifiedEntityFactory #}
+{%- set table = entity.entity %}
+{%- set layer_name = "core" %}
+{%- set data_product = entity.data_product %}
+{%- set data_module = entity.data_module %}
+{%- set entity_name = entity.entity_name %}
 {%- set full_table_name = data_product|string + "_" + data_module|string + "_" + entity_name|string %}
 {%- set layer_full_table_name = layer_name + "." + full_table_name %}
 {%- set file_path = helper.build_path("notebooks", SystemProperties().core_folder, "ddl", data_product|string, data_module|string, entity_name|string) %}

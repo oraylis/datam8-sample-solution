@@ -3,13 +3,18 @@
 {% import "databricks-lake/__collections/macro/common_python_snippets.py.jinja2" as py_snippets %}
 
 {%- for entity in model.get_curated_entity_list() %}
-{%- set table = entity.model_object.entity %}
-{%- set full_table_name = table.dataProduct + "_" + table.dataModule + "_" + table.name %}
-{%- set file_path = helper.build_path("notebooks", SystemProperties().curated_folder, "ddl", table.dataProduct, table.dataModule, table.name) %}
+{# V2 unified structure - entity is UnifiedEntityFactory #}
+{%- set table = entity.entity %}
+{%- set layer_name = "curated" %}
+{%- set data_product = entity.data_product %}
+{%- set data_module = entity.data_module %}
+{%- set entity_name = entity.entity_name %}
+{%- set full_table_name = data_product + "_" + data_module + "_" + entity_name %}
+{%- set file_path = helper.build_path("notebooks", SystemProperties().curated_folder, "ddl", data_product, data_module, entity_name) %}
 >>>>>>>>>> {{ file_path }}.py | py
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DDL for {{entity.model_object.type.value}}.{{full_table_name}}
+# MAGIC # DDL for {{layer_name}}.{{full_table_name}}
 
 # COMMAND ----------
 
@@ -27,7 +32,7 @@
 
 # COMMAND ----------
 
-{{ py_snippets.common_variables(entity.model_object.type.value, entity, SystemProperties) }}
+{{ py_snippets.common_variables(layer_name, entity, SystemProperties) }}
 
 # COMMAND ----------
 

@@ -146,13 +146,65 @@
       {
         "type": "model",
         "model": {
-          "dm8l": "/Staging/Sales/Customer_DE"
+          "dm8l": "/Staging/Sales/Customer/Customer_DE",
+          "mapping": [
+            {
+              "name": "CustomerID",
+              "sourceName": "KundenID"
+            },
+            {
+              "name": "FirstName",
+              "sourceName": "Vorname"
+            },
+            {
+              "name": "LastName",
+              "sourceName": "Nachname"
+            },
+            {
+              "name": "CompanyName",
+              "sourceName": "Firma"
+            },
+            {
+              "name": "CustomerEMail", 
+              "sourceName": "EmailAddress"
+            },
+            {
+              "name": "DisplayName",
+              "sourceName": "Verkaeufer"
+            }
+          ]
         }
       },
       {
         "type": "model",
         "model": {
-          "dm8l": "/Staging/Sales/Customer_EN"
+          "dm8l": "/Staging/Sales/Customer/Customer_EN",
+          "mapping": [
+            {
+              "name": "CustomerID",
+              "sourceName": "CustomerID"
+            },
+            {
+              "name": "FirstName",
+              "sourceName": "FirstName"
+            },
+            {
+              "name": "LastName", 
+              "sourceName": "LastName"
+            },
+            {
+              "name": "CompanyName",
+              "sourceName": "CompanyName"
+            },
+            {
+              "name": "CustomerEMail",
+              "sourceName": "EmailAddress"
+            },
+            {
+              "name": "DisplayName",
+              "sourceName": "SalesPerson"
+            }
+          ]
         }
       }
     ],
