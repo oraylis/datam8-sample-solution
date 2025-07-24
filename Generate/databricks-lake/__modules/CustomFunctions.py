@@ -78,16 +78,23 @@ class CustomFunctions:
         Args:
             data_product (str): Data product to filter entities.
             module (str): Module to filter entities.
-            model_object (list): List of model objects.
+            entity_list (list): List of entities.
 
         Returns:
             list: List of model_object matching the specified module and data product.
         """
-        return [
-            x.model_object
-            for x in entity_list
-            if x.model_object.entity.dataModule == module and x.model_object.entity.dataProduct == data_product
-        ]
+        result = []
+        for x in entity_list:
+            # Check if v1 or v2 entity structure
+            if hasattr(x, 'model_object') and x.model_object and hasattr(x.model_object.entity, 'dataModule'):
+                # V1 structure
+                if x.model_object.entity.dataModule == module and x.model_object.entity.dataProduct == data_product:
+                    result.append(x.model_object)
+            elif hasattr(x, 'data_product') and hasattr(x, 'data_module'):
+                # V2 structure (UnifiedEntityFactory)
+                if x.data_module == module and x.data_product == data_product:
+                    result.append(x)  # For v2, return the UnifiedEntityFactory itself
+        return result
 
     @staticmethod
     def create_bucket_from_list(entity_list: list, bucket_size: int) -> list[list]:
@@ -109,23 +116,36 @@ class CustomFunctions:
         return result
 
     @staticmethod
-    def get_table_from_list(table: str, entity_list: list):
+    def get_table_from_list(table, entity_list: list):
         """Get a table from a list of entities.
 
         Args:
-            table (str): Table to retrieve.
+            table: Table to retrieve (can be v1 or v2 entity).
             entity_list (list): List of entities.
 
         Returns:
-            object: The specified table.
+            object: The specified table entity.
         """
-        return [
-            x.model_object.entity
-            for x in entity_list
-            if x.model_object.entity.name == table.name
-            and x.model_object.entity.dataProduct == table.dataProduct
-            and x.model_object.entity.dataModule == table.dataModule
-        ].pop()
+        for x in entity_list:
+            # Check if v1 or v2 entity
+            if hasattr(x, 'model_object') and x.model_object:
+                # V1 structure - access from entity JSON
+                entity_obj = x.model_object.entity
+                name_match = entity_obj.name == table.name
+                product_match = entity_obj.dataProduct == table.dataProduct  
+                module_match = entity_obj.dataModule == table.dataModule
+            else:
+                # V2 structure - access from UnifiedEntityFactory properties
+                name_match = x.entity_name == table.name
+                product_match = x.data_product == table.dataProduct
+                module_match = x.data_module == table.dataModule
+                entity_obj = x.entity
+                
+            if name_match and product_match and module_match:
+                return entity_obj
+        
+        # If no match found, return None
+        return None
 
     @staticmethod
     def list_bk_columns(model_object) -> list[str]:

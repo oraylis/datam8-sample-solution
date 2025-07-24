@@ -8,7 +8,7 @@
 {%- set raw_entity_list = model.get_raw_entity_list() %}
 
 {%- for entity in stage_entity_list %}
-    {%- if entity.model_object %}
+    {%- if entity.model_object and entity.model_object.entity.dataProduct is defined %}
       {# V1 structure #}
       {%- set table = entity.model_object.entity %}
       {%- set layer_name = entity.model_object.type.value %}

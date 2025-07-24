@@ -19,7 +19,7 @@
 {%- for a in entity.model_object.entity.attribute if not "ignore" in a.tags %}
                 {
                     {% set mapped_data_type = model.data_sources.get_datasource_target_type(edataSource, a.type) %}
-                    {% set data_type = model.data_types.get_data_type(mapped_data_type) %}
+                    {% set data_type = model.data_types.get_data_type(mapped_data_type.value if mapped_data_type.value is defined else mapped_data_type) %}
 
                     "name": "{{ helper.cleanup_name(a.name) }}"
                     ,"type": "{{mapped_data_type}}"

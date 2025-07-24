@@ -65,6 +65,7 @@
 # MAGIC ## Get latest data from CORE
 
 # COMMAND ----------
+{%- if entity.model_object and entity.model_object.function is defined %}
 {% for source in entity.model_object.function.source if source.dm8l != "#"%}
 # MAGIC %md
 # MAGIC ### Max timestamp for source table '{{source.dm8l}}'
@@ -85,6 +86,23 @@ WHERE __SourceTable_BK = "%(source_locator)s"
 
 # COMMAND ----------
 {% endfor %}
+{%- else %}
+# MAGIC %md
+# MAGIC ## V2 entities don't support multiple sources yet - using single source approach
+
+# COMMAND ----------
+max_stage: dict = {}
+max_stage["default"] = spark.sql("""
+SELECT
+  NVL(MAX(__InsertTimestampStageUTC), CAST("1970-01-01" AS TIMESTAMP)) AS MaxStage
+FROM `%(catalog)s`.`%(database)s`.`{{full_table_name}}`
+""" % {
+  "catalog": catalog.name,
+  "database": core_zone,
+}).first()[0]
+
+# COMMAND ----------
+{%- endif %}
 # MAGIC %md
 # MAGIC ## Get delta from STAGE
 
@@ -93,6 +111,7 @@ WHERE __SourceTable_BK = "%(source_locator)s"
 source_delta_df_list = []
 
 # COMMAND ----------
+{%- if entity.model_object and entity.model_object.function is defined %}
 {%- for source in entity.model_object.function.source if source.dm8l != "#" -%}
 {%- set stage_object = model.lookup_stage_entity(locator=source.dm8l) -%}
 {%- set stage_table = stage_object.model_object.entity %}
@@ -135,6 +154,34 @@ source_delta_df_list.append(source_delta_{{ loop.index }}_df)
 # COMMAND ----------
 
 {%- endfor %}
+{%- else %}
+# MAGIC %md
+# MAGIC ### V2 entities: Get delta from single stage source
+
+# COMMAND ----------
+# For v2 entities, assume single source from stage layer  
+stage_delta_df = spark.sql("""
+SELECT 
+    *,
+    '{{ entity.locator }}' AS __SourceTable_BK,
+    __InsertTimestampUTC AS __InsertTimestampStageUTC
+FROM `%(catalog)s`.`%(database)s`.`%(stage_table)s`
+WHERE __InsertTimestampUTC > '%(max_stage_timestamp)s'
+  AND __InsertTimestampUTC = (
+    SELECT max(__InsertTimestampUTC)
+    FROM `%(catalog)s`.`%(database)s`.`%(stage_table)s`
+  )
+""" % {
+  "catalog": catalog.name,
+  "database": stage_zone,
+  "stage_table": full_table_name.replace("core_", "stage_"),
+  "max_stage_timestamp": max_stage["default"],
+})
+
+source_delta_df_list = [stage_delta_df]
+
+# COMMAND ----------
+{%- endif %}
 
 # MAGIC %md
 # MAGIC ### Union deltas from sources
@@ -157,6 +204,7 @@ union_df.createOrReplaceTempView("union_df")
 # COMMAND ----------
 
 enriched_df = spark.sql("""
+{%- if entity.model_object and entity.model_object.function is defined %}
 SELECT *
 {%- for source in entity.model_object.function.source if source.dm8l == "#" -%}
   {%- for column in source.mapping if not column.sourceComputation == "Default" %}
@@ -164,16 +212,26 @@ SELECT *
   {%- endfor -%}
 {%- endfor %}
 FROM union_df
+{%- else %}
+SELECT *
+FROM union_df
+{%- endif %}
 """)
 enriched_df.createOrReplaceTempView("enriched_df")
 
 # COMMAND ----------
 
 # MAGIC %md
+{%- if entity.model_object and entity.model_object.function is defined %}
 # MAGIC # Merge into {{entity.model_object.type.value}}
+{%- else %}
+# MAGIC # Merge into {{entity_type}}
+{%- endif %}
 
 # COMMAND ----------
 
+{%- if entity.model_object and entity.model_object.function is defined %}
+{# V1 complex merge logic #}
 {%- if has_scd2 %}
 # MAGIC %md
 # MAGIC ## Update old SCD 2 records
