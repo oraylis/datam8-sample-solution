@@ -1,7 +1,7 @@
 {%- macro ddl_column_declaration(model, attributes) -%}
     -- Table columns
     {%- for column in attributes -%}
-        {%- set data_type = model.data_types.get_data_type(column.type) %}
+        {%- set data_type = model.data_types.get_data_type(column.dataType.value if column.dataType.value is defined else column.dataType) %}
         {%- set precision_scale = "" %}
         {%- set nullability = "" if column.nullable else " NOT NULL" %}
         {%- if data_type.hasPrecision -%}
@@ -28,7 +28,7 @@
 # DBTITLE 1, Define dataframe
 schema = StructType([
 {%- for column in attributes -%}
-    {%- set data_type = model.data_types.get_data_type(column.type) -%}
+    {%- set data_type = model.data_types.get_data_type(column.dataType.value if column.dataType.value is defined else column.dataType) -%}
     {%- set parquet_type = data_type.parquetType %}
     {%- set type_details = "" %}
     {%- set precision = "" %}
@@ -51,7 +51,7 @@ schema = StructType([
 {%- endmacro %}
 
 {%- macro dml_column_declaration(model, column, source_name = None) -%}
- {%- set data_type_object = model.data_types.get_data_type(column.type) -%}
+ {%- set data_type_object = model.data_types.get_data_type(column.dataType.value if column.dataType.value is defined else column.dataType) -%}
     {%- set data_type = data_type_object.parquetType.upper() -%}
     {%- set precision_scale = "" -%}
     {%- if data_type_object.hasPrecision %}
