@@ -92,7 +92,7 @@ source_delta_df_list = []
 # COMMAND ----------
 {%- if entity.model_sources %}
 {%- for source in entity.model_sources -%}
-{%- set stage_object = model.lookup_stage_entity(locator=source.model.dm8l) -%}
+{%- set stage_object = model.lookup_entity(locator=source.model.dm8l) -%}
 {%- set stage_table = stage_object.entity %}
 
 # MAGIC %md

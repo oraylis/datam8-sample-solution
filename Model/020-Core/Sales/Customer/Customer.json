@@ -146,7 +146,7 @@
       {
         "type": "model",
         "model": {
-          "dm8l": "/Staging/Sales/Customer/Customer_DE",
+          "dm8l": "/010-Staging/Sales/Customer/Customer_DE",
           "mapping": [
             {
               "name": "CustomerID",
@@ -178,7 +178,7 @@
       {
         "type": "model",
         "model": {
-          "dm8l": "/Staging/Sales/Customer/Customer_EN",
+          "dm8l": "/010-Staging/Sales/Customer/Customer_EN",
           "mapping": [
             {
               "name": "CustomerID",

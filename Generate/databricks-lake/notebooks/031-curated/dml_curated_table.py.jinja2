@@ -17,7 +17,7 @@
   {%- for transformation in entity.functions.transformations %}
     {%- if transformation.function and transformation.function.source %}
 >>>>>>>>>> {{ file_path }}_functions/{{ transformation.name }}.py
-{% include "Model/Curated/%s/%s/%s" % (data_product, data_module, transformation.function.source) %}
+{% include "Model/%s/%s/%s/%s" % (model.get_zone_folder(entity_type), data_product, data_module, transformation.function.source) %}
 <<<<<<<<<<
     {%- endif %}
   {%- endfor %}
