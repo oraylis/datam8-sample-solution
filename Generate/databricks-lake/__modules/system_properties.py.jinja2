@@ -1,6 +1,8 @@
+>>>>>>>>> __modules/system_properties.py | py
 """Module to hold system information available for all templates"""
 
 # TODO: adapt dictionaries to match your `Generate/databricks-lake/databricks.yml.jinja2`
+# Generated using Zones.json configuration for zone folder structure
 
 
 class SystemProperties:
@@ -18,15 +20,18 @@ class SystemProperties:
         "prod": "lakehousesample",
     }
 
-    # target folders for the generator
-    # NOTE: This file will be replaced by system_properties.py.jinja2 template
-    # which uses Zones.json configuration. This version kept for backward compatibility.
+    # target folders for the generator - dynamic from Zones.json configuration
     etl_folder = "/etl"
     utils_folder = "000-utils"
-    raw_folder = "010-raw"
-    stage_folder = "020-stage"
-    core_folder = "030-core"
-    curated_folder = "031-curated"
+    
+    # Dynamic zone folders from Zones.json
+{% for zone in model.zones.get_zone_list() %}
+{% if zone.name == "raw" %}
+    {{ zone.name }}_folder = "010-raw"  # Raw zone special case - entities derived from staging
+{% else %}
+    {{ zone.name }}_folder = "{{ zone.localFolderName }}"
+{% endif %}
+{% endfor %}
 
     # TODO: seperate into different classes?
     # class Databricks:
@@ -63,7 +68,6 @@ class SystemProperties:
             "level": "CAN_RUN"
         }
     ]
-
 
 
 def get_dict_modules() -> dict:

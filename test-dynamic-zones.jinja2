@@ -1,0 +1,29 @@
+>>>>>>>>> test-dynamic-zones.py | py
+# Test Dynamic Zone System
+
+# Dynamic zone configuration from Zones.json
+{% for zone in model.zones.get_zone_list() %}
+{{ zone.name }}_zone = spark.conf.get("datam8.zone.{{ zone.name }}.name", "{{ zone.targeName }}")
+{% endfor %}
+
+# Debug: Show all zone mappings from Zones.json
+print("Zone mappings from Zones.json:")
+{% for zone in model.zones.get_zone_list() %}
+print(f"  {{ zone.name }} → {{ zone.targeName }}")
+{% endfor %}
+
+# Debug: Show zone folder mappings (where applicable)  
+print("Zone folder mappings:")
+{% for zone in model.zones.get_zone_list() %}
+{% if zone.name != "raw" %}
+print(f"  {{ zone.name }} → {{ zone.localFolderName }}")
+{% else %}
+print(f"  {{ zone.name }} → Raw (special case - entities derived from staging)")
+{% endif %}
+{% endfor %}
+
+# Zone paths from Model
+print("Zone paths from model.zone_paths:")
+{% for zone_name, zone_path in model.zone_paths.items() %}
+print(f"  {{ zone_name }} → {{ zone_path }}")
+{% endfor %}
