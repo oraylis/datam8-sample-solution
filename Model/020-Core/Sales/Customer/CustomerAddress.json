@@ -105,7 +105,7 @@
       {
         "type": "model",
         "model": {
-          "dm8l": "/Staging/Sales/Customer/CustomerAddress",
+          "dm8l": "/010-Staging/Sales/Customer/CustomerAddress",
           "mapping": [
             {
               "name": "CustomerID",

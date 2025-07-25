@@ -153,7 +153,7 @@
       {
         "type": "model",
         "model": {
-          "dm8l": "/Staging/Sales/Other/Address",
+          "dm8l": "/010-Staging/Sales/Other/Address",
           "mapping": [
             {
               "name": "AddressID",
