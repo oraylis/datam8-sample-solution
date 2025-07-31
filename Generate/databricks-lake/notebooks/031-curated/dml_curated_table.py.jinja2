@@ -24,11 +24,11 @@
 {%- endif %}
 
 >>>>>>>>>> {{ file_path }}.py
-{# V2 structure - use UnifiedEntityFactory #}
-{%- set bk_cols = custom_functions.list_bk_columns(entity) %}
-{%- set scd0_cols = custom_functions.list_scd0_columns(entity) %}
-{%- set scd1_cols = custom_functions.list_scd1_columns(entity) %}
-{%- set scd2_cols = custom_functions.list_scd2_columns(entity) %}
+{# V2 structure - use UnifiedEntityFactory direct methods #}
+{%- set bk_cols = entity.get_columns_by_type("BK") %}
+{%- set scd0_cols = entity.get_columns_by_type("SCD0") %}
+{%- set scd1_cols = entity.get_columns_by_type("SCD1") %}
+{%- set scd2_cols = entity.get_columns_by_type("SCD2") %}
 {%- set has_scd1 = len(scd1_cols) > 0 %}
 {%- set has_scd2 = len(scd2_cols) > 0 %}
 # Databricks notebook source

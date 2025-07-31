@@ -12,21 +12,45 @@
 {% set full_table_name = data_product|string + "_" + data_module|string + "_" + entity_name|string %}
 {%- set file_path = helper.build_path("notebooks", SystemProperties().core_folder, "dml", data_product|string, data_module|string, entity_name|string)%}
 >>>>>>>>>> {{ file_path }}.py | py
-{# V2 structure - use UnifiedEntityFactory #}
-{%- set bk_cols = custom_functions.list_bk_columns(entity) %}
-{%- set scd0_cols = custom_functions.list_scd0_columns(entity) %}
-{%- set scd1_cols = custom_functions.list_scd1_columns(entity) %}
-{%- set scd2_cols = custom_functions.list_scd2_columns(entity) %}
+{# V2 structure - use UnifiedEntityFactory direct methods #}
+{%- set bk_cols = entity.get_columns_by_type("BK") %}
+{%- set scd0_cols = entity.get_columns_by_type("SCD0") %}
+{%- set scd1_cols = entity.get_columns_by_type("SCD1") %}
+{%- set scd2_cols = entity.get_columns_by_type("SCD2") %}
 {%- set has_scd1 = len(scd1_cols) > 0 %}
 {%- set has_scd2 = len(scd2_cols) > 0 %}
+{# Enhanced schema access using new methods #}
+{%- set extract_config = entity.get_source_extract_config() %}
+{%- set source_filter = entity.get_source_filter() %}
+{%- set has_delta = entity.has_delta_extraction() %}
+{%- set entity_params = entity.get_entity_parameters() %}
 # Databricks notebook source
 # MAGIC %md
 # MAGIC # DML for {{entity_type}}.{{full_table_name}}
-# MAGIC History configuration of this entity
+# MAGIC ## History configuration of this entity
 # MAGIC - __Business Key Columns__: {{bk_cols}} # noqa: E501
 # MAGIC - __SCD0 columns__: {{scd0_cols}} # noqa: E501
 # MAGIC - __SCD1 columns__: {{scd1_cols}} # noqa: E501
 # MAGIC - __SCD2 columns__: {{scd2_cols}} # noqa: E501
+# MAGIC 
+# MAGIC ## Source configuration
+{%- if extract_config and extract_config.type %}
+# MAGIC - __Extract mode__: {{ extract_config.type.value }}
+{%- if extract_config.type.value == "delta" and extract_config.delta and extract_config.delta.column %}
+# MAGIC - __Delta column__: {{ extract_config.delta.column }}
+{%- endif %}
+{%- endif %}
+{%- if source_filter %}
+# MAGIC - __Source filter__: {{ source_filter }}
+{%- endif %}
+# MAGIC - __Has delta extraction__: {{ has_delta }}
+{%- if entity_params %}
+# MAGIC 
+# MAGIC ## Entity parameters
+{%- for param in entity_params %}
+# MAGIC - __{{ param.name }}__: {{ param.value }}
+{%- endfor %}
+{%- endif %}
 
 # COMMAND ----------
 
