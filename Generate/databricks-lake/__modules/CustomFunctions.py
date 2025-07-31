@@ -156,6 +156,11 @@ class CustomFunctions:
         Returns:
             list: the list if BK columns names. an empty list if no BK column exists.
         """
+        # Use new UnifiedEntityFactory method if available (v2)
+        if hasattr(model_object, 'get_columns_by_type'):
+            return model_object.get_columns_by_type('BK')
+            
+        # Fallback to direct attribute access for v1
         if not hasattr(model_object, 'entity') or not hasattr(model_object.entity, 'attribute'):
             return []
             
@@ -165,8 +170,8 @@ class CustomFunctions:
             if hasattr(col, 'history') and hasattr(col.history, 'value'):
                 if col.history.value == "BK":
                     result.append(col.name)
-            # Check if v2 structure (has type attribute directly)
-            elif hasattr(col, 'type') and col.type == "BK":
+            # Check if v2 structure (has type attribute with .value)
+            elif hasattr(col, 'type') and hasattr(col.type, 'value') and col.type.value == "BK":
                 result.append(col.name)
         return result
 
@@ -179,6 +184,11 @@ class CustomFunctions:
         Returns:
             list: the list if SCD0 columns names. an empty list if no SCD0 column exists.
         """
+        # Use new UnifiedEntityFactory method if available (v2)
+        if hasattr(model_object, 'get_columns_by_type'):
+            return model_object.get_columns_by_type('SCD0')
+            
+        # Fallback to direct attribute access for v1
         if not hasattr(model_object, 'entity') or not hasattr(model_object.entity, 'attribute'):
             return []
             
@@ -188,8 +198,8 @@ class CustomFunctions:
             if hasattr(col, 'history') and hasattr(col.history, 'value'):
                 if col.history.value == "SCD0":
                     result.append(col.name)
-            # Check if v2 structure (has type attribute directly)
-            elif hasattr(col, 'type') and col.type == "SCD0":
+            # Check if v2 structure (has type attribute with .value)
+            elif hasattr(col, 'type') and hasattr(col.type, 'value') and col.type.value == "SCD0":
                 result.append(col.name)
         return result
 
@@ -202,6 +212,11 @@ class CustomFunctions:
         Returns:
             list: the list if SCD1 columns names. an empty list if no SCD1 column exists.
         """
+        # Use new UnifiedEntityFactory method if available (v2)
+        if hasattr(model_object, 'get_columns_by_type'):
+            return model_object.get_columns_by_type('SCD1')
+            
+        # Fallback to direct attribute access for v1
         if not hasattr(model_object, 'entity') or not hasattr(model_object.entity, 'attribute'):
             return []
             
@@ -211,8 +226,8 @@ class CustomFunctions:
             if hasattr(col, 'history') and hasattr(col.history, 'value'):
                 if col.history.value == "SCD1":
                     result.append(col.name)
-            # Check if v2 structure (has type attribute directly)
-            elif hasattr(col, 'type') and col.type == "SCD1":
+            # Check if v2 structure (has type attribute with .value)
+            elif hasattr(col, 'type') and hasattr(col.type, 'value') and col.type.value == "SCD1":
                 result.append(col.name)
         return result
 
@@ -225,6 +240,11 @@ class CustomFunctions:
         Returns:
             list: the list if SCD2 columns names. an empty list if no SCD2 column exists.
         """
+        # Use new UnifiedEntityFactory method if available (v2)
+        if hasattr(model_object, 'get_columns_by_type'):
+            return model_object.get_columns_by_type('SCD2')
+            
+        # Fallback to direct attribute access for v1
         if not hasattr(model_object, 'entity') or not hasattr(model_object.entity, 'attribute'):
             return []
             
@@ -234,8 +254,8 @@ class CustomFunctions:
             if hasattr(col, 'history') and hasattr(col.history, 'value'):
                 if col.history.value == "SCD2":
                     result.append(col.name)
-            # Check if v2 structure (has type attribute directly)
-            elif hasattr(col, 'type') and col.type == "SCD2":
+            # Check if v2 structure (has type attribute with .value)
+            elif hasattr(col, 'type') and hasattr(col.type, 'value') and col.type.value == "SCD2":
                 result.append(col.name)
         return result
 

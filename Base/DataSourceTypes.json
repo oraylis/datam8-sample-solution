@@ -19,18 +19,6 @@
           "sourceType": "datetime",
           "targetType": "timestamp"
         }
-      ],
-      "connectionProperties": [
-        {
-          "name": "connectionString",
-          "required": true,
-          "description": "SQL connection string"
-        },
-        {
-          "name": "timeout",
-          "required": false,
-          "description": "Connection timeout in seconds"
-        }
       ]
     },
     {
@@ -49,18 +37,6 @@
         {
           "sourceType": "timestamp",
           "targetType": "timestamp"
-        }
-      ],
-      "connectionProperties": [
-        {
-          "name": "path",
-          "required": true,
-          "description": "Path to data lake location"
-        },
-        {
-          "name": "format",
-          "required": true,
-          "description": "File format (parquet, delta, json, etc.)"
         }
       ]
     }
