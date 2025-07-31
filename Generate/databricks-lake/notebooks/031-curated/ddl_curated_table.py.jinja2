@@ -41,7 +41,7 @@
 # COMMAND ----------
 
 # DBTITLE 1,Define new partitions
-{%- set partitions = helper.get_columns_by_tag(table.attribute, "partitions") %}
+{%- set partitions = entity.get_columns_by_tag("partitions") %}
 new_partitions = (
   {%- for p in partitions %}
   "{{p}}",
