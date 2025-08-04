@@ -14,8 +14,10 @@
         "displayName": "_CustomerAddressBK",
         "description": "",
         "attributeType": "ID",
-        "dataType": "string",
-        "nullable": false,
+        "targetDataType": {
+          "type": "string",
+          "nullable": false
+        },
         "type": "BK",
         "tags": [],
         "refactorNames": [
@@ -29,8 +31,10 @@
         "displayName": "_CustomerAddressSID",
         "description": "",
         "attributeType": "SID",
-        "dataType": "long",
-        "nullable": false,
+        "targetDataType": {
+          "type": "long",
+          "nullable": false
+        },
         "type": "SK",
         "tags": [],
         "refactorNames": [
@@ -43,8 +47,10 @@
         "displayName": "AddressID",
         "description": "",
         "attributeType": "ID",
-        "dataType": "int",
-        "nullable": false,
+        "targetDataType": {
+          "type": "int",
+          "nullable": false
+        },
         "type": "SCD1",
         "tags": [],
         "refactorNames": [
@@ -59,8 +65,10 @@
         "displayName": "CustomerID",
         "description": "",
         "attributeType": "ID",
-        "dataType": "int",
-        "nullable": false,
+        "targetDataType": {
+          "type": "int",
+          "nullable": false
+        },
         "type": "SCD0",
         "tags": [],
         "refactorNames": [
@@ -75,9 +83,10 @@
         "displayName": "AddressType",
         "description": "",
         "attributeType": "Text",
-        "dataType": "string",
-        "charLength": 50,
-        "nullable": false,
+        "targetDataType": {
+          "type": "string",
+          "nullable": false
+        },
         "type": "SCD1",
         "tags": [],
         "refactorNames": [

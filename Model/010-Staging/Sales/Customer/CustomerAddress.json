@@ -14,8 +14,14 @@
                 "displayName": "CustomerID",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "int",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
                 "type": "BK",
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
@@ -26,8 +32,14 @@
                 "displayName": "AddressID",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "int",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
                 "type": "BK",
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
@@ -38,9 +50,15 @@
                 "displayName": "AddressType",
                 "description": "",
                 "attributeType": "Description",
-                "dataType": "string",
-                "charLength": 50,
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 50,
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -49,8 +67,14 @@
                 "displayName": "rowguid",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "uniqueidentifier",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "uniqueidentifier",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "uniqueidentifier",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -59,8 +83,14 @@
                 "displayName": "ModifiedDate",
                 "description": "",
                 "attributeType": "CreationDate",
-                "dataType": "datetime",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "datetime",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "datetime",
+                    "nullable": false
+                },
                 "tags": []
             }
         ]

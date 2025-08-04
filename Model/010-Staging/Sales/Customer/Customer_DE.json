@@ -14,8 +14,14 @@
                 "displayName": "KundenID",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "int",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
                 "type": "BK",
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
@@ -26,8 +32,14 @@
                 "displayName": "NamensTyp",
                 "description": "",
                 "attributeType": "Flag",
-                "dataType": "bit",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "bit",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "bit",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -36,9 +48,15 @@
                 "displayName": "Titel",
                 "description": "",
                 "attributeType": "Name",
-                "dataType": "string",
-                "charLength": 8,
-                "nullable": true,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 8,
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": true
+                },
                 "tags": []
             },
             {
@@ -47,9 +65,15 @@
                 "displayName": "Vorname",
                 "description": "",
                 "attributeType": "Name",
-                "dataType": "string",
-                "charLength": 50,
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 50,
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": false
+                },
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
             },
@@ -59,9 +83,15 @@
                 "displayName": "Nameszusatz1",
                 "description": "",
                 "attributeType": "Name",
-                "dataType": "string",
-                "charLength": 50,
-                "nullable": true,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 50,
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": true
+                },
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
             },
@@ -71,9 +101,15 @@
                 "displayName": "Nachname",
                 "description": "",
                 "attributeType": "Name",
-                "dataType": "string",
-                "charLength": 50,
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 50,
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": false
+                },
                 "type": "SCD2",
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
@@ -84,9 +120,15 @@
                 "displayName": "Namenszusatz2",
                 "description": "",
                 "attributeType": "Name",
-                "dataType": "string",
-                "charLength": 10,
-                "nullable": true,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 10,
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": true
+                },
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
             },
@@ -96,9 +138,15 @@
                 "displayName": "Firma",
                 "description": "",
                 "attributeType": "Name",
-                "dataType": "string",
-                "charLength": 128,
-                "nullable": true,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 128,
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": true
+                },
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
             },
@@ -108,9 +156,15 @@
                 "displayName": "Verkaeufer",
                 "description": "",
                 "attributeType": "Name",
-                "dataType": "string",
-                "charLength": 256,
-                "nullable": true,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 256,
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": true
+                },
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
             },
@@ -120,9 +174,15 @@
                 "displayName": "Email",
                 "description": "",
                 "attributeType": "Email",
-                "dataType": "string",
-                "charLength": 50,
-                "nullable": true,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 50,
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": true
+                },
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
             },
@@ -132,9 +192,15 @@
                 "displayName": "Telefon",
                 "description": "",
                 "attributeType": "Description",
-                "dataType": "string",
-                "charLength": 25,
-                "nullable": true,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 25,
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": true
+                },
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
             },
@@ -144,9 +210,15 @@
                 "displayName": "PasswordHash",
                 "description": "",
                 "attributeType": "Description",
-                "dataType": "string",
-                "charLength": 128,
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 128,
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": false
+                },
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
             },
@@ -156,9 +228,15 @@
                 "displayName": "PasswordSalt",
                 "description": "",
                 "attributeType": "Description",
-                "dataType": "string",
-                "charLength": 10,
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 10,
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": false
+                },
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
             },
@@ -168,8 +246,14 @@
                 "displayName": "rowguid",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "uniqueidentifier",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "uniqueidentifier",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "uniqueidentifier",
+                    "nullable": false
+                },
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
             },
@@ -179,8 +263,14 @@
                 "displayName": "GeaendertAm",
                 "description": "",
                 "attributeType": "CreationDate",
-                "dataType": "datetime",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "datetime",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "datetime",
+                    "nullable": false
+                },
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
             }

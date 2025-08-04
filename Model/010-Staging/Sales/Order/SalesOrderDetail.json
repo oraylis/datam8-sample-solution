@@ -14,8 +14,14 @@
                 "displayName": "SalesOrderID",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "int",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
                 "type": "BK",
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
@@ -26,8 +32,14 @@
                 "displayName": "SalesOrderDetailID",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "int",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
                 "type": "BK",
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
@@ -38,8 +50,14 @@
                 "displayName": "OrderQty",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "short",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "short",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "short",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -48,8 +66,14 @@
                 "displayName": "ProductID",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "int",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
                 "tags": []
             },
             {
@@ -58,8 +82,14 @@
                 "displayName": "UnitPrice",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "money",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "money",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "money",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -68,8 +98,14 @@
                 "displayName": "UnitPriceDiscount",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "money",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "money",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "money",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -78,10 +114,18 @@
                 "displayName": "LineTotal",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "decimal",
-                "precision": 38,
-                "scale": 6,
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "decimal",
+                    "precision": 38,
+                    "scale": 6,
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "decimal",
+                    "precision": 38,
+                    "scale": 6,
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -90,8 +134,14 @@
                 "displayName": "rowguid",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "uniqueidentifier",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "uniqueidentifier",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "uniqueidentifier",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -100,8 +150,14 @@
                 "displayName": "ModifiedDate",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "datetime",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "datetime",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "datetime",
+                    "nullable": false
+                },
                 "tags": []
             }
         ]
