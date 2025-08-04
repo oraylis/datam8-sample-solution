@@ -1,7 +1,7 @@
 {%- macro ddl_column_declaration(model, attributes) -%}
     -- Table columns
     {%- for column in attributes %}
-        {%- set data_type = model.data_types.get_data_type(column.dataType.value if column.dataType.value is defined else column.dataType) %}
+        {%- set data_type = model.data_types.get_data_type(column.targetDataType.type) %}
         {%- set precision_scale = "" %}
         {%- set nullability = "" if column.nullable else " NOT NULL" %}
         {%- if data_type.hasPrecision %}
@@ -48,7 +48,7 @@
 # DBTITLE 1, Define schema
 schema = StructType([
 {%- for column in attributes -%}
-    {%- set parquet_type = model.data_types.get_data_type(column.dataType.value if column.dataType.value is defined else column.dataType).parquetType %}
+    {%- set parquet_type = model.data_types.get_data_type(column.targetDataType.type).parquetType %}
     {%- set type_details = "(38, 18)" if not column.precision and parquet_type == "decimal" else "" %}
     {%- set type = parquet_type + type_details %}
     StructField("{{ column.name }}", StructType.fromDDL("{{ type }}"), {{ column.nullable if column.nullable is not none else False }}),
