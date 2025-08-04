@@ -134,7 +134,7 @@ print("=== Enhanced Attribute Information ===")
 
 print(f"\n--- Column: {{ column.name }} ---")
 print(f"  Type: {{ column.type.value if column.type else 'None' }}")
-print(f"  Data Type: {{ column.dataType }}")
+print(f"  Data Type: {{ column.targetDataType.type }}")
 {%- if refactor_names %}
 print(f"  Refactor Names: {{ refactor_names | tojson }}")
 {%- endif %}
