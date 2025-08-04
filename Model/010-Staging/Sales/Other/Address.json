@@ -14,8 +14,14 @@
                 "displayName": "AddressID",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "int",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
                 "type": "BK",
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
@@ -26,9 +32,15 @@
                 "displayName": "AddressLine1",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "string",
-                "charLength": 60,
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 60,
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -37,9 +49,15 @@
                 "displayName": "AddressLine2",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "string",
-                "charLength": 60,
-                "nullable": true,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 60,
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": true
+                },
                 "tags": []
             },
             {
@@ -48,9 +66,15 @@
                 "displayName": "City",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "string",
-                "charLength": 30,
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 30,
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -59,9 +83,15 @@
                 "displayName": "StateProvince",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "string",
-                "charLength": 50,
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 50,
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -70,9 +100,15 @@
                 "displayName": "CountryRegion",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "string",
-                "charLength": 50,
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 50,
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -81,9 +117,15 @@
                 "displayName": "PostalCode",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "string",
-                "charLength": 15,
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 15,
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -92,8 +134,14 @@
                 "displayName": "rowguid",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "uniqueidentifier",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "uniqueidentifier",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "uniqueidentifier",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -102,8 +150,14 @@
                 "displayName": "ModifiedDate",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "datetime",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "datetime",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "datetime",
+                    "nullable": false
+                },
                 "tags": []
             }
         ]

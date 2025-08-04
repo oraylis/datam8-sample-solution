@@ -14,8 +14,10 @@
         "displayName": "_CustomerBK",
         "description": "Customer business key",
         "attributeType": "ID",
-        "dataType": "int",
-        "nullable": false,
+        "targetDataType": {
+          "type": "int",
+          "nullable": false
+        },
         "type": "BK",
         "tags": [],
         "refactorNames": [
@@ -29,8 +31,10 @@
         "displayName": "_CustomerSID",
         "description": "Customer surrogate key",
         "attributeType": "SID",
-        "dataType": "long",
-        "nullable": false,
+        "targetDataType": {
+          "type": "long",
+          "nullable": false
+        },
         "type": "SK",
         "tags": [],
         "refactorNames": [
@@ -44,8 +48,10 @@
         "displayName": "CustomerID",
         "description": "Original customer identifier",
         "attributeType": "ID",
-        "dataType": "int",
-        "nullable": true,
+        "targetDataType": {
+          "type": "int",
+          "nullable": true
+        },
         "tags": [],
         "dateModified": "2025-07-23"
       },
@@ -55,9 +61,10 @@
         "displayName": "Display Name",
         "description": "Customer display name",
         "attributeType": "Name",
-        "dataType": "string",
-        "charLength": 128,
-        "nullable": true,
+        "targetDataType": {
+          "type": "string",
+          "nullable": true
+        },
         "type": "SCD2",
         "tags": [],
         "refactorNames": [
@@ -71,9 +78,10 @@
         "displayName": "First Name",
         "description": "Customer first name",
         "attributeType": "Name",
-        "dataType": "string",
-        "charLength": 50,
-        "nullable": true,
+        "targetDataType": {
+          "type": "string",
+          "nullable": true
+        },
         "type": "SCD2",
         "tags": [],
         "dateModified": "2025-07-23"
@@ -84,9 +92,10 @@
         "displayName": "Last Name",
         "description": "Customer last name",
         "attributeType": "Name",
-        "dataType": "string",
-        "charLength": 50,
-        "nullable": true,
+        "targetDataType": {
+          "type": "string",
+          "nullable": true
+        },
         "type": "SCD2",
         "tags": [],
         "dateModified": "2025-07-23"
@@ -97,9 +106,10 @@
         "displayName": "Company Name",
         "description": "Customer company name",
         "attributeType": "Name",
-        "dataType": "string",
-        "charLength": 128,
-        "nullable": true,
+        "targetDataType": {
+          "type": "string",
+          "nullable": true
+        },
         "type": "SCD2",
         "tags": [],
         "dateModified": "2025-07-23"
@@ -110,8 +120,10 @@
         "displayName": "Company Historical Name",
         "description": "Historical company name for SCD2 tracking",
         "attributeType": "Name",
-        "dataType": "string",
-        "nullable": true,
+        "targetDataType": {
+          "type": "string",
+          "nullable": true
+        },
         "type": "SCD2",
         "tags": [],
         "dateModified": "2025-07-23"
@@ -122,9 +134,10 @@
         "displayName": "Customer Email",
         "description": "Customer email address",
         "attributeType": "Email",
-        "dataType": "string",
-        "charLength": 50,
-        "nullable": true,
+        "targetDataType": {
+          "type": "string",
+          "nullable": true
+        },
         "type": "SCD2",
         "tags": [],
         "dateModified": "2025-07-23"
@@ -135,9 +148,10 @@
         "displayName": "Customer Historical Email",
         "description": "Historical email address for SCD2 tracking",
         "attributeType": "Email",
-        "dataType": "string",
-        "charLength": 50,
-        "nullable": true,
+        "targetDataType": {
+          "type": "string",
+          "nullable": true
+        },
         "type": "SCD2",
         "tags": [],
         "dateModified": "2025-07-23"
@@ -148,9 +162,10 @@
         "displayName": "Address Type",
         "description": "Type of customer address (Home, Business, etc.)",
         "attributeType": "Text",
-        "dataType": "string",
-        "charLength": 50,
-        "nullable": true,
+        "targetDataType": {
+          "type": "string",
+          "nullable": true
+        },
         "type": "SCD1",
         "tags": [],
         "refactorNames": [],
@@ -162,9 +177,10 @@
         "displayName": "Address",
         "description": "Full address line",
         "attributeType": "Text",
-        "dataType": "string",
-        "charLength": 120,
-        "nullable": true,
+        "targetDataType": {
+          "type": "string",
+          "nullable": true
+        },
         "type": "SCD1",
         "tags": [],
         "refactorNames": [],
@@ -176,9 +192,10 @@
         "displayName": "Postal Code",
         "description": "Address postal code",
         "attributeType": "Text",
-        "dataType": "string",
-        "charLength": 15,
-        "nullable": true,
+        "targetDataType": {
+          "type": "string",
+          "nullable": true
+        },
         "type": "SCD1",
         "tags": [],
         "dateModified": "2025-07-23"
@@ -189,9 +206,10 @@
         "displayName": "City Name",
         "description": "Address city name",
         "attributeType": "Name",
-        "dataType": "string",
-        "charLength": 30,
-        "nullable": true,
+        "targetDataType": {
+          "type": "string",
+          "nullable": true
+        },
         "type": "SCD1",
         "tags": [],
         "dateModified": "2025-07-23"
@@ -202,9 +220,10 @@
         "displayName": "Country Name",
         "description": "Address country name",
         "attributeType": "Name",
-        "dataType": "string",
-        "charLength": 50,
-        "nullable": true,
+        "targetDataType": {
+          "type": "string",
+          "nullable": true
+        },
         "type": "SCD1",
         "tags": [],
         "refactorNames": [

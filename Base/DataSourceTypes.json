@@ -16,6 +16,10 @@
           "targetType": "integer"
         },
         {
+          "sourceType": "smallint",
+          "targetType": "integer"
+        },
+        {
           "sourceType": "datetime",
           "targetType": "timestamp"
         }

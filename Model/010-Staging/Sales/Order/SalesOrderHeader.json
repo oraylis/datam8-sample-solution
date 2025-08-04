@@ -14,8 +14,14 @@
                 "displayName": "SalesOrderID",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "int",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
                 "type": "BK",
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
@@ -26,8 +32,14 @@
                 "displayName": "RevisionNumber",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "byte",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "byte",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "byte",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -36,8 +48,14 @@
                 "displayName": "OrderDate",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "datetime",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "datetime",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "datetime",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -46,8 +64,14 @@
                 "displayName": "DueDate",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "datetime",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "datetime",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "datetime",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -56,8 +80,14 @@
                 "displayName": "ShipDate",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "datetime",
-                "nullable": true,
+                "sourceDataType": {
+                    "type": "datetime",
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "datetime",
+                    "nullable": true
+                },
                 "tags": []
             },
             {
@@ -66,8 +96,14 @@
                 "displayName": "Status",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "byte",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "byte",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "byte",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -76,8 +112,14 @@
                 "displayName": "OnlineOrderFlag",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "bit",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "bit",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "bit",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -86,9 +128,15 @@
                 "displayName": "SalesOrderNumber",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "string",
-                "charLength": 25,
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 25,
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -97,9 +145,15 @@
                 "displayName": "PurchaseOrderNumber",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "string",
-                "charLength": 25,
-                "nullable": true,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 25,
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": true
+                },
                 "tags": []
             },
             {
@@ -108,9 +162,15 @@
                 "displayName": "AccountNumber",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "string",
-                "charLength": 15,
-                "nullable": true,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 15,
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": true
+                },
                 "tags": []
             },
             {
@@ -119,8 +179,14 @@
                 "displayName": "CustomerID",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "int",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
                 "tags": []
             },
             {
@@ -129,8 +195,14 @@
                 "displayName": "ShipToAddressID",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "int",
-                "nullable": true,
+                "sourceDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
                 "tags": []
             },
             {
@@ -139,8 +211,14 @@
                 "displayName": "BillToAddressID",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "int",
-                "nullable": true,
+                "sourceDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "int",
+                    "nullable": true
+                },
                 "tags": []
             },
             {
@@ -149,9 +227,15 @@
                 "displayName": "ShipMethod",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "string",
-                "charLength": 50,
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 50,
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -160,9 +244,15 @@
                 "displayName": "CreditCardApprovalCode",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "string",
-                "charLength": 15,
-                "nullable": true,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 15,
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": true
+                },
                 "tags": []
             },
             {
@@ -171,8 +261,14 @@
                 "displayName": "SubTotal",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "money",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "money",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "money",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -181,8 +277,14 @@
                 "displayName": "TaxAmt",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "money",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "money",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "money",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -191,8 +293,14 @@
                 "displayName": "Freight",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "money",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "money",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "money",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -201,8 +309,14 @@
                 "displayName": "TotalDue",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "money",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "money",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "money",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -211,8 +325,15 @@
                 "displayName": "Comment",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "string",
-                "nullable": true,
+                "sourceDataType": {
+                    "type": "string",
+                    "charLen": 200,
+                    "nullable": true
+                },
+                "targetDataType": {
+                    "type": "string",
+                    "nullable": true
+                },
                 "tags": []
             },
             {
@@ -221,8 +342,14 @@
                 "displayName": "rowguid",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "uniqueidentifier",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "uniqueidentifier",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "uniqueidentifier",
+                    "nullable": false
+                },
                 "tags": []
             },
             {
@@ -231,8 +358,14 @@
                 "displayName": "ModifiedDate",
                 "description": "",
                 "attributeType": "ID",
-                "dataType": "datetime",
-                "nullable": false,
+                "sourceDataType": {
+                    "type": "datetime",
+                    "nullable": false
+                },
+                "targetDataType": {
+                    "type": "datetime",
+                    "nullable": false
+                },
                 "tags": []
             }
         ]
