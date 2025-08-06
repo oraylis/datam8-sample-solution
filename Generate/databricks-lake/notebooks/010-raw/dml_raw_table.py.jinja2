@@ -1,4 +1,4 @@
-{% import 'databricks-lake/__collections/macro/common_python_snippets.py.jinja2' as py_snippets %}
+{% import '__collections/macro/common_python_snippets.py.jinja2' as py_snippets %}
 
 {%- for entity in model.get_entity_list_by_layer('raw') %}
   {# V2 unified structure - entity is UnifiedEntityFactory #}
@@ -89,9 +89,9 @@ except Exception as _:
 {%- endif %}
 {%- set dataSource = model.data_sources.get_datasource(entityDataSource) %}
   {%- if dataSource.type == 'SqlDataSource' %}
-  {% include 'databricks-lake/notebooks/010-raw/includes/dml_raw_table_sqldatasource.py.jinja2.include' %}
+  {% include 'notebooks/010-raw/includes/dml_raw_table_sqldatasource.py.jinja2.include' %}
 {%- elif dataSource.type == 'LakeSource' %}
-  {% include 'databricks-lake/notebooks/010-raw/includes/dml_raw_table_lakesource.py.jinja2.include' %}
+  {% include 'notebooks/010-raw/includes/dml_raw_table_lakesource.py.jinja2.include' %}
 {%- endif %}
 # COMMAND ----------
 

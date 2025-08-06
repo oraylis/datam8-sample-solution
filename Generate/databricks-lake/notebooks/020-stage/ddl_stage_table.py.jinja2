@@ -1,6 +1,6 @@
 # Macro Import ----------
-{% import 'databricks-lake/__collections/macro/column_declaration_stage.jinja2' as column_declaration %}
-{% import "databricks-lake/__collections/macro/common_python_snippets.py.jinja2" as py_snippets %}
+{% import '__collections/macro/column_declaration_stage.jinja2' as column_declaration %}
+{% import "__collections/macro/common_python_snippets.py.jinja2" as py_snippets %}
 
 {%- for entity in model.get_entity_list_by_layer('stage') %}
   {# V2 unified structure - entity is UnifiedEntityFactory #}
@@ -19,7 +19,7 @@
 
 # COMMAND ----------
 
-{% include "databricks-lake/__collections/include/ddl_type_mapping.py.jinja2" %}
+{% include "__collections/include/ddl_type_mapping.py.jinja2" %}
 
 # COMMAND ----------
 
@@ -76,7 +76,7 @@ refactored_columns = []
 
 # COMMAND ----------
 
-{% include "databricks-lake/__collections/include/ddl_schema_migration.py.jinja" %}
+{% include "__collections/include/ddl_schema_migration.py.jinja" %}
 
 # COMMAND ----------
 
