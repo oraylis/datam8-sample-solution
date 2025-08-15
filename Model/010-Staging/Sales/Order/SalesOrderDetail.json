@@ -14,11 +14,7 @@
                 "displayName": "SalesOrderID",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "int",
                     "nullable": true
                 },
@@ -32,11 +28,7 @@
                 "displayName": "SalesOrderDetailID",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "int",
                     "nullable": true
                 },
@@ -50,11 +42,7 @@
                 "displayName": "OrderQty",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "short",
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "short",
                     "nullable": false
                 },
@@ -66,11 +54,7 @@
                 "displayName": "ProductID",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "int",
                     "nullable": true
                 },
@@ -82,11 +66,7 @@
                 "displayName": "UnitPrice",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "money",
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "money",
                     "nullable": false
                 },
@@ -98,11 +78,7 @@
                 "displayName": "UnitPriceDiscount",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "money",
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "money",
                     "nullable": false
                 },
@@ -114,13 +90,7 @@
                 "displayName": "LineTotal",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "decimal",
-                    "precision": 38,
-                    "scale": 6,
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "decimal",
                     "precision": 38,
                     "scale": 6,
@@ -134,11 +104,7 @@
                 "displayName": "rowguid",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "uniqueidentifier",
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "uniqueidentifier",
                     "nullable": false
                 },
@@ -150,11 +116,7 @@
                 "displayName": "ModifiedDate",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "datetime",
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "datetime",
                     "nullable": false
                 },
@@ -205,39 +167,77 @@
                     "mapping": [
                         {
                             "targetName": "SalesOrderID",
-                            "sourceName": "[SalesOrderID]"
+                            "sourceName": "[SalesOrderID]",
+                            "sourceDataType": {
+                                "type": "int",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "SalesOrderDetailID",
-                            "sourceName": "[SalesOrderDetailID]"
+                            "sourceName": "[SalesOrderDetailID]",
+                            "sourceDataType": {
+                                "type": "int",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "OrderQty",
-                            "sourceName": "[OrderQty]"
+                            "sourceName": "[OrderQty]",
+                            "sourceDataType": {
+                                "type": "short",
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "ProductID",
-                            "sourceName": "[ProductID]"
+                            "sourceName": "[ProductID]",
+                            "sourceDataType": {
+                                "type": "int",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "UnitPrice",
-                            "sourceName": "[UnitPrice]"
+                            "sourceName": "[UnitPrice]",
+                            "sourceDataType": {
+                                "type": "money",
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "UnitPriceDiscount",
-                            "sourceName": "[UnitPriceDiscount]"
+                            "sourceName": "[UnitPriceDiscount]",
+                            "sourceDataType": {
+                                "type": "money",
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "LineTotal",
-                            "sourceName": "[LineTotal]"
+                            "sourceName": "[LineTotal]",
+                            "sourceDataType": {
+                                "type": "decimal",
+                                "precision": 38,
+                                "scale": 6,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "rowguid",
-                            "sourceName": "[rowguid]"
+                            "sourceName": "[rowguid]",
+                            "sourceDataType": {
+                                "type": "uniqueidentifier",
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "ModifiedDate",
-                            "sourceName": "[ModifiedDate]"
+                            "sourceName": "[ModifiedDate]",
+                            "sourceDataType": {
+                                "type": "datetime",
+                                "nullable": false
+                            }
                         }
                     ]
                 }

@@ -18,7 +18,7 @@
                     "type": "int",
                     "nullable": true
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "int",
                     "nullable": true
                 },
@@ -36,7 +36,7 @@
                     "type": "int",
                     "nullable": true
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "int",
                     "nullable": true
                 },
@@ -55,7 +55,7 @@
                     "charLen": 6,
                     "nullable": false
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": false
                 },
@@ -73,7 +73,7 @@
                     "type": "uniqueidentifier",
                     "nullable": false
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "uniqueidentifier",
                     "nullable": false
                 },
@@ -89,7 +89,7 @@
                     "type": "datetime",
                     "nullable": false
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "datetime",
                     "nullable": false
                 },
@@ -141,23 +141,44 @@
                     "mapping": [
                         {
                             "targetName": "ProductModelID",
-                            "sourceName": "[ProductModelID]"
+                            "sourceName": "[ProductModelID]",
+                            "sourceDataType": {
+                                "type": "int",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "ProductDescriptionID",
-                            "sourceName": "[ProductDescriptionID]"
+                            "sourceName": "[ProductDescriptionID]",
+                            "sourceDataType": {
+                                "type": "int",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "Culture",
-                            "sourceName": "[Culture]"
+                            "sourceName": "[Culture]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 6,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "rowguid",
-                            "sourceName": "[rowguid]"
+                            "sourceName": "[rowguid]",
+                            "sourceDataType": {
+                                "type": "uniqueidentifier",
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "ModifiedDate",
-                            "sourceName": "[ModifiedDate]"
+                            "sourceName": "[ModifiedDate]",
+                            "sourceDataType": {
+                                "type": "datetime",
+                                "nullable": false
+                            }
                         }
                     ]
                 }

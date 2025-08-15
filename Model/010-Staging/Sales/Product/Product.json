@@ -14,11 +14,7 @@
                 "displayName": "ProductID",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "int",
                     "nullable": true
                 },
@@ -32,12 +28,7 @@
                 "displayName": "Name",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 50,
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": false
                 },
@@ -54,7 +45,7 @@
                     "charLen": 25,
                     "nullable": false
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": false
                 },
@@ -71,7 +62,7 @@
                     "charLen": 15,
                     "nullable": true
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": true
                 },
@@ -87,7 +78,7 @@
                     "type": "money",
                     "nullable": false
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "money",
                     "nullable": false
                 },
@@ -103,7 +94,7 @@
                     "type": "money",
                     "nullable": false
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "money",
                     "nullable": false
                 },
@@ -120,7 +111,7 @@
                     "charLen": 5,
                     "nullable": true
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": true
                 },
@@ -138,7 +129,7 @@
                     "scale": 2,
                     "nullable": true
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "decimal",
                     "precision": 10,
                     "scale": 2,
@@ -156,7 +147,7 @@
                     "type": "int",
                     "nullable": true
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "int",
                     "nullable": true
                 },
@@ -172,7 +163,7 @@
                     "type": "int",
                     "nullable": true
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "int",
                     "nullable": true
                 },
@@ -188,7 +179,7 @@
                     "type": "datetime",
                     "nullable": false
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "datetime",
                     "nullable": false
                 },
@@ -204,7 +195,7 @@
                     "type": "datetime",
                     "nullable": true
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "datetime",
                     "nullable": true
                 },
@@ -220,7 +211,7 @@
                     "type": "datetime",
                     "nullable": true
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "datetime",
                     "nullable": true
                 },
@@ -236,7 +227,7 @@
                     "type": "binary",
                     "nullable": true
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "binary",
                     "nullable": true
                 },
@@ -253,7 +244,7 @@
                     "charLen": 50,
                     "nullable": true
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": true
                 },
@@ -269,7 +260,7 @@
                     "type": "uniqueidentifier",
                     "nullable": false
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "uniqueidentifier",
                     "nullable": false
                 },
@@ -285,7 +276,7 @@
                     "type": "datetime",
                     "nullable": false
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "datetime",
                     "nullable": false
                 },
@@ -335,71 +326,146 @@
                     "mapping": [
                         {
                             "targetName": "ProductID",
-                            "sourceName": "[ProductID]"
+                            "sourceName": "[ProductID]",
+                            "sourceDataType": {
+                                "type": "int",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "Name",
-                            "sourceName": "[Name]"
+                            "sourceName": "[Name]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 50,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "ProductNumber",
-                            "sourceName": "[ProductNumber]"
+                            "sourceName": "[ProductNumber]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 25,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "Color",
-                            "sourceName": "[Color]"
+                            "sourceName": "[Color]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 15,
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "StandardCost",
-                            "sourceName": "[StandardCost]"
+                            "sourceName": "[StandardCost]",
+                            "sourceDataType": {
+                                "type": "money",
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "ListPrice",
-                            "sourceName": "[ListPrice]"
+                            "sourceName": "[ListPrice]",
+                            "sourceDataType": {
+                                "type": "money",
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "Size",
-                            "sourceName": "[Size]"
+                            "sourceName": "[Size]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 5,
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "Weight",
-                            "sourceName": "[Weight]"
+                            "sourceName": "[Weight]",
+                            "sourceDataType": {
+                                "type": "decimal",
+                                "precision": 8,
+                                "scale": 2,
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "ProductCategoryID",
-                            "sourceName": "[ProductCategoryID]"
+                            "sourceName": "[ProductCategoryID]",
+                            "sourceDataType": {
+                                "type": "int",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "ProductModelID",
-                            "sourceName": "[ProductModelID]"
+                            "sourceName": "[ProductModelID]",
+                            "sourceDataType": {
+                                "type": "int",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "SellStartDate",
-                            "sourceName": "[SellStartDate]"
+                            "sourceName": "[SellStartDate]",
+                            "sourceDataType": {
+                                "type": "datetime",
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "SellEndDate",
-                            "sourceName": "[SellEndDate]"
+                            "sourceName": "[SellEndDate]",
+                            "sourceDataType": {
+                                "type": "datetime",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "DiscontinuedDate",
-                            "sourceName": "[DiscontinuedDate]"
+                            "sourceName": "[DiscontinuedDate]",
+                            "sourceDataType": {
+                                "type": "datetime",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "ThumbNailPhoto",
-                            "sourceName": "[ThumbNailPhoto]"
+                            "sourceName": "[ThumbNailPhoto]",
+                            "sourceDataType": {
+                                "type": "binary",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "ThumbnailPhotoFileName",
-                            "sourceName": "[ThumbnailPhotoFileName]"
+                            "sourceName": "[ThumbnailPhotoFileName]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 50,
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "rowguid",
-                            "sourceName": "[rowguid]"
+                            "sourceName": "[rowguid]",
+                            "sourceDataType": {
+                                "type": "uniqueidentifier",
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "ModifiedDate",
-                            "sourceName": "[ModifiedDate]"
+                            "sourceName": "[ModifiedDate]",
+                            "sourceDataType": {
+                                "type": "datetime",
+                                "nullable": false
+                            }
                         }
                     ]
                 }

@@ -18,7 +18,7 @@
                     "type": "int",
                     "nullable": true
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "int",
                     "nullable": true
                 },
@@ -36,7 +36,7 @@
                     "type": "int",
                     "nullable": true
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "int",
                     "nullable": true
                 },
@@ -53,7 +53,7 @@
                     "charLen": 50,
                     "nullable": false
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": false
                 },
@@ -69,7 +69,7 @@
                     "type": "uniqueidentifier",
                     "nullable": false
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "uniqueidentifier",
                     "nullable": false
                 },
@@ -85,7 +85,7 @@
                     "type": "datetime",
                     "nullable": false
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "datetime",
                     "nullable": false
                 },
@@ -135,23 +135,44 @@
                     "mapping": [
                         {
                             "targetName": "ProductCategoryID",
-                            "sourceName": "[ProductCategoryID]"
+                            "sourceName": "[ProductCategoryID]",
+                            "sourceDataType": {
+                                "type": "int",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "ParentProductCategoryID",
-                            "sourceName": "[ParentProductCategoryID]"
+                            "sourceName": "[ParentProductCategoryID]",
+                            "sourceDataType": {
+                                "type": "int",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "Name",
-                            "sourceName": "[Name]"
+                            "sourceName": "[Name]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 50,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "rowguid",
-                            "sourceName": "[rowguid]"
+                            "sourceName": "[rowguid]",
+                            "sourceDataType": {
+                                "type": "uniqueidentifier",
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "ModifiedDate",
-                            "sourceName": "[ModifiedDate]"
+                            "sourceName": "[ModifiedDate]",
+                            "sourceDataType": {
+                                "type": "datetime",
+                                "nullable": false
+                            }
                         }
                     ]
                 }
