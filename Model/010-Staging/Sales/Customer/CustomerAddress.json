@@ -14,11 +14,7 @@
                 "displayName": "CustomerID",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "int",
                     "nullable": true
                 },
@@ -32,11 +28,7 @@
                 "displayName": "AddressID",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "int",
                     "nullable": true
                 },
@@ -50,12 +42,7 @@
                 "displayName": "AddressType",
                 "description": "",
                 "attributeType": "Description",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 50,
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": false
                 },
@@ -67,11 +54,7 @@
                 "displayName": "rowguid",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "uniqueidentifier",
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "uniqueidentifier",
                     "nullable": false
                 },
@@ -83,11 +66,7 @@
                 "displayName": "ModifiedDate",
                 "description": "",
                 "attributeType": "CreationDate",
-                "sourceDataType": {
-                    "type": "datetime",
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "datetime",
                     "nullable": false
                 },
@@ -138,23 +117,44 @@
                     "mapping": [
                         {
                             "targetName": "CustomerID",
-                            "sourceName": "[CustomerID]"
+                            "sourceName": "[CustomerID]",
+                            "sourceDataType": {
+                                "type": "int",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "AddressID",
-                            "sourceName": "[AddressID]"
+                            "sourceName": "[AddressID]",
+                            "sourceDataType": {
+                                "type": "int",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "AddressType",
-                            "sourceName": "[AddressType]"
+                            "sourceName": "[AddressType]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 50,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "rowguid",
-                            "sourceName": "[rowguid]"
+                            "sourceName": "[rowguid]",
+                            "sourceDataType": {
+                                "type": "uniqueidentifier",
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "ModifiedDate",
-                            "sourceName": "[ModifiedDate]"
+                            "sourceName": "[ModifiedDate]",
+                            "sourceDataType": {
+                                "type": "datetime",
+                                "nullable": false
+                            }
                         }
                     ]
                 }

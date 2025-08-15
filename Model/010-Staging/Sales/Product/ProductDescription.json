@@ -18,7 +18,7 @@
                     "type": "int",
                     "nullable": true
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "int",
                     "nullable": true
                 },
@@ -37,7 +37,7 @@
                     "charLen": 400,
                     "nullable": false
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": false
                 },
@@ -53,7 +53,7 @@
                     "type": "uniqueidentifier",
                     "nullable": false
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "uniqueidentifier",
                     "nullable": false
                 },
@@ -69,7 +69,7 @@
                     "type": "datetime",
                     "nullable": false
                 },
-                "targetDataType": {
+                "dataType": {
                     "type": "datetime",
                     "nullable": false
                 },
@@ -119,19 +119,36 @@
                     "mapping": [
                         {
                             "targetName": "ProductDescriptionID",
-                            "sourceName": "[ProductDescriptionID]"
+                            "sourceName": "[ProductDescriptionID]",
+                            "sourceDataType": {
+                                "type": "int",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "Description",
-                            "sourceName": "[Description]"
+                            "sourceName": "[Description]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 400,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "rowguid",
-                            "sourceName": "[rowguid]"
+                            "sourceName": "[rowguid]",
+                            "sourceDataType": {
+                                "type": "uniqueidentifier",
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "ModifiedDate",
-                            "sourceName": "[ModifiedDate]"
+                            "sourceName": "[ModifiedDate]",
+                            "sourceDataType": {
+                                "type": "datetime",
+                                "nullable": false
+                            }
                         }
                     ]
                 }

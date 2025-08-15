@@ -14,11 +14,7 @@
                 "displayName": "AddressID",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "int",
                     "nullable": true
                 },
@@ -32,12 +28,7 @@
                 "displayName": "AddressLine1",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 60,
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": false
                 },
@@ -49,12 +40,7 @@
                 "displayName": "AddressLine2",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 60,
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": true
                 },
@@ -66,12 +52,7 @@
                 "displayName": "City",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 30,
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": false
                 },
@@ -83,12 +64,7 @@
                 "displayName": "StateProvince",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 50,
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": false
                 },
@@ -100,12 +76,7 @@
                 "displayName": "CountryRegion",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 50,
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": false
                 },
@@ -117,12 +88,7 @@
                 "displayName": "PostalCode",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 15,
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": false
                 },
@@ -134,11 +100,7 @@
                 "displayName": "rowguid",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "uniqueidentifier",
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "uniqueidentifier",
                     "nullable": false
                 },
@@ -150,11 +112,7 @@
                 "displayName": "ModifiedDate",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "datetime",
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "datetime",
                     "nullable": false
                 },
@@ -204,39 +162,81 @@
                     "mapping": [
                         {
                             "targetName": "AddressID",
-                            "sourceName": "[AddressID]"
+                            "sourceName": "[AddressID]",
+                            "sourceDataType": {
+                                "type": "int",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "AddressLine1",
-                            "sourceName": "[AddressLine1]"
+                            "sourceName": "[AddressLine1]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 60,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "AddressLine2",
-                            "sourceName": "[AddressLine2]"
+                            "sourceName": "[AddressLine2]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 60,
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "City",
-                            "sourceName": "[City]"
+                            "sourceName": "[City]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 30,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "StateProvince",
-                            "sourceName": "[StateProvince]"
+                            "sourceName": "[StateProvince]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 50,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "CountryRegion",
-                            "sourceName": "[CountryRegion]"
+                            "sourceName": "[CountryRegion]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 50,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "PostalCode",
-                            "sourceName": "[PostalCode]"
+                            "sourceName": "[PostalCode]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 15,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "rowguid",
-                            "sourceName": "[rowguid]"
+                            "sourceName": "[rowguid]",
+                            "sourceDataType": {
+                                "type": "uniqueidentifier",
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "ModifiedDate",
-                            "sourceName": "[ModifiedDate]"
+                            "sourceName": "[ModifiedDate]",
+                            "sourceDataType": {
+                                "type": "datetime",
+                                "nullable": false
+                            }
                         }
                     ]
                 }

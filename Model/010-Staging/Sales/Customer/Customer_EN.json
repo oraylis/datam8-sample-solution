@@ -14,11 +14,7 @@
                 "displayName": "CustomerID",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "int",
                     "nullable": true
                 },
@@ -32,11 +28,7 @@
                 "displayName": "NameStyle",
                 "description": "",
                 "attributeType": "Flag",
-                "sourceDataType": {
-                    "type": "bit",
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "bit",
                     "nullable": false
                 },
@@ -48,12 +40,7 @@
                 "displayName": "Title",
                 "description": "",
                 "attributeType": "Name",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 8,
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": true
                 },
@@ -65,12 +52,7 @@
                 "displayName": "FirstName",
                 "description": "",
                 "attributeType": "Name",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 50,
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": false
                 },
@@ -83,12 +65,7 @@
                 "displayName": "MiddleName",
                 "description": "",
                 "attributeType": "Name",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 50,
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": true
                 },
@@ -101,12 +78,7 @@
                 "displayName": "LastName",
                 "description": "",
                 "attributeType": "Name",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 50,
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": false
                 },
@@ -120,12 +92,7 @@
                 "displayName": "Suffix",
                 "description": "",
                 "attributeType": "Name",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 10,
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": true
                 },
@@ -138,12 +105,7 @@
                 "displayName": "CompanyName",
                 "description": "",
                 "attributeType": "Name",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 128,
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": true
                 },
@@ -156,12 +118,7 @@
                 "displayName": "SalesPerson",
                 "description": "",
                 "attributeType": "Name",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 256,
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": true
                 },
@@ -174,12 +131,7 @@
                 "displayName": "EmailAddress",
                 "description": "",
                 "attributeType": "Email",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 50,
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": true
                 },
@@ -192,12 +144,7 @@
                 "displayName": "Phone",
                 "description": "",
                 "attributeType": "Description",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 25,
-                    "nullable": true
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": true
                 },
@@ -210,12 +157,7 @@
                 "displayName": "PasswordHash",
                 "description": "",
                 "attributeType": "Description",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 128,
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": false
                 },
@@ -228,12 +170,7 @@
                 "displayName": "PasswordSalt",
                 "description": "",
                 "attributeType": "Description",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 10,
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "string",
                     "nullable": false
                 },
@@ -246,11 +183,7 @@
                 "displayName": "rowguid",
                 "description": "",
                 "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "uniqueidentifier",
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "uniqueidentifier",
                     "nullable": false
                 },
@@ -263,11 +196,7 @@
                 "displayName": "ModifiedDate",
                 "description": "",
                 "attributeType": "CreationDate",
-                "sourceDataType": {
-                    "type": "datetime",
-                    "nullable": false
-                },
-                "targetDataType": {
+                "dataType": {
                     "type": "datetime",
                     "nullable": false
                 },
@@ -318,63 +247,134 @@
                     "mapping": [
                         {
                             "targetName": "CustomerID",
-                            "sourceName": "[CustomerID]"
+                            "sourceName": "[CustomerID]",
+                            "sourceDataType": {
+                                "type": "int",
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "NameStyle",
-                            "sourceName": "[NameStyle]"
+                            "sourceName": "[NameStyle]",
+                            "sourceDataType": {
+                                "type": "bit",
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "Title",
-                            "sourceName": "[Title]"
+                            "sourceName": "[Title]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 8,
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "FirstName",
-                            "sourceName": "[FirstName]"
+                            "sourceName": "[FirstName]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 50,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "MiddleName",
-                            "sourceName": "[MiddleName]"
+                            "sourceName": "[MiddleName]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 50,
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "LastName",
-                            "sourceName": "[LastName]"
+                            "sourceName": "[LastName]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 50,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "Suffix",
-                            "sourceName": "[Suffix]"
+                            "sourceName": "[Suffix]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 10,
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "CompanyName",
-                            "sourceName": "[CompanyName]"
+                            "sourceName": "[CompanyName]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 128,
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "SalesPerson",
-                            "sourceName": "[SalesPerson]"
+                            "sourceName": "[SalesPerson]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 256,
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "EmailAddress",
-                            "sourceName": "[EmailAddress]"
+                            "sourceName": "[EmailAddress]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 50,
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "Phone",
-                            "sourceName": "[Phone]"
+                            "sourceName": "[Phone]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 25,
+                                "nullable": true
+                            }
                         },
                         {
                             "targetName": "PasswordHash",
-                            "sourceName": "[PasswordHash]"
+                            "sourceName": "[PasswordHash]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 128,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "PasswordSalt",
-                            "sourceName": "[PasswordSalt]"
+                            "sourceName": "[PasswordSalt]",
+                            "sourceDataType": {
+                                "type": "string",
+                                "charLen": 10,
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "rowguid",
-                            "sourceName": "[rowguid]"
+                            "sourceName": "[rowguid]",
+                            "sourceDataType": {
+                                "type": "uniqueidentifier",
+                                "nullable": false
+                            }
                         },
                         {
                             "targetName": "ModifiedDate",
-                            "sourceName": "[ModifiedDate]"
+                            "sourceName": "[ModifiedDate]",
+                            "sourceDataType": {
+                                "type": "datetime",
+                                "nullable": false
+                            }
                         }
                     ]
                 }
