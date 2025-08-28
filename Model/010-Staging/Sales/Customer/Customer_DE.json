@@ -4,7 +4,6 @@
     "name": "Customer_DE",
     "displayName": "Customer__DE",
     "description": "Core customer information entity",
-    "tags": [],
     "properties": [
         {
             "type": "jobs",
@@ -23,7 +22,6 @@
         {
             "ordinalNumber": 1,
             "name": "KundenID",
-            "displayName": "KundenID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -31,7 +29,6 @@
                 "nullable": true
             },
             "type": "BK",
-            "tags": [],
             "properties": [
                 {
                     "type": "data_layout",
@@ -43,57 +40,48 @@
         {
             "ordinalNumber": 2,
             "name": "NamensTyp",
-            "displayName": "NamensTyp",
             "description": "",
             "attributeType": "Flag",
             "dataType": {
                 "type": "bit",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 3,
             "name": "Titel",
-            "displayName": "Titel",
             "description": "",
             "attributeType": "Name",
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 4,
             "name": "Vorname",
-            "displayName": "Vorname",
             "description": "",
             "attributeType": "Name",
             "dataType": {
                 "type": "string",
                 "nullable": false
             },
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 5,
             "name": "Nameszusatz1",
-            "displayName": "Nameszusatz1",
             "description": "",
             "attributeType": "Name",
             "dataType": {
                 "type": "string",
                 "nullable": true
             },
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 6,
             "name": "Nachname",
-            "displayName": "Nachname",
             "description": "",
             "attributeType": "Name",
             "dataType": {
@@ -101,124 +89,105 @@
                 "nullable": false
             },
             "type": "SCD2",
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 7,
             "name": "Namenszusatz2",
-            "displayName": "Namenszusatz2",
             "description": "",
             "attributeType": "Name",
             "dataType": {
                 "type": "string",
                 "nullable": true
             },
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 8,
             "name": "Firma",
-            "displayName": "Firma",
             "description": "",
             "attributeType": "Name",
             "dataType": {
                 "type": "string",
                 "nullable": true
             },
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 9,
             "name": "Verkaeufer",
-            "displayName": "Verkaeufer",
             "description": "",
             "attributeType": "Name",
             "dataType": {
                 "type": "string",
                 "nullable": true
             },
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 10,
             "name": "Email",
-            "displayName": "Email",
             "description": "",
             "attributeType": "Email",
             "dataType": {
                 "type": "string",
                 "nullable": true
             },
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 11,
             "name": "Telefon",
-            "displayName": "Telefon",
             "description": "",
             "attributeType": "Description",
             "dataType": {
                 "type": "string",
                 "nullable": true
             },
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 12,
             "name": "PasswordHash",
-            "displayName": "PasswordHash",
             "description": "",
             "attributeType": "Description",
             "dataType": {
                 "type": "string",
                 "nullable": false
             },
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 13,
             "name": "PasswordSalt",
-            "displayName": "PasswordSalt",
             "description": "",
             "attributeType": "Description",
             "dataType": {
                 "type": "string",
                 "nullable": false
             },
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 14,
             "name": "rowguid",
-            "displayName": "rowguid",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "uniqueidentifier",
                 "nullable": false
             },
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 15,
             "name": "GeaendertAm",
-            "displayName": "GeaendertAm",
             "description": "",
             "attributeType": "CreationDate",
             "dataType": {
                 "type": "datetime",
                 "nullable": false
             },
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         }
     ],

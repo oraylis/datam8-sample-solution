@@ -4,7 +4,6 @@
     "name": "DIMTIME",
     "displayName": "DIMTIME",
     "description": "Time dimension entity for calendar and fiscal dates",
-    "tags": [],
     "properties": [
         {
             "type": "jobs",
@@ -23,7 +22,6 @@
         {
             "ordinalNumber": 1,
             "name": "TIMEKEY",
-            "displayName": "TIMEKEY",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -31,224 +29,187 @@
                 "nullable": true
             },
             "type": "BK",
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 2,
             "name": "FULLDATEALTERNATEKEY",
-            "displayName": "FULLDATEALTERNATEKEY",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "datetime",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 3,
             "name": "DAYNUMBEROFWEEK",
-            "displayName": "DAYNUMBEROFWEEK",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 4,
             "name": "ENGLISHDAYNAMEOFWEEK",
-            "displayName": "ENGLISHDAYNAMEOFWEEK",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 5,
             "name": "SPANISHDAYNAMEOFWEEK",
-            "displayName": "SPANISHDAYNAMEOFWEEK",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 6,
             "name": "FRENCHDAYNAMEOFWEEK",
-            "displayName": "FRENCHDAYNAMEOFWEEK",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 7,
             "name": "DAYNUMBEROFMONTH",
-            "displayName": "DAYNUMBEROFMONTH",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 8,
             "name": "DAYNUMBEROFYEAR",
-            "displayName": "DAYNUMBEROFYEAR",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 9,
             "name": "WEEKNUMBEROFYEAR",
-            "displayName": "WEEKNUMBEROFYEAR",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 10,
             "name": "ENGLISHMONTHNAME",
-            "displayName": "ENGLISHMONTHNAME",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 11,
             "name": "SPANISHMONTHNAME",
-            "displayName": "SPANISHMONTHNAME",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 12,
             "name": "FRENCHMONTHNAME",
-            "displayName": "FRENCHMONTHNAME",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 13,
             "name": "MONTHNUMBEROFYEAR",
-            "displayName": "MONTHNUMBEROFYEAR",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 14,
             "name": "CALENDARQUARTER",
-            "displayName": "CALENDARQUARTER",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 15,
             "name": "CALENDARYEAR",
-            "displayName": "CALENDARYEAR",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 16,
             "name": "CALENDARSEMESTER",
-            "displayName": "CALENDARSEMESTER",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 17,
             "name": "FISCALQUARTER",
-            "displayName": "FISCALQUARTER",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 18,
             "name": "FISCALYEAR",
-            "displayName": "FISCALYEAR",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 19,
             "name": "FISCALSEMESTER",
-            "displayName": "FISCALSEMESTER",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         }
     ],
     "sources": [

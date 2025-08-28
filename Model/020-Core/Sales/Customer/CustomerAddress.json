@@ -4,7 +4,6 @@
   "name": "CustomerAddress",
   "displayName": "CustomerAddress",
   "description": "Core customer address relationship entity",
-  "tags": [],
   "properties": [
     {
       "type": "jobs",
@@ -23,7 +22,6 @@
     {
       "ordinalNumber": 1,
       "name": "_CustomerAddressBK",
-      "displayName": "_CustomerAddressBK",
       "description": "",
       "attributeType": "ID",
       "dataType": {
@@ -31,7 +29,6 @@
         "nullable": false
       },
       "type": "BK",
-      "tags": [],
       "refactorNames": [
         "_CustomerBK"
       ],
@@ -40,7 +37,6 @@
     {
       "ordinalNumber": 2,
       "name": "_CustomerAddressSID",
-      "displayName": "_CustomerAddressSID",
       "description": "",
       "attributeType": "SID",
       "dataType": {
@@ -48,7 +44,6 @@
         "nullable": false
       },
       "type": "SK",
-      "tags": [],
       "refactorNames": [
         "_CustomerSID"
       ]
@@ -56,7 +51,6 @@
     {
       "ordinalNumber": 3,
       "name": "AddressID",
-      "displayName": "AddressID",
       "description": "",
       "attributeType": "ID",
       "dataType": {
@@ -64,7 +58,6 @@
         "nullable": false
       },
       "type": "SCD1",
-      "tags": [],
       "refactorNames": [
         "AddressID",
         "AddressSID"
@@ -74,7 +67,6 @@
     {
       "ordinalNumber": 4,
       "name": "CustomerID",
-      "displayName": "CustomerID",
       "description": "",
       "attributeType": "ID",
       "dataType": {
@@ -82,7 +74,6 @@
         "nullable": false
       },
       "type": "SCD0",
-      "tags": [],
       "refactorNames": [
         "CustomerBK",
         "CustomerID",
@@ -92,7 +83,6 @@
     {
       "ordinalNumber": 5,
       "name": "AddressType",
-      "displayName": "AddressType",
       "description": "",
       "attributeType": "Text",
       "dataType": {
@@ -100,7 +90,6 @@
         "nullable": false
       },
       "type": "SCD1",
-      "tags": [],
       "refactorNames": [
         "AddressType",
         "AddressTypeName"

@@ -4,7 +4,6 @@
     "name": "Product",
     "displayName": "Product",
     "description": "Product catalog entity",
-    "tags": [],
     "properties": [
         {
             "type": "jobs",
@@ -23,7 +22,6 @@
         {
             "ordinalNumber": 1,
             "name": "ProductID",
-            "displayName": "ProductID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -31,25 +29,21 @@
                 "nullable": true
             },
             "type": "BK",
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 2,
             "name": "Name",
-            "displayName": "Name",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 3,
             "name": "ProductNumber",
-            "displayName": "ProductNumber",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -60,13 +54,11 @@
             "dataType": {
                 "type": "string",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 4,
             "name": "Color",
-            "displayName": "Color",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -77,13 +69,11 @@
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 5,
             "name": "StandardCost",
-            "displayName": "StandardCost",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -93,13 +83,11 @@
             "dataType": {
                 "type": "money",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 6,
             "name": "ListPrice",
-            "displayName": "ListPrice",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -109,13 +97,11 @@
             "dataType": {
                 "type": "money",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 7,
             "name": "Size",
-            "displayName": "Size",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -126,13 +112,11 @@
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 8,
             "name": "Weight",
-            "displayName": "Weight",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -146,13 +130,11 @@
                 "precision": 10,
                 "scale": 2,
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 9,
             "name": "ProductCategoryID",
-            "displayName": "ProductCategoryID",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -162,13 +144,11 @@
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 10,
             "name": "ProductModelID",
-            "displayName": "ProductModelID",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -178,13 +158,11 @@
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 11,
             "name": "SellStartDate",
-            "displayName": "SellStartDate",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -194,13 +172,11 @@
             "dataType": {
                 "type": "datetime",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 12,
             "name": "SellEndDate",
-            "displayName": "SellEndDate",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -210,13 +186,11 @@
             "dataType": {
                 "type": "datetime",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 13,
             "name": "DiscontinuedDate",
-            "displayName": "DiscontinuedDate",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -226,13 +200,11 @@
             "dataType": {
                 "type": "datetime",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 14,
             "name": "ThumbNailPhoto",
-            "displayName": "ThumbNailPhoto",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -242,13 +214,11 @@
             "dataType": {
                 "type": "binary",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 15,
             "name": "ThumbnailPhotoFileName",
-            "displayName": "ThumbnailPhotoFileName",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -259,13 +229,11 @@
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 16,
             "name": "rowguid",
-            "displayName": "rowguid",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -275,13 +243,11 @@
             "dataType": {
                 "type": "uniqueidentifier",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 17,
             "name": "ModifiedDate",
-            "displayName": "ModifiedDate",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -291,8 +257,7 @@
             "dataType": {
                 "type": "datetime",
                 "nullable": false
-            },
-            "tags": []
+            }
         }
     ],
     "sources": [

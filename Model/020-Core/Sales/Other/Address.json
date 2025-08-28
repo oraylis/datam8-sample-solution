@@ -4,7 +4,6 @@
   "name": "Address",
   "displayName": "Address",
   "description": "Core address dimension with location data",
-  "tags": [],
   "properties": [
     {
       "type": "jobs",
@@ -23,7 +22,6 @@
     {
       "ordinalNumber": 1,
       "name": "_AddressBK",
-      "displayName": "_AddressBK",
       "description": "",
       "attributeType": "ID",
       "dataType": {
@@ -31,14 +29,12 @@
         "nullable": false
       },
       "type": "BK",
-      "tags": [],
       "refactorNames": [],
       "dateModified": "2025-03-28 16:16:38"
     },
     {
       "ordinalNumber": 2,
       "name": "_AddressSID",
-      "displayName": "_AddressSID",
       "description": "",
       "attributeType": "SID",
       "dataType": {
@@ -46,13 +42,11 @@
         "nullable": false
       },
       "type": "SK",
-      "tags": [],
       "refactorNames": []
     },
     {
       "ordinalNumber": 3,
       "name": "AddressID",
-      "displayName": "AddressID",
       "description": "",
       "attributeType": "ID",
       "dataType": {
@@ -60,14 +54,12 @@
         "nullable": false
       },
       "type": "SCD1",
-      "tags": [],
       "refactorNames": [],
       "dateModified": "2025-03-28 16:16:38"
     },
     {
       "ordinalNumber": 4,
       "name": "AddressLine1",
-      "displayName": "AddressLine1",
       "description": "",
       "attributeType": "Text",
       "dataType": {
@@ -75,7 +67,6 @@
         "nullable": false
       },
       "type": "SCD1",
-      "tags": [],
       "refactorNames": [
         "AddressLine1",
         "AddressLine1Name"
@@ -85,7 +76,6 @@
     {
       "ordinalNumber": 5,
       "name": "AddressLine2",
-      "displayName": "AddressLine2",
       "description": "",
       "attributeType": "Text",
       "dataType": {
@@ -93,13 +83,11 @@
         "nullable": true
       },
       "type": "SCD1",
-      "tags": [],
       "refactorNames": []
     },
     {
       "ordinalNumber": 6,
       "name": "CityName",
-      "displayName": "City",
       "description": "",
       "attributeType": "Name",
       "dataType": {
@@ -107,7 +95,6 @@
         "nullable": false
       },
       "type": "SCD1",
-      "tags": [],
       "refactorNames": [
         "City"
       ]
@@ -115,7 +102,6 @@
     {
       "ordinalNumber": 7,
       "name": "CountryRegionName",
-      "displayName": "CountryRegion",
       "description": "",
       "attributeType": "Name",
       "dataType": {
@@ -123,7 +109,6 @@
         "nullable": false
       },
       "type": "SCD1",
-      "tags": [],
       "refactorNames": [
         "CountryRegion"
       ]
@@ -131,7 +116,6 @@
     {
       "ordinalNumber": 8,
       "name": "PostalCode",
-      "displayName": "PostalCode",
       "description": "",
       "attributeType": "Text",
       "dataType": {
@@ -139,13 +123,11 @@
         "nullable": false
       },
       "type": "SCD1",
-      "tags": [],
       "refactorNames": []
     },
     {
       "ordinalNumber": 9,
       "name": "StateProvinceName",
-      "displayName": "StateProvince",
       "description": "",
       "attributeType": "Name",
       "dataType": {
@@ -153,7 +135,6 @@
         "nullable": false
       },
       "type": "SCD1",
-      "tags": [],
       "refactorNames": [
         "StateProvince"
       ]
