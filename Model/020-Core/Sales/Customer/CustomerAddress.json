@@ -1,152 +1,133 @@
 {
   "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/ModelDataEntity.json",
   "type": "entity",
-  "entity": {
-    "name": "CustomerAddress",
-    "displayName": "CustomerAddress",
-    "description": "Core customer address relationship entity",
-    "tags": [],
-    "parameters": [],
-    "attribute": [
-      {
-        "ordinalNumber": 1,
-        "name": "_CustomerAddressBK",
-        "displayName": "_CustomerAddressBK",
-        "description": "",
-        "attributeType": "ID",
-        "targetDataType": {
-          "type": "string",
-          "nullable": false
-        },
-        "type": "BK",
-        "tags": [],
-        "refactorNames": [
-          "_CustomerBK"
-        ],
-        "dateModified": "2025-03-28 16:16:38"
-      },
-      {
-        "ordinalNumber": 2,
-        "name": "_CustomerAddressSID",
-        "displayName": "_CustomerAddressSID",
-        "description": "",
-        "attributeType": "SID",
-        "targetDataType": {
-          "type": "long",
-          "nullable": false
-        },
-        "type": "SK",
-        "tags": [],
-        "refactorNames": [
-          "_CustomerSID"
-        ]
-      },
-      {
-        "ordinalNumber": 3,
-        "name": "AddressID",
-        "displayName": "AddressID",
-        "description": "",
-        "attributeType": "ID",
-        "targetDataType": {
-          "type": "int",
-          "nullable": false
-        },
-        "type": "SCD1",
-        "tags": [],
-        "refactorNames": [
-          "AddressID",
-          "AddressSID"
-        ],
-        "dateModified": "2025-03-28 16:16:38"
-      },
-      {
-        "ordinalNumber": 4,
-        "name": "CustomerID",
-        "displayName": "CustomerID",
-        "description": "",
-        "attributeType": "ID",
-        "targetDataType": {
-          "type": "int",
-          "nullable": false
-        },
-        "type": "SCD0",
-        "tags": [],
-        "refactorNames": [
-          "CustomerBK",
-          "CustomerID",
-          "CustomerSID"
-        ]
-      },
-      {
-        "ordinalNumber": 5,
-        "name": "AddressType",
-        "displayName": "AddressType",
-        "description": "",
-        "attributeType": "Text",
-        "targetDataType": {
-          "type": "string",
-          "nullable": false
-        },
-        "type": "SCD1",
-        "tags": [],
-        "refactorNames": [
-          "AddressType",
-          "AddressTypeName"
-        ],
-        "dateModified": "2025-03-28 16:16:38"
-      }
-    ]
-  },
-  "functions": {
-    "trigger": {
-      "mode": "children"
+  "name": "CustomerAddress",
+  "displayName": "CustomerAddress",
+  "description": "Core customer address relationship entity",
+  "tags": [],
+  "properties": [
+    {
+      "type": "jobs",
+      "value": "sales_daily"
     },
-    "store": {
-      "write_mode": "overwrite",
-      "layout": {
-        "type": "liquid_clustering",
-        "keys": [
-          "_CustomerAddressSID"
-        ]
-      }
+    {
+      "type": "write_mode",
+      "value": "overwrite"
     },
-    "sources": [
-      {
-        "type": "model",
-        "model": {
-          "dm8l": "/010-Staging/Sales/Customer/CustomerAddress",
-          "mapping": [
-            {
-              "name": "CustomerID",
-              "sourceName": "CustomerID"
-            },
-            {
-              "name": "AddressID",
-              "sourceName": "AddressID"
-            },
-            {
-              "name": "AddressType",
-              "sourceName": "AddressType"
-            },
-            {
-              "sourceName": "rowguid"
-            },
-            {
-              "sourceName": "ModifiedDate"
-            }
-          ]
+    {
+      "type": "data_retention",
+      "value": "7_days"
+    }
+  ],
+  "attribute": [
+    {
+      "ordinalNumber": 1,
+      "name": "_CustomerAddressBK",
+      "displayName": "_CustomerAddressBK",
+      "description": "",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "type": "BK",
+      "tags": [],
+      "refactorNames": [
+        "_CustomerBK"
+      ],
+      "dateModified": "2025-03-28 16:16:38"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "_CustomerAddressSID",
+      "displayName": "_CustomerAddressSID",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "type": "SK",
+      "tags": [],
+      "refactorNames": [
+        "_CustomerSID"
+      ]
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "AddressID",
+      "displayName": "AddressID",
+      "description": "",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "type": "SCD1",
+      "tags": [],
+      "refactorNames": [
+        "AddressID",
+        "AddressSID"
+      ],
+      "dateModified": "2025-03-28 16:16:38"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "CustomerID",
+      "displayName": "CustomerID",
+      "description": "",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "type": "SCD0",
+      "tags": [],
+      "refactorNames": [
+        "CustomerBK",
+        "CustomerID",
+        "CustomerSID"
+      ]
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "AddressType",
+      "displayName": "AddressType",
+      "description": "",
+      "attributeType": "Text",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "type": "SCD1",
+      "tags": [],
+      "refactorNames": [
+        "AddressType",
+        "AddressTypeName"
+      ],
+      "dateModified": "2025-03-28 16:16:38"
+    }
+  ],
+  "sources": [
+    {
+      "dataSource": null,
+      "sourceLocation": "/010-Staging/Sales/Customer/CustomerAddress",
+      "properties": [
+        {
+          "type": "extract_mode",
+          "value": "delta"
         }
+      ]
+    }
+  ],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "transform_first_step",
+      "function": {
+        "source": "CustomerAddress.py"
       }
-    ],
-    "transformations": [
-      {
-        "stepNo": 1,
-        "kind": "function",
-        "name": "transform_first_step",
-        "function": {
-          "source": "CustomerAddress.py"
-        }
-      }
-    ]
-  }
+    }
+  ]
 }

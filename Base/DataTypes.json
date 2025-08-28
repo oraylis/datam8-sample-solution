@@ -4,7 +4,7 @@
   "dataTypes": [
     {
       "name": "string",
-      "displayName": "Unicode String (UTF-8) with char lenght",
+      "displayName": "Unicode String (UTF-8) with char length",
       "description": "#",
       "hasCharLen": true,
       "hasPrecision": false,

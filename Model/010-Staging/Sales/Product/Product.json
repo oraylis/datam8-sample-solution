@@ -1,475 +1,462 @@
 {
     "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/ModelDataEntity.json",
     "type": "entity",
-    "entity": {
-        "name": "Product",
-        "displayName": "Product",
-        "description": "Product catalog entity",
-        "tags": [],
-        "parameters": [],
-        "attribute": [
-            {
-                "ordinalNumber": 1,
-                "name": "ProductID",
-                "displayName": "ProductID",
-                "description": "",
-                "attributeType": "ID",
-                "dataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "type": "BK",
-                "tags": [],
-                "dateModified": "2025-03-28 16:16:38"
-            },
-            {
-                "ordinalNumber": 2,
-                "name": "Name",
-                "displayName": "Name",
-                "description": "",
-                "attributeType": "ID",
-                "dataType": {
-                    "type": "string",
-                    "nullable": false
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 3,
-                "name": "ProductNumber",
-                "displayName": "ProductNumber",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 25,
-                    "nullable": false
-                },
-                "dataType": {
-                    "type": "string",
-                    "nullable": false
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 4,
-                "name": "Color",
-                "displayName": "Color",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 15,
-                    "nullable": true
-                },
-                "dataType": {
-                    "type": "string",
-                    "nullable": true
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 5,
-                "name": "StandardCost",
-                "displayName": "StandardCost",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "money",
-                    "nullable": false
-                },
-                "dataType": {
-                    "type": "money",
-                    "nullable": false
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 6,
-                "name": "ListPrice",
-                "displayName": "ListPrice",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "money",
-                    "nullable": false
-                },
-                "dataType": {
-                    "type": "money",
-                    "nullable": false
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 7,
-                "name": "Size",
-                "displayName": "Size",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 5,
-                    "nullable": true
-                },
-                "dataType": {
-                    "type": "string",
-                    "nullable": true
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 8,
-                "name": "Weight",
-                "displayName": "Weight",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "decimal",
-                    "precision": 8,
-                    "scale": 2,
-                    "nullable": true
-                },
-                "dataType": {
-                    "type": "decimal",
-                    "precision": 10,
-                    "scale": 2,
-                    "nullable": true
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 9,
-                "name": "ProductCategoryID",
-                "displayName": "ProductCategoryID",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "dataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 10,
-                "name": "ProductModelID",
-                "displayName": "ProductModelID",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "dataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 11,
-                "name": "SellStartDate",
-                "displayName": "SellStartDate",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "datetime",
-                    "nullable": false
-                },
-                "dataType": {
-                    "type": "datetime",
-                    "nullable": false
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 12,
-                "name": "SellEndDate",
-                "displayName": "SellEndDate",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "datetime",
-                    "nullable": true
-                },
-                "dataType": {
-                    "type": "datetime",
-                    "nullable": true
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 13,
-                "name": "DiscontinuedDate",
-                "displayName": "DiscontinuedDate",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "datetime",
-                    "nullable": true
-                },
-                "dataType": {
-                    "type": "datetime",
-                    "nullable": true
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 14,
-                "name": "ThumbNailPhoto",
-                "displayName": "ThumbNailPhoto",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "binary",
-                    "nullable": true
-                },
-                "dataType": {
-                    "type": "binary",
-                    "nullable": true
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 15,
-                "name": "ThumbnailPhotoFileName",
-                "displayName": "ThumbnailPhotoFileName",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 50,
-                    "nullable": true
-                },
-                "dataType": {
-                    "type": "string",
-                    "nullable": true
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 16,
-                "name": "rowguid",
-                "displayName": "rowguid",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "uniqueidentifier",
-                    "nullable": false
-                },
-                "dataType": {
-                    "type": "uniqueidentifier",
-                    "nullable": false
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 17,
-                "name": "ModifiedDate",
-                "displayName": "ModifiedDate",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "datetime",
-                    "nullable": false
-                },
-                "dataType": {
-                    "type": "datetime",
-                    "nullable": false
-                },
-                "tags": []
-            }
-        ]
-    },
-    "functions": {
-        "trigger": {
-            "mode": "schedule",
-            "schedule": {
-                "cronExpression": "0 1 * * *",
-                "timezone": "UTC",
-                "maxRetries": 3
-            }
+    "name": "Product",
+    "displayName": "Product",
+    "description": "Product catalog entity",
+    "tags": [],
+    "properties": [
+        {
+            "type": "jobs",
+            "value": "sales_daily"
         },
-        "store": {
-            "write_mode": "merge",
-            "merge": {
-                "business_key": [
-                    "ProductID"
-                ],
-                "sequential": true
-            },
-            "layout": {
-                "type": "liquid_clustering",
-                "keys": [
-                    "ProductID"
-                ]
-            },
-            "maintenance": {
-                "retention": "7 days"
-            }
+        {
+            "type": "write_mode",
+            "value": "merge"
         },
-        "sources": [
-            {
-                "type": "source",
-                "source": {
-                    "dataSource": "AdventureWorks",
-                    "sourceLocation": "[SalesLT].[Product]",
-                    "extract": {
-                        "type": "delta",
-                        "delta": {
-                            "column": "ModifiedDate"
-                        }
+        {
+            "type": "data_retention",
+            "value": "7_days"
+        }
+    ],
+    "attributes": [
+        {
+            "ordinalNumber": 1,
+            "name": "ProductID",
+            "displayName": "ProductID",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "int",
+                "nullable": true
+            },
+            "type": "BK",
+            "tags": [],
+            "dateModified": "2025-03-28 16:16:38"
+        },
+        {
+            "ordinalNumber": 2,
+            "name": "Name",
+            "displayName": "Name",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "string",
+                "nullable": false
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 3,
+            "name": "ProductNumber",
+            "displayName": "ProductNumber",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "string",
+                "charLen": 25,
+                "nullable": false
+            },
+            "dataType": {
+                "type": "string",
+                "nullable": false
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 4,
+            "name": "Color",
+            "displayName": "Color",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "string",
+                "charLen": 15,
+                "nullable": true
+            },
+            "dataType": {
+                "type": "string",
+                "nullable": true
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 5,
+            "name": "StandardCost",
+            "displayName": "StandardCost",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "money",
+                "nullable": false
+            },
+            "dataType": {
+                "type": "money",
+                "nullable": false
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 6,
+            "name": "ListPrice",
+            "displayName": "ListPrice",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "money",
+                "nullable": false
+            },
+            "dataType": {
+                "type": "money",
+                "nullable": false
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 7,
+            "name": "Size",
+            "displayName": "Size",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "string",
+                "charLen": 5,
+                "nullable": true
+            },
+            "dataType": {
+                "type": "string",
+                "nullable": true
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 8,
+            "name": "Weight",
+            "displayName": "Weight",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "decimal",
+                "precision": 8,
+                "scale": 2,
+                "nullable": true
+            },
+            "dataType": {
+                "type": "decimal",
+                "precision": 10,
+                "scale": 2,
+                "nullable": true
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 9,
+            "name": "ProductCategoryID",
+            "displayName": "ProductCategoryID",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "int",
+                "nullable": true
+            },
+            "dataType": {
+                "type": "int",
+                "nullable": true
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 10,
+            "name": "ProductModelID",
+            "displayName": "ProductModelID",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "int",
+                "nullable": true
+            },
+            "dataType": {
+                "type": "int",
+                "nullable": true
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 11,
+            "name": "SellStartDate",
+            "displayName": "SellStartDate",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "datetime",
+                "nullable": false
+            },
+            "dataType": {
+                "type": "datetime",
+                "nullable": false
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 12,
+            "name": "SellEndDate",
+            "displayName": "SellEndDate",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "datetime",
+                "nullable": true
+            },
+            "dataType": {
+                "type": "datetime",
+                "nullable": true
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 13,
+            "name": "DiscontinuedDate",
+            "displayName": "DiscontinuedDate",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "datetime",
+                "nullable": true
+            },
+            "dataType": {
+                "type": "datetime",
+                "nullable": true
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 14,
+            "name": "ThumbNailPhoto",
+            "displayName": "ThumbNailPhoto",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "binary",
+                "nullable": true
+            },
+            "dataType": {
+                "type": "binary",
+                "nullable": true
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 15,
+            "name": "ThumbnailPhotoFileName",
+            "displayName": "ThumbnailPhotoFileName",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "string",
+                "charLen": 50,
+                "nullable": true
+            },
+            "dataType": {
+                "type": "string",
+                "nullable": true
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 16,
+            "name": "rowguid",
+            "displayName": "rowguid",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "uniqueidentifier",
+                "nullable": false
+            },
+            "dataType": {
+                "type": "uniqueidentifier",
+                "nullable": false
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 17,
+            "name": "ModifiedDate",
+            "displayName": "ModifiedDate",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "datetime",
+                "nullable": false
+            },
+            "dataType": {
+                "type": "datetime",
+                "nullable": false
+            },
+            "tags": []
+        }
+    ],
+    "sources": [
+        {
+            "type": "source",
+            "dataSource": "AdventureWorks",
+            "sourceLocation": "[SalesLT].[Product]",
+            "properties": [
+                {
+                    "type": "extract_mode",
+                    "value": "delta"
+                }
+            ],
+            "mapping": [
+                {
+                    "targetName": "ProductID",
+                    "sourceName": "[ProductID]",
+                    "sourceDataType": {
+                        "type": "int",
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Name",
+                    "sourceName": "[Name]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 50,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "ProductNumber",
+                    "sourceName": "[ProductNumber]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 25,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "Color",
+                    "sourceName": "[Color]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 15,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "StandardCost",
+                    "sourceName": "[StandardCost]",
+                    "sourceDataType": {
+                        "type": "money",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "ListPrice",
+                    "sourceName": "[ListPrice]",
+                    "sourceDataType": {
+                        "type": "money",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "Size",
+                    "sourceName": "[Size]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 5,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Weight",
+                    "sourceName": "[Weight]",
+                    "sourceDataType": {
+                        "type": "decimal",
+                        "precision": 8,
+                        "scale": 2,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "ProductCategoryID",
+                    "sourceName": "[ProductCategoryID]",
+                    "sourceDataType": {
+                        "type": "int",
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "ProductModelID",
+                    "sourceName": "[ProductModelID]",
+                    "sourceDataType": {
+                        "type": "int",
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "SellStartDate",
+                    "sourceName": "[SellStartDate]",
+                    "sourceDataType": {
+                        "type": "datetime",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "SellEndDate",
+                    "sourceName": "[SellEndDate]",
+                    "sourceDataType": {
+                        "type": "datetime",
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "DiscontinuedDate",
+                    "sourceName": "[DiscontinuedDate]",
+                    "sourceDataType": {
+                        "type": "datetime",
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "ThumbNailPhoto",
+                    "sourceName": "[ThumbNailPhoto]",
+                    "sourceDataType": {
+                        "type": "binary",
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "ThumbnailPhotoFileName",
+                    "sourceName": "[ThumbnailPhotoFileName]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 50,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "rowguid",
+                    "sourceName": "[rowguid]",
+                    "sourceDataType": {
+                        "type": "uniqueidentifier",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "ModifiedDate",
+                    "sourceName": "[ModifiedDate]",
+                    "sourceDataType": {
+                        "type": "datetime",
+                        "nullable": false
                     },
-                    "mapping": [
+                    "properties": [
                         {
-                            "targetName": "ProductID",
-                            "sourceName": "[ProductID]",
-                            "sourceDataType": {
-                                "type": "int",
-                                "nullable": true
-                            }
-                        },
-                        {
-                            "targetName": "Name",
-                            "sourceName": "[Name]",
-                            "sourceDataType": {
-                                "type": "string",
-                                "charLen": 50,
-                                "nullable": false
-                            }
-                        },
-                        {
-                            "targetName": "ProductNumber",
-                            "sourceName": "[ProductNumber]",
-                            "sourceDataType": {
-                                "type": "string",
-                                "charLen": 25,
-                                "nullable": false
-                            }
-                        },
-                        {
-                            "targetName": "Color",
-                            "sourceName": "[Color]",
-                            "sourceDataType": {
-                                "type": "string",
-                                "charLen": 15,
-                                "nullable": true
-                            }
-                        },
-                        {
-                            "targetName": "StandardCost",
-                            "sourceName": "[StandardCost]",
-                            "sourceDataType": {
-                                "type": "money",
-                                "nullable": false
-                            }
-                        },
-                        {
-                            "targetName": "ListPrice",
-                            "sourceName": "[ListPrice]",
-                            "sourceDataType": {
-                                "type": "money",
-                                "nullable": false
-                            }
-                        },
-                        {
-                            "targetName": "Size",
-                            "sourceName": "[Size]",
-                            "sourceDataType": {
-                                "type": "string",
-                                "charLen": 5,
-                                "nullable": true
-                            }
-                        },
-                        {
-                            "targetName": "Weight",
-                            "sourceName": "[Weight]",
-                            "sourceDataType": {
-                                "type": "decimal",
-                                "precision": 8,
-                                "scale": 2,
-                                "nullable": true
-                            }
-                        },
-                        {
-                            "targetName": "ProductCategoryID",
-                            "sourceName": "[ProductCategoryID]",
-                            "sourceDataType": {
-                                "type": "int",
-                                "nullable": true
-                            }
-                        },
-                        {
-                            "targetName": "ProductModelID",
-                            "sourceName": "[ProductModelID]",
-                            "sourceDataType": {
-                                "type": "int",
-                                "nullable": true
-                            }
-                        },
-                        {
-                            "targetName": "SellStartDate",
-                            "sourceName": "[SellStartDate]",
-                            "sourceDataType": {
-                                "type": "datetime",
-                                "nullable": false
-                            }
-                        },
-                        {
-                            "targetName": "SellEndDate",
-                            "sourceName": "[SellEndDate]",
-                            "sourceDataType": {
-                                "type": "datetime",
-                                "nullable": true
-                            }
-                        },
-                        {
-                            "targetName": "DiscontinuedDate",
-                            "sourceName": "[DiscontinuedDate]",
-                            "sourceDataType": {
-                                "type": "datetime",
-                                "nullable": true
-                            }
-                        },
-                        {
-                            "targetName": "ThumbNailPhoto",
-                            "sourceName": "[ThumbNailPhoto]",
-                            "sourceDataType": {
-                                "type": "binary",
-                                "nullable": true
-                            }
-                        },
-                        {
-                            "targetName": "ThumbnailPhotoFileName",
-                            "sourceName": "[ThumbnailPhotoFileName]",
-                            "sourceDataType": {
-                                "type": "string",
-                                "charLen": 50,
-                                "nullable": true
-                            }
-                        },
-                        {
-                            "targetName": "rowguid",
-                            "sourceName": "[rowguid]",
-                            "sourceDataType": {
-                                "type": "uniqueidentifier",
-                                "nullable": false
-                            }
-                        },
-                        {
-                            "targetName": "ModifiedDate",
-                            "sourceName": "[ModifiedDate]",
-                            "sourceDataType": {
-                                "type": "datetime",
-                                "nullable": false
-                            }
+                            "type": "extract_column",
+                            "value": "delta"
                         }
                     ]
                 }
-            }
-        ]
-    }
+            ]
+        }
+    ]
 }

@@ -1,246 +1,232 @@
 {
     "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/ModelDataEntity.json",
     "type": "entity",
-    "entity": {
-        "name": "Address",
-        "displayName": "Address",
-        "description": "Address information entity",
-        "tags": [],
-        "parameters": [],
-        "attribute": [
-            {
-                "ordinalNumber": 1,
-                "name": "AddressID",
-                "displayName": "AddressID",
-                "description": "",
-                "attributeType": "ID",
-                "dataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "type": "BK",
-                "tags": [],
-                "dateModified": "2025-03-28 16:16:38"
-            },
-            {
-                "ordinalNumber": 2,
-                "name": "AddressLine1",
-                "displayName": "AddressLine1",
-                "description": "",
-                "attributeType": "ID",
-                "dataType": {
-                    "type": "string",
-                    "nullable": false
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 3,
-                "name": "AddressLine2",
-                "displayName": "AddressLine2",
-                "description": "",
-                "attributeType": "ID",
-                "dataType": {
-                    "type": "string",
-                    "nullable": true
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 4,
-                "name": "City",
-                "displayName": "City",
-                "description": "",
-                "attributeType": "ID",
-                "dataType": {
-                    "type": "string",
-                    "nullable": false
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 5,
-                "name": "StateProvince",
-                "displayName": "StateProvince",
-                "description": "",
-                "attributeType": "ID",
-                "dataType": {
-                    "type": "string",
-                    "nullable": false
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 6,
-                "name": "CountryRegion",
-                "displayName": "CountryRegion",
-                "description": "",
-                "attributeType": "ID",
-                "dataType": {
-                    "type": "string",
-                    "nullable": false
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 7,
-                "name": "PostalCode",
-                "displayName": "PostalCode",
-                "description": "",
-                "attributeType": "ID",
-                "dataType": {
-                    "type": "string",
-                    "nullable": false
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 8,
-                "name": "rowguid",
-                "displayName": "rowguid",
-                "description": "",
-                "attributeType": "ID",
-                "dataType": {
-                    "type": "uniqueidentifier",
-                    "nullable": false
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 9,
-                "name": "ModifiedDate",
-                "displayName": "ModifiedDate",
-                "description": "",
-                "attributeType": "ID",
-                "dataType": {
-                    "type": "datetime",
-                    "nullable": false
-                },
-                "tags": []
-            }
-        ]
-    },
-    "functions": {
-        "trigger": {
-            "mode": "schedule",
-            "schedule": {
-                "cronExpression": "0 1 * * *",
-                "timezone": "UTC",
-                "maxRetries": 3
-            }
+    "name": "Address",
+    "displayName": "Address",
+    "description": "Address information entity",
+    "tags": [],
+    "properties": [
+        {
+            "type": "jobs",
+            "value": "sales_daily"
         },
-        "store": {
-            "write_mode": "merge",
-            "merge": {
-                "business_key": [
-                    "AddressID"
-                ],
-                "sequential": true
-            },
-            "layout": {
-                "type": "liquid_clustering",
-                "keys": [
-                    "AddressID"
-                ]
-            },
-            "maintenance": {
-                "retention": "7 days"
-            }
+        {
+            "type": "write_mode",
+            "value": "merge"
         },
-        "sources": [
-            {
-                "type": "source",
-                "source": {
-                    "dataSource": "AdventureWorks",
-                    "sourceLocation": "[SalesLT].[Address]",
-                    "extract": {
-                        "type": "delta",
-                        "delta": {
-                            "column": "ModifiedDate"
-                        }
+        {
+            "type": "data_retention",
+            "value": "7_days"
+        }
+    ],
+    "attributes": [
+        {
+            "ordinalNumber": 1,
+            "name": "AddressID",
+            "displayName": "AddressID",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "int",
+                "nullable": true
+            },
+            "type": "BK",
+            "tags": [],
+            "dateModified": "2025-03-28 16:16:38"
+        },
+        {
+            "ordinalNumber": 2,
+            "name": "AddressLine1",
+            "displayName": "AddressLine1",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "string",
+                "nullable": false
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 3,
+            "name": "AddressLine2",
+            "displayName": "AddressLine2",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "string",
+                "nullable": true
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 4,
+            "name": "City",
+            "displayName": "City",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "string",
+                "nullable": false
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 5,
+            "name": "StateProvince",
+            "displayName": "StateProvince",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "string",
+                "nullable": false
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 6,
+            "name": "CountryRegion",
+            "displayName": "CountryRegion",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "string",
+                "nullable": false
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 7,
+            "name": "PostalCode",
+            "displayName": "PostalCode",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "string",
+                "nullable": false
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 8,
+            "name": "rowguid",
+            "displayName": "rowguid",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "uniqueidentifier",
+                "nullable": false
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 9,
+            "name": "ModifiedDate",
+            "displayName": "ModifiedDate",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "datetime",
+                "nullable": false
+            },
+            "tags": []
+        }
+    ],
+    "sources": [
+        {
+            "dataSource": "AdventureWorks",
+            "sourceLocation": "[SalesLT].[Address]",
+            "properties": [
+                {
+                    "type": "extract_mode",
+                    "value": "delta"
+                }
+            ],
+            "mapping": [
+                {
+                    "targetName": "AddressID",
+                    "sourceName": "[AddressID]",
+                    "sourceDataType": {
+                        "type": "int",
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "AddressLine1",
+                    "sourceName": "[AddressLine1]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 60,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "AddressLine2",
+                    "sourceName": "[AddressLine2]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 60,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "City",
+                    "sourceName": "[City]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 30,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "StateProvince",
+                    "sourceName": "[StateProvince]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 50,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "CountryRegion",
+                    "sourceName": "[CountryRegion]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 50,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "PostalCode",
+                    "sourceName": "[PostalCode]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 15,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "rowguid",
+                    "sourceName": "[rowguid]",
+                    "sourceDataType": {
+                        "type": "uniqueidentifier",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "ModifiedDate",
+                    "sourceName": "[ModifiedDate]",
+                    "sourceDataType": {
+                        "type": "datetime",
+                        "nullable": false
                     },
-                    "mapping": [
+                    "properties": [
                         {
-                            "targetName": "AddressID",
-                            "sourceName": "[AddressID]",
-                            "sourceDataType": {
-                                "type": "int",
-                                "nullable": true
-                            }
-                        },
-                        {
-                            "targetName": "AddressLine1",
-                            "sourceName": "[AddressLine1]",
-                            "sourceDataType": {
-                                "type": "string",
-                                "charLen": 60,
-                                "nullable": false
-                            }
-                        },
-                        {
-                            "targetName": "AddressLine2",
-                            "sourceName": "[AddressLine2]",
-                            "sourceDataType": {
-                                "type": "string",
-                                "charLen": 60,
-                                "nullable": true
-                            }
-                        },
-                        {
-                            "targetName": "City",
-                            "sourceName": "[City]",
-                            "sourceDataType": {
-                                "type": "string",
-                                "charLen": 30,
-                                "nullable": false
-                            }
-                        },
-                        {
-                            "targetName": "StateProvince",
-                            "sourceName": "[StateProvince]",
-                            "sourceDataType": {
-                                "type": "string",
-                                "charLen": 50,
-                                "nullable": false
-                            }
-                        },
-                        {
-                            "targetName": "CountryRegion",
-                            "sourceName": "[CountryRegion]",
-                            "sourceDataType": {
-                                "type": "string",
-                                "charLen": 50,
-                                "nullable": false
-                            }
-                        },
-                        {
-                            "targetName": "PostalCode",
-                            "sourceName": "[PostalCode]",
-                            "sourceDataType": {
-                                "type": "string",
-                                "charLen": 15,
-                                "nullable": false
-                            }
-                        },
-                        {
-                            "targetName": "rowguid",
-                            "sourceName": "[rowguid]",
-                            "sourceDataType": {
-                                "type": "uniqueidentifier",
-                                "nullable": false
-                            }
-                        },
-                        {
-                            "targetName": "ModifiedDate",
-                            "sourceName": "[ModifiedDate]",
-                            "sourceDataType": {
-                                "type": "datetime",
-                                "nullable": false
-                            }
+                            "type": "extract_column",
+                            "value": "delta"
                         }
                     ]
                 }
-            }
-        ]
-    }
+            ]
+        }
+    ]
 }
