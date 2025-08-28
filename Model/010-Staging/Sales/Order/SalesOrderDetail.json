@@ -4,7 +4,6 @@
     "name": "SalesOrderDetail",
     "displayName": "Sales_Order_Detail",
     "description": "Sales order line item details entity",
-    "tags": [],
     "properties": [
         {
             "type": "jobs",
@@ -23,7 +22,6 @@
         {
             "ordinalNumber": 1,
             "name": "SalesOrderID",
-            "displayName": "SalesOrderID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -31,13 +29,11 @@
                 "nullable": true
             },
             "type": "BK",
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 2,
             "name": "SalesOrderDetailID",
-            "displayName": "SalesOrderDetailID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -45,61 +41,51 @@
                 "nullable": true
             },
             "type": "BK",
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 3,
             "name": "OrderQty",
-            "displayName": "OrderQty",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "short",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 4,
             "name": "ProductID",
-            "displayName": "ProductID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 5,
             "name": "UnitPrice",
-            "displayName": "UnitPrice",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "money",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 6,
             "name": "UnitPriceDiscount",
-            "displayName": "UnitPriceDiscount",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "money",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 7,
             "name": "LineTotal",
-            "displayName": "LineTotal",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -107,32 +93,27 @@
                 "precision": 38,
                 "scale": 6,
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 8,
             "name": "rowguid",
-            "displayName": "rowguid",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "uniqueidentifier",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 9,
             "name": "ModifiedDate",
-            "displayName": "ModifiedDate",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "datetime",
                 "nullable": false
-            },
-            "tags": []
+            }
         }
     ],
     "sources": [

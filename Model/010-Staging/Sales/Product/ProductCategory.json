@@ -4,7 +4,6 @@
     "name": "ProductCategory",
     "displayName": "Product_Category",
     "description": "Product category hierarchy entity",
-    "tags": [],
     "properties": [
         {
             "type": "jobs",
@@ -23,7 +22,6 @@
         {
             "ordinalNumber": 1,
             "name": "ProductCategoryID",
-            "displayName": "ProductCategoryID",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -35,13 +33,11 @@
                 "nullable": true
             },
             "type": "BK",
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 2,
             "name": "ParentProductCategoryID",
-            "displayName": "ParentProductCategoryID",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -51,13 +47,11 @@
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 3,
             "name": "Name",
-            "displayName": "Name",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -68,13 +62,11 @@
             "dataType": {
                 "type": "string",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 4,
             "name": "rowguid",
-            "displayName": "rowguid",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -84,13 +76,11 @@
             "dataType": {
                 "type": "uniqueidentifier",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 5,
             "name": "ModifiedDate",
-            "displayName": "ModifiedDate",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -100,8 +90,7 @@
             "dataType": {
                 "type": "datetime",
                 "nullable": false
-            },
-            "tags": []
+            }
         }
     ],
     "sources": [

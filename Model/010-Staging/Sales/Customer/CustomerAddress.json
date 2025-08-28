@@ -4,7 +4,6 @@
     "name": "CustomerAddress",
     "displayName": "Customer_Address",
     "description": "Customer address relationship entity",
-    "tags": [],
     "properties": [
         {
             "type": "jobs",
@@ -23,7 +22,6 @@
         {
             "ordinalNumber": 1,
             "name": "CustomerID",
-            "displayName": "CustomerID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -31,13 +29,11 @@
                 "nullable": true
             },
             "type": "BK",
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 2,
             "name": "AddressID",
-            "displayName": "AddressID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -45,44 +41,37 @@
                 "nullable": true
             },
             "type": "BK",
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 3,
             "name": "AddressType",
-            "displayName": "AddressType",
             "description": "",
             "attributeType": "Description",
             "dataType": {
                 "type": "string",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 4,
             "name": "rowguid",
-            "displayName": "rowguid",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "uniqueidentifier",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 5,
             "name": "ModifiedDate",
-            "displayName": "ModifiedDate",
             "description": "",
             "attributeType": "CreationDate",
             "dataType": {
                 "type": "datetime",
                 "nullable": false
-            },
-            "tags": []
+            }
         }
     ],
     "sources": [

@@ -4,7 +4,6 @@
     "name": "ProductDescription",
     "displayName": "Product_Description",
     "description": "Product description text entity",
-    "tags": [],
     "properties": [
         {
             "type": "jobs",
@@ -23,7 +22,6 @@
         {
             "ordinalNumber": 1,
             "name": "ProductDescriptionID",
-            "displayName": "ProductDescriptionID",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -35,13 +33,11 @@
                 "nullable": true
             },
             "type": "BK",
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 2,
             "name": "Description",
-            "displayName": "Description",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -52,13 +48,11 @@
             "dataType": {
                 "type": "string",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 3,
             "name": "rowguid",
-            "displayName": "rowguid",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -68,13 +62,11 @@
             "dataType": {
                 "type": "uniqueidentifier",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 4,
             "name": "ModifiedDate",
-            "displayName": "ModifiedDate",
             "description": "",
             "attributeType": "ID",
             "sourceDataType": {
@@ -84,8 +76,7 @@
             "dataType": {
                 "type": "datetime",
                 "nullable": false
-            },
-            "tags": []
+            }
         }
     ],
     "sources": [

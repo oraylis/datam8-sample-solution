@@ -4,7 +4,6 @@
   "name": "Customer",
   "displayName": "Customer",
   "description": "",
-  "tags": [],
   "properties": [
     {
       "type": "jobs",
@@ -23,7 +22,6 @@
     {
       "ordinalNumber": 1,
       "name": "_CustomerBK",
-      "displayName": "_CustomerBK",
       "description": "",
       "attributeType": "ID",
       "dataType": {
@@ -31,13 +29,11 @@
         "nullable": false
       },
       "type": "BK",
-      "tags": [],
       "dateModified": "2025-03-28 16:16:38"
     },
     {
       "ordinalNumber": 2,
       "name": "_CustomerSID",
-      "displayName": "_CustomerSID",
       "description": "",
       "attributeType": "SID",
       "dataType": {
@@ -45,24 +41,20 @@
         "nullable": false
       },
       "type": "SK",
-      "tags": []
     },
     {
       "ordinalNumber": 3,
       "name": "CustomerID",
-      "displayName": "CustomerID",
       "description": "",
       "attributeType": "ID",
       "dataType": {
         "type": "int",
         "nullable": true
       },
-      "tags": []
     },
     {
       "ordinalNumber": 4,
       "name": "CompanyHistName",
-      "displayName": "CompanyHistName",
       "description": "",
       "attributeType": "Name",
       "dataType": {
@@ -70,39 +62,33 @@
         "nullable": true
       },
       "type": "SCD2",
-      "tags": [],
       "dateModified": "2025-03-28 16:16:38"
     },
     {
       "ordinalNumber": 5,
       "name": "CompanyName",
-      "displayName": "Firma",
       "description": "",
       "attributeType": "Name",
       "dataType": {
         "type": "string",
         "nullable": true
       },
-      "tags": [],
       "dateModified": "2025-03-28 16:16:38"
     },
     {
       "ordinalNumber": 6,
       "name": "CustomerEMail",
-      "displayName": "CustomerEMail",
       "description": "",
       "attributeType": "Email",
       "dataType": {
         "type": "string",
         "nullable": true
       },
-      "tags": [],
       "dateModified": "2025-03-28 16:16:38"
     },
     {
       "ordinalNumber": 7,
       "name": "CustomerHistEMail",
-      "displayName": "CustomerHistEMail",
       "description": "",
       "attributeType": "Email",
       "dataType": {
@@ -110,46 +96,39 @@
         "nullable": true
       },
       "type": "SCD2",
-      "tags": [],
       "dateModified": "2025-03-28 16:16:38"
     },
     {
       "ordinalNumber": 8,
       "name": "DisplayName",
-      "displayName": "DisplayName",
       "description": "",
       "attributeType": "Name",
       "dataType": {
         "type": "string",
         "nullable": true
       },
-      "tags": [],
       "dateModified": "2025-03-28 16:16:38"
     },
     {
       "ordinalNumber": 9,
       "name": "FirstName",
-      "displayName": "Vorname",
       "description": "",
       "attributeType": "Name",
       "dataType": {
         "type": "string",
         "nullable": true
       },
-      "tags": [],
       "dateModified": "2025-03-28 16:16:38"
     },
     {
       "ordinalNumber": 10,
       "name": "LastName",
-      "displayName": "Nachname",
       "description": "",
       "attributeType": "Name",
       "dataType": {
         "type": "string",
         "nullable": true
       },
-      "tags": [],
       "dateModified": "2025-03-28 16:16:38"
     }
   ],

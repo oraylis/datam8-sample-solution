@@ -4,7 +4,6 @@
     "name": "SalesOrderHeader",
     "displayName": "Sales_Order_Header",
     "description": "Sales order header information entity",
-    "tags": [],
     "properties": [
         {
             "type": "jobs",
@@ -23,7 +22,6 @@
         {
             "ordinalNumber": 1,
             "name": "SalesOrderID",
-            "displayName": "SalesOrderID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -31,260 +29,217 @@
                 "nullable": true
             },
             "type": "BK",
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 2,
             "name": "RevisionNumber",
-            "displayName": "RevisionNumber",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "byte",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 3,
             "name": "OrderDate",
-            "displayName": "OrderDate",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "datetime",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 4,
             "name": "DueDate",
-            "displayName": "DueDate",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "datetime",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 5,
             "name": "ShipDate",
-            "displayName": "ShipDate",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "datetime",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 6,
             "name": "Status",
-            "displayName": "Status",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "byte",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 7,
             "name": "OnlineOrderFlag",
-            "displayName": "OnlineOrderFlag",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "bit",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 8,
             "name": "SalesOrderNumber",
-            "displayName": "SalesOrderNumber",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 9,
             "name": "PurchaseOrderNumber",
-            "displayName": "PurchaseOrderNumber",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 10,
             "name": "AccountNumber",
-            "displayName": "AccountNumber",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 11,
             "name": "CustomerID",
-            "displayName": "CustomerID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 12,
             "name": "ShipToAddressID",
-            "displayName": "ShipToAddressID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 13,
             "name": "BillToAddressID",
-            "displayName": "BillToAddressID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 14,
             "name": "ShipMethod",
-            "displayName": "ShipMethod",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 15,
             "name": "CreditCardApprovalCode",
-            "displayName": "CreditCardApprovalCode",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 16,
             "name": "SubTotal",
-            "displayName": "SubTotal",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "money",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 17,
             "name": "TaxAmt",
-            "displayName": "TaxAmt",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "money",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 18,
             "name": "Freight",
-            "displayName": "Freight",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "money",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 19,
             "name": "TotalDue",
-            "displayName": "TotalDue",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "money",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 20,
             "name": "Comment",
-            "displayName": "Comment",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 21,
             "name": "rowguid",
-            "displayName": "rowguid",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "uniqueidentifier",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 22,
             "name": "ModifiedDate",
-            "displayName": "ModifiedDate",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "datetime",
                 "nullable": false
-            },
-            "tags": []
+            }
         }
     ],
     "sources": [

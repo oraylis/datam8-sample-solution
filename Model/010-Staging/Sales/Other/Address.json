@@ -4,7 +4,6 @@
     "name": "Address",
     "displayName": "Address",
     "description": "Address information entity",
-    "tags": [],
     "properties": [
         {
             "type": "jobs",
@@ -23,7 +22,6 @@
         {
             "ordinalNumber": 1,
             "name": "AddressID",
-            "displayName": "AddressID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -31,104 +29,87 @@
                 "nullable": true
             },
             "type": "BK",
-            "tags": [],
             "dateModified": "2025-03-28 16:16:38"
         },
         {
             "ordinalNumber": 2,
             "name": "AddressLine1",
-            "displayName": "AddressLine1",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 3,
             "name": "AddressLine2",
-            "displayName": "AddressLine2",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": true
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 4,
             "name": "City",
-            "displayName": "City",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 5,
             "name": "StateProvince",
-            "displayName": "StateProvince",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 6,
             "name": "CountryRegion",
-            "displayName": "CountryRegion",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 7,
             "name": "PostalCode",
-            "displayName": "PostalCode",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 8,
             "name": "rowguid",
-            "displayName": "rowguid",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "uniqueidentifier",
                 "nullable": false
-            },
-            "tags": []
+            }
         },
         {
             "ordinalNumber": 9,
             "name": "ModifiedDate",
-            "displayName": "ModifiedDate",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "datetime",
                 "nullable": false
-            },
-            "tags": []
+            }
         }
     ],
     "sources": [
