@@ -1,219 +1,184 @@
 {
   "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/ModelDataEntity.json",
   "type": "entity",
-  "entity": {
-    "name": "Address",
-    "displayName": "Address",
-    "description": "Core address dimension with location data",
-    "tags": [],
-    "parameters": [],
-    "attribute": [
-      {
-        "ordinalNumber": 1,
-        "name": "_AddressBK",
-        "displayName": "_AddressBK",
-        "description": "",
-        "attributeType": "ID",
-        "targetDataType": {
-          "type": "int",
-          "nullable": false
-        },
-        "type": "BK",
-        "tags": [],
-        "refactorNames": [],
-        "dateModified": "2025-03-28 16:16:38"
-      },
-      {
-        "ordinalNumber": 2,
-        "name": "_AddressSID",
-        "displayName": "_AddressSID",
-        "description": "",
-        "attributeType": "SID",
-        "targetDataType": {
-          "type": "long",
-          "nullable": false
-        },
-        "type": "SK",
-        "tags": [],
-        "refactorNames": []
-      },
-      {
-        "ordinalNumber": 3,
-        "name": "AddressID",
-        "displayName": "AddressID",
-        "description": "",
-        "attributeType": "ID",
-        "targetDataType": {
-          "type": "int",
-          "nullable": false
-        },
-        "type": "SCD1",
-        "tags": [],
-        "refactorNames": [],
-        "dateModified": "2025-03-28 16:16:38"
-      },
-      {
-        "ordinalNumber": 4,
-        "name": "AddressLine1",
-        "displayName": "AddressLine1",
-        "description": "",
-        "attributeType": "Text",
-        "targetDataType": {
-          "type": "string",
-          "nullable": false
-        },
-        "type": "SCD1",
-        "tags": [],
-        "refactorNames": [
-          "AddressLine1",
-          "AddressLine1Name"
-        ],
-        "dateModified": "2025-03-28 16:16:38"
-      },
-      {
-        "ordinalNumber": 5,
-        "name": "AddressLine2",
-        "displayName": "AddressLine2",
-        "description": "",
-        "attributeType": "Text",
-        "targetDataType": {
-          "type": "string",
-          "nullable": true
-        },
-        "type": "SCD1",
-        "tags": [],
-        "refactorNames": []
-      },
-      {
-        "ordinalNumber": 6,
-        "name": "CityName",
-        "displayName": "City",
-        "description": "",
-        "attributeType": "Name",
-        "targetDataType": {
-          "type": "string",
-          "nullable": false
-        },
-        "type": "SCD1",
-        "tags": [],
-        "refactorNames": [
-          "City"
-        ]
-      },
-      {
-        "ordinalNumber": 7,
-        "name": "CountryRegionName",
-        "displayName": "CountryRegion",
-        "description": "",
-        "attributeType": "Name",
-        "targetDataType": {
-          "type": "string",
-          "nullable": false
-        },
-        "type": "SCD1",
-        "tags": [],
-        "refactorNames": [
-          "CountryRegion"
-        ]
-      },
-      {
-        "ordinalNumber": 8,
-        "name": "PostalCode",
-        "displayName": "PostalCode",
-        "description": "",
-        "attributeType": "Text",
-        "targetDataType": {
-          "type": "string",
-          "nullable": false
-        },
-        "type": "SCD1",
-        "tags": [],
-        "refactorNames": []
-      },
-      {
-        "ordinalNumber": 9,
-        "name": "StateProvinceName",
-        "displayName": "StateProvince",
-        "description": "",
-        "attributeType": "Name",
-        "targetDataType": {
-          "type": "string",
-          "nullable": false
-        },
-        "type": "SCD1",
-        "tags": [],
-        "refactorNames": [
-          "StateProvince"
-        ]
-      }
-    ]
-  },
-  "functions": {
-    "trigger": {
-      "mode": "children"
+  "name": "Address",
+  "displayName": "Address",
+  "description": "Core address dimension with location data",
+  "tags": [],
+  "properties": [
+    {
+      "type": "jobs",
+      "value": "sales_daily"
     },
-    "store": {
-      "write_mode": "overwrite",
-      "layout": {
-        "type": "liquid_clustering",
-        "keys": [
-          "_AddressSID"
-        ]
-      }
+    {
+      "type": "write_mode",
+      "value": "overwrite"
     },
-    "sources": [
-      {
-        "type": "model",
-        "model": {
-          "dm8l": "/010-Staging/Sales/Other/Address",
-          "mapping": [
-            {
-              "name": "AddressID",
-              "sourceName": "AddressID"
-            },
-            {
-              "name": "AddressLine1",
-              "sourceName": "AddressLine1"
-            },
-            {
-              "name": "AddressLine2",
-              "sourceName": "AddressLine2"
-            },
-            {
-              "name": "CityName",
-              "sourceName": "City"
-            },
-            {
-              "name": "StateProvinceName",
-              "sourceName": "StateProvince"
-            },
-            {
-              "name": "CountryRegionName",
-              "sourceName": "CountryRegion"
-            },
-            {
-              "name": "PostalCode",
-              "sourceName": "PostalCode"
-            },
-            {
-              "sourceName": "rowguid"
-            },
-            {
-              "sourceName": "ModifiedDate"
-            }
-          ]
+    {
+      "type": "data_retention",
+      "value": "7_days"
+    }
+  ],
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "_AddressBK",
+      "displayName": "_AddressBK",
+      "description": "",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "type": "BK",
+      "tags": [],
+      "refactorNames": [],
+      "dateModified": "2025-03-28 16:16:38"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "_AddressSID",
+      "displayName": "_AddressSID",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "type": "SK",
+      "tags": [],
+      "refactorNames": []
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "AddressID",
+      "displayName": "AddressID",
+      "description": "",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "type": "SCD1",
+      "tags": [],
+      "refactorNames": [],
+      "dateModified": "2025-03-28 16:16:38"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "AddressLine1",
+      "displayName": "AddressLine1",
+      "description": "",
+      "attributeType": "Text",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "type": "SCD1",
+      "tags": [],
+      "refactorNames": [
+        "AddressLine1",
+        "AddressLine1Name"
+      ],
+      "dateModified": "2025-03-28 16:16:38"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "AddressLine2",
+      "displayName": "AddressLine2",
+      "description": "",
+      "attributeType": "Text",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "type": "SCD1",
+      "tags": [],
+      "refactorNames": []
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "CityName",
+      "displayName": "City",
+      "description": "",
+      "attributeType": "Name",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "type": "SCD1",
+      "tags": [],
+      "refactorNames": [
+        "City"
+      ]
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "CountryRegionName",
+      "displayName": "CountryRegion",
+      "description": "",
+      "attributeType": "Name",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "type": "SCD1",
+      "tags": [],
+      "refactorNames": [
+        "CountryRegion"
+      ]
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "PostalCode",
+      "displayName": "PostalCode",
+      "description": "",
+      "attributeType": "Text",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "type": "SCD1",
+      "tags": [],
+      "refactorNames": []
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "StateProvinceName",
+      "displayName": "StateProvince",
+      "description": "",
+      "attributeType": "Name",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "type": "SCD1",
+      "tags": [],
+      "refactorNames": [
+        "StateProvince"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "dataSource": null,
+      "sourceLocation": "/010-Staging/Sales/Other/Address",
+      "properties": [
+        {
+          "type": "extract_mode",
+          "value": "delta"
         }
+      ]
+    }
+  ],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "transform_first_step",
+      "function": {
+        "source": "Address.py"
       }
-    ],
-    "transformations": [
-      {
-        "stepNo": 1,
-        "kind": "function",
-        "name": "transform_first_step",
-        "function": {
-          "source": "Address.py"
-        }
-      }
-    ]
-  }
+    }
+  ]
 }

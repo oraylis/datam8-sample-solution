@@ -1,13 +1,25 @@
 {
     "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/ModelDataEntity.json",
     "type": "entity",
-    "entity": {
-        "name": "Customer_EN",
-        "displayName": "Customer__EN",
-        "description": "Core customer information entity (English)",
-        "tags": [],
-        "parameters": [],
-        "attribute": [
+    "name": "Customer_EN",
+    "displayName": "Customer__EN",
+    "description": "Core customer information entity (English)",
+    "tags": [],
+    "properties": [
+        {
+            "type": "jobs",
+            "value": "sales_daily"
+        },
+        {
+            "type": "write_mode",
+            "value": "merge"
+        },
+        {
+            "type": "data_retention",
+            "value": "7_days"
+        }
+    ],
+    "attributes": [
             {
                 "ordinalNumber": 1,
                 "name": "CustomerID",
@@ -203,47 +215,18 @@
                 "tags": [],
                 "dateModified": "2025-03-28 16:16:38"
             }
-        ]
-    },
-    "functions": {
-        "trigger": {
-            "mode": "schedule",
-            "schedule": {
-                "cronExpression": "0 1 * * *",
-                "timezone": "UTC",
-                "maxRetries": 3
-            }
-        },
-        "store": {
-            "write_mode": "merge",
-            "merge": {
-                "business_key": [
-                    "CustomerID"
-                ],
-                "sequential": true
-            },
-            "layout": {
-                "type": "liquid_clustering",
-                "keys": [
-                    "CustomerID"
-                ]
-            },
-            "maintenance": {
-                "retention": "7 days"
-            }
-        },
-        "sources": [
+    ],
+    "sources": [
             {
                 "type": "source",
-                "source": {
-                    "dataSource": "AdventureWorks",
-                    "sourceLocation": "[SalesLT].[Customer_EN]",
-                    "extract": {
-                        "type": "delta",
-                        "delta": {
-                            "column": "ModifiedDate"
-                        }
-                    },
+                "dataSource": "AdventureWorks",
+                "sourceLocation": "[SalesLT].[Customer_EN]",
+                "properties": [
+                    {
+                        "type": "extract_mode",
+                        "value": "delta"
+                    }
+                ],
                     "mapping": [
                         {
                             "targetName": "CustomerID",
@@ -374,7 +357,13 @@
                             "sourceDataType": {
                                 "type": "datetime",
                                 "nullable": false
-                            }
+                            },
+                            "properties": [
+                                {
+                                    "type": "extract_column",
+                                    "value": "delta"
+                                }
+                            ]
                         }
                     ]
                 }

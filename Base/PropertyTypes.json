@@ -1,0 +1,56 @@
+{
+    "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/propertyTypes.json",
+    "type": "propertyTypes",
+    "propertyTypes": [
+        {
+            "name": "jobs",
+            "displayName": "jobs",
+            "schema": "./jobs.json",
+            "scopes": [
+                {
+                    "type": "entity",
+                    "single_usage": false,
+                    "mandatory": false
+                }
+            ]
+        },
+        {
+            "name": "schedules",
+            "displayName": "schedules",
+            "schema": "./schedules.json",
+            "scopes": [
+                {
+                    "type": "None"
+                }
+            ]
+        },
+        {
+            "name": "tags",
+            "displayName": "tags",
+            "schema": "./tags.json",
+            "scopes": []
+        },
+        {
+            "name": "write_mode",
+            "displayName": "write mode",
+            "schema": "./write_mode.json",
+            "scopes": [
+                {
+                    "type": "entity",
+                    "mandatory": true
+                }
+            ]
+        },
+        {
+            "name": "data_retention",
+            "displayName": "data retention",
+            "schema": "./data_retention.json",
+            "scopes": [
+                {
+                    "type": "entity",
+                    "mandatory": false
+                }
+            ]
+        }
+    ]
+}

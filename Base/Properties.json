@@ -1,0 +1,41 @@
+{
+    "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/properties.json",
+    "type": "properties",
+    "properties": [
+        {
+            "name": "merge",
+            "displayName": "merge",
+            "default": true,
+            "type": "write_mode"
+        },
+        {
+            "name": "overwrite",
+            "displayName": "overwrite",
+            "default": false,
+            "type": "write_mode"
+        },
+        {
+            "name": "sales_daily",
+            "displayName": "Sales (Daily)",
+            "default": false,
+            "type": "jobs",
+            "properties": [
+                {
+                    "type": "schedules",
+                    "value": "daily"
+                }
+            ],
+            "cluster": {
+                "size": "XS",
+                "type": "test"
+            }
+        },
+        {
+            "name": "daily",
+            "displayName": "Daily",
+            "default": true,
+            "type": "schedules",
+            "cron": "1 0"
+        }
+    ]
+}

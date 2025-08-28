@@ -1,158 +1,144 @@
 {
     "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/ModelDataEntity.json",
     "type": "entity",
-    "entity": {
-        "name": "ProductDescription",
-        "displayName": "Product_Description",
-        "description": "Product description text entity",
-        "tags": [],
-        "parameters": [],
-        "attribute": [
-            {
-                "ordinalNumber": 1,
-                "name": "ProductDescriptionID",
-                "displayName": "ProductDescriptionID",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "dataType": {
-                    "type": "int",
-                    "nullable": true
-                },
-                "type": "BK",
-                "tags": [],
-                "dateModified": "2025-03-28 16:16:38"
-            },
-            {
-                "ordinalNumber": 2,
-                "name": "Description",
-                "displayName": "Description",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "string",
-                    "charLen": 400,
-                    "nullable": false
-                },
-                "dataType": {
-                    "type": "string",
-                    "nullable": false
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 3,
-                "name": "rowguid",
-                "displayName": "rowguid",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "uniqueidentifier",
-                    "nullable": false
-                },
-                "dataType": {
-                    "type": "uniqueidentifier",
-                    "nullable": false
-                },
-                "tags": []
-            },
-            {
-                "ordinalNumber": 4,
-                "name": "ModifiedDate",
-                "displayName": "ModifiedDate",
-                "description": "",
-                "attributeType": "ID",
-                "sourceDataType": {
-                    "type": "datetime",
-                    "nullable": false
-                },
-                "dataType": {
-                    "type": "datetime",
-                    "nullable": false
-                },
-                "tags": []
-            }
-        ]
-    },
-    "functions": {
-        "trigger": {
-            "mode": "schedule",
-            "schedule": {
-                "cronExpression": "0 1 * * *",
-                "timezone": "UTC",
-                "maxRetries": 3
-            }
+    "name": "ProductDescription",
+    "displayName": "Product_Description",
+    "description": "Product description text entity",
+    "tags": [],
+    "properties": [
+        {
+            "type": "jobs",
+            "value": "sales_daily"
         },
-        "store": {
-            "write_mode": "merge",
-            "merge": {
-                "business_key": [
-                    "ProductDescriptionID"
-                ],
-                "sequential": true
-            },
-            "layout": {
-                "type": "liquid_clustering",
-                "keys": [
-                    "ProductDescriptionID"
-                ]
-            },
-            "maintenance": {
-                "retention": "7 days"
-            }
+        {
+            "type": "write_mode",
+            "value": "merge"
         },
-        "sources": [
-            {
-                "type": "source",
-                "source": {
-                    "dataSource": "AdventureWorks",
-                    "sourceLocation": "[SalesLT].[ProductDescription]",
-                    "extract": {
-                        "type": "delta",
-                        "delta": {
-                            "column": "ModifiedDate"
-                        }
+        {
+            "type": "data_retention",
+            "value": "7_days"
+        }
+    ],
+    "attributes": [
+        {
+            "ordinalNumber": 1,
+            "name": "ProductDescriptionID",
+            "displayName": "ProductDescriptionID",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "int",
+                "nullable": true
+            },
+            "dataType": {
+                "type": "int",
+                "nullable": true
+            },
+            "type": "BK",
+            "tags": [],
+            "dateModified": "2025-03-28 16:16:38"
+        },
+        {
+            "ordinalNumber": 2,
+            "name": "Description",
+            "displayName": "Description",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "string",
+                "charLen": 400,
+                "nullable": false
+            },
+            "dataType": {
+                "type": "string",
+                "nullable": false
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 3,
+            "name": "rowguid",
+            "displayName": "rowguid",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "uniqueidentifier",
+                "nullable": false
+            },
+            "dataType": {
+                "type": "uniqueidentifier",
+                "nullable": false
+            },
+            "tags": []
+        },
+        {
+            "ordinalNumber": 4,
+            "name": "ModifiedDate",
+            "displayName": "ModifiedDate",
+            "description": "",
+            "attributeType": "ID",
+            "sourceDataType": {
+                "type": "datetime",
+                "nullable": false
+            },
+            "dataType": {
+                "type": "datetime",
+                "nullable": false
+            },
+            "tags": []
+        }
+    ],
+    "sources": [
+        {
+            "dataSource": "AdventureWorks",
+            "sourceLocation": "[SalesLT].[ProductDescription]",
+            "properties": [
+                {
+                    "type": "extract_mode",
+                    "value": "delta"
+                }
+            ],
+            "mapping": [
+                {
+                    "targetName": "ProductDescriptionID",
+                    "sourceName": "[ProductDescriptionID]",
+                    "sourceDataType": {
+                        "type": "int",
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Description",
+                    "sourceName": "[Description]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 400,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "rowguid",
+                    "sourceName": "[rowguid]",
+                    "sourceDataType": {
+                        "type": "uniqueidentifier",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "ModifiedDate",
+                    "sourceName": "[ModifiedDate]",
+                    "sourceDataType": {
+                        "type": "datetime",
+                        "nullable": false
                     },
-                    "mapping": [
+                    "properties": [
                         {
-                            "targetName": "ProductDescriptionID",
-                            "sourceName": "[ProductDescriptionID]",
-                            "sourceDataType": {
-                                "type": "int",
-                                "nullable": true
-                            }
-                        },
-                        {
-                            "targetName": "Description",
-                            "sourceName": "[Description]",
-                            "sourceDataType": {
-                                "type": "string",
-                                "charLen": 400,
-                                "nullable": false
-                            }
-                        },
-                        {
-                            "targetName": "rowguid",
-                            "sourceName": "[rowguid]",
-                            "sourceDataType": {
-                                "type": "uniqueidentifier",
-                                "nullable": false
-                            }
-                        },
-                        {
-                            "targetName": "ModifiedDate",
-                            "sourceName": "[ModifiedDate]",
-                            "sourceDataType": {
-                                "type": "datetime",
-                                "nullable": false
-                            }
+                            "type": "extract_column",
+                            "value": "delta"
                         }
                     ]
                 }
-            }
-        ]
-    }
+            ]
+        }
+    ]
 }
