@@ -1,20 +1,19 @@
 {
     "id": 2000,
-    "type": "entity",
     "name": "Customer",
     "displayName": "Customer",
     "description": "",
     "properties": [
         {
-            "type": "jobs",
+            "property": "jobs",
             "value": "sales_daily"
         },
         {
-            "type": "write_mode",
+            "property": "write_mode",
             "value": "merge"
         },
         {
-            "type": "data_retention",
+            "property": "data_retention",
             "value": "7_days"
         }
     ],
@@ -28,8 +27,9 @@
                 "type": "int",
                 "nullable": false
             },
-            "type": "BK",
-            "dateModified": "2025-03-28 16:16:38"
+            "isBusinessKey": true,
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 2,
@@ -40,7 +40,13 @@
                 "type": "long",
                 "nullable": false
             },
-            "type": "SK"
+            "properties": [
+                {
+                    "property": "attribute_field",
+                    "value": "SK"
+                }
+            ],
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 3,
@@ -50,7 +56,8 @@
             "dataType": {
                 "type": "int",
                 "nullable": true
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 4,
@@ -61,8 +68,9 @@
                 "type": "string",
                 "nullable": true
             },
-            "type": "SCD2",
-            "dateModified": "2025-03-28 16:16:38"
+            "history": "SCD2",
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 5,
@@ -73,7 +81,8 @@
                 "type": "string",
                 "nullable": true
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 6,
@@ -84,7 +93,8 @@
                 "type": "string",
                 "nullable": true
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 7,
@@ -95,8 +105,9 @@
                 "type": "string",
                 "nullable": true
             },
-            "type": "SCD2",
-            "dateModified": "2025-03-28 16:16:38"
+            "history": "SCD2",
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 8,
@@ -107,7 +118,8 @@
                 "type": "string",
                 "nullable": true
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 9,
@@ -118,7 +130,8 @@
                 "type": "string",
                 "nullable": true
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 10,
@@ -129,16 +142,16 @@
                 "type": "string",
                 "nullable": true
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         }
     ],
     "sources": [
         {
-            "dataSource": null,
             "sourceLocation": "/010-Staging/Sales/Customer/Customer_DE",
             "properties": [
                 {
-                    "type": "extract_mode",
+                    "property": "extract_mode",
                     "value": "delta"
                 }
             ],
@@ -173,7 +186,7 @@
             "sourceLocation": 1011,
             "properties": [
                 {
-                    "type": "extract_mode",
+                    "property": "extract_mode",
                     "value": "delta"
                 }
             ]

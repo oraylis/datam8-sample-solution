@@ -2,39 +2,63 @@
     "type": "properties",
     "properties": [
         {
-            "name": "merge",
-            "displayName": "merge",
-            "default": true,
-            "type": "write_mode"
-        },
-        {
-            "name": "overwrite",
-            "displayName": "overwrite",
-            "default": false,
-            "type": "write_mode"
-        },
-        {
-            "name": "sales_daily",
-            "displayName": "Sales (Daily)",
-            "default": false,
-            "type": "jobs",
-            "properties": [
+            "name": "jobs",
+            "displayName": "jobs",
+            "schema": "./jobs.json",
+            "scopes": [
                 {
-                    "type": "schedules",
-                    "value": "daily"
+                    "type": "entity",
+                    "singleUsage": false,
+                    "mandatory": false
                 }
-            ],
-            "cluster": {
-                "size": "XS",
-                "type": "test"
-            }
+            ]
         },
         {
-            "name": "daily",
-            "displayName": "Daily",
-            "default": true,
-            "type": "schedules",
-            "cron": "1 0"
+            "name": "schedules",
+            "displayName": "schedules",
+            "schema": "./schedules.json",
+            "scopes": [
+                {
+                    "type": "none"
+                }
+            ]
+        },
+        {
+            "name": "tags",
+            "displayName": "tags",
+            "schema": "./tags.json",
+            "scopes": []
+        },
+        {
+            "name": "write_mode",
+            "displayName": "write mode",
+            "schema": "./write_mode.json",
+            "scopes": [
+                {
+                    "type": "entity",
+                    "mandatory": true
+                }
+            ]
+        },
+        {
+            "name": "data_retention",
+            "displayName": "data retention",
+            "schema": "./data_retention.json",
+            "scopes": [
+                {
+                    "type": "entity",
+                    "mandatory": false
+                }
+            ]
+        },
+        {
+            "name": "business_area",
+            "displayName": "Business Area",
+            "scopes": [
+                {
+                    "type": "folder"
+                }
+            ]
         }
     ]
 }

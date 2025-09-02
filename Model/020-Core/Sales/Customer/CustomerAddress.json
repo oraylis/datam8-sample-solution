@@ -1,20 +1,19 @@
 {
     "id": 2001,
-    "type": "entity",
     "name": "CustomerAddress",
     "displayName": "CustomerAddress",
     "description": "Core customer address relationship entity",
     "properties": [
         {
-            "type": "jobs",
+            "property": "jobs",
             "value": "sales_daily"
         },
         {
-            "type": "write_mode",
+            "property": "write_mode",
             "value": "overwrite"
         },
         {
-            "type": "data_retention",
+            "property": "data_retention",
             "value": "7_days"
         }
     ],
@@ -28,11 +27,12 @@
                 "type": "string",
                 "nullable": false
             },
-            "type": "BK",
+            "isBusinessKey": true,
             "refactorNames": [
                 "_CustomerBK"
             ],
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 2,
@@ -43,10 +43,16 @@
                 "type": "long",
                 "nullable": false
             },
-            "type": "SK",
+            "properties": [
+                {
+                    "property": "attribute_type",
+                    "value": "SK"
+                }
+            ],
             "refactorNames": [
                 "_CustomerSID"
-            ]
+            ],
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 3,
@@ -57,12 +63,13 @@
                 "type": "int",
                 "nullable": false
             },
-            "type": "SCD1",
+            "history": "SCD1",
             "refactorNames": [
                 "AddressID",
                 "AddressSID"
             ],
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 4,
@@ -73,12 +80,13 @@
                 "type": "int",
                 "nullable": false
             },
-            "type": "SCD0",
+            "history": "SCD0",
             "refactorNames": [
                 "CustomerBK",
                 "CustomerID",
                 "CustomerSID"
-            ]
+            ],
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 5,
@@ -89,12 +97,13 @@
                 "type": "string",
                 "nullable": false
             },
-            "type": "SCD1",
+            "history": "SCD1",
             "refactorNames": [
                 "AddressType",
                 "AddressTypeName"
             ],
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         }
     ],
     "sources": [
@@ -102,7 +111,7 @@
             "sourceLocation": 1001,
             "properties": [
                 {
-                    "type": "extract_mode",
+                    "property": "extract_mode",
                     "value": "delta"
                 }
             ]

@@ -1,0 +1,15 @@
+{
+    "type": "folders",
+    "folders": [
+        {
+            "id": 101,
+            "name": "sales",
+            "properties": [
+                {
+                    "property": "business_area",
+                    "value": "sales"
+                }
+            ]
+        }
+    ]
+}

@@ -1,20 +1,19 @@
 {
     "id": 1009,
-    "type": "entity",
     "name": "SalesOrderDetail",
     "displayName": "Sales_Order_Detail",
     "description": "Sales order line item details entity",
     "properties": [
         {
-            "type": "jobs",
+            "property": "jobs",
             "value": "sales_daily"
         },
         {
-            "type": "write_mode",
+            "property": "write_mode",
             "value": "merge"
         },
         {
-            "type": "data_retention",
+            "property": "data_retention",
             "value": "7_days"
         }
     ],
@@ -28,8 +27,9 @@
                 "type": "int",
                 "nullable": true
             },
-            "type": "BK",
-            "dateModified": "2025-03-28 16:16:38"
+            "isBusinessKey": true,
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 2,
@@ -40,8 +40,9 @@
                 "type": "int",
                 "nullable": true
             },
-            "type": "BK",
-            "dateModified": "2025-03-28 16:16:38"
+            "isBusinessKey": true,
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 3,
@@ -51,7 +52,8 @@
             "dataType": {
                 "type": "short",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 4,
@@ -61,7 +63,8 @@
             "dataType": {
                 "type": "int",
                 "nullable": true
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 5,
@@ -71,7 +74,8 @@
             "dataType": {
                 "type": "money",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 6,
@@ -81,7 +85,8 @@
             "dataType": {
                 "type": "money",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 7,
@@ -93,7 +98,8 @@
                 "precision": 38,
                 "scale": 6,
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 8,
@@ -103,7 +109,8 @@
             "dataType": {
                 "type": "uniqueidentifier",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 9,
@@ -113,7 +120,8 @@
             "dataType": {
                 "type": "datetime",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         }
     ],
     "sources": [
@@ -122,7 +130,7 @@
             "sourceLocation": "[SalesLT].[SalesOrderDetail]",
             "properties": [
                 {
-                    "type": "extract_mode",
+                    "property": "extract_mode",
                     "value": "delta"
                 }
             ],
@@ -202,12 +210,19 @@
                     },
                     "properties": [
                         {
-                            "type": "extract_column",
+                            "property": "extract_column",
                             "value": "delta"
                         }
                     ]
                 }
             ]
+        }
+    ],
+    "transformations": [
+        {
+            "stepNo": 1,
+            "kind": "builtin",
+            "name": "merge"
         }
     ]
 }

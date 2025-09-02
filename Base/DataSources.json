@@ -2,7 +2,7 @@
     "type": "dataSources",
     "dataSources": [
         {
-            "ExtendedProperties": {
+            "extendedProperties": {
                 "RememberPassword": "false"
             },
             "name": "AdventureWorks",
@@ -161,7 +161,7 @@
             ]
         },
         {
-            "ExtendedProperties": {
+            "extendedProperties": {
                 "RememberPassword": "false"
             },
             "name": "ExternalStorage",
@@ -248,7 +248,7 @@
             ]
         },
         {
-            "ExtendedProperties": {
+            "extendedProperties": {
                 "RememberPassword": "false"
             },
             "name": "OracleDev",
