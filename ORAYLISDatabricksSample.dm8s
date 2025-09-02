@@ -1,9 +1,11 @@
 {
-  "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/Solution.json",
   "schemaVersion": "2.0.0",
   "basePath": "Base",
   "modelPath": "Model",
-  "generatePath": "Generate",
-  "diagramPath": "Diagram",
-  "outputPath": "Output"
+  "generatorTargets": [
+    {
+      "sourcePath": "Generate/databricks-lake",
+      "outputPath": "Output"
+    }
+  ]
 }

@@ -2,15 +2,28 @@
     "json.schemas": [
         {
             "fileMatch": [
-                "/Base/**/*.json"
+                "/Base/**/*.json",
             ],
             "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2-PM/schema/base.json"
         },
         {
             "fileMatch": [
-                "/Model/**/*.json"
+                "/Model/**/*.json",
+                "!/Model/**/.properties.json",
             ],
             "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2-PM/schema/model.json"
-        }
+        },
+        {
+            "fileMatch": [
+                "/Model/**/*.json",
+            ],
+            "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2-PM/schema/folder.json"
+        },
+        {
+            "fileMatch": [
+                "/*.dm8s",
+            ],
+            "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2-PM/schema/solution.json"
+        },
     ]
 }

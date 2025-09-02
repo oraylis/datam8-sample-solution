@@ -1,20 +1,19 @@
 {
     "id": 1007,
-    "type": "entity",
     "name": "ProductModelProductDescription",
     "displayName": "Product_Model_Product_Description",
     "description": "Product model to description relationship entity",
     "properties": [
         {
-            "type": "jobs",
+            "property": "jobs",
             "value": "sales_daily"
         },
         {
-            "type": "write_mode",
+            "property": "write_mode",
             "value": "merge"
         },
         {
-            "type": "data_retention",
+            "property": "data_retention",
             "value": "7_days"
         }
     ],
@@ -28,8 +27,9 @@
                 "type": "int",
                 "nullable": true
             },
-            "type": "BK",
-            "dateModified": "2025-03-28 16:16:38"
+            "isBusinessKey": true,
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 2,
@@ -40,8 +40,9 @@
                 "type": "int",
                 "nullable": true
             },
-            "type": "BK",
-            "dateModified": "2025-03-28 16:16:38"
+            "isBusinessKey": true,
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 3,
@@ -52,8 +53,9 @@
                 "type": "string",
                 "nullable": false
             },
-            "type": "BK",
-            "dateModified": "2025-03-28 16:16:38"
+            "isBusinessKey": true,
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 4,
@@ -63,7 +65,8 @@
             "dataType": {
                 "type": "uniqueidentifier",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 5,
@@ -73,7 +76,8 @@
             "dataType": {
                 "type": "datetime",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         }
     ],
     "sources": [
@@ -82,7 +86,7 @@
             "sourceLocation": "[SalesLT].[ProductModelProductDescription]",
             "properties": [
                 {
-                    "type": "extract_mode",
+                    "property": "extract_mode",
                     "value": "delta"
                 }
             ],
@@ -129,12 +133,19 @@
                     },
                     "properties": [
                         {
-                            "type": "extract_column",
+                            "property": "extract_column",
                             "value": "delta"
                         }
                     ]
                 }
             ]
+        }
+    ],
+    "transformations": [
+        {
+            "stepNo": 1,
+            "kind": "builtin",
+            "name": "merge"
         }
     ]
 }

@@ -5,15 +5,15 @@
     "description": "Core customer information entity",
     "properties": [
         {
-            "type": "jobs",
+            "property": "jobs",
             "value": "sales_daily"
         },
         {
-            "type": "write_mode",
+            "property": "write_mode",
             "value": "merge"
         },
         {
-            "type": "data_retention",
+            "property": "data_retention",
             "value": "7_days"
         }
     ],
@@ -27,14 +27,15 @@
                 "type": "int",
                 "nullable": true
             },
-            "type": "BK",
+            "isBusinessKey": true,
             "properties": [
                 {
-                    "type": "data_layout",
+                    "property": "data_layout",
                     "value": "liquid_clustering"
                 }
             ],
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 2,
@@ -44,7 +45,8 @@
             "dataType": {
                 "type": "bit",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 3,
@@ -54,7 +56,8 @@
             "dataType": {
                 "type": "string",
                 "nullable": true
-            }
+            },
+            "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 4,
@@ -65,7 +68,8 @@
                 "type": "string",
                 "nullable": false
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 5,
@@ -76,7 +80,8 @@
                 "type": "string",
                 "nullable": true
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 6,
@@ -87,8 +92,9 @@
                 "type": "string",
                 "nullable": false
             },
-            "type": "SCD2",
-            "dateModified": "2025-03-28 16:16:38"
+            "history": "SCD2",
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 7,
@@ -99,7 +105,8 @@
                 "type": "string",
                 "nullable": true
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 8,
@@ -110,7 +117,8 @@
                 "type": "string",
                 "nullable": true
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 9,
@@ -121,7 +129,8 @@
                 "type": "string",
                 "nullable": true
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 10,
@@ -132,7 +141,8 @@
                 "type": "string",
                 "nullable": true
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 11,
@@ -143,7 +153,8 @@
                 "type": "string",
                 "nullable": true
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 12,
@@ -154,7 +165,8 @@
                 "type": "string",
                 "nullable": false
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 13,
@@ -165,7 +177,8 @@
                 "type": "string",
                 "nullable": false
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 14,
@@ -176,7 +189,8 @@
                 "type": "uniqueidentifier",
                 "nullable": false
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 15,
@@ -187,7 +201,8 @@
                 "type": "datetime",
                 "nullable": false
             },
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-03-28T16:16:38Z"
         }
     ],
     "sources": [
@@ -196,7 +211,7 @@
             "sourceLocation": "[SalesLT].[Customer_DE]",
             "properties": [
                 {
-                    "type": "extract_mode",
+                    "property": "extract_mode",
                     "value": "delta"
                 }
             ],
@@ -333,12 +348,19 @@
                     },
                     "properties": [
                         {
-                            "type": "extract_column",
+                            "property": "extract_column",
                             "value": "delta"
                         }
                     ]
                 }
             ]
+        }
+    ],
+    "transformations": [
+        {
+            "stepNo": 1,
+            "kind": "builtin",
+            "name": "merge"
         }
     ]
 }

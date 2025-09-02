@@ -1,20 +1,19 @@
 {
     "id": 1003,
-    "type": "entity",
     "name": "Product",
     "displayName": "Product",
     "description": "Product catalog entity",
     "properties": [
         {
-            "type": "jobs",
+            "property": "jobs",
             "value": "sales_daily"
         },
         {
-            "type": "write_mode",
+            "property": "write_mode",
             "value": "merge"
         },
         {
-            "type": "data_retention",
+            "property": "data_retention",
             "value": "7_days"
         }
     ],
@@ -28,8 +27,9 @@
                 "type": "int",
                 "nullable": true
             },
-            "type": "BK",
-            "dateModified": "2025-03-28 16:16:38"
+            "isBusinessKey": true,
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 2,
@@ -39,7 +39,8 @@
             "dataType": {
                 "type": "string",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 3,
@@ -49,7 +50,8 @@
             "dataType": {
                 "type": "string",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 4,
@@ -59,7 +61,8 @@
             "dataType": {
                 "type": "string",
                 "nullable": true
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 5,
@@ -69,7 +72,8 @@
             "dataType": {
                 "type": "money",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 6,
@@ -79,7 +83,8 @@
             "dataType": {
                 "type": "money",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 7,
@@ -89,7 +94,8 @@
             "dataType": {
                 "type": "string",
                 "nullable": true
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 8,
@@ -101,7 +107,8 @@
                 "precision": 10,
                 "scale": 2,
                 "nullable": true
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 9,
@@ -111,7 +118,8 @@
             "dataType": {
                 "type": "int",
                 "nullable": true
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 10,
@@ -121,7 +129,8 @@
             "dataType": {
                 "type": "int",
                 "nullable": true
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 11,
@@ -131,7 +140,8 @@
             "dataType": {
                 "type": "datetime",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 12,
@@ -141,7 +151,8 @@
             "dataType": {
                 "type": "datetime",
                 "nullable": true
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 13,
@@ -151,7 +162,8 @@
             "dataType": {
                 "type": "datetime",
                 "nullable": true
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 14,
@@ -161,7 +173,8 @@
             "dataType": {
                 "type": "binary",
                 "nullable": true
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 15,
@@ -171,7 +184,8 @@
             "dataType": {
                 "type": "string",
                 "nullable": true
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 16,
@@ -181,7 +195,8 @@
             "dataType": {
                 "type": "uniqueidentifier",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 17,
@@ -191,7 +206,8 @@
             "dataType": {
                 "type": "datetime",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         }
     ],
     "sources": [
@@ -200,7 +216,7 @@
             "sourceLocation": "[SalesLT].[Product]",
             "properties": [
                 {
-                    "type": "extract_mode",
+                    "property": "extract_mode",
                     "value": "delta"
                 }
             ],
@@ -349,12 +365,19 @@
                     },
                     "properties": [
                         {
-                            "type": "extract_column",
+                            "property": "extract_column",
                             "value": "delta"
                         }
                     ]
                 }
             ]
+        }
+    ],
+    "transformations": [
+        {
+            "stepNo": 1,
+            "kind": "builtin",
+            "name": "merge"
         }
     ]
 }

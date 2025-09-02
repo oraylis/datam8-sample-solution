@@ -1,20 +1,19 @@
 {
     "id": 1005,
-    "type": "entity",
     "name": "ProductDescription",
     "displayName": "Product_Description",
     "description": "Product description text entity",
     "properties": [
         {
-            "type": "jobs",
+            "property": "jobs",
             "value": "sales_daily"
         },
         {
-            "type": "write_mode",
+            "property": "write_mode",
             "value": "merge"
         },
         {
-            "type": "data_retention",
+            "property": "data_retention",
             "value": "7_days"
         }
     ],
@@ -28,8 +27,9 @@
                 "type": "int",
                 "nullable": true
             },
-            "type": "BK",
-            "dateModified": "2025-03-28 16:16:38"
+            "isBusinessKey": true,
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 2,
@@ -39,7 +39,8 @@
             "dataType": {
                 "type": "string",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 3,
@@ -49,7 +50,8 @@
             "dataType": {
                 "type": "uniqueidentifier",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 4,
@@ -59,7 +61,8 @@
             "dataType": {
                 "type": "datetime",
                 "nullable": false
-            }
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
         }
     ],
     "sources": [
@@ -68,7 +71,7 @@
             "sourceLocation": "[SalesLT].[ProductDescription]",
             "properties": [
                 {
-                    "type": "extract_mode",
+                    "property": "extract_mode",
                     "value": "delta"
                 }
             ],
@@ -107,12 +110,19 @@
                     },
                     "properties": [
                         {
-                            "type": "extract_column",
+                            "property": "extract_column",
                             "value": "delta"
                         }
                     ]
                 }
             ]
+        }
+    ],
+    "transformations": [
+        {
+            "stepNo": 1,
+            "kind": "builtin",
+            "name": "merge"
         }
     ]
 }

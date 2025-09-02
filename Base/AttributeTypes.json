@@ -7,7 +7,6 @@
             "description": "Amount value having a currency",
             "defaultType": "double",
             "hasUnit": "Currency",
-            "isUnit": "NoUnit",
             "canBeInRelation": false,
             "isDefaultProperty": false
         },
@@ -23,7 +22,6 @@
             "displayName": "Creation Date",
             "defaultType": "datetime",
             "hasUnit": "NoUnit",
-            "isUnit": "NoUnit",
             "canBeInRelation": false,
             "isDefaultProperty": false
         },
@@ -33,7 +31,6 @@
             "defaultType": "string",
             "defaultLength": 3,
             "hasUnit": "NoUnit",
-            "isUnit": "Currency",
             "canBeInRelation": false,
             "isDefaultProperty": false
         },
@@ -43,7 +40,6 @@
             "defaultType": "string",
             "defaultLength": 256,
             "hasUnit": "NoUnit",
-            "isUnit": "NoUnit",
             "canBeInRelation": false,
             "isDefaultProperty": false
         },
@@ -59,7 +55,6 @@
             "name": "EMail",
             "displayName": "EMail",
             "defaultType": "string",
-            "isUnit": "NoUnit",
             "canBeInRelation": false,
             "isDefaultProperty": false
         },
@@ -123,7 +118,6 @@
             "defaultType": "string",
             "defaultLength": 16,
             "hasUnit": "NoUnit",
-            "isUnit": "Physical",
             "canBeInRelation": false,
             "isDefaultProperty": false
         },
@@ -132,8 +126,7 @@
             "displayName": "Value",
             "description": "Unit free value",
             "defaultType": "double",
-            "hasUnit": "UnitFree",
-            "isUnit": "NoUnit",
+            "hasUnit": "NoUnit",
             "canBeInRelation": false,
             "isDefaultProperty": false
         },

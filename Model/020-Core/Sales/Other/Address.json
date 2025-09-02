@@ -1,20 +1,19 @@
 {
     "id": 2002,
-    "type": "entity",
     "name": "Address",
     "displayName": "Address",
     "description": "Core address dimension with location data",
     "properties": [
         {
-            "type": "jobs",
+            "property": "jobs",
             "value": "sales_daily"
         },
         {
-            "type": "write_mode",
+            "property": "write_mode",
             "value": "overwrite"
         },
         {
-            "type": "data_retention",
+            "property": "data_retention",
             "value": "7_days"
         }
     ],
@@ -28,9 +27,10 @@
                 "type": "int",
                 "nullable": false
             },
-            "type": "BK",
+            "isBusinessKey": true,
             "refactorNames": [],
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 2,
@@ -41,8 +41,14 @@
                 "type": "long",
                 "nullable": false
             },
-            "type": "SK",
-            "refactorNames": []
+            "properties": [
+                {
+                    "property": "attribute_type",
+                    "value": "SK"
+                }
+            ],
+            "refactorNames": [],
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 3,
@@ -53,9 +59,10 @@
                 "type": "int",
                 "nullable": false
             },
-            "type": "SCD1",
+            "history": "SCD1",
             "refactorNames": [],
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 4,
@@ -66,12 +73,13 @@
                 "type": "string",
                 "nullable": false
             },
-            "type": "SCD1",
+            "history": "SCD1",
             "refactorNames": [
                 "AddressLine1",
                 "AddressLine1Name"
             ],
-            "dateModified": "2025-03-28 16:16:38"
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 5,
@@ -82,8 +90,9 @@
                 "type": "string",
                 "nullable": true
             },
-            "type": "SCD1",
-            "refactorNames": []
+            "history": "SCD1",
+            "refactorNames": [],
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 6,
@@ -94,10 +103,11 @@
                 "type": "string",
                 "nullable": false
             },
-            "type": "SCD1",
+            "history": "SCD1",
             "refactorNames": [
                 "City"
-            ]
+            ],
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 7,
@@ -108,10 +118,11 @@
                 "type": "string",
                 "nullable": false
             },
-            "type": "SCD1",
+            "history": "SCD1",
             "refactorNames": [
                 "CountryRegion"
-            ]
+            ],
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 8,
@@ -122,8 +133,9 @@
                 "type": "string",
                 "nullable": false
             },
-            "type": "SCD1",
-            "refactorNames": []
+            "history": "SCD1",
+            "refactorNames": [],
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 9,
@@ -134,10 +146,11 @@
                 "type": "string",
                 "nullable": false
             },
-            "type": "SCD1",
+            "history": "SCD1",
             "refactorNames": [
                 "StateProvince"
-            ]
+            ],
+            "dateAdded": "2025-01-01T01:01:01Z"
         }
     ],
     "sources": [
@@ -145,7 +158,7 @@
             "sourceLocation": 1000,
             "properties": [
                 {
-                    "type": "extract_mode",
+                    "property": "extract_mode",
                     "value": "delta"
                 }
             ]
