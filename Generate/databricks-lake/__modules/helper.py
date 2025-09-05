@@ -133,22 +133,6 @@ class Helper:
         print(Helper.build_path("abc", "sf$", "888"))
 
 
-def get_dict_modules() -> dict:
-    """Retrieves a dictionary containing modules.
-
-    Returns:
-        dict: Dictionary containing modules.
-    """
-    __dict = {
-        "helper": Helper,
-        "len": len,
-        "str": str,
-        "json": json,
-        "math": math,
-    }
-    return __dict
-
-
 # Unit tests
 if __name__ == "__main__":
     Helper.test_cleanup_name()

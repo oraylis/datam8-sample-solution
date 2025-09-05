@@ -1,0 +1,11 @@
+{%- import "columns.py.jinja2" as columns %}
+# databricks source
+
+# {{ data.name }}
+# {{ data.locator }}
+
+cached_value = {{ data.cached_value }}
+
+{{ data.parameters }}
+
+{{ columns.attribute_list(data.attributes) }}
