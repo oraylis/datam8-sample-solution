@@ -39,7 +39,7 @@
         {
             "name": "sales",
             "displayName": "Sales",
-            "type": "business_area"
+            "property": "business_area"
         }
     ]
 }
