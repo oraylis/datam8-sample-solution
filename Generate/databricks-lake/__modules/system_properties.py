@@ -28,9 +28,9 @@ class SystemProperties:
     core_folder = "030-core"
     curated_folder = "031-curated"
 
-    # TODO: seperate into different classes?
-    # class Databricks:
-    #     """Provides access to databricks related properties"""
+
+class Databricks:
+    """Provides access to databricks related properties"""
 
     # TODO: fill out the databricks information for your setup
 
@@ -57,23 +57,4 @@ class SystemProperties:
         "prod": "datam8_sample_dev_owner",
     }
 
-    permissions = [
-        {
-            "group_name": "datam8_sample_dev_operations",
-            "level": "CAN_RUN"
-        }
-    ]
-
-
-
-def get_dict_modules() -> dict:
-    """Retrieves a dictionary containing modules.
-
-    Returns:
-        dict: Dictionary containing modules.
-    """
-    __dict = {
-        "SystemProperties": SystemProperties,
-        # "Databricks": Databricks,
-    }
-    return __dict
+    permissions = [{"group_name": "datam8_sample_dev_operations", "level": "CAN_RUN"}]

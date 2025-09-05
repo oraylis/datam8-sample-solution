@@ -1,0 +1,7 @@
+{%- macro attribute_list(attributes) %}
+attributes = [
+  {%- for attribute in attributes %}
+  "{{ attribute.name }}",
+  {%- endfor %}
+]
+{%- endmacro %}

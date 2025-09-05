@@ -4,26 +4,26 @@
             "fileMatch": [
                 "/Base/**/*.json",
             ],
-            "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2-PM/schema/base.json"
+            "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/base.json"
         },
         {
             "fileMatch": [
                 "/Model/**/*.json",
                 "!/Model/**/.properties.json",
             ],
-            "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2-PM/schema/model.json"
+            "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/model.json"
         },
         {
             "fileMatch": [
                 "/Model/**/*.json",
             ],
-            "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2-PM/schema/folder.json"
+            "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/folder.json"
         },
         {
             "fileMatch": [
                 "/*.dm8s",
             ],
-            "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2-PM/schema/solution.json"
+            "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/solution.json"
         },
     ]
 }
