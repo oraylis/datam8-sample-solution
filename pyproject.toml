@@ -1,0 +1,26 @@
+[project]
+name = "datam8-sample-solution"
+version = "2.0.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["datam8-generator"]
+
+[project.urls]
+Homepage = "https://github.com/oraylis/datam8-sample-solution"
+
+[tool.uv.sources]
+datam8-generator = { git = "https://github.com/oraylis/datam8-generator", branch = "feature/v2-PM" }
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["I", "E4", "E7", "E9", "W", "F", "Q", "UP"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pyright]
+venvPath = ".venv"
+venv = "."

@@ -1,0 +1,12 @@
+# {{ data.entity.displayName }}
+locator: {{ data.locator }}
+connectionsstring: {{ data.entity.connectionString  }}
+type: {{ data.entity.type }}
+
+# data type mappings
+
+| source | target 
+| -      | -
+{%- for mapping in data.entity.dataTypeMapping %}
+| {{ mapping.sourceType }} | {{ mapping.targetType }}
+{%- endfor %}

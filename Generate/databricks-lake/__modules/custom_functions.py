@@ -258,14 +258,3 @@ class CustomFunctions:
             elif hasattr(col, 'type') and hasattr(col.type, 'value') and col.type.value == "SCD2":
                 result.append(col.name)
         return result
-
-
-def get_dict_modules() -> dict:
-    """Retrieves a dictionary containing modules.
-
-    Returns:
-        dict: Dictionary containing modules.
-    """
-    __dict = {"custom_functions": CustomFunctions, "json": json, "os": os}
-
-    return __dict
