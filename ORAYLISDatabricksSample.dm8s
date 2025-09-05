@@ -4,8 +4,16 @@
   "modelPath": "Model",
   "generatorTargets": [
     {
+      "name": "databricks",
+      "isDefault": true,
       "sourcePath": "Generate/databricks-lake",
       "outputPath": "Output"
+    },
+    {
+      "name": "docs",
+      "isDefault": false,
+      "sourcePath": "Generate/docs",
+      "outputPath": "docs"
     }
   ]
 }
