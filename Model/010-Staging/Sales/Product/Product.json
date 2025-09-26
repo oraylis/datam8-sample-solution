@@ -1,5 +1,5 @@
 {
-    "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/ModelDataEntity.json",
+    "id": 1003,
     "type": "entity",
     "name": "Product",
     "displayName": "Product",
@@ -46,11 +46,6 @@
             "name": "ProductNumber",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "string",
-                "charLen": 25,
-                "nullable": false
-            },
             "dataType": {
                 "type": "string",
                 "nullable": false
@@ -61,11 +56,6 @@
             "name": "Color",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "string",
-                "charLen": 15,
-                "nullable": true
-            },
             "dataType": {
                 "type": "string",
                 "nullable": true
@@ -76,10 +66,6 @@
             "name": "StandardCost",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "money",
-                "nullable": false
-            },
             "dataType": {
                 "type": "money",
                 "nullable": false
@@ -90,10 +76,6 @@
             "name": "ListPrice",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "money",
-                "nullable": false
-            },
             "dataType": {
                 "type": "money",
                 "nullable": false
@@ -104,11 +86,6 @@
             "name": "Size",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "string",
-                "charLen": 5,
-                "nullable": true
-            },
             "dataType": {
                 "type": "string",
                 "nullable": true
@@ -119,12 +96,6 @@
             "name": "Weight",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "decimal",
-                "precision": 8,
-                "scale": 2,
-                "nullable": true
-            },
             "dataType": {
                 "type": "decimal",
                 "precision": 10,
@@ -137,10 +108,6 @@
             "name": "ProductCategoryID",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "int",
-                "nullable": true
-            },
             "dataType": {
                 "type": "int",
                 "nullable": true
@@ -151,10 +118,6 @@
             "name": "ProductModelID",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "int",
-                "nullable": true
-            },
             "dataType": {
                 "type": "int",
                 "nullable": true
@@ -165,10 +128,6 @@
             "name": "SellStartDate",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "datetime",
-                "nullable": false
-            },
             "dataType": {
                 "type": "datetime",
                 "nullable": false
@@ -179,10 +138,6 @@
             "name": "SellEndDate",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "datetime",
-                "nullable": true
-            },
             "dataType": {
                 "type": "datetime",
                 "nullable": true
@@ -193,10 +148,6 @@
             "name": "DiscontinuedDate",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "datetime",
-                "nullable": true
-            },
             "dataType": {
                 "type": "datetime",
                 "nullable": true
@@ -207,10 +158,6 @@
             "name": "ThumbNailPhoto",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "binary",
-                "nullable": true
-            },
             "dataType": {
                 "type": "binary",
                 "nullable": true
@@ -221,11 +168,6 @@
             "name": "ThumbnailPhotoFileName",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "string",
-                "charLen": 50,
-                "nullable": true
-            },
             "dataType": {
                 "type": "string",
                 "nullable": true
@@ -236,10 +178,6 @@
             "name": "rowguid",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "uniqueidentifier",
-                "nullable": false
-            },
             "dataType": {
                 "type": "uniqueidentifier",
                 "nullable": false
@@ -250,10 +188,6 @@
             "name": "ModifiedDate",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "datetime",
-                "nullable": false
-            },
             "dataType": {
                 "type": "datetime",
                 "nullable": false
@@ -262,7 +196,6 @@
     ],
     "sources": [
         {
-            "type": "source",
             "dataSource": "AdventureWorks",
             "sourceLocation": "[SalesLT].[Product]",
             "properties": [

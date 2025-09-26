@@ -1,5 +1,4 @@
 {
-    "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/propertyTypes.json",
     "type": "propertyTypes",
     "propertyTypes": [
         {
@@ -9,7 +8,7 @@
             "scopes": [
                 {
                     "type": "entity",
-                    "single_usage": false,
+                    "singleUsage": false,
                     "mandatory": false
                 }
             ]
@@ -20,7 +19,7 @@
             "schema": "./schedules.json",
             "scopes": [
                 {
-                    "type": "None"
+                    "type": "none"
                 }
             ]
         },

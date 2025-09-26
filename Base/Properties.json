@@ -1,5 +1,4 @@
 {
-    "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/properties.json",
     "type": "properties",
     "properties": [
         {

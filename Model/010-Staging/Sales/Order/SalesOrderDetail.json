@@ -1,5 +1,5 @@
 {
-    "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/ModelDataEntity.json",
+    "id": 1009,
     "type": "entity",
     "name": "SalesOrderDetail",
     "displayName": "Sales_Order_Detail",

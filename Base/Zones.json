@@ -1,30 +1,28 @@
 {
-  "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/Zones.json",
-  "type": "zone",
-  "zones": [
-    {
-      "name": "raw",
-      "targeName": "raw",
-      "displayName": "Raw Data Layer",
-      "localFolderName": "000-Raw"
-    },
-    {
-      "name": "stage",
-      "targeName": "bronze",
-      "displayName": "Staging Data Layer",
-      "localFolderName": "010-Staging"
-    },
-    {
-      "name": "core",
-      "targeName": "silver",
-      "displayName": "Core Business Layer",
-      "localFolderName": "020-Core"
-    },
-    {
-      "name": "curated",
-      "targeName": "gold",
-      "displayName": "Curated Analytics Layer",
-      "localFolderName": "030-Curated"
-    }
-  ]
+    "type": "zones",
+    "zones": [
+        {
+            "name": "raw",
+            "targeName": "raw",
+            "displayName": "Raw Data Layer"
+        },
+        {
+            "name": "stage",
+            "targeName": "bronze",
+            "displayName": "Staging Data Layer",
+            "localFolderName": "010-Staging"
+        },
+        {
+            "name": "core",
+            "targeName": "silver",
+            "displayName": "Core Business Layer",
+            "localFolderName": "020-Core"
+        },
+        {
+            "name": "curated",
+            "targeName": "gold",
+            "displayName": "Curated Analytics Layer",
+            "localFolderName": "030-Curated"
+        }
+    ]
 }

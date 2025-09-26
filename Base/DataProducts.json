@@ -1,42 +1,41 @@
 {
-  "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/DataProducts.json",
-  "type": "dataProduct",
-  "dataProducts": [
-    {
-      "name": "Sales",
-      "displayName": "All Entities for Sales",
-      "module": [
+    "type": "dataProducts",
+    "dataProducts": [
         {
-          "name": "Customer",
-          "displayName": "Customer module"
+            "name": "Sales",
+            "displayName": "All Entities for Sales",
+            "dataModules": [
+                {
+                    "name": "Customer",
+                    "displayName": "Customer module"
+                },
+                {
+                    "name": "Product",
+                    "displayName": "Product module"
+                },
+                {
+                    "name": "Other",
+                    "displayName": "Other module"
+                },
+                {
+                    "name": "Order",
+                    "displayName": "Order module"
+                }
+            ]
         },
         {
-          "name": "Product",
-          "displayName": "Product module"
-        },
-        {
-          "name": "Other",
-          "displayName": "Other module"
-        },
-        {
-          "name": "Order",
-          "displayName": "Order module"
+            "name": "HR",
+            "displayName": "All Entities for Human Resources",
+            "dataModules": [
+                {
+                    "name": "Employee",
+                    "displayName": "Employee module"
+                },
+                {
+                    "name": "Payroll",
+                    "displayName": "Payroll module"
+                }
+            ]
         }
-      ]
-    },
-    {
-      "name": "HR",
-      "displayName": "All Entities for Human Resources",
-      "module": [
-        {
-          "name": "Employee",
-          "displayName": "Employee module"
-        },
-        {
-          "name": "Payroll",
-          "displayName": "Payroll module"
-        }
-      ]
-    }
-  ]
+    ]
 }

@@ -1,6 +1,5 @@
 {
-    "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/ModelDataEntity.json",
-    "type": "entity",
+    "id": 1012,
     "name": "Customer_DE",
     "displayName": "Customer__DE",
     "description": "Core customer information entity",
@@ -193,156 +192,153 @@
     ],
     "sources": [
         {
-            "type": "source",
-            "source": {
-                "dataSource": "AdventureWorks",
-                "sourceLocation": "[SalesLT].[Customer_DE]",
-                "properties": [
-                    {
-                        "type": "extract_mode",
-                        "value": "delta"
+            "dataSource": "AdventureWorks",
+            "sourceLocation": "[SalesLT].[Customer_DE]",
+            "properties": [
+                {
+                    "type": "extract_mode",
+                    "value": "delta"
+                }
+            ],
+            "mapping": [
+                {
+                    "targetName": "KundenID",
+                    "sourceName": "[KundenID]",
+                    "sourceDataType": {
+                        "type": "int",
+                        "nullable": true
                     }
-                ],
-                "mapping": [
-                    {
-                        "targetName": "KundenID",
-                        "sourceName": "[KundenID]",
-                        "sourceDataType": {
-                            "type": "int",
-                            "nullable": true
-                        }
-                    },
-                    {
-                        "targetName": "NamensTyp",
-                        "sourceName": "[NamensTyp]",
-                        "sourceDataType": {
-                            "type": "bit",
-                            "nullable": false
-                        }
-                    },
-                    {
-                        "targetName": "Titel",
-                        "sourceName": "[Titel]",
-                        "sourceDataType": {
-                            "type": "string",
-                            "charLen": 8,
-                            "nullable": true
-                        }
-                    },
-                    {
-                        "targetName": "Vorname",
-                        "sourceName": "[Vorname]",
-                        "sourceDataType": {
-                            "type": "string",
-                            "charLen": 50,
-                            "nullable": false
-                        }
-                    },
-                    {
-                        "targetName": "Nameszusatz1",
-                        "sourceName": "[Nameszusatz1]",
-                        "sourceDataType": {
-                            "type": "string",
-                            "charLen": 50,
-                            "nullable": true
-                        }
-                    },
-                    {
-                        "targetName": "Nachname",
-                        "sourceName": "[Nachname]",
-                        "sourceDataType": {
-                            "type": "string",
-                            "charLen": 50,
-                            "nullable": false
-                        }
-                    },
-                    {
-                        "targetName": "Namenszusatz2",
-                        "sourceName": "[Namenszusatz2]",
-                        "sourceDataType": {
-                            "type": "string",
-                            "charLen": 10,
-                            "nullable": true
-                        }
-                    },
-                    {
-                        "targetName": "Firma",
-                        "sourceName": "[Firma]",
-                        "sourceDataType": {
-                            "type": "string",
-                            "charLen": 128,
-                            "nullable": true
-                        }
-                    },
-                    {
-                        "targetName": "Verkaeufer",
-                        "sourceName": "[Verkaeufer]",
-                        "sourceDataType": {
-                            "type": "string",
-                            "charLen": 256,
-                            "nullable": true
-                        }
-                    },
-                    {
-                        "targetName": "Email",
-                        "sourceName": "[Email]",
-                        "sourceDataType": {
-                            "type": "string",
-                            "charLen": 50,
-                            "nullable": true
-                        }
-                    },
-                    {
-                        "targetName": "Telefon",
-                        "sourceName": "[Telefon]",
-                        "sourceDataType": {
-                            "type": "string",
-                            "charLen": 25,
-                            "nullable": true
-                        }
-                    },
-                    {
-                        "targetName": "PasswordHash",
-                        "sourceName": "[PasswordHash]",
-                        "sourceDataType": {
-                            "type": "string",
-                            "charLen": 128,
-                            "nullable": false
-                        }
-                    },
-                    {
-                        "targetName": "PasswordSalt",
-                        "sourceName": "[PasswordSalt]",
-                        "sourceDataType": {
-                            "type": "string",
-                            "charLen": 10,
-                            "nullable": false
-                        }
-                    },
-                    {
-                        "targetName": "rowguid",
-                        "sourceName": "[rowguid]",
-                        "sourceDataType": {
-                            "type": "uniqueidentifier",
-                            "nullable": false
-                        }
-                    },
-                    {
-                        "targetName": "GeaendertAm",
-                        "sourceName": "[GeaendertAm]",
-                        "sourceDataType": {
-                            "type": "datetime",
-                            "nullable": false
-                        },
-                        "properties": [
-                            {
-                                "type": "extract_column",
-                                "value": "delta"
-                            }
-                        ]
+                },
+                {
+                    "targetName": "NamensTyp",
+                    "sourceName": "[NamensTyp]",
+                    "sourceDataType": {
+                        "type": "bit",
+                        "nullable": false
                     }
-                ]
-            }
+                },
+                {
+                    "targetName": "Titel",
+                    "sourceName": "[Titel]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 8,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Vorname",
+                    "sourceName": "[Vorname]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 50,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "Nameszusatz1",
+                    "sourceName": "[Nameszusatz1]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 50,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Nachname",
+                    "sourceName": "[Nachname]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 50,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "Namenszusatz2",
+                    "sourceName": "[Namenszusatz2]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 10,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Firma",
+                    "sourceName": "[Firma]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 128,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Verkaeufer",
+                    "sourceName": "[Verkaeufer]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 256,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Email",
+                    "sourceName": "[Email]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 50,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Telefon",
+                    "sourceName": "[Telefon]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 25,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "PasswordHash",
+                    "sourceName": "[PasswordHash]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 128,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "PasswordSalt",
+                    "sourceName": "[PasswordSalt]",
+                    "sourceDataType": {
+                        "type": "string",
+                        "charLen": 10,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "rowguid",
+                    "sourceName": "[rowguid]",
+                    "sourceDataType": {
+                        "type": "uniqueidentifier",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "GeaendertAm",
+                    "sourceName": "[GeaendertAm]",
+                    "sourceDataType": {
+                        "type": "datetime",
+                        "nullable": false
+                    },
+                    "properties": [
+                        {
+                            "type": "extract_column",
+                            "value": "delta"
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
