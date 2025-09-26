@@ -1,48 +1,47 @@
 {
-  "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/DataSourceTypes.json",
-  "type": "dataSourceType",
-  "dataSourceTypes": [
-    {
-      "name": "SqlDataSource",
-      "displayName": "SQL Database",
-      "description": "Traditional SQL database connection",
-      "dataTypeMapping": [
+    "type": "dataSourceTypes",
+    "dataSourceTypes": [
         {
-          "sourceType": "varchar",
-          "targetType": "string"
+            "name": "SqlDataSource",
+            "displayName": "SQL Database",
+            "description": "Traditional SQL database connection",
+            "dataTypeMapping": [
+                {
+                    "sourceType": "varchar",
+                    "targetType": "string"
+                },
+                {
+                    "sourceType": "int",
+                    "targetType": "integer"
+                },
+                {
+                    "sourceType": "smallint",
+                    "targetType": "integer"
+                },
+                {
+                    "sourceType": "datetime",
+                    "targetType": "timestamp"
+                }
+            ]
         },
         {
-          "sourceType": "int",
-          "targetType": "integer"
-        },
-        {
-          "sourceType": "smallint",
-          "targetType": "integer"
-        },
-        {
-          "sourceType": "datetime",
-          "targetType": "timestamp"
+            "name": "LakeSource",
+            "displayName": "Data Lake Source",
+            "description": "Data lake file-based source",
+            "dataTypeMapping": [
+                {
+                    "sourceType": "string",
+                    "targetType": "string"
+                },
+                {
+                    "sourceType": "long",
+                    "targetType": "bigint"
+                },
+                {
+                    "sourceType": "timestamp",
+                    "targetType": "timestamp"
+                }
+            ]
         }
-      ]
-    },
-    {
-      "name": "LakeSource",
-      "displayName": "Data Lake Source",
-      "description": "Data lake file-based source",
-      "dataTypeMapping": [
-        {
-          "sourceType": "string",
-          "targetType": "string"
-        },
-        {
-          "sourceType": "long",
-          "targetType": "bigint"
-        },
-        {
-          "sourceType": "timestamp",
-          "targetType": "timestamp"
-        }
-      ]
-    }
-  ]
+    ]
 }

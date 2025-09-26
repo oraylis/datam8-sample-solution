@@ -1,5 +1,5 @@
 {
-    "$schema": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/ModelDataEntity.json",
+    "id": 1007,
     "type": "entity",
     "name": "ProductModelProductDescription",
     "displayName": "Product_Model_Product_Description",
@@ -24,10 +24,6 @@
             "name": "ProductModelID",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "int",
-                "nullable": true
-            },
             "dataType": {
                 "type": "int",
                 "nullable": true
@@ -40,10 +36,6 @@
             "name": "ProductDescriptionID",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "int",
-                "nullable": true
-            },
             "dataType": {
                 "type": "int",
                 "nullable": true
@@ -56,11 +48,6 @@
             "name": "Culture",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "string",
-                "charLen": 6,
-                "nullable": false
-            },
             "dataType": {
                 "type": "string",
                 "nullable": false
@@ -73,10 +60,6 @@
             "name": "rowguid",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "uniqueidentifier",
-                "nullable": false
-            },
             "dataType": {
                 "type": "uniqueidentifier",
                 "nullable": false
@@ -87,10 +70,6 @@
             "name": "ModifiedDate",
             "description": "",
             "attributeType": "ID",
-            "sourceDataType": {
-                "type": "datetime",
-                "nullable": false
-            },
             "dataType": {
                 "type": "datetime",
                 "nullable": false
