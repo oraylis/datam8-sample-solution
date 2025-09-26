@@ -60,7 +60,7 @@ wheels = [
 [[package]]
 name = "datam8-generator"
 version = "2.0.0"
-source = { git = "https://github.com/oraylis/datam8-generator?branch=feature%2Fv2-PM#7b379fe572badaae0025f2b2324d44ba02ab7f5a" }
+source = { git = "https://github.com/oraylis/datam8-generator?branch=feature%2Fv2#914b674c2ae8b8c10903cb1addce932341957da9" }
 dependencies = [
     { name = "autopep8" },
     { name = "jinja2" },
@@ -79,7 +79,7 @@ dependencies = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "datam8-generator", git = "https://github.com/oraylis/datam8-generator?branch=feature%2Fv2-PM" }]
+requires-dist = [{ name = "datam8-generator", git = "https://github.com/oraylis/datam8-generator?branch=feature%2Fv2" }]
 
 [[package]]
 name = "jinja2"
