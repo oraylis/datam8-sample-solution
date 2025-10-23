@@ -218,11 +218,5 @@
             ]
         }
     ],
-    "transformations": [
-        {
-            "stepNo": 1,
-            "kind": "builtin",
-            "name": "merge"
-        }
-    ]
+    "transformations": []
 }

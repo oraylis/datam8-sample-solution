@@ -1,8 +1,8 @@
 {
-    "id": 1011,
-    "name": "Customer_EN",
-    "displayName": "Customer__EN",
-    "description": "Core customer information entity (English)",
+    "id": 1012,
+    "name": "Customer",
+    "displayName": "Customer",
+    "description": "Core customer information entity",
     "properties": [
         {
             "property": "jobs",
@@ -20,20 +20,26 @@
     "attributes": [
         {
             "ordinalNumber": 1,
-            "name": "CustomerID",
-            "description": "",
+            "name": "KundenID",
+            "description": "Unique key for the customer",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
                 "nullable": true
             },
             "isBusinessKey": true,
+            "properties": [
+                {
+                    "property": "data_layout",
+                    "value": "liquid_clustering"
+                }
+            ],
             "dateModified": "2025-03-28T16:16:38Z",
             "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 2,
-            "name": "NameStyle",
+            "name": "NamensTyp",
             "description": "",
             "attributeType": "Flag",
             "dataType": {
@@ -44,7 +50,7 @@
         },
         {
             "ordinalNumber": 3,
-            "name": "Title",
+            "name": "Titel",
             "description": "",
             "attributeType": "Name",
             "dataType": {
@@ -55,19 +61,25 @@
         },
         {
             "ordinalNumber": 4,
-            "name": "FirstName",
+            "name": "Vorname",
             "description": "",
             "attributeType": "Name",
             "dataType": {
                 "type": "string",
                 "nullable": false
             },
+            "properties": [
+                {
+                    "property": "sensitive",
+                    "value": "true"
+                }
+            ],
             "dateModified": "2025-03-28T16:16:38Z",
             "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
             "ordinalNumber": 5,
-            "name": "MiddleName",
+            "name": "Nameszusatz1",
             "description": "",
             "attributeType": "Name",
             "dataType": {
@@ -79,7 +91,7 @@
         },
         {
             "ordinalNumber": 6,
-            "name": "LastName",
+            "name": "Nachname",
             "description": "",
             "attributeType": "Name",
             "dataType": {
@@ -92,7 +104,7 @@
         },
         {
             "ordinalNumber": 7,
-            "name": "Suffix",
+            "name": "Namenszusatz2",
             "description": "",
             "attributeType": "Name",
             "dataType": {
@@ -104,7 +116,7 @@
         },
         {
             "ordinalNumber": 8,
-            "name": "CompanyName",
+            "name": "Firma",
             "description": "",
             "attributeType": "Name",
             "dataType": {
@@ -116,7 +128,7 @@
         },
         {
             "ordinalNumber": 9,
-            "name": "SalesPerson",
+            "name": "Verkaeufer",
             "description": "",
             "attributeType": "Name",
             "dataType": {
@@ -128,7 +140,7 @@
         },
         {
             "ordinalNumber": 10,
-            "name": "EmailAddress",
+            "name": "Email",
             "description": "",
             "attributeType": "Email",
             "dataType": {
@@ -140,7 +152,7 @@
         },
         {
             "ordinalNumber": 11,
-            "name": "Phone",
+            "name": "Telefon",
             "description": "",
             "attributeType": "Description",
             "dataType": {
@@ -188,7 +200,7 @@
         },
         {
             "ordinalNumber": 15,
-            "name": "ModifiedDate",
+            "name": "GeaendertAm",
             "description": "",
             "attributeType": "CreationDate",
             "dataType": {
@@ -202,107 +214,102 @@
     "sources": [
         {
             "dataSource": "AdventureWorks",
-            "sourceLocation": "[SalesLT].[Customer_EN]",
-            "properties": [
-                {
-                    "property": "extract_mode",
-                    "value": "delta"
-                }
-            ],
+            "sourceLocation": "[SalesLT].[Customer_DE]",
+            "properties": [],
             "mapping": [
                 {
-                    "targetName": "CustomerID",
-                    "sourceName": "[CustomerID]",
+                    "targetName": "KundenID",
+                    "sourceName": "[KundenID]",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "NameStyle",
-                    "sourceName": "[NameStyle]",
+                    "targetName": "NamensTyp",
+                    "sourceName": "[NamensTyp]",
                     "sourceDataType": {
                         "type": "bit",
                         "nullable": false
                     }
                 },
                 {
-                    "targetName": "Title",
-                    "sourceName": "[Title]",
+                    "targetName": "Titel",
+                    "sourceName": "[Titel]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 8,
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "FirstName",
-                    "sourceName": "[FirstName]",
+                    "targetName": "Vorname",
+                    "sourceName": "[Vorname]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 50,
                         "nullable": false
                     }
                 },
                 {
-                    "targetName": "MiddleName",
-                    "sourceName": "[MiddleName]",
+                    "targetName": "Nameszusatz1",
+                    "sourceName": "[Nameszusatz1]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 50,
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "LastName",
-                    "sourceName": "[LastName]",
+                    "targetName": "Nachname",
+                    "sourceName": "[Nachname]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 50,
                         "nullable": false
                     }
                 },
                 {
-                    "targetName": "Suffix",
-                    "sourceName": "[Suffix]",
+                    "targetName": "Namenszusatz2",
+                    "sourceName": "[Namenszusatz2]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 10,
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "CompanyName",
-                    "sourceName": "[CompanyName]",
+                    "targetName": "Firma",
+                    "sourceName": "[Firma]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 128,
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "SalesPerson",
-                    "sourceName": "[SalesPerson]",
+                    "targetName": "Verkaeufer",
+                    "sourceName": "[Verkaeufer]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 256,
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "EmailAddress",
-                    "sourceName": "[EmailAddress]",
+                    "targetName": "Email",
+                    "sourceName": "[Email]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 50,
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "Phone",
-                    "sourceName": "[Phone]",
+                    "targetName": "Telefon",
+                    "sourceName": "[Telefon]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 25,
                         "nullable": true
                     }
@@ -311,7 +318,7 @@
                     "targetName": "PasswordHash",
                     "sourceName": "[PasswordHash]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 128,
                         "nullable": false
                     }
@@ -320,7 +327,7 @@
                     "targetName": "PasswordSalt",
                     "sourceName": "[PasswordSalt]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 10,
                         "nullable": false
                     }
@@ -334,7 +341,150 @@
                     }
                 },
                 {
-                    "targetName": "ModifiedDate",
+                    "targetName": "GeaendertAm",
+                    "sourceName": "[GeaendertAm]",
+                    "sourceDataType": {
+                        "type": "datetime",
+                        "nullable": false
+                    }
+                }
+            ]
+        },
+        {
+            "dataSource": "AdventureWorks",
+            "sourceLocation": "[SalesLT].[Customer_EN]",
+            "properties": [
+                {
+                    "property": "extract_mode",
+                    "value": "delta"
+                }
+            ],
+            "mapping": [
+                {
+                    "targetName": "KundenID",
+                    "sourceName": "[CustomerID]",
+                    "sourceDataType": {
+                        "type": "int",
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "NamensTyp",
+                    "sourceName": "[NameStyle]",
+                    "sourceDataType": {
+                        "type": "bit",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "Titel",
+                    "sourceName": "[Title]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 8,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Vorname",
+                    "sourceName": "[FirstName]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 50,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "Nameszusatz1",
+                    "sourceName": "[MiddleName]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 50,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Nachname",
+                    "sourceName": "[LastName]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 50,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "Namenszusatz2",
+                    "sourceName": "[Suffix]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 10,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Firma",
+                    "sourceName": "[CompanyName]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 128,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Verkaeufer",
+                    "sourceName": "[SalesPerson]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 256,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Email",
+                    "sourceName": "[EmailAddress]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 50,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Telefon",
+                    "sourceName": "[Phone]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 25,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "PasswordHash",
+                    "sourceName": "[PasswordHash]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 128,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "PasswordSalt",
+                    "sourceName": "[PasswordSalt]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 10,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "rowguid",
+                    "sourceName": "[rowguid]",
+                    "sourceDataType": {
+                        "type": "uniqueidentifier",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "GeaendertAm",
                     "sourceName": "[ModifiedDate]",
                     "sourceDataType": {
                         "type": "datetime",
@@ -350,11 +500,5 @@
             ]
         }
     ],
-    "transformations": [
-        {
-            "stepNo": 1,
-            "kind": "builtin",
-            "name": "merge"
-        }
-    ]
+    "transformations": []
 }

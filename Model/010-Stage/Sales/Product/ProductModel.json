@@ -1,8 +1,8 @@
 {
-    "id": 1004,
-    "name": "ProductCategory",
-    "displayName": "Product_Category",
-    "description": "Product category hierarchy entity",
+    "id": 1006,
+    "name": "ProductModel",
+    "displayName": "Product_Model",
+    "description": "Product model information entity",
     "properties": [
         {
             "property": "jobs",
@@ -20,7 +20,7 @@
     "attributes": [
         {
             "ordinalNumber": 1,
-            "name": "ProductCategoryID",
+            "name": "ProductModelID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -33,23 +33,23 @@
         },
         {
             "ordinalNumber": 2,
-            "name": "ParentProductCategoryID",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "int",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 3,
             "name": "Name",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": false
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
+        },
+        {
+            "ordinalNumber": 3,
+            "name": "CatalogDescription",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "string",
+                "nullable": true
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
@@ -79,7 +79,7 @@
     "sources": [
         {
             "dataSource": "AdventureWorks",
-            "sourceLocation": "[SalesLT].[ProductCategory]",
+            "sourceLocation": "[SalesLT].[ProductModel]",
             "properties": [
                 {
                     "property": "extract_mode",
@@ -88,16 +88,8 @@
             ],
             "mapping": [
                 {
-                    "targetName": "ProductCategoryID",
-                    "sourceName": "[ProductCategoryID]",
-                    "sourceDataType": {
-                        "type": "int",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "ParentProductCategoryID",
-                    "sourceName": "[ParentProductCategoryID]",
+                    "targetName": "ProductModelID",
+                    "sourceName": "[ProductModelID]",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -107,9 +99,18 @@
                     "targetName": "Name",
                     "sourceName": "[Name]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 50,
                         "nullable": false
+                    }
+                },
+                {
+                    "targetName": "CatalogDescription",
+                    "sourceName": "[CatalogDescription]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 200,
+                        "nullable": true
                     }
                 },
                 {
@@ -137,11 +138,5 @@
             ]
         }
     ],
-    "transformations": [
-        {
-            "stepNo": 1,
-            "kind": "builtin",
-            "name": "merge"
-        }
-    ]
+    "transformations": []
 }

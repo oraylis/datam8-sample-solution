@@ -10,7 +10,7 @@
             "name": "stage",
             "targetName": "bronze",
             "displayName": "Staging Data Layer",
-            "localFolderName": "010-Staging"
+            "localFolderName": "010-Stage"
         },
         {
             "name": "core",

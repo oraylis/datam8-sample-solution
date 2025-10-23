@@ -251,11 +251,6 @@
             "function": {
                 "source": "DimCustomer.py"
             }
-        },
-        {
-            "stepNo": 2,
-            "kind": "builtin",
-            "name": "merge"
         }
     ]
 }

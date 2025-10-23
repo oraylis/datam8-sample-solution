@@ -1,8 +1,8 @@
 {
-    "id": 1006,
-    "name": "ProductModel",
-    "displayName": "Product_Model",
-    "description": "Product model information entity",
+    "id": 1001,
+    "name": "CustomerAddress",
+    "displayName": "Customer_Address",
+    "description": "Customer address relationship entity",
     "properties": [
         {
             "property": "jobs",
@@ -20,7 +20,7 @@
     "attributes": [
         {
             "ordinalNumber": 1,
-            "name": "ProductModelID",
+            "name": "CustomerID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -28,30 +28,44 @@
                 "nullable": true
             },
             "isBusinessKey": true,
+            "properties": [
+                {
+                    "property": "data_layout",
+                    "value": "liquid_clustering"
+                }
+            ],
             "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
+            "dateAdded": "2025-01-01T10:10:10Z"
         },
         {
             "ordinalNumber": 2,
-            "name": "Name",
+            "name": "AddressID",
             "description": "",
             "attributeType": "ID",
+            "dataType": {
+                "type": "int",
+                "nullable": true
+            },
+            "isBusinessKey": true,
+            "properties": [
+                {
+                    "property": "data_layout",
+                    "value": "liquid_clustering"
+                }
+            ],
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-01-01T10:10:10Z"
+        },
+        {
+            "ordinalNumber": 3,
+            "name": "AddressType",
+            "description": "",
+            "attributeType": "Description",
             "dataType": {
                 "type": "string",
                 "nullable": false
             },
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 3,
-            "name": "CatalogDescription",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+            "dateAdded": "2025-01-01T10:10:10Z"
         },
         {
             "ordinalNumber": 4,
@@ -62,54 +76,53 @@
                 "type": "uniqueidentifier",
                 "nullable": false
             },
-            "dateAdded": "2025-01-01T01:01:01Z"
+            "dateAdded": "2025-01-01T10:10:10+02:00"
         },
         {
             "ordinalNumber": 5,
             "name": "ModifiedDate",
             "description": "",
-            "attributeType": "ID",
+            "attributeType": "CreationDate",
             "dataType": {
                 "type": "datetime",
                 "nullable": false
             },
-            "dateAdded": "2025-01-01T01:01:01Z"
+            "dateAdded": "2025-01-01T10:10:10Z"
         }
     ],
     "sources": [
         {
             "dataSource": "AdventureWorks",
-            "sourceLocation": "[SalesLT].[ProductModel]",
+            "sourceLocation": "SELECT * FROM [SalesLT].[CustomerAddress] WHERE CustomerID > 1",
             "properties": [
                 {
                     "property": "extract_mode",
-                    "value": "delta"
+                    "value": "query"
                 }
             ],
             "mapping": [
                 {
-                    "targetName": "ProductModelID",
-                    "sourceName": "[ProductModelID]",
+                    "targetName": "CustomerID",
+                    "sourceName": "[CustomerID]",
                     "sourceDataType": {
                         "type": "int",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "Name",
-                    "sourceName": "[Name]",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 50,
                         "nullable": false
                     }
                 },
                 {
-                    "targetName": "CatalogDescription",
-                    "sourceName": "[CatalogDescription]",
+                    "targetName": "AddressID",
+                    "sourceName": "[AddressID]",
                     "sourceDataType": {
-                        "type": "string",
-                        "charLen": 200,
+                        "type": "int",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "AddressType",
+                    "sourceName": "[AddressType]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 50,
                         "nullable": true
                     }
                 },
@@ -127,22 +140,10 @@
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": false
-                    },
-                    "properties": [
-                        {
-                            "property": "extract_column",
-                            "value": "delta"
-                        }
-                    ]
+                    }
                 }
             ]
         }
     ],
-    "transformations": [
-        {
-            "stepNo": 1,
-            "kind": "builtin",
-            "name": "merge"
-        }
-    ]
+    "transformations": []
 }

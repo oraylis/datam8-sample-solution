@@ -1,8 +1,8 @@
 {
-    "id": 1007,
-    "name": "ProductModelProductDescription",
-    "displayName": "Product_Model_Product_Description",
-    "description": "Product model to description relationship entity",
+    "id": 1004,
+    "name": "ProductCategory",
+    "displayName": "Product_Category",
+    "description": "Product category hierarchy entity",
     "properties": [
         {
             "property": "jobs",
@@ -20,7 +20,7 @@
     "attributes": [
         {
             "ordinalNumber": 1,
-            "name": "ProductModelID",
+            "name": "ProductCategoryID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -33,28 +33,24 @@
         },
         {
             "ordinalNumber": 2,
-            "name": "ProductDescriptionID",
+            "name": "ParentProductCategoryID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
                 "nullable": true
             },
-            "isBusinessKey": true,
-            "dateModified": "2025-03-28T16:16:38Z",
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 3,
-            "name": "Culture",
+            "name": "Name",
             "description": "",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
                 "nullable": false
             },
-            "isBusinessKey": true,
-            "dateModified": "2025-03-28T16:16:38Z",
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
@@ -83,7 +79,7 @@
     "sources": [
         {
             "dataSource": "AdventureWorks",
-            "sourceLocation": "[SalesLT].[ProductModelProductDescription]",
+            "sourceLocation": "[SalesLT].[ProductCategory]",
             "properties": [
                 {
                     "property": "extract_mode",
@@ -92,27 +88,27 @@
             ],
             "mapping": [
                 {
-                    "targetName": "ProductModelID",
-                    "sourceName": "[ProductModelID]",
+                    "targetName": "ProductCategoryID",
+                    "sourceName": "[ProductCategoryID]",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "ProductDescriptionID",
-                    "sourceName": "[ProductDescriptionID]",
+                    "targetName": "ParentProductCategoryID",
+                    "sourceName": "[ParentProductCategoryID]",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "Culture",
-                    "sourceName": "[Culture]",
+                    "targetName": "Name",
+                    "sourceName": "[Name]",
                     "sourceDataType": {
-                        "type": "string",
-                        "charLen": 6,
+                        "type": "nvarchar",
+                        "charLen": 50,
                         "nullable": false
                     }
                 },
@@ -141,11 +137,5 @@
             ]
         }
     ],
-    "transformations": [
-        {
-            "stepNo": 1,
-            "kind": "builtin",
-            "name": "merge"
-        }
-    ]
+    "transformations": []
 }

@@ -1,8 +1,8 @@
 {
-    "id": 1001,
-    "name": "CustomerAddress",
-    "displayName": "Customer_Address",
-    "description": "Customer address relationship entity",
+    "id": 1005,
+    "name": "ProductDescription",
+    "displayName": "Product_Description",
+    "description": "Product description text entity",
     "properties": [
         {
             "property": "jobs",
@@ -20,7 +20,7 @@
     "attributes": [
         {
             "ordinalNumber": 1,
-            "name": "CustomerID",
+            "name": "ProductDescriptionID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -29,36 +29,21 @@
             },
             "isBusinessKey": true,
             "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T10:10:10Z"
-
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 2,
-            "name": "AddressID",
+            "name": "Description",
             "description": "",
             "attributeType": "ID",
-            "dataType": {
-                "type": "int",
-                "nullable": true
-            },
-            "isBusinessKey": true,
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T10:10:10Z"
-
-        },
-        {
-            "ordinalNumber": 3,
-            "name": "AddressType",
-            "description": "",
-            "attributeType": "Description",
             "dataType": {
                 "type": "string",
                 "nullable": false
             },
-            "dateAdded": "2025-01-01T10:10:10Z"
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 4,
+            "ordinalNumber": 3,
             "name": "rowguid",
             "description": "",
             "attributeType": "ID",
@@ -66,24 +51,24 @@
                 "type": "uniqueidentifier",
                 "nullable": false
             },
-            "dateAdded": "2025-01-01T10:10:10+02:00"
+            "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 5,
+            "ordinalNumber": 4,
             "name": "ModifiedDate",
             "description": "",
-            "attributeType": "CreationDate",
+            "attributeType": "ID",
             "dataType": {
                 "type": "datetime",
                 "nullable": false
             },
-            "dateAdded": "2025-01-01T10:10:10Z"
+            "dateAdded": "2025-01-01T01:01:01Z"
         }
     ],
     "sources": [
         {
             "dataSource": "AdventureWorks",
-            "sourceLocation": "[SalesLT].[CustomerAddress]",
+            "sourceLocation": "[SalesLT].[ProductDescription]",
             "properties": [
                 {
                     "property": "extract_mode",
@@ -92,27 +77,19 @@
             ],
             "mapping": [
                 {
-                    "targetName": "CustomerID",
-                    "sourceName": "[CustomerID]",
+                    "targetName": "ProductDescriptionID",
+                    "sourceName": "[ProductDescriptionID]",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "AddressID",
-                    "sourceName": "[AddressID]",
+                    "targetName": "Description",
+                    "sourceName": "[Description]",
                     "sourceDataType": {
-                        "type": "int",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "AddressType",
-                    "sourceName": "[AddressType]",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 50,
+                        "type": "nvarchar",
+                        "charLen": 400,
                         "nullable": false
                     }
                 },
@@ -141,11 +118,5 @@
             ]
         }
     ],
-    "transformations": [
-        {
-            "stepNo": 1,
-            "kind": "builtin",
-            "name": "merge"
-        }
-    ]
+    "transformations": []
 }

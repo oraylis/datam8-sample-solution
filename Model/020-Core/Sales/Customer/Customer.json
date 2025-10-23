@@ -148,7 +148,7 @@
     ],
     "sources": [
         {
-            "sourceLocation": "/010-Staging/Sales/Customer/Customer_DE",
+            "sourceLocation": "/010-Stage/Sales/Customer/Customer",
             "properties": [
                 {
                     "property": "extract_mode",
@@ -183,7 +183,7 @@
             ]
         },
         {
-            "sourceLocation": 1011,
+            "sourceLocation": 1001,
             "properties": [
                 {
                     "property": "extract_mode",
@@ -198,7 +198,7 @@
             "kind": "function",
             "name": "transform_first_step",
             "function": {
-                "source": "./test.py"
+                "source": "./CustomerNew.py"
             }
         }
     ]

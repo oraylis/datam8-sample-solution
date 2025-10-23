@@ -1,8 +1,8 @@
 {
-    "id": 1010,
-    "name": "DIMTIME",
-    "displayName": "DIMTIME",
-    "description": "Time dimension entity for calendar and fiscal dates",
+    "id": 1008,
+    "name": "SalesOrderHeader",
+    "displayName": "Sales_Order_Header",
+    "description": "Sales order header information entity",
     "properties": [
         {
             "property": "jobs",
@@ -20,7 +20,7 @@
     "attributes": [
         {
             "ordinalNumber": 1,
-            "name": "TIMEKEY",
+            "name": "SalesOrderID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -33,7 +33,40 @@
         },
         {
             "ordinalNumber": 2,
-            "name": "FULLDATEALTERNATEKEY",
+            "name": "RevisionNumber",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "byte",
+                "nullable": false
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
+        },
+        {
+            "ordinalNumber": 3,
+            "name": "OrderDate",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "datetime",
+                "nullable": false
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
+        },
+        {
+            "ordinalNumber": 4,
+            "name": "DueDate",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "datetime",
+                "nullable": false
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
+        },
+        {
+            "ordinalNumber": 5,
+            "name": "ShipDate",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -43,85 +76,52 @@
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 3,
-            "name": "DAYNUMBEROFWEEK",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "int",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 4,
-            "name": "ENGLISHDAYNAMEOFWEEK",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 5,
-            "name": "SPANISHDAYNAMEOFWEEK",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
             "ordinalNumber": 6,
-            "name": "FRENCHDAYNAMEOFWEEK",
+            "name": "Status",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "string",
-                "nullable": true
+                "type": "byte",
+                "nullable": false
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 7,
-            "name": "DAYNUMBEROFMONTH",
+            "name": "OnlineOrderFlag",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "int",
-                "nullable": true
+                "type": "bit",
+                "nullable": false
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 8,
-            "name": "DAYNUMBEROFYEAR",
+            "name": "SalesOrderNumber",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "int",
-                "nullable": true
+                "type": "string",
+                "nullable": false
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 9,
-            "name": "WEEKNUMBEROFYEAR",
+            "name": "PurchaseOrderNumber",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "int",
+                "type": "string",
                 "nullable": true
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 10,
-            "name": "ENGLISHMONTHNAME",
+            "name": "AccountNumber",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -132,29 +132,29 @@
         },
         {
             "ordinalNumber": 11,
-            "name": "SPANISHMONTHNAME",
+            "name": "CustomerID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "string",
+                "type": "int",
                 "nullable": true
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 12,
-            "name": "FRENCHMONTHNAME",
+            "name": "ShipToAddressID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "string",
+                "type": "int",
                 "nullable": true
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 13,
-            "name": "MONTHNUMBEROFYEAR",
+            "name": "BillToAddressID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -165,18 +165,18 @@
         },
         {
             "ordinalNumber": 14,
-            "name": "CALENDARQUARTER",
+            "name": "ShipMethod",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "int",
-                "nullable": true
+                "type": "string",
+                "nullable": false
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 15,
-            "name": "CALENDARYEAR",
+            "name": "CreditCardApprovalCode",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -187,29 +187,51 @@
         },
         {
             "ordinalNumber": 16,
-            "name": "CALENDARSEMESTER",
+            "name": "SubTotal",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "int",
-                "nullable": true
+                "type": "money",
+                "nullable": false
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 17,
-            "name": "FISCALQUARTER",
+            "name": "TaxAmt",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "int",
-                "nullable": true
+                "type": "money",
+                "nullable": false
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 18,
-            "name": "FISCALYEAR",
+            "name": "Freight",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "money",
+                "nullable": false
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
+        },
+        {
+            "ordinalNumber": 19,
+            "name": "TotalDue",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "money",
+                "nullable": false
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
+        },
+        {
+            "ordinalNumber": 20,
+            "name": "Comment",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -219,196 +241,229 @@
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 19,
-            "name": "FISCALSEMESTER",
+            "ordinalNumber": 21,
+            "name": "rowguid",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "int",
-                "nullable": true
+                "type": "uniqueidentifier",
+                "nullable": false
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
+        },
+        {
+            "ordinalNumber": 22,
+            "name": "ModifiedDate",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "datetime",
+                "nullable": false
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         }
     ],
     "sources": [
         {
-            "dataSource": "OracleDev",
-            "sourceLocation": "[DATAM8].[DIMTIME]",
+            "dataSource": "AdventureWorks",
+            "sourceLocation": "[SalesLT].[SalesOrderHeader]",
             "properties": [
                 {
                     "property": "extract_mode",
-                    "value": "full"
+                    "value": "delta"
                 }
             ],
             "mapping": [
                 {
-                    "targetName": "TIMEKEY",
-                    "sourceName": "[TIMEKEY]",
+                    "targetName": "SalesOrderID",
+                    "sourceName": "[SalesOrderID]",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "FULLDATEALTERNATEKEY",
-                    "sourceName": "[FULLDATEALTERNATEKEY]",
+                    "targetName": "RevisionNumber",
+                    "sourceName": "[RevisionNumber]",
+                    "sourceDataType": {
+                        "type": "byte",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "OrderDate",
+                    "sourceName": "[OrderDate]",
+                    "sourceDataType": {
+                        "type": "datetime",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "DueDate",
+                    "sourceName": "[DueDate]",
+                    "sourceDataType": {
+                        "type": "datetime",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "ShipDate",
+                    "sourceName": "[ShipDate]",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "DAYNUMBEROFWEEK",
-                    "sourceName": "[DAYNUMBEROFWEEK]",
+                    "targetName": "Status",
+                    "sourceName": "[Status]",
+                    "sourceDataType": {
+                        "type": "byte",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "OnlineOrderFlag",
+                    "sourceName": "[OnlineOrderFlag]",
+                    "sourceDataType": {
+                        "type": "bit",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "SalesOrderNumber",
+                    "sourceName": "[SalesOrderNumber]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 25,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "PurchaseOrderNumber",
+                    "sourceName": "[PurchaseOrderNumber]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 25,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "AccountNumber",
+                    "sourceName": "[AccountNumber]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 15,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "CustomerID",
+                    "sourceName": "[CustomerID]",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "ENGLISHDAYNAMEOFWEEK",
-                    "sourceName": "[ENGLISHDAYNAMEOFWEEK]",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "SPANISHDAYNAMEOFWEEK",
-                    "sourceName": "[SPANISHDAYNAMEOFWEEK]",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "FRENCHDAYNAMEOFWEEK",
-                    "sourceName": "[FRENCHDAYNAMEOFWEEK]",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "DAYNUMBEROFMONTH",
-                    "sourceName": "[DAYNUMBEROFMONTH]",
+                    "targetName": "ShipToAddressID",
+                    "sourceName": "[ShipToAddressID]",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "DAYNUMBEROFYEAR",
-                    "sourceName": "[DAYNUMBEROFYEAR]",
+                    "targetName": "BillToAddressID",
+                    "sourceName": "[BillToAddressID]",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "WEEKNUMBEROFYEAR",
-                    "sourceName": "[WEEKNUMBEROFYEAR]",
+                    "targetName": "ShipMethod",
+                    "sourceName": "[ShipMethod]",
                     "sourceDataType": {
-                        "type": "int",
+                        "type": "nvarchar",
+                        "charLen": 50,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "CreditCardApprovalCode",
+                    "sourceName": "[CreditCardApprovalCode]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 15,
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "ENGLISHMONTHNAME",
-                    "sourceName": "[ENGLISHMONTHNAME]",
+                    "targetName": "SubTotal",
+                    "sourceName": "[SubTotal]",
                     "sourceDataType": {
-                        "type": "string",
-                        "charLen": 10,
+                        "type": "money",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "TaxAmt",
+                    "sourceName": "[TaxAmt]",
+                    "sourceDataType": {
+                        "type": "money",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "Freight",
+                    "sourceName": "[Freight]",
+                    "sourceDataType": {
+                        "type": "money",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "TotalDue",
+                    "sourceName": "[TotalDue]",
+                    "sourceDataType": {
+                        "type": "money",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "Comment",
+                    "sourceName": "[Comment]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 200,
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "SPANISHMONTHNAME",
-                    "sourceName": "[SPANISHMONTHNAME]",
+                    "targetName": "rowguid",
+                    "sourceName": "[rowguid]",
                     "sourceDataType": {
-                        "type": "string",
-                        "charLen": 10,
-                        "nullable": true
+                        "type": "uniqueidentifier",
+                        "nullable": false
                     }
                 },
                 {
-                    "targetName": "FRENCHMONTHNAME",
-                    "sourceName": "[FRENCHMONTHNAME]",
+                    "targetName": "ModifiedDate",
+                    "sourceName": "[ModifiedDate]",
                     "sourceDataType": {
-                        "type": "string",
-                        "charLen": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "MONTHNUMBEROFYEAR",
-                    "sourceName": "[MONTHNUMBEROFYEAR]",
-                    "sourceDataType": {
-                        "type": "int",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "CALENDARQUARTER",
-                    "sourceName": "[CALENDARQUARTER]",
-                    "sourceDataType": {
-                        "type": "int",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "CALENDARYEAR",
-                    "sourceName": "[CALENDARYEAR]",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 4,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "CALENDARSEMESTER",
-                    "sourceName": "[CALENDARSEMESTER]",
-                    "sourceDataType": {
-                        "type": "int",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "FISCALQUARTER",
-                    "sourceName": "[FISCALQUARTER]",
-                    "sourceDataType": {
-                        "type": "int",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "FISCALYEAR",
-                    "sourceName": "[FISCALYEAR]",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 4,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "FISCALSEMESTER",
-                    "sourceName": "[FISCALSEMESTER]",
-                    "sourceDataType": {
-                        "type": "int",
-                        "nullable": true
-                    }
+                        "type": "datetime",
+                        "nullable": false
+                    },
+                    "properties": [
+                        {
+                            "property": "extract_column",
+                            "value": "delta"
+                        }
+                    ]
                 }
             ]
         }
     ],
-    "transformations": [
-        {
-            "stepNo": 1,
-            "kind": "builtin",
-            "name": "merge"
-        }
-    ]
+    "transformations": []
 }
