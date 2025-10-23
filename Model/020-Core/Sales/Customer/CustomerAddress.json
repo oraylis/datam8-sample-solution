@@ -49,9 +49,6 @@
                     "value": "SK"
                 }
             ],
-            "refactorNames": [
-                "_CustomerSID"
-            ],
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
@@ -64,10 +61,6 @@
                 "nullable": false
             },
             "history": "SCD1",
-            "refactorNames": [
-                "AddressID",
-                "AddressSID"
-            ],
             "dateModified": "2025-03-28T16:16:38Z",
             "dateAdded": "2025-01-01T01:01:01Z"
         },
@@ -82,9 +75,7 @@
             },
             "history": "SCD0",
             "refactorNames": [
-                "CustomerBK",
-                "CustomerID",
-                "CustomerSID"
+                "CustomerBK"
             ],
             "dateAdded": "2025-01-01T01:01:01Z"
         },
@@ -108,13 +99,7 @@
     ],
     "sources": [
         {
-            "sourceLocation": 1001,
-            "properties": [
-                {
-                    "property": "extract_mode",
-                    "value": "delta"
-                }
-            ]
+            "sourceLocation": 1001
         }
     ],
     "transformations": [
