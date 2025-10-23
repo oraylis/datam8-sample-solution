@@ -50,7 +50,7 @@ datam8-sample-solution/
 │   ├── DataSources.json         # Data source definitions
 │   └── AttributeTypes.json      # Semantic attribute types
 ├── Model/                       # Entity definitions by zone
-│   ├── 010-Staging/            # Bronze layer entities
+│   ├── 010-Stage/            # Bronze layer entities
 │   ├── 020-Core/               # Silver layer entities  
 │   └── 030-Curated/            # Gold layer entities
 ├── Generate/                    # Jinja2 templates
@@ -62,8 +62,8 @@ datam8-sample-solution/
 ## Zone Configuration
 
 This project uses **dynamic zones** defined in `Base/Zones.json`:
-- **raw** → `000-Raw` (derived from staging)
-- **stage** → `010-Staging` (bronze layer)
+- **raw** → `000-Raw` (derived from stage)
+- **stage** → `010-Stage` (bronze layer)
 - **core** → `020-Core` (silver layer)  
 - **curated** → `030-Curated` (gold layer)
 
@@ -78,5 +78,5 @@ This project uses **dynamic zones** defined in `Base/Zones.json`:
 
 - Index validation automatically discovers entities using dynamic zone configuration
 - Template generation supports any zones defined in `Zones.json`
-- Raw entities are derived from staging entities with system sources
+- Raw entities are derived from stage entities with system sources
 - All paths and zone mappings are dynamic - no hard-coded limitations

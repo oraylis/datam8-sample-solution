@@ -143,7 +143,7 @@
                     "targetName": "AddressLine1",
                     "sourceName": "[AddressLine1]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 60,
                         "nullable": false
                     }
@@ -152,7 +152,7 @@
                     "targetName": "AddressLine2",
                     "sourceName": "[AddressLine2]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 60,
                         "nullable": true
                     }
@@ -161,7 +161,7 @@
                     "targetName": "City",
                     "sourceName": "[City]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 30,
                         "nullable": false
                     }
@@ -170,7 +170,7 @@
                     "targetName": "StateProvince",
                     "sourceName": "[StateProvince]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 50,
                         "nullable": false
                     }
@@ -179,7 +179,7 @@
                     "targetName": "CountryRegion",
                     "sourceName": "[CountryRegion]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 50,
                         "nullable": false
                     }
@@ -188,7 +188,7 @@
                     "targetName": "PostalCode",
                     "sourceName": "[PostalCode]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 15,
                         "nullable": false
                     }
@@ -218,11 +218,5 @@
             ]
         }
     ],
-    "transformations": [
-        {
-            "stepNo": 1,
-            "kind": "builtin",
-            "name": "merge"
-        }
-    ]
+    "transformations": []
 }

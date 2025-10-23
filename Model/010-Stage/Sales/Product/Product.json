@@ -1,8 +1,8 @@
 {
-    "id": 1008,
-    "name": "SalesOrderHeader",
-    "displayName": "Sales_Order_Header",
-    "description": "Sales order header information entity",
+    "id": 1003,
+    "name": "Product",
+    "displayName": "Product",
+    "description": "Product catalog entity",
     "properties": [
         {
             "property": "jobs",
@@ -20,7 +20,7 @@
     "attributes": [
         {
             "ordinalNumber": 1,
-            "name": "SalesOrderID",
+            "name": "ProductID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -33,150 +33,152 @@
         },
         {
             "ordinalNumber": 2,
-            "name": "RevisionNumber",
+            "name": "Name",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "byte",
+                "type": "string",
                 "nullable": false
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 3,
-            "name": "OrderDate",
+            "name": "ProductNumber",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "datetime",
+                "type": "string",
                 "nullable": false
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 4,
-            "name": "DueDate",
+            "name": "Color",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "datetime",
-                "nullable": false
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 5,
-            "name": "ShipDate",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "datetime",
+                "type": "string",
                 "nullable": true
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 6,
-            "name": "Status",
+            "ordinalNumber": 5,
+            "name": "StandardCost",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "byte",
+                "type": "money",
+                "nullable": false
+            },
+            "dateAdded": "2025-01-01T01:01:01Z"
+        },
+        {
+            "ordinalNumber": 6,
+            "name": "ListPrice",
+            "description": "",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "money",
                 "nullable": false
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 7,
-            "name": "OnlineOrderFlag",
+            "name": "Size",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "bit",
-                "nullable": false
+                "type": "string",
+                "nullable": true
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 8,
-            "name": "SalesOrderNumber",
+            "name": "Weight",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "string",
-                "nullable": false
+                "type": "decimal",
+                "precision": 10,
+                "scale": 2,
+                "nullable": true
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 9,
-            "name": "PurchaseOrderNumber",
+            "name": "ProductCategoryID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "string",
+                "type": "int",
                 "nullable": true
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 10,
-            "name": "AccountNumber",
+            "name": "ProductModelID",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "string",
+                "type": "int",
                 "nullable": true
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 11,
-            "name": "CustomerID",
+            "name": "SellStartDate",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "int",
-                "nullable": true
+                "type": "datetime",
+                "nullable": false
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 12,
-            "name": "ShipToAddressID",
+            "name": "SellEndDate",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "int",
+                "type": "datetime",
                 "nullable": true
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 13,
-            "name": "BillToAddressID",
+            "name": "DiscontinuedDate",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "int",
+                "type": "datetime",
                 "nullable": true
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 14,
-            "name": "ShipMethod",
+            "name": "ThumbNailPhoto",
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "string",
-                "nullable": false
+                "type": "binary",
+                "nullable": true
             },
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 15,
-            "name": "CreditCardApprovalCode",
+            "name": "ThumbnailPhotoFileName",
             "description": "",
             "attributeType": "ID",
             "dataType": {
@@ -187,61 +189,6 @@
         },
         {
             "ordinalNumber": 16,
-            "name": "SubTotal",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "money",
-                "nullable": false
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 17,
-            "name": "TaxAmt",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "money",
-                "nullable": false
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 18,
-            "name": "Freight",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "money",
-                "nullable": false
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 19,
-            "name": "TotalDue",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "money",
-                "nullable": false
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 20,
-            "name": "Comment",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 21,
             "name": "rowguid",
             "description": "",
             "attributeType": "ID",
@@ -252,7 +199,7 @@
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 22,
+            "ordinalNumber": 17,
             "name": "ModifiedDate",
             "description": "",
             "attributeType": "ID",
@@ -266,7 +213,7 @@
     "sources": [
         {
             "dataSource": "AdventureWorks",
-            "sourceLocation": "[SalesLT].[SalesOrderHeader]",
+            "sourceLocation": "[SalesLT].[Product]",
             "properties": [
                 {
                     "property": "extract_mode",
@@ -275,168 +222,129 @@
             ],
             "mapping": [
                 {
-                    "targetName": "SalesOrderID",
-                    "sourceName": "[SalesOrderID]",
+                    "targetName": "ProductID",
+                    "sourceName": "[ProductID]",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "RevisionNumber",
-                    "sourceName": "[RevisionNumber]",
+                    "targetName": "Name",
+                    "sourceName": "[Name]",
                     "sourceDataType": {
-                        "type": "byte",
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "OrderDate",
-                    "sourceName": "[OrderDate]",
-                    "sourceDataType": {
-                        "type": "datetime",
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "DueDate",
-                    "sourceName": "[DueDate]",
-                    "sourceDataType": {
-                        "type": "datetime",
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "ShipDate",
-                    "sourceName": "[ShipDate]",
-                    "sourceDataType": {
-                        "type": "datetime",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "Status",
-                    "sourceName": "[Status]",
-                    "sourceDataType": {
-                        "type": "byte",
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "OnlineOrderFlag",
-                    "sourceName": "[OnlineOrderFlag]",
-                    "sourceDataType": {
-                        "type": "bit",
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "SalesOrderNumber",
-                    "sourceName": "[SalesOrderNumber]",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 25,
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "PurchaseOrderNumber",
-                    "sourceName": "[PurchaseOrderNumber]",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 25,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "AccountNumber",
-                    "sourceName": "[AccountNumber]",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 15,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "CustomerID",
-                    "sourceName": "[CustomerID]",
-                    "sourceDataType": {
-                        "type": "int",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "ShipToAddressID",
-                    "sourceName": "[ShipToAddressID]",
-                    "sourceDataType": {
-                        "type": "int",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "BillToAddressID",
-                    "sourceName": "[BillToAddressID]",
-                    "sourceDataType": {
-                        "type": "int",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "ShipMethod",
-                    "sourceName": "[ShipMethod]",
-                    "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
                         "charLen": 50,
                         "nullable": false
                     }
                 },
                 {
-                    "targetName": "CreditCardApprovalCode",
-                    "sourceName": "[CreditCardApprovalCode]",
+                    "targetName": "ProductNumber",
+                    "sourceName": "[ProductNumber]",
                     "sourceDataType": {
-                        "type": "string",
+                        "type": "nvarchar",
+                        "charLen": 25,
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "Color",
+                    "sourceName": "[Color]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
                         "charLen": 15,
                         "nullable": true
                     }
                 },
                 {
-                    "targetName": "SubTotal",
-                    "sourceName": "[SubTotal]",
+                    "targetName": "StandardCost",
+                    "sourceName": "[StandardCost]",
                     "sourceDataType": {
                         "type": "money",
                         "nullable": false
                     }
                 },
                 {
-                    "targetName": "TaxAmt",
-                    "sourceName": "[TaxAmt]",
+                    "targetName": "ListPrice",
+                    "sourceName": "[ListPrice]",
                     "sourceDataType": {
                         "type": "money",
                         "nullable": false
                     }
                 },
                 {
-                    "targetName": "Freight",
-                    "sourceName": "[Freight]",
+                    "targetName": "Size",
+                    "sourceName": "[Size]",
                     "sourceDataType": {
-                        "type": "money",
+                        "type": "nvarchar",
+                        "charLen": 5,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Weight",
+                    "sourceName": "[Weight]",
+                    "sourceDataType": {
+                        "type": "decimal",
+                        "precision": 8,
+                        "scale": 2,
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "ProductCategoryID",
+                    "sourceName": "[ProductCategoryID]",
+                    "sourceDataType": {
+                        "type": "int",
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "ProductModelID",
+                    "sourceName": "[ProductModelID]",
+                    "sourceDataType": {
+                        "type": "int",
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "SellStartDate",
+                    "sourceName": "[SellStartDate]",
+                    "sourceDataType": {
+                        "type": "datetime",
                         "nullable": false
                     }
                 },
                 {
-                    "targetName": "TotalDue",
-                    "sourceName": "[TotalDue]",
+                    "targetName": "SellEndDate",
+                    "sourceName": "[SellEndDate]",
                     "sourceDataType": {
-                        "type": "money",
-                        "nullable": false
+                        "type": "datetime",
+                        "nullable": true
                     }
                 },
                 {
-                    "targetName": "Comment",
-                    "sourceName": "[Comment]",
+                    "targetName": "DiscontinuedDate",
+                    "sourceName": "[DiscontinuedDate]",
                     "sourceDataType": {
-                        "type": "string",
-                        "charLen": 200,
+                        "type": "datetime",
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "ThumbNailPhoto",
+                    "sourceName": "[ThumbNailPhoto]",
+                    "sourceDataType": {
+                        "type": "binary",
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "ThumbnailPhotoFileName",
+                    "sourceName": "[ThumbnailPhotoFileName]",
+                    "sourceDataType": {
+                        "type": "nvarchar",
+                        "charLen": 50,
                         "nullable": true
                     }
                 },
@@ -465,11 +373,5 @@
             ]
         }
     ],
-    "transformations": [
-        {
-            "stepNo": 1,
-            "kind": "builtin",
-            "name": "merge"
-        }
-    ]
+    "transformations": []
 }

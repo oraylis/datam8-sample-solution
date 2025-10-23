@@ -1,4 +1,4 @@
 business_function = spark.sql("""
     SELECT *
-    FROM staging.sales_customer_customeraddress
+    FROM stage.sales_customer_customeraddress
 """)
