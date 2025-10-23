@@ -163,42 +163,6 @@
             "dateAdded": "2025-03-28T16:16:38Z"
         },
         {
-            "ordinalNumber": 12,
-            "name": "PasswordHash",
-            "description": "",
-            "attributeType": "Description",
-            "dataType": {
-                "type": "string",
-                "nullable": false
-            },
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-03-28T16:16:38Z"
-        },
-        {
-            "ordinalNumber": 13,
-            "name": "PasswordSalt",
-            "description": "",
-            "attributeType": "Description",
-            "dataType": {
-                "type": "string",
-                "nullable": false
-            },
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-03-28T16:16:38Z"
-        },
-        {
-            "ordinalNumber": 14,
-            "name": "rowguid",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "uniqueidentifier",
-                "nullable": false
-            },
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-03-28T16:16:38Z"
-        },
-        {
             "ordinalNumber": 15,
             "name": "GeaendertAm",
             "description": "",
@@ -209,11 +173,26 @@
             },
             "dateModified": "2025-03-28T16:16:38Z",
             "dateAdded": "2025-03-28T16:16:38Z"
+        },
+        {
+            "ordinalNumber": 16,
+            "name": "KundenName",
+            "description": "",
+            "attributeType": "Name",
+            "dataType": {
+                "type": "string",
+                "nullable": false
+            },
+            "expression": "concat(Nachname, ' ', Vorname)",
+            "expressionLanguage": "sql",
+            "dateModified": "2025-03-28T16:16:38Z",
+            "dateAdded": "2025-03-28T16:16:38Z"
         }
     ],
     "sources": [
         {
             "dataSource": "AdventureWorks",
+            "sourceAlias": "Customer_DE",
             "sourceLocation": "[SalesLT].[Customer_DE]",
             "properties": [],
             "mapping": [
@@ -352,6 +331,7 @@
         },
         {
             "dataSource": "AdventureWorks",
+            "sourceAlias": "Customer_EN",
             "sourceLocation": "[SalesLT].[Customer_EN]",
             "properties": [
                 {

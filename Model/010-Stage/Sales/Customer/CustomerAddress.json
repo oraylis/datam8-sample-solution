@@ -66,28 +66,6 @@
                 "nullable": false
             },
             "dateAdded": "2025-01-01T10:10:10Z"
-        },
-        {
-            "ordinalNumber": 4,
-            "name": "rowguid",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "uniqueidentifier",
-                "nullable": false
-            },
-            "dateAdded": "2025-01-01T10:10:10+02:00"
-        },
-        {
-            "ordinalNumber": 5,
-            "name": "ModifiedDate",
-            "description": "",
-            "attributeType": "CreationDate",
-            "dataType": {
-                "type": "datetime",
-                "nullable": false
-            },
-            "dateAdded": "2025-01-01T10:10:10Z"
         }
     ],
     "sources": [

@@ -10,7 +10,7 @@
         },
         {
             "property": "write_mode",
-            "value": "merge"
+            "value": "overwrite"
         },
         {
             "property": "data_retention",
@@ -20,8 +20,8 @@
     "attributes": [
         {
             "ordinalNumber": 1,
-            "name": "_CustomerBK",
-            "description": "",
+            "name": "KundenNummer",
+            "description": "Unique key for the customer",
             "attributeType": "ID",
             "dataType": {
                 "type": "int",
@@ -33,111 +33,33 @@
         },
         {
             "ordinalNumber": 2,
-            "name": "_CustomerSID",
+            "name": "Vorname",
             "description": "",
-            "attributeType": "SID",
+            "attributeType": "Name",
             "dataType": {
-                "type": "long",
+                "type": "string",
                 "nullable": false
             },
-            "properties": [
-                {
-                    "property": "attribute_field",
-                    "value": "SK"
-                }
-            ],
+            "dateModified": "2025-03-28T16:16:38Z",
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 3,
-            "name": "CustomerID",
+            "name": "Nachname",
             "description": "",
-            "attributeType": "ID",
+            "attributeType": "Name",
             "dataType": {
-                "type": "int",
-                "nullable": true
+                "type": "string",
+                "nullable": false
             },
+            "dateModified": "2025-03-28T16:16:38Z",
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 4,
-            "name": "CompanyHistName",
+            "name": "AddressType",
             "description": "",
-            "attributeType": "Name",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "history": "SCD2",
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 5,
-            "name": "CompanyName",
-            "description": "",
-            "attributeType": "Name",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 6,
-            "name": "CustomerEMail",
-            "description": "",
-            "attributeType": "Email",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 7,
-            "name": "CustomerHistEMail",
-            "description": "",
-            "attributeType": "Email",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "history": "SCD2",
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 8,
-            "name": "DisplayName",
-            "description": "",
-            "attributeType": "Name",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 9,
-            "name": "FirstName",
-            "description": "",
-            "attributeType": "Name",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 10,
-            "name": "LastName",
-            "description": "",
-            "attributeType": "Name",
+            "attributeType": "Address",
             "dataType": {
                 "type": "string",
                 "nullable": true
@@ -149,12 +71,6 @@
     "sources": [
         {
             "sourceLocation": "/010-Stage/Sales/Customer/Customer",
-            "properties": [
-                {
-                    "property": "extract_mode",
-                    "value": "delta"
-                }
-            ],
             "mapping": [
                 {
                     "targetName": "CustomerID",
@@ -183,13 +99,7 @@
             ]
         },
         {
-            "sourceLocation": 1001,
-            "properties": [
-                {
-                    "property": "extract_mode",
-                    "value": "delta"
-                }
-            ]
+            "sourceLocation": 1001
         }
     ],
     "transformations": [

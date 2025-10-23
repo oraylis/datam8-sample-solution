@@ -155,13 +155,7 @@
     ],
     "sources": [
         {
-            "sourceLocation": 1000,
-            "properties": [
-                {
-                    "property": "extract_mode",
-                    "value": "delta"
-                }
-            ]
+            "sourceLocation": 1000
         }
     ],
     "transformations": [
