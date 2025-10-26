@@ -497,6 +497,153 @@ class MetadataResolver:
         """Return attribute names in modeling order."""
         return [attribute.name for attribute in getattr(entity, "attributes", [])]
 
+    # ----------------------------------------------------------- Dimensions
+    @property
+    @lru_cache
+    def _curated_dimensions(self) -> list[dict[str, Any]]:
+        """Collect curated zone entities that expose SID attributes for lookups."""
+        dimensions: list[dict[str, Any]] = []
+        for locator, wrapper in self.model.modelEntities.items():
+            if not locator.folders:
+                continue
+            zone_meta = self.zone_from_folder(locator.folders[0])
+            if zone_meta is None or zone_meta.name != "curated":
+                continue
+
+            entity = wrapper.entity
+            sid_attributes = [
+                attribute
+                for attribute in getattr(entity, "attributes", [])
+                if getattr(attribute, "attributeType", "").lower() == "sid"
+            ]
+            if not sid_attributes:
+                continue
+
+            bk_attributes = [
+                attribute
+                for attribute in getattr(entity, "attributes", [])
+                if getattr(attribute, "isBusinessKey", False)
+            ]
+            if not bk_attributes:
+                continue
+
+            product_info = (
+                self.folder_info(tuple(locator.folders[:2]))
+                if len(locator.folders) >= 2
+                else None
+            )
+            module_info = (
+                self.folder_info(tuple(locator.folders[:3]))
+                if len(locator.folders) >= 3
+                else None
+            )
+            data_product_name = (
+                product_info.name
+                if product_info
+                else (locator.folders[1] if len(locator.folders) >= 2 else "UnknownProduct")
+            )
+            data_module_name = (
+                module_info.name
+                if module_info
+                else (locator.folders[2] if len(locator.folders) >= 3 else "General")
+            )
+
+            full_table_name = f"{data_product_name}_{data_module_name}_{entity.name}"
+
+            dimensions.append(
+                {
+                    "locator": locator,
+                    "entity": entity,
+                    "zone": zone_meta.name,
+                    "zone_folder": self.zone_folder_name(zone_meta),
+                    "data_product": data_product_name,
+                    "data_module": data_module_name,
+                    "full_table_name": full_table_name,
+                    "sid_columns": [attr.name for attr in sid_attributes],
+                    "business_key_columns": [attr.name for attr in bk_attributes],
+                    "dm8l_path": self.locator_to_dm8l(locator),
+                    "alias": f"dim_{entity.name}",
+                }
+            )
+
+        return dimensions
+
+    def has_lookup_dimensions(self, entity) -> bool:
+        """Return True if the entity defines the builtin lookup_dimensions step."""
+        for transformation in getattr(entity, "transformations", []) or []:
+            kind = getattr(transformation, "kind", None)
+            if isinstance(kind, str):
+                kind_value = kind
+            elif hasattr(kind, "value"):
+                kind_value = kind.value
+            elif isinstance(transformation, dict):
+                kind_value = transformation.get("kind")
+            else:
+                kind_value = None
+
+            name = getattr(transformation, "name", None)
+            if name is None and isinstance(transformation, dict):
+                name = transformation.get("name")
+
+            if (
+                kind_value == "builtin"
+                and name
+                and name.lower() == "lookup_dimensions"
+            ):
+                return True
+        return False
+
+    def dimension_lookups_for_fact(self, locator, entity) -> list[dict[str, Any]]:
+        """
+        Determine dimension join instructions for a fact entity that references SID columns.
+
+        The method matches SID attributes by column name and maps them to curated dimensions
+        exposing the same SID plus a business key column.
+        """
+        fact_sid_columns = {
+            attribute.name
+            for attribute in getattr(entity, "attributes", [])
+            if getattr(attribute, "attributeType", "").lower() == "sid"
+        }
+
+        lookups: list[dict[str, Any]] = []
+        for dimension in self._curated_dimensions:
+            matching_sid = next(
+                (
+                    sid
+                    for sid in dimension["sid_columns"]
+                    if sid in fact_sid_columns
+                ),
+                None,
+            )
+            if not matching_sid:
+                continue
+
+            if not dimension["business_key_columns"]:
+                continue
+
+            join_columns = [
+                {
+                    "fact_column": column,
+                    "dimension_column": column,
+                }
+                for column in dimension["business_key_columns"]
+            ]
+
+            lookups.append(
+                {
+                    "sid_column": matching_sid,
+                    "join_columns": join_columns,
+                    "dimension_zone": dimension["zone"],
+                    "dimension_full_table_name": dimension["full_table_name"],
+                    "dimension_alias": dimension["alias"],
+                    "dimension_sid_column": matching_sid,
+                    "dimension_dm8l": dimension["dm8l_path"],
+                }
+            )
+
+        return lookups
+
     def raw_sources(self, entity) -> list[dict[str, Any]]:
         """Collect metadata about external/raw sources feeding the entity."""
         sources: list[dict[str, Any]] = []

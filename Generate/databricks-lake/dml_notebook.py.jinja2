@@ -214,7 +214,60 @@ functions["{{ transform.key }}"]["df"] = business_function  # noqa: F821
 {%- endfor %}
 
 {%- if data.final_function_key %}
-final_df = functions["{{ data.final_function_key }}"]["df"].withColumns({
+final_df = functions["{{ data.final_function_key }}"]["df"]
+
+{%- if data.has_lookup_dimensions and data.dimension_lookups %}
+# MAGIC %md
+# MAGIC ## Lookup dimensions
+
+# COMMAND ----------
+
+{%- for lookup in data.dimension_lookups %}
+dimension_df_{{ loop.index }} = (
+    spark.table(f"{catalog.name}.{{ lookup.dimension_zone }}.{{ lookup.dimension_full_table_name }}")
+    .select(
+        {%- for join_column in lookup.join_columns %}
+        F.col("{{ join_column.dimension_column }}").alias("{{ lookup.dimension_alias }}__{{ join_column.dimension_column }}"){% if not loop.last %}, {% endif %}
+        {%- endfor %}
+        {%- if lookup.join_columns %}, {% endif -%}
+        F.col("{{ lookup.dimension_sid_column }}").alias("{{ lookup.dimension_alias }}__{{ lookup.dimension_sid_column }}")
+    )
+)
+
+final_df = (
+    final_df.alias("fact")
+    .join(
+        dimension_df_{{ loop.index }}.alias("{{ lookup.dimension_alias }}"),
+        {%- if lookup.join_columns %}
+        {%- for join_column in lookup.join_columns %}
+        (F.col("fact.{{ join_column.fact_column }}") == F.col("{{ lookup.dimension_alias }}__{{ join_column.dimension_column }}")){% if not loop.last %} & {% endif %}
+        {%- endfor %}
+        {%- else %}
+        F.lit(True)
+        {%- endif %}
+        ,
+        "left",
+    )
+)
+
+final_df = final_df.withColumn(
+    "{{ lookup.sid_column }}",
+    F.coalesce(
+        F.col("{{ lookup.dimension_alias }}__{{ lookup.dimension_sid_column }}"),
+        F.lit(-1),
+    ),
+)
+
+final_df = final_df.drop(
+    {%- for join_column in lookup.join_columns %}
+    "{{ lookup.dimension_alias }}__{{ join_column.dimension_column }}",{% endfor %}
+    "{{ lookup.dimension_alias }}__{{ lookup.dimension_sid_column }}"
+)
+
+{%- endfor %}
+{%- endif %}
+
+final_df = final_df.withColumns({
     "__UpdateTimestampUTC": F.current_timestamp(),
 })
 

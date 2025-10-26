@@ -200,6 +200,13 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         cache_key = (locator_payload_key, tuple(locator.folders), locator.entityName)
         cache.set(cache_key, transformations)
 
+        lookup_dimensions_enabled = resolver.has_lookup_dimensions(entity)
+        dimension_lookups = (
+            resolver.dimension_lookups_for_fact(locator, entity)
+            if lookup_dimensions_enabled
+            else []
+        )
+
         source_mode = "none"
         if transformations:
             source_mode = "transformation"
@@ -242,6 +249,8 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             "merge_conditions_flat": merge_condition_flat,
             "update_assignments_sql": update_assignments_sql,
             "source_references": resolver.entity_source_references(entity),
+            "has_lookup_dimensions": bool(dimension_lookups),
+            "dimension_lookups": dimension_lookups,
         }
 
         payloads.append(
