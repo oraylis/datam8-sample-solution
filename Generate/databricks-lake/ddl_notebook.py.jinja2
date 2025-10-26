@@ -1,11 +1,199 @@
-{%- import "columns.py.jinja2" as columns %}
-# databricks source
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # DDL for {{ data.zone }}.{{ data.full_table_name }}
 
-# {{ data.name }}
-# {{ data.locator }}
+# COMMAND ----------
 
-cached_value = {{ data.cached_value }}
+# MAGIC %md
+# MAGIC # Initialize base settings
 
-{{ data.parameters }}
+# COMMAND ----------
 
-{{ columns.attribute_list(data.attributes) }}
+# MAGIC %md
+# MAGIC ## Imports
+
+# COMMAND ----------
+
+from pyspark.sql.types import (
+{%- for import_name in data.imports %}
+    {{ import_name }},  # noqa: F401
+{%- endfor %}
+)
+
+# COMMAND ----------
+
+from delta.tables import DeltaTable
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Get variable values
+
+# COMMAND ----------
+
+# DBTITLE 1,Initialize Migration Framework
+# MAGIC
+# MAGIC %run ../../../../000-utils/MigrationFramework
+
+# COMMAND ----------
+
+dbutils.widgets.text("env", "dev", "Environment")
+dbutils.widgets.text("catalog_name", spark.catalog.currentCatalog(), "Catalog Name")
+dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
+# dbutils.widgets.dropdown(
+#     "run_mode",
+#     "INFO",
+#     ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+#     "Run Mode",
+# )
+#dbutils.widgets.text("sandbox", "_", "Sandbox")
+
+dbutils.widgets.text("data_lake_name", "datam80adl0dev", "Data Lake Name")
+dbutils.widgets.text("container_name", "lakehousesample", "Container Name")
+
+# COMMAND ----------
+
+# Retrieve a job-level parameter (will use default if it doesn't exist)
+env = dbutils.widgets.get("env")
+catalog_name = dbutils.widgets.get("catalog_name")
+owner = dbutils.widgets.get("owner")
+# run_mode = dbutils.widgets.get("run_mode")
+# sandbox = dbutils.widgets.get("sandbox")
+
+data_lake_name = dbutils.widgets.get("data_lake_name")
+container_name = dbutils.widgets.get("container_name")
+
+# static values
+zone = "{{ data.zone }}"
+{%- if data.kind == "standard" %}
+data_product = "{{ data.data_product }}"
+data_module = "{{ data.data_module }}"
+table_name = "{{ data.table_name }}"
+full_table_name = "{{ data.full_table_name }}"
+{%- elif data.kind == "raw" %}
+data_source = "{{ data.data_source }}"
+source_name = "{{ data.source_name }}"
+full_table_name = "{{ data.full_table_name }}"
+{%- endif %}
+
+# COMMAND ----------
+
+print("Environment: %s" % env)
+print("Catalog: %s" % catalog_name)
+print("Schema: %s" % zone)
+print("Table: %s" % full_table_name)
+print("Owner: %s" % owner)
+{%- if data.kind == "standard" %}
+print("Data Product: %s" % data_product)
+print("Data Module: %s" % data_module)
+{%- elif data.kind == "raw" %}
+print("Data Source: %s" % data_source)
+print("Source Name: %s" % source_name)
+{%- endif %}
+# print("Mode: %s" % run_mode)
+
+# COMMAND ----------
+
+catalog = Catalog(catalog_name)
+catalog.schema = zone
+catalog.set_active()
+
+# COMMAND ----------
+
+# DBTITLE 1,Define schema
+schema = StructType([
+{%- for column in data.columns %}
+    StructField("{{ column.name }}", {{ column.spark_type_expr }}, {{ "True" if column.struct_nullable else "False" }}{% if column.metadata_repr %}, metadata={{ column.metadata_repr }}{% endif %}),
+{%- endfor %}
+])
+
+# COMMAND ----------
+
+# DBTITLE 1,Define new partitions
+{%- if data.partitions %}
+partitions = (
+{%- for partition in data.partitions %}
+    "{{ partition }}"{% if not loop.last %},{% endif %}
+{%- endfor %}
+)
+{%- else %}
+partitions = ()
+{%- endif %}
+
+# COMMAND ----------
+
+# DBTITLE 1,Define DDL statement
+(
+    DeltaTable.createIfNotExists(spark)
+    .tableName(f"{catalog_name}.{zone}.{full_table_name}")
+    .comment("{{ data.table_comment | replace('\"', '\\"') }}")
+{%- for column in data.columns %}
+    .addColumn("{{ column.name }}", "{{ column.delta_type }}", nullable={{ "True" if column.delta_nullable else "False" }}{% if column.delta_comment %}, comment="{{ column.delta_comment | replace('\"', '\\"') }}"{% endif %})
+{%- endfor %}
+    .clusterBy(partitions)
+    .execute()
+)
+
+# COMMAND ----------
+
+# DBTITLE 1,Define refactored columns
+refactored_columns = [
+{%- for column in data.refactored_columns %}
+    {
+        "name": "{{ column.name }}",
+        "refactorNames": [
+{%- for alias in column.aliases %}
+            "{{ alias }}",
+{%- endfor %}
+        ]
+    },
+{%- endfor %}
+]
+
+# COMMAND ----------
+
+# DBTITLE 1,Call migrate_schema method
+try:
+    result = table_instance.migrate_schema(
+        ddl=ddl,
+        schema=schema,
+        refactored_columns=refactored_columns,
+        new_partitions=partitions,
+        # INFO: set to true an rerun in case of expected warning, e.g. column dropped
+        force=force,
+    )
+
+    print("Result: %s" % str(result))
+except Exception as e:
+    print(f"Migration failed: {e}")
+
+table_instance.owner = owner
+
+# COMMAND ----------
+
+# DBTITLE 1,Check for older historized table versions and keep only latest historized version
+import re
+
+# pattern: {table_name}_{unix_timestamp}
+pattern = re.compile(f"^{re.escape(full_table_name)}_(\\d+)$")
+historized_tables = [t.name for t in spark.catalog.listTables(
+    database) if pattern.match(t.name)]
+
+if historized_tables:
+    sorted_tables = sorted(historized_tables, key=lambda t: int(
+        t.rsplit("_", 1)[-1]), reverse=True)
+    tables_to_delete = sorted_tables[1:]  # keep only the latest
+    for t in tables_to_delete:
+        spark.sql(f"DROP TABLE IF EXISTS `{catalog_name}`.`{database}`.`{t}`")
+        print(f"Deleted historized table {t}.")
+
+# COMMAND ----------
+
+# DBTITLE 1,Set table & column tags
+# table attributes
+table_instance.set_table_tags({{ data.table_tags_repr }})
+
+# column attributes
+{%- for column in data.column_tags %}
+table_instance.set_column_tags("{{ column.column }}", {{ column.tags_repr }})
+{%- endfor %}
