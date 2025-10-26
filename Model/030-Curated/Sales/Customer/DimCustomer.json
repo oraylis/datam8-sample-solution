@@ -28,15 +28,12 @@
                 "nullable": false
             },
             "isBusinessKey": true,
-            "refactorNames": [
-                "CustomerSID"
-            ],
             "dateModified": "2025-07-23T01:01:01+02:00",
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 2,
-            "name": "_CustomerSID",
+            "name": "CustomerSID",
             "description": "Customer surrogate key",
             "attributeType": "SID",
             "dataType": {
@@ -50,7 +47,7 @@
                 }
             ],
             "refactorNames": [
-                "CustomerSID"
+                "_CustomerSID"
             ],
             "dateModified": "2025-07-23T01:01:01Z",
             "dateAdded": "2025-01-01T01:01:01Z"

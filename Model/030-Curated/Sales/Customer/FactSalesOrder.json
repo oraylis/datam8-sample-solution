@@ -1,0 +1,85 @@
+{
+    "id": 3001,
+    "name": "FactSalesOrder",
+    "displayName": "Sales Order",
+    "description": "Fact table with sales orders",
+    "properties": [
+        {
+            "property": "jobs",
+            "value": "sales_daily"
+        },
+        {
+            "property": "write_mode",
+            "value": "overwrite"
+        },
+        {
+            "property": "data_retention",
+            "value": "7_days"
+        }
+    ],
+    "attributes": [
+        {
+            "ordinalNumber": 1,
+            "name": "CustomerSID",
+            "description": "Customer surrogate key",
+            "attributeType": "SID",
+            "dataType": {
+                "type": "long",
+                "nullable": false
+            },
+            "dateModified": "2025-07-23T01:01:01Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
+        },
+        {
+            "ordinalNumber": 2,
+            "name": "ShipDateID",
+            "description": "Ship date as integer",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "int",
+                "nullable": false
+            },
+            "dateModified": "2025-07-23T01:01:01Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
+        },
+        {
+            "ordinalNumber": 3,
+            "name": "TotalCosts",
+            "description": "Costs of sales orders",
+            "attributeType": "Currency",
+            "dataType": {
+                "type": "double",
+                "nullable": true
+            },
+            "history": "SCD1",
+            "dateModified": "2025-07-23T01:01:01Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
+        }
+    ],
+    "sources": [
+        {
+            "sourceLocation": 1008
+        },
+        {
+            "sourceLocation": 1009
+        },
+        {
+            "sourceLocation": 3000
+        }
+    ],
+    "transformations": [
+        {
+            "stepNo": 1,
+            "kind": "function",
+            "name": "transform_sales_orders",
+            "function": {
+                "source": "FactSalesOrder.py"
+            }
+        },
+        {
+            "stepNo": 2,
+            "kind": "builtin",
+            "name": "lookup_dimensions"
+        }
+    ]
+}
