@@ -1,0 +1,248 @@
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # DML for {{ data.zone }}.{{ data.full_table_name }}
+# MAGIC History configuration of this entity
+# MAGIC - __Business Key Columns__: {{ data.history.business_keys }}
+# MAGIC - __SCD0 columns__: {{ data.history.scd0 }}
+# MAGIC - __SCD1 columns__: {{ data.history.scd1 }}
+# MAGIC - __SCD2 columns__: {{ data.history.scd2 }}
+
+# COMMAND ----------
+
+from pyspark.sql import functions as F  # noqa: F401
+from delta import DeltaTable  # noqa: F401
+
+# COMMAND ----------
+
+# DBTITLE 1,Initialize Migration Framework
+# MAGIC
+# MAGIC %run ../../../../000-utils/MigrationFramework
+
+# COMMAND ----------
+
+dbutils.widgets.text("env", "dev", "Environment")
+dbutils.widgets.text("catalog_name", spark.catalog.currentCatalog(), "Catalog Name")
+dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
+# dbutils.widgets.dropdown(
+#     "run_mode",
+#     "INFO",
+#     ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+#     "Run Mode",
+# )
+#dbutils.widgets.text("sandbox", "_", "Sandbox")
+
+dbutils.widgets.text("data_lake_name", "datam80adl0dev", "Data Lake Name")
+dbutils.widgets.text("container_name", "lakehousesample", "Container Name")
+
+# COMMAND ----------
+
+# Retrieve a job-level parameter (will use default if it doesn't exist)
+env = dbutils.widgets.get("env")
+catalog_name = dbutils.widgets.get("catalog_name")
+owner = dbutils.widgets.get("owner")
+# run_mode = dbutils.widgets.get("run_mode")
+# sandbox = dbutils.widgets.get("sandbox")
+
+data_lake_name = dbutils.widgets.get("data_lake_name")
+container_name = dbutils.widgets.get("container_name")
+
+# static values
+MAX_VALID_TO_DATE = "9999-12-31"
+zone = "{{ data.zone }}"
+data_product = "{{ data.data_product }}"
+data_module = "{{ data.data_module }}"
+table_name = "{{ data.table_name }}"
+full_table_name = "%s_%s_%s" % (data_product, data_module, table_name)
+
+{%- if data.source_mode == "raw_delta" and data.raw_sources %}
+source_zone = "{{ data.raw_sources[0].source_zone }}"
+{%- endif %}
+
+# COMMAND ----------
+
+print("Environment: %s" % env)
+print("Catalog: %s" % catalog_name)
+print("Schema: %s" % zone)
+print("Table: %s" % full_table_name)
+print("Owner: %s" % owner)
+# print("Mode: %s" % run_mode)
+
+# COMMAND ----------
+
+catalog = Catalog(catalog_name)
+catalog.schema = zone
+catalog.set_active()
+
+# COMMAND ----------
+
+{%- if data.source_mode == "raw_delta" and data.raw_sources %}
+
+# MAGIC %md
+# MAGIC # Read delta from RAW zone
+
+# COMMAND ----------
+
+max_raw: dict = {}
+
+{%- for raw_source in data.raw_sources %}
+# MAGIC %md
+# MAGIC ## Max timestamp for source table '{{ raw_source.raw_full_table }}'
+
+# COMMAND ----------
+
+max_raw["{{ raw_source.key }}"] = spark.sql(f"""
+SELECT
+  COALESCE(MAX(__InsertTimestampRawUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxRaw
+FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
+""").first()[0]
+{%- endfor %}
+
+# COMMAND ----------
+
+source_delta_df_list = []
+
+{%- for raw_source in data.raw_sources %}
+# MAGIC %md
+# MAGIC ### Delta extraction for '{{ raw_source.raw_full_table }}'
+
+# COMMAND ----------
+
+source_delta_{{ loop.index }}_df = (
+    spark.table(f"{catalog.name}.{{ raw_source.source_zone }}.{{ raw_source.raw_full_table }}")
+    .filter(F.col("__InsertTimestampUTC") > max_raw["{{ raw_source.key }}"])
+    .selectExpr(
+        {%- for expr in raw_source.select_expressions %}
+        "{{ expr }}"{% if not loop.last %},{% endif %}
+        {%- endfor %}
+    )
+)
+source_delta_df_list.append(source_delta_{{ loop.index }}_df)
+{%- endfor %}
+
+# COMMAND ----------
+
+if not source_delta_df_list:
+    raise ValueError("No delta sources configured for this entity.")
+
+union_df = source_delta_df_list[0]
+for additional_df in source_delta_df_list[1:]:
+    union_df = union_df.unionByName(additional_df)
+
+union_df.createOrReplaceTempView("union_df")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # Write changes to {{ data.zone | upper }}
+
+# COMMAND ----------
+
+{%- if data.write_mode == "merge" and data.business_keys %}
+spark.sql(f"""
+MERGE INTO `{catalog.name}`.`{zone}`.`{full_table_name}` AS tgt
+USING union_df AS src
+ON
+  {{ data.merge_conditions_sql }}
+WHEN NOT MATCHED
+THEN INSERT (
+  {{ data.insert_columns_sql }}
+) VALUES (
+  {{ data.insert_values_sql }}
+)
+WHEN MATCHED
+THEN UPDATE SET
+  {{ data.update_assignments_sql }}
+""").display()
+{%- else %}
+(
+    union_df
+    .write.saveAsTable(
+        f"{catalog.name}.{zone}.{full_table_name}",
+        mode="{{ data.spark_write_mode }}",
+    )
+)
+{%- endif %}
+
+# COMMAND ----------
+
+{%- elif data.source_mode == "transformation" %}
+
+# MAGIC %md
+# MAGIC ## Execute transformation functions
+
+# COMMAND ----------
+
+table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
+  "catalog": catalog.name,
+  "schema": zone,
+  "table": full_table_name,
+}
+
+functions = {}
+
+{%- for transform in data.transformations %}
+# MAGIC %md
+# MAGIC ### {{ transform.key }}
+
+# COMMAND ----------
+
+functions["{{ transform.key }}"] = {
+  "name": "{{ transform.name }}",
+  "merge_type": "{{ transform.merge_type }}",
+  "frequency": "{{ transform.frequency }}",
+  "source": [
+    {%- for reference in transform.sources %}
+    {"dm8l": "{{ reference.dm8l }}"}{% if not loop.last %},{% endif %}
+    {%- endfor %}
+  ],
+}
+
+# COMMAND ----------
+
+# MAGIC %run ./{{ transform.script_module }}
+
+# COMMAND ----------
+
+business_function = business_function.withColumns({  # noqa: F821
+    "__BusinessFunction": F.lit("{{ transform.key }}"),
+    "__InsertTimestampUTC": F.current_timestamp(),
+})
+functions["{{ transform.key }}"]["df"] = business_function  # noqa: F821
+
+# COMMAND ----------
+
+{%- endfor %}
+
+{%- if data.final_function_key %}
+final_df = functions["{{ data.final_function_key }}"]["df"].withColumns({
+    "__UpdateTimestampUTC": F.current_timestamp(),
+})
+
+{%- if data.write_mode == "merge" and data.business_keys %}
+target_table = DeltaTable.forName(spark, table_name_ref)
+
+(
+    target_table.alias("tgt")
+    .merge(
+        final_df.alias("src"),
+        "{{ data.merge_conditions_flat }}",
+    )
+    .whenMatchedUpdateAll()
+    .whenNotMatchedInsertAll()
+    .execute()
+)
+{%- else %}
+final_df.write.saveAsTable(table_name_ref, mode="{{ data.spark_write_mode }}")
+{%- endif %}
+{%- endif %}
+
+# COMMAND ----------
+
+{%- else %}
+
+# MAGIC %md
+# MAGIC This entity does not have configured DML logic. Review the metadata to add sources or transformations.
+
+# COMMAND ----------
+
+{%- endif %}

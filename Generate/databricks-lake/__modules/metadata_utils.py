@@ -48,6 +48,33 @@ def _convert_property_value(value: Any) -> Any:
     return value
 
 
+def _properties_to_dict(properties: Iterable[Any] | None) -> dict[str, Any]:
+    """Convert iterable of property objects into a dictionary."""
+    result: dict[str, Any] = {}
+    if not properties:
+        return result
+    for prop in properties:
+        name = getattr(prop, "property", None)
+        if not name:
+            continue
+        result[name] = _convert_property_value(getattr(prop, "value", None))
+    return result
+
+
+def _strip_brackets(value: str) -> str:
+    """Remove surrounding square brackets from identifiers."""
+    trimmed = value.strip()
+    if trimmed.startswith("[") and trimmed.endswith("]"):
+        return trimmed[1:-1]
+    return trimmed
+
+
+def _select_expr(source_expr: str, target: str) -> str:
+    """Build a selectExpr statement with alias."""
+    identifier = _strip_brackets(source_expr)
+    return f"`{identifier}` AS `{target}`"
+
+
 @dataclass(frozen=True)
 class ZoneMetadata:
     """Represents a zone entry from Base/Zones.json."""
@@ -80,6 +107,12 @@ class MetadataResolver:
         self.solution_root = config.solution_folder_path
         self.model_root = self.solution_root / model.solution.modelPath
         self.base_root = self.solution_root / model.solution.basePath
+        self._entity_by_id: dict[int, tuple] = {}
+        for locator, wrapper in model.modelEntities.items():
+            entity_id = getattr(wrapper.entity, "id", None)
+            if entity_id is None:
+                continue
+            self._entity_by_id[entity_id] = (locator, wrapper.entity)
 
     # ------------------------------------------------------------------ Zones
     @property
@@ -389,6 +422,210 @@ class MetadataResolver:
             for name, canonical in defs
         ]
 
+    # ----------------------------------------------------------- Entity extras
+    def entity_folder_path(self, locator) -> Path:
+        """Return the filesystem path to the entity folder."""
+        return self.model_root.joinpath(*locator.folders)
+
+    def locator_to_dm8l(self, locator) -> str:
+        """Convert a locator into a DM8L style path (e.g. /Core/Sales/.../Entity)."""
+        if not locator.folders:
+            return f"/{locator.entityName}"
+        zone_meta = self.zone_from_folder(locator.folders[0])
+        zone_segment = zone_meta.name.capitalize() if zone_meta else locator.folders[0]
+        parts = [zone_segment, *locator.folders[1:], locator.entityName or ""]
+        return "/" + "/".join(part for part in parts if part)
+
+    def entity_properties(self, entity) -> dict[str, Any]:
+        """Expose entity-level properties as a dictionary."""
+        return _properties_to_dict(getattr(entity, "properties", None))
+
+    def write_mode(
+        self,
+        entity,
+        product_info: FolderInfo | None,
+        module_info: FolderInfo | None,
+        default: str = "overwrite",
+    ) -> str:
+        """Resolve write mode using entity -> module -> product fallback."""
+        entity_props = self.entity_properties(entity)
+        if "write_mode" in entity_props and entity_props["write_mode"]:
+            return str(entity_props["write_mode"]).lower()
+
+        if module_info:
+            module_props = module_info.properties
+            if "write_mode" in module_props and module_props["write_mode"]:
+                return str(module_props["write_mode"]).lower()
+
+        if product_info:
+            product_props = product_info.properties
+            if "write_mode" in product_props and product_props["write_mode"]:
+                return str(product_props["write_mode"]).lower()
+
+        return default
+
+    def history_configuration(self, entity) -> dict[str, list[str]]:
+        """Return history configuration buckets for an entity."""
+        config = {
+            "business_keys": [],
+            "scd0": [],
+            "scd1": [],
+            "scd2": [],
+        }
+
+        for attribute in getattr(entity, "attributes", []):
+            if getattr(attribute, "isBusinessKey", False):
+                config["business_keys"].append(attribute.name)
+            history_flag = getattr(attribute, "history", None)
+            if not history_flag:
+                continue
+            if hasattr(history_flag, "value"):
+                history_value = str(history_flag.value)
+            else:
+                history_value = str(history_flag)
+            normalized = history_value.lower()
+            if normalized == "scd0":
+                config["scd0"].append(attribute.name)
+            elif normalized == "scd1":
+                config["scd1"].append(attribute.name)
+            elif normalized == "scd2":
+                config["scd2"].append(attribute.name)
+
+        return config
+
+    def attribute_names(self, entity) -> list[str]:
+        """Return attribute names in modeling order."""
+        return [attribute.name for attribute in getattr(entity, "attributes", [])]
+
+    def raw_sources(self, entity) -> list[dict[str, Any]]:
+        """Collect metadata about external/raw sources feeding the entity."""
+        sources: list[dict[str, Any]] = []
+        for source in getattr(entity, "sources", []):
+            data_source = getattr(source, "dataSource", None)
+            if not data_source:
+                continue
+
+            raw_name = build_raw_source_name(source)
+            properties = _properties_to_dict(getattr(source, "properties", None))
+            mapping_dict = {}
+            for mapping in getattr(source, "mapping", []) or []:
+                target_name = getattr(mapping, "targetName", None)
+                source_name = getattr(mapping, "sourceName", None)
+                if not target_name or not source_name:
+                    continue
+                mapping_dict[target_name] = source_name
+
+            sources.append(
+                {
+                    "data_source": data_source,
+                    "raw_name": raw_name,
+                    "raw_full_table": f"{data_source}_{raw_name}".strip("_"),
+                    "properties": properties,
+                    "mapping": mapping_dict,
+                    "source_location": getattr(source, "sourceLocation", None),
+                    "source_type": self._data_source_type_by_name.get(data_source),
+                }
+            )
+        return sources
+
+    def entity_source_references(self, entity) -> list[dict[str, str]]:
+        """
+        Collect DM8L references to upstream modeled entities.
+
+        Entries originating from external sources are skipped.
+        """
+        references: list[dict[str, str]] = []
+        for source in getattr(entity, "sources", []):
+            if getattr(source, "dataSource", None):
+                continue
+
+            source_location = getattr(source, "sourceLocation", None)
+            dm8l_path: str | None = None
+
+            if isinstance(source_location, str):
+                parts = [part for part in source_location.strip("/").split("/") if part]
+                if parts:
+                    zone_meta = self.zone_from_folder(parts[0])
+                    zone_segment = zone_meta.name.capitalize() if zone_meta else parts[0]
+                    dm8l_path = "/" + "/".join([zone_segment, *parts[1:]])
+            elif isinstance(source_location, int):
+                locator_entity = self._entity_by_id.get(source_location)
+                if locator_entity:
+                    locator, _ = locator_entity
+                    dm8l_path = self.locator_to_dm8l(locator)
+
+            if dm8l_path:
+                references.append({"dm8l": dm8l_path})
+
+        return references
+
+    def collect_transformations(self, locator, entity) -> list[dict[str, Any]]:
+        """Return function-based transformation metadata for the entity."""
+        transformations: list[dict[str, Any]] = []
+        folder_path = self.entity_folder_path(locator)
+        for definition in getattr(entity, "transformations", []) or []:
+            kind = getattr(definition, "kind", None)
+            if kind is None and isinstance(definition, dict):
+                kind = definition.get("kind")
+            if hasattr(kind, "value"):
+                kind_value = kind.value
+            else:
+                kind_value = kind
+            if kind_value != "function":
+                continue
+            function_meta = getattr(definition, "function", None)
+            if function_meta is None and isinstance(definition, dict):
+                function_meta = definition.get("function")
+            source_ref = None
+            if function_meta is not None:
+                source_ref = getattr(function_meta, "source", None)
+                if source_ref is None and isinstance(function_meta, dict):
+                    source_ref = function_meta.get("source")
+            if not source_ref:
+                continue
+
+            script_relative = source_ref.lstrip("./")
+            script_path = folder_path / script_relative
+            script_content = script_path.read_text(encoding="utf-8") if script_path.exists() else ""
+            script_name = Path(script_relative).stem
+            step_no = getattr(definition, "stepNo", None)
+            if step_no is None and isinstance(definition, dict):
+                step_no = definition.get("stepNo")
+            display_name = getattr(definition, "name", None)
+            if display_name is None and isinstance(definition, dict):
+                display_name = definition.get("name")
+
+            transformations.append(
+                {
+                    "step_no": step_no,
+                    "name": display_name or script_name,
+                    "script_name": script_path.name,
+                    "script_module": f"{locator.entityName}_functions/{script_path.stem}",
+                    "script_content": script_content,
+                    "key": script_path.stem,
+                    "merge_type": "replace",
+                    "frequency": "no_restriction",
+                    "sources": self.entity_source_references(entity),
+                }
+            )
+        return transformations
+
+    def stage_select_expressions(self, entity, raw_source: dict[str, Any]) -> list[str]:
+        """Build selectExpr expressions for stage entities fed from raw sources."""
+        expressions: list[str] = []
+        mapping = raw_source.get("mapping", {})
+        for attribute in getattr(entity, "attributes", []):
+            source_expr = mapping.get(attribute.name, attribute.name)
+            expressions.append(_select_expr(source_expr, attribute.name))
+
+        expressions.extend(
+            [
+                "current_timestamp() AS __InsertTimestampUTC",
+                "current_timestamp() AS __UpdateTimestampUTC",
+                "__InsertTimestampUTC AS __InsertTimestampRawUTC",
+            ]
+        )
+        return expressions
 
 # --------------------------------------------------------------------- helpers
 def collect_imports(columns: Iterable[dict[str, Any]]) -> list[str]:
