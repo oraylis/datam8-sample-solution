@@ -21,6 +21,7 @@ from metadata_utils import (
 logger = start_logger(__name__)
 
 TECHNICAL_COLUMNS = ["__InsertTimestampUTC", "__UpdateTimestampUTC", "__InsertTimestampRawUTC"]
+MODELLED_ZONES = {"stage", "core", "curated"}
 
 
 @register_payload("ddl_notebook.py.jinja2")
@@ -39,6 +40,10 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         zone_meta = resolver.zone_from_folder(locator.folders[0])
         if zone_meta is None:
             logger.warning("Zone metadata missing for folder '%s'. Skipping entity %s.", locator.folders[0], locator)
+            continue
+
+        if zone_meta.name not in MODELLED_ZONES:
+            logger.debug("Skipping unsupported zone '%s' for Databricks DDL: %s", zone_meta.name, locator)
             continue
 
         # Determine product/module metadata via folder properties.
@@ -166,7 +171,10 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             continue
 
         if zone_meta.name == "raw":
-            # Raw handled by dedicated payload.
+            continue
+
+        if zone_meta.name not in MODELLED_ZONES:
+            logger.debug("Skipping unsupported zone '%s' for Databricks DML: %s", zone_meta.name, locator)
             continue
 
         product_info = resolver.folder_info(tuple(locator.folders[:2])) if len(locator.folders) >= 2 else None
@@ -344,7 +352,7 @@ def generate_dml_function_scripts(model: Model, cache: Cache) -> Sequence[IPaylo
             continue
 
         zone_meta = resolver.zone_from_folder(locator.folders[0])
-        if zone_meta is None or zone_meta.name == "raw":
+        if zone_meta is None or zone_meta.name not in MODELLED_ZONES:
             continue
 
         cache_key = (locator_payload_key, tuple(locator.folders), locator.entityName)

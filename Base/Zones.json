@@ -23,6 +23,12 @@
             "targetName": "gold",
             "displayName": "Curated Analytics Layer",
             "localFolderName": "030-Curated"
+        },
+        {
+            "name": "consumer",
+            "targetName": "platin",
+            "displayName": "Consumer Tabular Layer",
+            "localFolderName": "040-Consumer"
         }
     ]
 }

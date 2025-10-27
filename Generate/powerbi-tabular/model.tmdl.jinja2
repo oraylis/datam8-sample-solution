@@ -1,0 +1,10 @@
+model {{ data.model_name }}
+	culture: {{ data.culture }}
+	defaultPowerBIDataSourceVersion: {{ data.default_data_source_version }}
+	sourceQueryCulture: {{ data.source_query_culture }}
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+{% for name in data.table_names -%}
+ref table {% if " " in name %}'{{ name }}'{% else %}{{ name }}{% endif %}
+{% endfor -%}

@@ -1,0 +1,113 @@
+{
+    "id": 4000,
+    "name": "Customer",
+    "displayName": "Customer",
+    "description": "Customer dimension with personal and address information",
+    "properties": [
+        {
+            "property": "jobs",
+            "value": "sales_daily"
+        },
+        {
+            "property": "write_mode",
+            "value": "merge"
+        }
+    ],
+    "attributes": [
+        {
+            "ordinalNumber": 1,
+            "name": "CustomerSID",
+            "description": "Customer surrogate key",
+            "attributeType": "SID",
+            "dataType": {
+                "type": "long",
+                "nullable": false
+            },
+            "isBusinessKey": true,
+            "refactorNames": [
+                "_CustomerSID"
+            ],
+            "dateModified": "2025-07-23T01:01:01Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
+        },
+        {
+            "ordinalNumber": 2,
+            "name": "First Name",
+            "description": "First name of the customer",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "string",
+                "nullable": true
+            },
+            "dateModified": "2025-07-23T01:01:01Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
+        },
+        {
+            "ordinalNumber": 3,
+            "name": "Display Name",
+            "description": "Customer display name",
+            "attributeType": "Name",
+            "dataType": {
+                "type": "string",
+                "nullable": true
+            },
+            "refactorNames": [
+                "CustomerName"
+            ],
+            "dateModified": "2025-07-23T01:01:01Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
+        },
+        {
+            "ordinalNumber": 4,
+            "name": "Last Name",
+            "description": "Customer last name",
+            "attributeType": "Name",
+            "dataType": {
+                "type": "string",
+                "nullable": true
+            },
+            "dateModified": "2025-07-23T01:01:01Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
+        }
+    ],
+    "sources": [
+        {
+            "sourceLocation": 3000,
+            "mapping": [
+                {
+                    "targetName": "Customer SID",
+                    "sourceName": "CustomerSID",
+                    "sourceDataType": {
+                        "type": "int",
+                        "nullable": false
+                    }
+                },
+                {
+                    "targetName": "First Name",
+                    "sourceName": "FirstName",
+                    "sourceDataType": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Display Name",
+                    "sourceName": "DisplayName",
+                    "sourceDataType": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                {
+                    "targetName": "Last Name",
+                    "sourceName": "LastName",
+                    "sourceDataType": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                }
+            ]
+        }
+    ],
+    "transformations": []
+}

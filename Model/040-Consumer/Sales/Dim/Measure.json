@@ -1,0 +1,30 @@
+{
+    "id": 4002,
+    "name": "Measure",
+    "displayName": "Measure",
+    "description": "",
+    "properties": [
+        {
+            "property": "jobs",
+            "value": "sales_daily"
+        }
+    ],
+    "attributes": [
+        {
+            "ordinalNumber": 1,
+            "name": "Total Costs (EUR)",
+            "description": "",
+            "attributeType": "Currency",
+            "dataType": {
+                "type": "long",
+                "nullable": false
+            },
+            "expression": "SUM('Sales Order'[Total Costs])",
+            "expressionLanguage": "dax",
+            "dateModified": "2025-07-23T01:01:01Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
+        }
+    ],
+    "sources": [],
+    "transformations": []
+}

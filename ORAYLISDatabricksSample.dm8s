@@ -10,6 +10,12 @@
       "outputPath": "Output"
     },
     {
+      "name": "powerbi",
+      "isDefault": false,
+      "sourcePath": "Generate/powerbi-tabular",
+      "outputPath": "Output"
+    },
+    {
       "name": "docs",
       "isDefault": false,
       "sourcePath": "Generate/docs",
