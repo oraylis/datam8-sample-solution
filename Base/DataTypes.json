@@ -8,8 +8,10 @@
             "hasCharLen": true,
             "hasPrecision": false,
             "hasScale": false,
-            "parquetType": "string",
-            "sqlType": "nvarchar"
+            "targets": {
+                "databricks": "string",
+                "powerbi": "string"
+            }
         },
         {
             "name": "short",
@@ -17,8 +19,10 @@
             "hasCharLen": false,
             "hasPrecision": false,
             "hasScale": false,
-            "parquetType": "smallint",
-            "sqlType": "smallint"
+            "targets": {
+                "databricks": "smallint",
+                "powerbi": "int64"
+            }
         },
         {
             "name": "int",
@@ -26,8 +30,10 @@
             "hasCharLen": false,
             "hasPrecision": false,
             "hasScale": false,
-            "parquetType": "int",
-            "sqlType": "int"
+            "targets": {
+                "databricks": "int",
+                "powerbi": "int64"
+            }
         },
         {
             "name": "long",
@@ -35,8 +41,10 @@
             "hasCharLen": false,
             "hasPrecision": false,
             "hasScale": false,
-            "parquetType": "bigint",
-            "sqlType": "bigint"
+            "targets": {
+                "databricks": "bigint",
+                "powerbi": "int64"
+            }
         },
         {
             "name": "byte",
@@ -44,8 +52,10 @@
             "hasCharLen": false,
             "hasPrecision": false,
             "hasScale": false,
-            "parquetType": "tinyint",
-            "sqlType": "tinyint"
+            "targets": {
+                "databricks": "tinyint",
+                "powerbi": "int64"
+            }
         },
         {
             "name": "double",
@@ -54,8 +64,10 @@
             "hasCharLen": false,
             "hasPrecision": false,
             "hasScale": false,
-            "parquetType": "double",
-            "sqlType": "double"
+            "targets": {
+                "databricks": "double",
+                "powerbi": "double"
+            }
         },
         {
             "name": "bit",
@@ -63,8 +75,10 @@
             "hasCharLen": false,
             "hasPrecision": false,
             "hasScale": false,
-            "parquetType": "boolean",
-            "sqlType": "bit"
+            "targets": {
+                "databricks": "boolean",
+                "powerbi": "boolean"
+            }
         },
         {
             "name": "date",
@@ -72,8 +86,10 @@
             "hasCharLen": false,
             "hasPrecision": false,
             "hasScale": false,
-            "parquetType": "date",
-            "sqlType": "date"
+            "targets": {
+                "databricks": "date",
+                "powerbi": "date"
+            }
         },
         {
             "name": "datetime",
@@ -81,8 +97,10 @@
             "hasCharLen": false,
             "hasPrecision": false,
             "hasScale": false,
-            "parquetType": "timestamp",
-            "sqlType": "datetime"
+            "targets": {
+                "databricks": "timestamp",
+                "powerbi": "timestamp"
+            }
         },
         {
             "name": "binary",
@@ -90,8 +108,10 @@
             "hasCharLen": true,
             "hasPrecision": false,
             "hasScale": false,
-            "parquetType": "binary",
-            "sqlType": "varbinary"
+            "targets": {
+                "databricks": "binary",
+                "powerbi": "binary"
+            }
         },
         {
             "name": "uniqueidentifier",
@@ -99,8 +119,10 @@
             "hasCharLen": false,
             "hasPrecision": false,
             "hasScale": false,
-            "parquetType": "string",
-            "sqlType": "uniqueidentifier"
+            "targets": {
+                "databricks": "string",
+                "powerbi": "string"
+            }
         },
         {
             "name": "decimal",
@@ -108,8 +130,10 @@
             "hasCharLen": false,
             "hasPrecision": true,
             "hasScale": true,
-            "parquetType": "decimal",
-            "sqlType": "decimal"
+            "targets": {
+                "databricks": "decimal",
+                "powerbi": "decimal"
+            }
         },
         {
             "name": "money",
@@ -117,8 +141,10 @@
             "hasCharLen": false,
             "hasPrecision": false,
             "hasScale": false,
-            "parquetType": "decimal(19,4)",
-            "sqlType": "decimal(19,4)"
+            "targets": {
+                "databricks": "decimal(19,4)",
+                "powerbi": "decimal"
+            }
         },
         {
             "name": "dynstring",
@@ -126,8 +152,10 @@
             "hasCharLen": false,
             "hasPrecision": false,
             "hasScale": false,
-            "parquetType": "string",
-            "sqlType": "nvarchar"
+            "targets": {
+                "databricks": "string",
+                "powerbi": "string"
+            }
         },
         {
             "name": "dyndecimal",
@@ -135,8 +163,10 @@
             "hasCharLen": false,
             "hasPrecision": false,
             "hasScale": false,
-            "parquetType": "Decimal",
-            "sqlType": "decimal(19,3)"
+            "targets": {
+                "databricks": "decimal(19,3)",
+                "powerbi": "decimal"
+            }
         }
     ]
 }

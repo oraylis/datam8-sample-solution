@@ -99,6 +99,26 @@
             ]
         }
     ],
+    "relationships": [
+        {
+            "targetLocation": 4000,
+            "attributes": [
+                {
+                    "sourceName": "Customer SID",
+                    "targetName": "Customer SID"
+                }
+            ]
+        },
+        {
+            "targetLocation": 4003,
+            "attributes": [
+                {
+                    "sourceName": "Ship Date ID",
+                    "targetName": "Date ID"
+                }
+            ]
+        }
+    ],
     "transformations": [
         {
             "stepNo": 1,

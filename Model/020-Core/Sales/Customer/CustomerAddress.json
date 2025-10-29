@@ -102,6 +102,7 @@
             "sourceLocation": 1001
         }
     ],
+    "relationships": [],
     "transformations": [
         {
             "stepNo": 1,

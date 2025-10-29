@@ -266,6 +266,7 @@
     "sources": [
         {
             "dataSource": "AdventureWorks",
+            "sourceAlias": "SalesOrderHeader",
             "sourceLocation": "[SalesLT].[SalesOrderHeader]",
             "properties": [
                 {
@@ -465,5 +466,6 @@
             ]
         }
     ],
+    "relationships": [],
     "transformations": []
 }

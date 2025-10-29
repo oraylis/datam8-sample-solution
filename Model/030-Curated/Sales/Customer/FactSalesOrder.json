@@ -62,9 +62,17 @@
         },
         {
             "sourceLocation": 1009
-        },
+        }
+    ],
+    "relationships": [
         {
-            "sourceLocation": 3000
+            "targetLocation": 3000,
+            "attributes": [
+                {
+                    "sourceName": "CustomerSID",
+                    "targetName": "CustomerSID"
+                }
+            ]
         }
     ],
     "transformations": [

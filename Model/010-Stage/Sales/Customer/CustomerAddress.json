@@ -71,6 +71,7 @@
     "sources": [
         {
             "dataSource": "AdventureWorks",
+            "sourceAlias": "CustomerAddress",
             "sourceLocation": "SELECT * FROM [SalesLT].[CustomerAddress] WHERE CustomerID > 1",
             "properties": [
                 {
@@ -123,5 +124,6 @@
             ]
         }
     ],
+    "relationships": [],
     "transformations": []
 }
