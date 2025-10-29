@@ -12,6 +12,8 @@ from dm8gen.utils import start_logger
 
 logger = start_logger(__name__)
 
+TARGET_NAME = "databricks"
+
 # Common aliases so source / canonical names converge to those defined in DataTypes.json.
 TYPE_ALIASES: dict[str, str] = {
     "integer": "int",
@@ -67,6 +69,16 @@ def _strip_brackets(value: str) -> str:
     if trimmed.startswith("[") and trimmed.endswith("]"):
         return trimmed[1:-1]
     return trimmed
+
+
+def _sanitize_identifier(value: str | None) -> str:
+    """Turn an arbitrary identifier into an underscore-delimited token."""
+    if not value:
+        return ""
+    # Replace any non-word character with underscores and collapse duplicates.
+    cleaned = re.sub(r"\W+", "_", value.strip())
+    cleaned = re.sub(r"_+", "_", cleaned)
+    return cleaned.strip("_")
 
 
 def _select_expr(source_expr: str, target: str) -> str:
@@ -281,14 +293,19 @@ class MetadataResolver:
     # ----------------------------------------------------------- Canonical map
     @property
     @lru_cache
-    def _canonical_to_parquet(self) -> dict[str, str]:
-        """Map canonical data types to parquet types from Base/DataTypes.json."""
+    def _canonical_to_target(self) -> dict[str, str]:
+        """Map canonical data types to generator target-specific types."""
         data = _load_json(self.base_root / "DataTypes.json")
-        return {
-            entry["name"].lower(): entry.get("parquetType", "string")
-            for entry in data.get("dataTypes", [])
-            if entry.get("name")
-        }
+        mapping: dict[str, str] = {}
+        for entry in data.get("dataTypes", []):
+            name = entry.get("name")
+            if not name:
+                continue
+            targets = entry.get("targets", {})
+            target_value = targets.get(TARGET_NAME)
+            if target_value:
+                mapping[name.lower()] = target_value
+        return mapping
 
     def build_column_from_canonical(
         self,
@@ -311,28 +328,27 @@ class MetadataResolver:
             precision = getattr(data_type_model, "precision", None) if data_type_model else None
             scale = getattr(data_type_model, "scale", None) if data_type_model else None
             if precision is not None and scale is not None:
-                parquet_type = f"decimal({precision},{scale})"
+                target_type = f"decimal({precision},{scale})"
             else:
-                parquet_type = "decimal"
+                target_type = self._canonical_to_target.get(canonical_norm, "decimal")
         else:
-            parquet_type = self._canonical_to_parquet.get(canonical_norm)
-            if not parquet_type:
+            target_type = self._canonical_to_target.get(canonical_norm)
+            if not target_type:
                 logger.warning(
                     "Canonical data type '%s' is not defined in DataTypes.json; defaulting to string.",
                     canonical,
                 )
-                parquet_type = "string"
+                target_type = "string"
 
-        spark_type = parquet_type.lower()
-        delta_type = parquet_type.upper() if "(" not in parquet_type else parquet_type.upper()
+        ddl_type = target_type.upper()
         metadata_repr = "{'comment': " + repr(comment) + "}" if comment else None
 
         return {
             "name": name,
-            "spark_type_expr": f'StructType.fromDDL("{spark_type}")',
+            "spark_type_expr": f'DataType.fromDDL("{ddl_type}")',
             "struct_nullable": nullable,
             "metadata_repr": metadata_repr,
-            "delta_type": delta_type,
+            "delta_type": ddl_type,
             "delta_nullable": nullable,
             "delta_comment": comment,
         }
@@ -421,6 +437,39 @@ class MetadataResolver:
             )
             for name, canonical in defs
         ]
+
+    def raw_table_identifiers(self, locator, source) -> dict[str, str]:
+        """Derive naming components for a raw table based on entity folders and source alias."""
+        if locator and getattr(locator, "folders", None):
+            folders = locator.folders
+        else:
+            folders = ()
+
+        product_info = self.folder_info(tuple(folders[:2])) if len(folders) >= 2 else None
+        module_info = self.folder_info(tuple(folders[:3])) if len(folders) >= 3 else None
+
+        data_product_name = (
+            product_info.name
+            if product_info
+            else (folders[1] if len(folders) >= 2 else "UnknownProduct")
+        )
+        data_module_name = (
+            module_info.name
+            if module_info
+            else (folders[2] if len(folders) >= 3 else "General")
+        )
+
+        table_name = build_raw_source_name(source) or "raw_entity"
+        full_table_name = "_".join(
+            part for part in (data_product_name, data_module_name, table_name) if part
+        )
+
+        return {
+            "data_product": data_product_name,
+            "data_module": data_module_name,
+            "table_name": table_name,
+            "full_table_name": full_table_name,
+        }
 
     # ----------------------------------------------------------- Entity extras
     def entity_folder_path(self, locator) -> Path:
@@ -595,56 +644,143 @@ class MetadataResolver:
 
     def dimension_lookups_for_fact(self, locator, entity) -> list[dict[str, Any]]:
         """
-        Determine dimension join instructions for a fact entity that references SID columns.
+        Determine dimension join instructions for a fact entity using explicit relationships.
 
-        The method matches SID attributes by column name and maps them to curated dimensions
-        exposing the same SID plus a business key column.
+        Each relationship produces a lookup entry that joins the fact to the target entity
+        based on the configured attribute mappings.
         """
-        fact_sid_columns = {
-            attribute.name
-            for attribute in getattr(entity, "attributes", [])
-            if getattr(attribute, "attributeType", "").lower() == "sid"
+        lookups: list[dict[str, Any]] = []
+        fact_attributes = {
+            attribute.name: attribute for attribute in getattr(entity, "attributes", [])
         }
 
-        lookups: list[dict[str, Any]] = []
-        for dimension in self._curated_dimensions:
-            matching_sid = next(
+        relationships = getattr(entity, "relationships", []) or []
+        for relationship in relationships:
+            target_location = getattr(relationship, "targetLocation", None)
+            if target_location is None and isinstance(relationship, dict):
+                target_location = relationship.get("targetLocation")
+
+            target_locator = None
+            target_entity = None
+
+            if isinstance(target_location, int):
+                locator_entity = self._entity_by_id.get(target_location)
+                if locator_entity:
+                    target_locator, target_entity = locator_entity
+            elif isinstance(target_location, str):
+                search_target = target_location.strip()
+                if search_target:
+                    for candidate_locator, candidate_wrapper in self.model.modelEntities.items():
+                        if self.locator_to_dm8l(candidate_locator) == search_target:
+                            target_locator = candidate_locator
+                            target_entity = candidate_wrapper.entity
+                            break
+
+            if not target_locator or target_entity is None or not getattr(target_locator, "folders", None):
+                continue
+
+            join_mappings = getattr(relationship, "attributes", None)
+            if join_mappings is None and isinstance(relationship, dict):
+                join_mappings = relationship.get("attributes")
+
+            join_columns: list[dict[str, str]] = []
+            if join_mappings:
+                for mapping in join_mappings:
+                    fact_column = getattr(mapping, "sourceName", None)
+                    dimension_column = getattr(mapping, "targetName", None)
+                    if fact_column is None and isinstance(mapping, dict):
+                        fact_column = mapping.get("sourceName")
+                    if dimension_column is None and isinstance(mapping, dict):
+                        dimension_column = mapping.get("targetName")
+                    if not fact_column or not dimension_column:
+                        continue
+                    join_columns.append(
+                        {"fact_column": fact_column, "dimension_column": dimension_column}
+                    )
+
+            if not join_columns:
+                continue
+
+            dimension_zone_meta = self.zone_from_folder(target_locator.folders[0])
+            if dimension_zone_meta is None:
+                continue
+
+            dimension_product_info = (
+                self.folder_info(tuple(target_locator.folders[:2]))
+                if len(target_locator.folders) >= 2
+                else None
+            )
+            dimension_module_info = (
+                self.folder_info(tuple(target_locator.folders[:3]))
+                if len(target_locator.folders) >= 3
+                else None
+            )
+            data_product_name = (
+                dimension_product_info.name
+                if dimension_product_info
+                else (target_locator.folders[1] if len(target_locator.folders) >= 2 else "UnknownProduct")
+            )
+            data_module_name = (
+                dimension_module_info.name
+                if dimension_module_info
+                else (target_locator.folders[2] if len(target_locator.folders) >= 3 else "General")
+            )
+            dimension_full_table_name = f"{data_product_name}_{data_module_name}_{target_entity.name}"
+
+            dimension_attributes = {
+                attribute.name: attribute for attribute in getattr(target_entity, "attributes", [])
+            }
+            dimension_sid_column = next(
                 (
-                    sid
-                    for sid in dimension["sid_columns"]
-                    if sid in fact_sid_columns
+                    column["dimension_column"]
+                    for column in join_columns
+                    if (
+                        dim_attr := dimension_attributes.get(column["dimension_column"])
+                    )
+                    and getattr(dim_attr, "attributeType", "").lower() == "sid"
                 ),
                 None,
             )
-            if not matching_sid:
-                continue
+            if dimension_sid_column is None:
+                dimension_sid_candidates = [
+                    attr.name
+                    for attr in dimension_attributes.values()
+                    if getattr(attr, "attributeType", "").lower() == "sid"
+                ]
+                if dimension_sid_candidates:
+                    dimension_sid_column = dimension_sid_candidates[0]
+                else:
+                    dimension_sid_column = join_columns[0]["dimension_column"]
 
-            if not dimension["business_key_columns"]:
-                continue
-
-            join_columns = [
-                {
-                    "fact_column": column,
-                    "dimension_column": column,
-                }
-                for column in dimension["business_key_columns"]
-            ]
+            sid_column = next(
+                (
+                    column["fact_column"]
+                    for column in join_columns
+                    if (
+                        fact_attr := fact_attributes.get(column["fact_column"])
+                    )
+                    and getattr(fact_attr, "attributeType", "").lower() == "sid"
+                ),
+                None,
+            )
+            if sid_column is None:
+                sid_column = join_columns[0]["fact_column"]
 
             lookups.append(
                 {
-                    "sid_column": matching_sid,
+                    "sid_column": sid_column,
                     "join_columns": join_columns,
-                    "dimension_zone": dimension["zone"],
-                    "dimension_full_table_name": dimension["full_table_name"],
-                    "dimension_alias": dimension["alias"],
-                    "dimension_sid_column": matching_sid,
-                    "dimension_dm8l": dimension["dm8l_path"],
+                    "dimension_zone": dimension_zone_meta.name,
+                    "dimension_full_table_name": dimension_full_table_name,
+                    "dimension_alias": f"dim_{target_entity.name}",
+                    "dimension_sid_column": dimension_sid_column,
+                    "dimension_dm8l": self.locator_to_dm8l(target_locator),
                 }
             )
 
         return lookups
 
-    def raw_sources(self, entity) -> list[dict[str, Any]]:
+    def raw_sources(self, locator, entity) -> list[dict[str, Any]]:
         """Collect metadata about external/raw sources feeding the entity."""
         sources: list[dict[str, Any]] = []
         for source in getattr(entity, "sources", []):
@@ -652,7 +788,7 @@ class MetadataResolver:
             if not data_source:
                 continue
 
-            raw_name = build_raw_source_name(source)
+            identifiers = self.raw_table_identifiers(locator, source)
             properties = _properties_to_dict(getattr(source, "properties", None))
             mapping_dict = {}
             for mapping in getattr(source, "mapping", []) or []:
@@ -665,8 +801,13 @@ class MetadataResolver:
             sources.append(
                 {
                     "data_source": data_source,
-                    "raw_name": raw_name,
-                    "raw_full_table": f"{data_source}_{raw_name}".strip("_"),
+                    "data_product": identifiers["data_product"],
+                    "data_module": identifiers["data_module"],
+                    "source_alias": getattr(source, "sourceAlias", None),
+                    "table_name": identifiers["table_name"],
+                    "raw_name": identifiers["table_name"],
+                    "raw_full_table": identifiers["full_table_name"],
+                    "full_table_name": identifiers["full_table_name"],
                     "properties": properties,
                     "mapping": mapping_dict,
                     "source_location": getattr(source, "sourceLocation", None),
@@ -781,7 +922,7 @@ def collect_imports(columns: Iterable[dict[str, Any]]) -> list[str]:
 
     StructType and StructField are always required.
     """
-    return ["StructType", "StructField"]
+    return ["StructType", "StructField", "DataType"]
 
 
 def collect_column_tags(entity) -> list[dict[str, Any]]:
@@ -857,9 +998,11 @@ def _parse_source_location(location: str | None) -> tuple[str | None, str | None
 
 def build_raw_source_name(source) -> str:
     """Derive a raw table/filename from source alias/location."""
+    alias = _sanitize_identifier(getattr(source, "sourceAlias", None))
+    if alias:
+        return alias
+
     schema, table = _parse_source_location(getattr(source, "sourceLocation", None))
-    alias = (getattr(source, "sourceAlias", None) or table or "").strip()
-    alias = alias.replace(" ", "_")
-    schema_part = (schema or "").strip().replace(" ", "_")
-    parts = [part for part in (schema_part, alias) if part]
-    return "_".join(parts) or alias or "raw_entity"
+    fallback_parts = [_sanitize_identifier(schema), _sanitize_identifier(table)]
+    fallback = "_".join(part for part in fallback_parts if part)
+    return fallback or "raw_entity"

@@ -11,7 +11,6 @@ from dm8gen.utils.cache import Cache
 from metadata_utils import (
     MetadataResolver,
     build_business_key_partitions,
-    build_raw_source_name,
     collect_column_tags,
     collect_imports,
     collect_refactored_columns,
@@ -114,12 +113,27 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
 
         column_tags = collect_column_tags(entity)
         refactored_columns = collect_refactored_columns(entity)
+        product_info = resolver.folder_info(tuple(locator.folders[:2])) if len(locator.folders) >= 2 else None
+        module_info = resolver.folder_info(tuple(locator.folders[:3])) if len(locator.folders) >= 3 else None
+        data_product_name = (
+            product_info.name
+            if product_info
+            else (locator.folders[1] if len(locator.folders) >= 2 else "UnknownProduct")
+        )
+        data_module_name = (
+            module_info.name
+            if module_info
+            else (locator.folders[2] if len(locator.folders) >= 3 else "General")
+        )
 
         for source, data_source_info in resolver.iter_external_sources(entity):
-            raw_name = build_raw_source_name(source)
+            identifiers = resolver.raw_table_identifiers(locator, source)
+            raw_name = identifiers["table_name"]
+            full_table_name = identifiers["full_table_name"]
             raw_columns = resolver.build_raw_columns(entity, source)
             raw_imports = collect_imports(raw_columns)
             subfolders = tuple(locator.folders[1:]) + ("ddl",)
+            source_alias = getattr(source, "sourceAlias", None) or raw_name
 
             payloads.append(
                 BasePayload(
@@ -130,9 +144,12 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                         "data_source_display": (data_source_info or {}).get(
                             "displayName", getattr(source, "dataSource", "")
                         ),
-                        "source_name": raw_name,
+                        "data_product": data_product_name,
+                        "data_module": data_module_name,
+                        "table_name": raw_name,
+                        "source_name": source_alias,
                         "table_comment": entity.description or "",
-                        "full_table_name": f"{getattr(source, 'dataSource', '')}_{raw_name}".strip("_"),
+                        "full_table_name": full_table_name,
                         "columns": raw_columns,
                         "imports": raw_imports,
                         "partitions": ["__Year", "__Month", "__Day", "__InsertTimestampUTC"],
@@ -189,7 +206,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         business_keys = history_config["business_keys"]
         non_business_columns = [name for name in attribute_names if name not in business_keys]
 
-        raw_sources = resolver.raw_sources(entity)
+        raw_sources = resolver.raw_sources(locator, entity)
         stage_sources = []
         for raw_source in raw_sources:
             select_exprs = resolver.stage_select_expressions(entity, raw_source)
@@ -293,20 +310,15 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
         if not locator.folders:
             continue
 
-        product_info = resolver.folder_info(tuple(locator.folders[:2])) if len(locator.folders) >= 2 else None
-        module_info = resolver.folder_info(tuple(locator.folders[:3])) if len(locator.folders) >= 3 else None
         write_mode = "append"
 
-        raw_source_lookup = {
-            info["raw_full_table"]: info for info in resolver.raw_sources(entity)
-        }
-
-        for source, data_source_info in resolver.iter_external_sources(entity):
-            raw_name = build_raw_source_name(source)
-            raw_full_table = f"{getattr(source, 'dataSource', '')}_{raw_name}".strip("_")
-            raw_info = raw_source_lookup.get(raw_full_table, {})
-            properties = raw_info.get("properties", {})
-            data_source_entry = resolver.data_sources.get(getattr(source, "dataSource", ""), {})
+        for raw_source in resolver.raw_sources(locator, entity):
+            raw_name = raw_source["table_name"]
+            full_table_name = raw_source["full_table_name"]
+            data_source_name = raw_source["data_source"]
+            source_alias = raw_source.get("source_alias") or raw_name
+            properties = raw_source.get("properties", {})
+            data_source_entry = resolver.data_sources.get(data_source_name, {})
             driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
             if data_source_entry.get("type") == "SynapseDataSource":
                 driver = "com.databricks.spark.sqldw"
@@ -314,15 +326,15 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             data = {
                 "zone": raw_zone.name,
                 "zone_display": raw_zone.display_name,
-                "data_source": getattr(source, "dataSource", ""),
-                "data_source_display": (data_source_info or {}).get("displayName", getattr(source, "dataSource", "")),
-                "source_name": raw_name,
-                "full_table_name": raw_full_table,
+                "data_source": data_source_name,
+                "data_source_display": data_source_entry.get("displayName", data_source_name),
+                "source_name": source_alias,
+                "full_table_name": full_table_name,
                 "write_mode": write_mode,
-                "source_location": getattr(source, "sourceLocation", None),
+                "source_location": raw_source.get("source_location"),
                 "extract_mode": properties.get("extract_mode"),
                 "driver": driver,
-                "connection_secret": f"datasource-{getattr(source, 'dataSource', '')}-connectionstring",
+                "connection_secret": f"datasource-{data_source_name}-connectionstring",
             }
 
             payloads.append(
