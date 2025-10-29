@@ -90,6 +90,32 @@ def _slug(value: str | None) -> str:
     return re.sub(r"_+", "_", slug).strip("_")
 
 
+def _normalize_path(value: str | None) -> str:
+    if not value:
+        return ""
+    return re.sub(r"[^a-z0-9]+", "_", value.lower()).strip("_")
+
+
+def _locator_to_path(locator: Locator) -> str:
+    parts: list[str] = []
+    if locator.folders:
+        first = locator.folders[0]
+        match = re.match(r"\d{3}-(.+)", first)
+        if match:
+            parts.append(match.group(1))
+        else:
+            parts.append(first)
+        parts.extend(locator.folders[1:])
+
+    if locator.entityName:
+        parts.append(locator.entityName)
+
+    if not parts:
+        return ""
+
+    return "/" + "/".join(parts)
+
+
 def _map_data_type(attribute_type: str, logical_type: str) -> str:
     mapping: dict[str, str] = {
         "long": "int64",
@@ -134,6 +160,70 @@ def _collect_mapping_lookup(sources: Sequence[Any]) -> dict[str, tuple[str, str]
             lookup[key_source] = (mapping.targetName, mapping.sourceName)
 
     return lookup
+
+
+def _resolve_column(table: TableDefinition, column_name: str | None) -> ColumnDefinition | None:
+    if not column_name:
+        return None
+
+    normalized = _normalize(column_name)
+    column = table.column_lookup.get(normalized)
+    if column:
+        return column
+
+    for candidate in table.columns:
+        if _normalize(candidate.name) == normalized:
+            return candidate
+        if candidate.source_column and _normalize(candidate.source_column) == normalized:
+            return candidate
+
+    return None
+
+
+def _resolve_relationship_target(
+    target_location: Any,
+    table_by_id: dict[int, TableDefinition],
+    table_by_path: dict[str, TableDefinition],
+) -> TableDefinition | None:
+    if isinstance(target_location, int):
+        return table_by_id.get(target_location)
+
+    if isinstance(target_location, str):
+        normalized = _normalize_path(target_location)
+        if normalized:
+            return table_by_path.get(normalized)
+
+    return None
+
+
+def _append_relationship(
+    relationships: list[RelationshipDefinition],
+    seen: set[tuple[str, str, str, str]],
+    from_table_name: str,
+    from_column_name: str,
+    to_table_name: str,
+    to_column_name: str,
+) -> None:
+    key = (
+        _normalize_path(from_table_name),
+        _normalize_path(from_column_name),
+        _normalize_path(to_table_name),
+        _normalize_path(to_column_name),
+    )
+
+    if key in seen:
+        return
+
+    seen.add(key)
+    relationships.append(
+        RelationshipDefinition(
+            name=_format_relationship_name(from_table_name, to_table_name, from_column_name),
+            from_table=from_table_name,
+            from_column=from_column_name,
+            to_table=to_table_name,
+            to_column=to_column_name,
+        )
+    )
 
 
 def _build_partition_lines(model: Model, table: TableDefinition, entity: Any) -> list[str]:
@@ -271,17 +361,89 @@ def _collect_consumer_tables(model: Model) -> list[TableDefinition]:
 def _collect_relationships(model: Model, tables: list[TableDefinition]) -> list[RelationshipDefinition]:
     relationships: list[RelationshipDefinition] = []
     table_by_id: dict[int, TableDefinition] = {table.entity_id: table for table in tables}
+    table_by_path: dict[str, TableDefinition] = {}
+
+    for table in tables:
+        path = _locator_to_path(table.locator)
+        if path:
+            table_by_path[_normalize_path(path)] = table
+
+    seen: set[tuple[str, str, str, str]] = set()
 
     for table in tables:
         entity = model.get_model_entity_by_id(table.entity_id).entity
 
-        for source in entity.sources:
+        explicit_relationships = getattr(entity, "relationships", []) or []
+        explicit_target_ids: set[int] = set()
+        for relationship in explicit_relationships:
+            target_location = getattr(relationship, "targetLocation", None)
+            if target_location is None and isinstance(relationship, dict):
+                target_location = relationship.get("targetLocation")
+
+            target_table = _resolve_relationship_target(target_location, table_by_id, table_by_path)
+            if not target_table:
+                logger.debug(
+                    "Unable to resolve target table for relationship on %s (target=%s)",
+                    table.name,
+                    target_location,
+                )
+                continue
+
+            explicit_target_ids.add(target_table.entity_id)
+
+            attribute_mappings = getattr(relationship, "attributes", None)
+            if attribute_mappings is None and isinstance(relationship, dict):
+                attribute_mappings = relationship.get("attributes")
+            if not attribute_mappings:
+                continue
+
+            for mapping in attribute_mappings:
+                source_name = getattr(mapping, "sourceName", None)
+                target_name = getattr(mapping, "targetName", None)
+                if source_name is None and isinstance(mapping, dict):
+                    source_name = mapping.get("sourceName")
+                if target_name is None and isinstance(mapping, dict):
+                    target_name = mapping.get("targetName")
+
+                from_column = _resolve_column(table, source_name)
+                to_column = _resolve_column(target_table, target_name)
+
+                from_column_name = from_column.name if from_column else source_name
+                to_column_name = to_column.name if to_column else target_name
+
+                if not to_column_name:
+                    fallback_target = next((col for col in target_table.columns if col.is_key), None)
+                    to_column_name = fallback_target.name if fallback_target else None
+
+                if not from_column_name or not to_column_name:
+                    logger.debug(
+                        "Unable to resolve relationship columns for %s -> %s (%s -> %s)",
+                        table.name,
+                        target_table.name,
+                        source_name,
+                        target_name,
+                    )
+                    continue
+
+                _append_relationship(
+                    relationships,
+                    seen,
+                    table.name,
+                    from_column_name,
+                    target_table.name,
+                    to_column_name,
+                )
+
+        # Fallback: infer from source references when explicit relationships are missing.
+        for source in getattr(entity, "sources", []) or []:
             source_location = getattr(source, "sourceLocation", None)
             if not isinstance(source_location, int):
                 continue
 
             target_table = table_by_id.get(source_location)
             if not target_table:
+                continue
+            if target_table.entity_id in explicit_target_ids:
                 continue
 
             target_column = next((col for col in target_table.columns if col.is_key), None)
@@ -302,22 +464,19 @@ def _collect_relationships(model: Model, tables: list[TableDefinition]) -> list[
                     break
 
             if not from_column:
-                logger.debug(
-                    "Failed to resolve relationship column for table %s to %s on key %s",
-                    table.name,
-                    target_table.name,
-                    target_column.name,
-                )
+                from_column = _resolve_column(table, target_column.name)
+
+            from_column_name = from_column.name if from_column else None
+            if not from_column_name:
                 continue
 
-            relationships.append(
-                RelationshipDefinition(
-                    name=_format_relationship_name(table.name, target_table.name, from_column.name),
-                    from_table=table.name,
-                    from_column=from_column.name,
-                    to_table=target_table.name,
-                    to_column=target_column.name,
-                )
+            _append_relationship(
+                relationships,
+                seen,
+                table.name,
+                from_column_name,
+                target_table.name,
+                target_column.name,
             )
 
     return relationships

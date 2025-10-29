@@ -119,11 +119,5 @@
             ]
         }
     ],
-    "transformations": [
-        {
-            "stepNo": 1,
-            "kind": "builtin",
-            "name": "lookup_dimensions"
-        }
-    ]
+    "transformations": []
 }
