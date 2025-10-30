@@ -233,6 +233,7 @@
     "sources": [
         {
             "dataSource": "OracleDev",
+            "sourceAlias": "dimtime",
             "sourceLocation": "[DATAM8].[DIMTIME]",
             "properties": [
                 {
@@ -404,5 +405,6 @@
             ]
         }
     ],
+    "relationships": [],
     "transformations": []
 }

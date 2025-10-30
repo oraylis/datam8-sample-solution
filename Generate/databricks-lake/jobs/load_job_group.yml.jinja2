@@ -1,0 +1,78 @@
+resources:
+  jobs:
+    {{ data.job_key }}:
+      name: {{ data.job_name }}
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: owner
+          default: ${var.owner}
+        - name: workspace_host
+          default: ${workspace.host}
+      permissions:
+        - service_principal_name: ${var.run_as_service_principal}
+          level: "CAN_MANAGE_RUN"
+        - group_name: ${var.permission_group_name}
+          level: "CAN_MANAGE_RUN"
+{% if data.schedule %}
+      schedule:
+        quartz_cron_expression: {{ data.schedule.cron_expression }}
+        timezone_id: {{ data.schedule.timezone_id }}
+        pause_status: ${var.unpause_schedules}
+{% endif %}
+      tasks:
+        - task_key: Generate_Load_UUID
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/000-utils/Start_Load
+{% if data.job_value %}
+            base_parameters:
+              target_zone: {{ data.job_value }}
+{% endif %}
+            source: WORKSPACE
+          existing_cluster_id: ${var.{{ data.cluster_var }}}
+{% for task in data.raw_tasks %}
+        - task_key: {{ task.task_key }}
+{%- if task.depends_on %}
+          depends_on:
+{%- for dependency in task.depends_on %}
+            - task_key: {{ dependency }}
+{%- endfor %}
+{%- endif %}
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/{{ task.notebook_path }}
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          existing_cluster_id: ${var.{{ data.cluster_var }}}
+{% endfor %}
+{% for task in data.entity_tasks %}
+        - task_key: {{ task.task_key }}
+{%- if task.depends_on %}
+          depends_on:
+{%- for dependency in task.depends_on %}
+            - task_key: {{ dependency }}
+{%- endfor %}
+{%- endif %}
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/{{ task.notebook_path }}
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          existing_cluster_id: ${var.{{ data.cluster_var }}}
+{% endfor %}
+{% if data.complete_dependencies %}
+        - task_key: Complete_Load
+          depends_on:
+{%- for dependency in data.complete_dependencies %}
+            - task_key: {{ dependency }}
+{%- endfor %}
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/000-utils/Complete_Load
+            source: WORKSPACE
+          existing_cluster_id: ${var.{{ data.cluster_var }}}
+{% endif %}

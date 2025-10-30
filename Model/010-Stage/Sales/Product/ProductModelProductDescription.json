@@ -83,6 +83,7 @@
     "sources": [
         {
             "dataSource": "AdventureWorks",
+            "sourceAlias": "ProductModelProductDescription",
             "sourceLocation": "[SalesLT].[ProductModelProductDescription]",
             "properties": [
                 {
@@ -141,5 +142,6 @@
             ]
         }
     ],
+    "relationships": [],
     "transformations": []
 }

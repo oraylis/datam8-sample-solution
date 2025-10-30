@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -60,7 +60,7 @@ wheels = [
 [[package]]
 name = "datam8-generator"
 version = "2.0.0"
-source = { git = "https://github.com/oraylis/datam8-generator?branch=feature%2Fv2#cadd8356f87373623bf2101153c931b90e5d7693" }
+source = { git = "https://github.com/oraylis/datam8-generator?branch=feature%2Fv2-FK#ef490079e23942552a3caaa32123d5f3d68dc041" }
 dependencies = [
     { name = "autopep8" },
     { name = "jinja2" },
@@ -79,7 +79,7 @@ dependencies = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "datam8-generator", git = "https://github.com/oraylis/datam8-generator?branch=feature%2Fv2" }]
+requires-dist = [{ name = "datam8-generator", git = "https://github.com/oraylis/datam8-generator?branch=feature%2Fv2-FK" }]
 
 [[package]]
 name = "jinja2"

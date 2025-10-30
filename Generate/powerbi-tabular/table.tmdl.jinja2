@@ -1,0 +1,42 @@
+table {% if " " in data.table.name %}'{{ data.table.name }}'{% else %}{{ data.table.name }}{% endif %}
+{% if data.table.is_hidden -%}
+{{ '\t' }}isHidden
+{% endif -%}
+{% for column in data.table.columns %}
+	column {% if " " in column.name %}'{{ column.name }}'{% else %}{{ column.name }}{% endif %}
+		dataType: {{ column.data_type }}
+{%- if column.is_hidden %}
+		isHidden
+{%- endif %}
+{%- if column.is_key %}
+		isKey
+{%- endif %}
+{%- if column.summarize_by %}
+		summarizeBy: {{ column.summarize_by }}
+{%- endif %}
+{%- if column.format_string %}
+		formatString: {{ column.format_string }}
+{%- endif %}
+{%- if column.source_column %}
+		sourceColumn: {{ column.source_column }}
+{%- endif %}
+{%- if column.is_available_in_mdx is not none %}
+		isAvailableInMdx: {{ "true" if column.is_available_in_mdx else "false" }}
+{%- endif %}
+
+{% endfor -%}
+{% for measure in data.table.measures %}
+	measure {% if " " in measure.name %}'{{ measure.name }}'{% else %}{{ measure.name }}{% endif %} = {{ measure.expression }}
+{%- if measure.format_string %}
+		formatString: {{ measure.format_string }}
+{%- endif %}
+
+{% endfor -%}
+{% if data.table.partition %}
+	partition {% if " " in data.table.partition.name %}'{{ data.table.partition.name }}'{% else %}{{ data.table.partition.name }}{% endif %} = m
+		mode: {{ data.table.partition.mode }}
+		source =
+{%- for line in data.table.partition.source_lines %}
+			{{ line }}
+{%- endfor %}
+{% endif -%}

@@ -65,9 +65,9 @@ container_name = dbutils.widgets.get("container_name")
 
 # static values
 zone = "{{ data.zone }}"
-data_product = "{{ data.data_product }}"
-data_module = "{{ data.data_module }}"
-table_name = "{{ data.table_name }}"
+data_source = "{{ data.data_source }}"
+data_source_display = "{{ data.data_source_display }}"
+source_name = "{{ data.source_name }}"
 full_table_name = "{{ data.full_table_name }}"
 
 # COMMAND ----------
@@ -77,8 +77,9 @@ print("Catalog: %s" % catalog_name)
 print("Schema: %s" % zone)
 print("Table: %s" % full_table_name)
 print("Owner: %s" % owner)
-print("Data Product: %s" % data_product)
-print("Data Module: %s" % data_module)
+print("Data Source: %s" % data_source)
+print("Data Source Display: %s" % data_source_display)
+print("Source Name: %s" % source_name)
 # print("Mode: %s" % run_mode)
 
 # COMMAND ----------

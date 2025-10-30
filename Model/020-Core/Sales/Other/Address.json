@@ -158,6 +158,7 @@
             "sourceLocation": 1000
         }
     ],
+    "relationships": [],
     "transformations": [
         {
             "stepNo": 1,

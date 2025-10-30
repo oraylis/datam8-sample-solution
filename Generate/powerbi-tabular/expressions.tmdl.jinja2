@@ -1,0 +1,4 @@
+{%- for expression in data.expressions %}
+{{- "" if loop.first else "\n\n" -}}
+expression {{ expression.name }} = "{{ expression.value }}" meta [{% for key, value in expression.meta.items() %}{{ key }}={{ value }}{% if not loop.last %}, {% endif %}{% endfor %}]
+{%- endfor %}
