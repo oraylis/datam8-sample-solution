@@ -123,6 +123,7 @@
     "sources": [
         {
             "dataSource": "AdventureWorks",
+            "sourceAlias": "Address",
             "sourceLocation": "[SalesLT].[Address]",
             "properties": [
                 {
@@ -218,5 +219,6 @@
             ]
         }
     ],
+    "relationships": [],
     "transformations": []
 }

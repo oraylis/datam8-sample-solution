@@ -1,0 +1,162 @@
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # DML for {{ data.zone }}.{{ data.full_table_name }}
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # Initialize base settings
+
+# COMMAND ----------
+
+# DBTITLE 1,Initialize Migration Framework
+# MAGIC
+# MAGIC %run ../../../../000-utils/MigrationFramework
+
+# COMMAND ----------
+
+dbutils.widgets.text("env", "dev", "Environment")
+dbutils.widgets.text("catalog_name", spark.catalog.currentCatalog(), "Catalog Name")
+dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
+# dbutils.widgets.dropdown(
+#     "run_mode",
+#     "INFO",
+#     ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+#     "Run Mode",
+# )
+#dbutils.widgets.text("sandbox", "_", "Sandbox")
+
+dbutils.widgets.text("data_lake_name", "datam80adl0dev", "Data Lake Name")
+dbutils.widgets.text("container_name", "lakehousesample", "Container Name")
+dbutils.widgets.text("keyvault_name", "akv_standard", "Key Vault Name")
+
+# COMMAND ----------
+
+# Retrieve a job-level parameter (will use default if it doesn't exist)
+env = dbutils.widgets.get("env")
+catalog_name = dbutils.widgets.get("catalog_name")
+owner = dbutils.widgets.get("owner")
+# run_mode = dbutils.widgets.get("run_mode")
+# sandbox = dbutils.widgets.get("sandbox")
+
+data_lake_name = dbutils.widgets.get("data_lake_name")
+container_name = dbutils.widgets.get("container_name")
+keyvault_name = dbutils.widgets.get("keyvault_name")
+
+# static values
+zone = "{{ data.zone }}"
+data_source = "{{ data.data_source }}"
+data_source_display = "{{ data.data_source_display }}"
+source_name = "{{ data.source_name }}"
+full_table_name = "{{ data.full_table_name }}"
+write_mode = "{{ data.write_mode }}"
+
+# COMMAND ----------
+
+print("Environment: %s" % env)
+print("Catalog: %s" % catalog_name)
+print("Schema: %s" % zone)
+print("Table: %s" % full_table_name)
+print("Owner: %s" % owner)
+print("Data Source: %s" % data_source)
+print("Data Source Display: %s" % data_source_display)
+# print("Mode: %s" % run_mode)
+
+# COMMAND ----------
+
+catalog = Catalog(catalog_name)
+catalog.schema = zone
+catalog.set_active()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # Read data from source system
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Get & assign variable values
+
+# COMMAND ----------
+
+# DBTITLE 1,Get connection values
+DRIVER = "{{ data.driver }}"
+database_connectionstring = dbutils.secrets.get(scope=keyvault_name, key="{{ data.connection_secret }}")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Define query
+
+# COMMAND ----------
+
+base_select = {{ data.source_location | default("", true) | tojson }}
+if not isinstance(base_select, str):
+    base_select = ""
+
+if base_select.strip() == "":
+    base_select = f"SELECT * FROM [{source_name}]"
+
+technical_columns = """
+    CAST(YEAR(SYSUTCDATETIME()) AS SMALLINT) AS __Year,
+    CAST(MONTH(SYSUTCDATETIME()) AS SMALLINT) AS __Month,
+    CAST(DAY(SYSUTCDATETIME()) AS SMALLINT) AS __Day,
+    SYSUTCDATETIME() AS __InsertTimestampUTC
+"""
+
+pushdown_query = f"""
+(
+    SELECT
+        -- Add technical columns
+        {technical_columns},
+        -- Add query
+        {base_select.strip()[len('SELECT '):] if base_select.strip().upper().startswith('SELECT ') else '*'}
+) AS src
+"""
+print(
+    f"""Query:
+
+{pushdown_query}"""
+)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Create dataframe
+
+# COMMAND ----------
+
+# DBTITLE 1,Read from source
+table_df = (
+    spark.read
+    .format("jdbc")
+    .option("driver", DRIVER)
+    .option("url", database_connectionstring)
+    .option("dbtable", pushdown_query)
+    .load()
+)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # Write to RAW zone
+
+# COMMAND ----------
+
+(
+    table_df.write
+    .mode(write_mode)
+    .saveAsTable(f"{catalog_name}.{zone}.{full_table_name}")
+)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # Update extraction status
+
+# COMMAND ----------
+
+# DBTITLE 1,Update extraction status
+record_count = table_df.count()
+print(f"Extracted {record_count} records in extraction")

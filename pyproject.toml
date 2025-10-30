@@ -10,7 +10,7 @@ dependencies = ["datam8-generator"]
 Homepage = "https://github.com/oraylis/datam8-sample-solution"
 
 [tool.uv.sources]
-datam8-generator = { git = "https://github.com/oraylis/datam8-generator", branch = "feature/v2" }
+datam8-generator = { git = "https://github.com/oraylis/datam8-generator", branch = "feature/v2-FK" }
 
 [tool.ruff]
 line-length = 100

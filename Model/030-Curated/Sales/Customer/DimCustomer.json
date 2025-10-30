@@ -20,23 +20,7 @@
     "attributes": [
         {
             "ordinalNumber": 1,
-            "name": "_CustomerBK",
-            "description": "Customer business key",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "int",
-                "nullable": false
-            },
-            "isBusinessKey": true,
-            "refactorNames": [
-                "CustomerSID"
-            ],
-            "dateModified": "2025-07-23T01:01:01+02:00",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 2,
-            "name": "_CustomerSID",
+            "name": "CustomerSID",
             "description": "Customer surrogate key",
             "attributeType": "SID",
             "dataType": {
@@ -50,13 +34,13 @@
                 }
             ],
             "refactorNames": [
-                "CustomerSID"
+                "_CustomerSID"
             ],
             "dateModified": "2025-07-23T01:01:01Z",
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 3,
+            "ordinalNumber": 2,
             "name": "CustomerID",
             "description": "Original customer identifier",
             "attributeType": "ID",
@@ -64,11 +48,12 @@
                 "type": "int",
                 "nullable": true
             },
+            "isBusinessKey": true,
             "dateModified": "2025-07-23T01:01:01Z",
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 4,
+            "ordinalNumber": 3,
             "name": "DisplayName",
             "description": "Customer display name",
             "attributeType": "Name",
@@ -84,7 +69,7 @@
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 5,
+            "ordinalNumber": 4,
             "name": "FirstName",
             "description": "Customer first name",
             "attributeType": "Name",
@@ -97,7 +82,7 @@
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 6,
+            "ordinalNumber": 5,
             "name": "LastName",
             "description": "Customer last name",
             "attributeType": "Name",
@@ -110,7 +95,7 @@
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 7,
+            "ordinalNumber": 6,
             "name": "CompanyName",
             "description": "Customer company name",
             "attributeType": "Name",
@@ -123,7 +108,7 @@
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 8,
+            "ordinalNumber": 7,
             "name": "CompanyHistName",
             "description": "Historical company name for SCD2 tracking",
             "attributeType": "Name",
@@ -136,7 +121,7 @@
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 9,
+            "ordinalNumber": 8,
             "name": "CustomerEMail",
             "description": "Customer email address",
             "attributeType": "Email",
@@ -149,7 +134,7 @@
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 10,
+            "ordinalNumber": 9,
             "name": "CustomerHistEMail",
             "description": "Historical email address for SCD2 tracking",
             "attributeType": "Email",
@@ -162,7 +147,7 @@
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 11,
+            "ordinalNumber": 10,
             "name": "AddressType",
             "description": "Type of customer address (Home, Business, etc.)",
             "attributeType": "Text",
@@ -176,7 +161,7 @@
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 12,
+            "ordinalNumber": 11,
             "name": "Address",
             "description": "Full address line",
             "attributeType": "Text",
@@ -190,7 +175,7 @@
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 13,
+            "ordinalNumber": 12,
             "name": "PostalCode",
             "description": "Address postal code",
             "attributeType": "Text",
@@ -203,7 +188,7 @@
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 14,
+            "ordinalNumber": 13,
             "name": "CityName",
             "description": "Address city name",
             "attributeType": "Name",
@@ -216,7 +201,7 @@
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 15,
+            "ordinalNumber": 14,
             "name": "CountryName",
             "description": "Address country name",
             "attributeType": "Name",
@@ -243,6 +228,7 @@
             "sourceLocation": 2002
         }
     ],
+    "relationships": [],
     "transformations": [
         {
             "stepNo": 1,
