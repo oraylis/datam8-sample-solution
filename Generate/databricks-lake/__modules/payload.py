@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 from dm8gen.generate import BasePayload, IPayload, register_payload
 from dm8gen.model import Model
@@ -16,11 +17,13 @@ from metadata_utils import (
     collect_refactored_columns,
     merge_table_tags,
 )
+from jobs_helpers import JobsPlanner
 
 logger = start_logger(__name__)
 
 TECHNICAL_COLUMNS = ["__InsertTimestampUTC", "__UpdateTimestampUTC", "__InsertTimestampRawUTC"]
 MODELLED_ZONES = {"stage", "core", "curated"}
+JOB_ZONES = MODELLED_ZONES | {"raw"}
 
 
 @register_payload("ddl_notebook.py.jinja2")
@@ -60,8 +63,6 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         column_tags = collect_column_tags(entity)
         refactored_columns = collect_refactored_columns(entity)
         zone_folder_name = resolver.zone_folder_name(zone_meta)
-        subfolders = tuple(locator.folders[1:]) + ("ddl",)
-
         payloads.append(
             BasePayload(
                 data={
@@ -82,7 +83,8 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                 output_path=Path(
                     "notebooks",
                     zone_folder_name,
-                    *subfolders,
+                    "ddl",
+                    *tuple(locator.folders[1:]),
                     f"{locator.entityName or entity.name}.py",
                 ),
             )
@@ -132,7 +134,6 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             full_table_name = identifiers["full_table_name"]
             raw_columns = resolver.build_raw_columns(entity, source)
             raw_imports = collect_imports(raw_columns)
-            subfolders = tuple(locator.folders[1:]) + ("ddl",)
             source_alias = getattr(source, "sourceAlias", None) or raw_name
 
             payloads.append(
@@ -160,7 +161,8 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                     output_path=Path(
                         "notebooks",
                         raw_zone_folder,
-                        *subfolders,
+                        "ddl",
+                        *tuple(locator.folders[1:]),
                         f"{raw_name}.py",
                     ),
                 )
@@ -284,7 +286,8 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                 output_path=Path(
                     "notebooks",
                     zone_folder_name,
-                    *(tuple(locator.folders[1:]) + ("dml",)),
+                    "dml",
+                    *tuple(locator.folders[1:]),
                     f"{locator.entityName or entity.name}.py",
                 ),
             )
@@ -343,7 +346,8 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                     output_path=Path(
                         "notebooks",
                         raw_zone_folder,
-                        *(tuple(locator.folders[1:]) + ("dml",)),
+                        "dml",
+                        *tuple(locator.folders[1:]),
                         f"{raw_name}.py",
                     ),
                 )
@@ -387,11 +391,86 @@ def generate_dml_function_scripts(model: Model, cache: Cache) -> Sequence[IPaylo
                     output_path=Path(
                         "notebooks",
                         zone_folder_name,
-                        *(tuple(locator.folders[1:]) + ("dml",)),
+                        "dml",
+                        *tuple(locator.folders[1:]),
                         f"{locator.entityName}_functions",
                         transformation["script_name"],
                     ),
                 )
             )
 
+    return payloads
+
+
+
+def _get_jobs_plan(model: Model, cache: Cache) -> dict[str, Any]:
+    cache_key = ("databricks_jobs_plan",)
+    try:
+        return cache.get(cache_key)
+    except KeyError:
+        resolver = MetadataResolver(model)
+        planner = JobsPlanner(model, resolver, modelled_zones=JOB_ZONES)
+        plan = planner.build()
+        cache.set(cache_key, plan)
+        return plan
+
+
+def _prepare_job_data(job: dict[str, Any], **extra: Any) -> dict[str, Any]:
+    data = {k: v for k, v in job.items() if k != "output_path"}
+    data.update(extra)
+    return data
+
+
+@register_payload("jobs/create_all.yml.jinja2")
+def generate_jobs_create_all(model: Model, cache: Cache) -> Sequence[IPayload]:
+    plan = _get_jobs_plan(model, cache)
+    job = plan.get("create_all")
+    if not job:
+        return []
+    data = _prepare_job_data(job, cluster_var="cluster_id")
+    return [BasePayload(data=data, output_path=job["output_path"])]
+
+
+@register_payload("jobs/create_zone.yml.jinja2")
+def generate_jobs_create_zones(model: Model, cache: Cache) -> Sequence[IPayload]:
+    plan = _get_jobs_plan(model, cache)
+    payloads: list[IPayload] = []
+    for job in plan.get("create_zones", []):
+        data = _prepare_job_data(job, cluster_var="cluster_id")
+        payloads.append(BasePayload(data=data, output_path=job["output_path"]))
+    return payloads
+
+
+@register_payload("jobs/create_module.yml.jinja2")
+def generate_jobs_create_modules(model: Model, cache: Cache) -> Sequence[IPayload]:
+    plan = _get_jobs_plan(model, cache)
+    payloads: list[IPayload] = []
+    for job in plan.get("create_modules", []):
+        data = _prepare_job_data(
+            job,
+            cluster_var="cluster_id",
+        )
+        if not data.get("tasks"):
+            continue
+        payloads.append(BasePayload(data=data, output_path=job["output_path"]))
+    return payloads
+
+
+@register_payload("jobs/load_all.yml.jinja2")
+def generate_jobs_load_all(model: Model, cache: Cache) -> Sequence[IPayload]:
+    plan = _get_jobs_plan(model, cache)
+    job = plan.get("load_all")
+    if not job:
+        return []
+    data = _prepare_job_data(job, cluster_var="cluster_id")
+    return [BasePayload(data=data, output_path=job["output_path"])]
+
+
+@register_payload("jobs/load_job_group.yml.jinja2")
+def generate_jobs_load_groups(model: Model, cache: Cache) -> Sequence[IPayload]:
+    plan = _get_jobs_plan(model, cache)
+    payloads: list[IPayload] = []
+    for job in plan.get("load_jobs", []):
+        data = _prepare_job_data(job)
+        payloads.append(BasePayload(data=data, output_path=job["output_path"]))
     return payloads

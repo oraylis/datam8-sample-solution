@@ -115,6 +115,7 @@ class MetadataResolver:
     """
 
     def __init__(self, model):
+        """Cache solution/model paths and build quick helpers for entity lookups."""
         self.model = model
         self.solution_root = config.solution_folder_path
         self.model_root = self.solution_root / model.solution.modelPath
@@ -125,6 +126,80 @@ class MetadataResolver:
             if entity_id is None:
                 continue
             self._entity_by_id[entity_id] = (locator, wrapper.entity)
+
+    # ------------------------------------------------------ Property values
+    @property
+    @lru_cache
+    def _property_values_map(self) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+        """Split PropertyValues.json into job and schedule lookups."""
+        data = _load_json(self.base_root / "PropertyValues.json")
+        jobs: dict[str, dict[str, Any]] = {}
+        schedules: dict[str, dict[str, Any]] = {}
+        for entry in data.get("propertyValues", []):
+            prop = entry.get("property")
+            name = entry.get("name")
+            if not name:
+                continue
+            if prop == "jobs":
+                jobs[name] = entry
+            elif prop == "schedules":
+                schedules[name] = entry
+        return jobs, schedules
+
+    def resolve_property(self, locator, entity, property_name: str) -> Any:
+        """Resolve an entity property using entity -> module -> product fallback."""
+        entity_props = self.entity_properties(entity)
+        if property_name in entity_props:
+            return entity_props[property_name]
+
+        if len(locator.folders) >= 3:
+            module_info = self.folder_info(tuple(locator.folders[:3]))
+            if property_name in module_info.properties:
+                return module_info.properties[property_name]
+
+        if len(locator.folders) >= 2:
+            product_info = self.folder_info(tuple(locator.folders[:2]))
+            if property_name in product_info.properties:
+                return product_info.properties[property_name]
+
+        return None
+
+    def job_definition(self, job_value: str | None) -> dict[str, Any] | None:
+        """Return job display metadata (name, schedule, cluster) for a job value."""
+        if not job_value:
+            return None
+
+        jobs, schedules = self._property_values_map
+        job_entry = jobs.get(job_value)
+        if not job_entry:
+            return None
+
+        schedule_name = None
+        for prop in job_entry.get("properties", []) or []:
+            if prop.get("property") == "schedules":
+                schedule_name = prop.get("value")
+                break
+
+        schedule_entry = schedules.get(schedule_name) if schedule_name else None
+        schedule_data = None
+        if schedule_entry:
+            schedule_data = {
+                "name": schedule_name,
+                "display_name": schedule_entry.get("displayName", schedule_name),
+                "cron": schedule_entry.get("cron"),
+            }
+
+        return {
+            "value": job_value,
+            "display_name": job_entry.get("displayName", job_value),
+            "cluster": job_entry.get("cluster", {}),
+            "schedule": schedule_data,
+        }
+
+    def entity_job_definition(self, locator, entity) -> dict[str, Any] | None:
+        """Return the job metadata assigned to the entity, if any."""
+        job_value = self.resolve_property(locator, entity, "jobs")
+        return self.job_definition(job_value)
 
     # ------------------------------------------------------------------ Zones
     @property
@@ -815,6 +890,15 @@ class MetadataResolver:
                 }
             )
         return sources
+
+    def entity_dependencies(self, locator, entity) -> set[int]:
+        """Return entity IDs referenced via the sources collection."""
+        dependencies: set[int] = set()
+        for source in getattr(entity, "sources", []) or []:
+            source_location = getattr(source, "sourceLocation", None)
+            if isinstance(source_location, int) and source_location in self._entity_by_id:
+                dependencies.add(source_location)
+        return dependencies
 
     def entity_source_references(self, entity) -> list[dict[str, str]]:
         """
