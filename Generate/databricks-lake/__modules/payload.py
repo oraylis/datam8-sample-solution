@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
+import re
 
 from dm8gen.generate import BasePayload, IPayload, register_payload
 from dm8gen.model import Model
@@ -400,6 +401,40 @@ def generate_dml_function_scripts(model: Model, cache: Cache) -> Sequence[IPaylo
             )
 
     return payloads
+
+
+@register_payload("schema.yml.jinja2")
+def generate_schema_resources(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Emit Databricks bundle schema definitions for every configured zone."""
+    resolver = MetadataResolver(model)
+    schemas = []
+    allowed_zone_names = JOB_ZONES
+    for zone in resolver.zones():
+        if zone.name.lower() not in allowed_zone_names:
+            continue
+        target_name = zone.target_name or zone.name
+        resource_slug = re.sub(r"[^A-Za-z0-9]+", "_", target_name or zone.name).strip("_").lower()
+        if not resource_slug:
+            resource_slug = "default"
+        resource_key = f"schema_{resource_slug}"
+        schemas.append(
+            {
+                "resource_key": resource_key,
+                "schema_name": target_name,
+                "comment": zone.display_name or "",
+            }
+        )
+
+    if not schemas:
+        return []
+
+    data = {"schemas": schemas}
+    return [
+        BasePayload(
+            data=data,
+            output_path=Path("schemas", "schema.yml"),
+        )
+    ]
 
 
 

@@ -529,12 +529,14 @@ class JobsPlanner:
     # --------------------------------------------------------------- utilities
     def _notebook_path(self, zone_folder: str, category: str, subfolders: tuple[str, ...], name: str) -> str:
         """Return the workspace-relative path for an entity notebook (without the workspace prefix)."""
-        parts = [zone_folder, category, *subfolders, name]
+        stem = Path(name).stem if name else ""
+        parts = [zone_folder, category, *subfolders, stem]
         return "/".join(part for part in parts if part)
 
     def _raw_notebook_path(self, entity: EntityJobInfo, table_name: str) -> str:
         """Return the relative path for a raw ingestion notebook."""
-        parts = [self.raw_zone_folder, "dml", *entity.subfolders, table_name]
+        stem = Path(table_name).stem if table_name else ""
+        parts = [self.raw_zone_folder, "dml", *entity.subfolders, stem]
         return "/".join(part for part in parts if part)
 
     def _job_key(self, parts: list[str]) -> str:

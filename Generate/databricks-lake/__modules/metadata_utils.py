@@ -237,6 +237,13 @@ class MetadataResolver:
         """Return the folder name that represents the given zone."""
         return zone.local_folder or zone.name
 
+    def zones(self) -> list[ZoneMetadata]:
+        """Return all known zones defined in Base/Zones.json."""
+        _, name_map = self._zones_maps
+        # name_map already keyed by lower-case zone name; values are the ZoneMetadata instances.
+        # Preserve insertion order from the JSON file by relying on dict value order.
+        return list(name_map.values())
+
     # ------------------------------------------------------------- Folder info
     @lru_cache
     def folder_info(self, folder_tuple: tuple[str, ...]) -> FolderInfo:

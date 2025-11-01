@@ -4,22 +4,25 @@ bundle:
   name: automation_sample_solution
 
 include:
-  - /generated/jobs/*.yml  # top-level
-  - /generated/jobs/*/*.yml  # layer-level
-  - /generated/jobs/*/*/*/*.yml  # product/module-level
+  - generated/schemas/*.yml
+  - generated/jobs/*.yml  # top-level
+  - generated/jobs/*/*.yml  # layer-level
+  - generated/jobs/*/*/*/*.yml  # product/module-level
 
 sync:
   include:
-    - notebooks/
+    - utils/
+  paths:
+    - 'generated'
 
 # all defaults are preset with dev values
 variables:
   notebook_path:
     description: Location of the notebooks within the bundle
-    default: 'files/notebooks'
+    default: 'generated/notebooks'
   catalog_name:
     description: The name of the unity catalog
-    default: datam8_campus_dev
+    default: datam8_campus_dev_fka
   environment:
     description: The logical environment
     default: dev
