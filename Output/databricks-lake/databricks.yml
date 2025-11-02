@@ -12,14 +12,12 @@ include:
 sync:
   include:
     - utils/
-  paths:
-    - 'generated'
 
 # all defaults are preset with dev values
 variables:
   notebook_path:
     description: Location of the notebooks within the bundle
-    default: 'generated/notebooks'
+    default: 'files/generated/notebooks'
   catalog_name:
     description: The name of the unity catalog
     default: datam8_campus_dev_fka
@@ -62,7 +60,6 @@ targets:
     default: true
     workspace:
       host: https://adb-1451794858897186.6.azuredatabricks.net
-      file_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}
       root_path: ~/.bundle/${bundle.name}/${bundle.target}
 
   dev:

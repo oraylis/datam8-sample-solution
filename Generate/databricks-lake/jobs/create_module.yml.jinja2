@@ -20,7 +20,7 @@ resources:
       tasks:
         - task_key: Generate_Load_UUID
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/000-utils/Start_Load
+            notebook_path: ${workspace.root_path}/files/utils/Start_Load
             base_parameters:
               target_zone: {{ data.zone_name }}
             source: WORKSPACE
