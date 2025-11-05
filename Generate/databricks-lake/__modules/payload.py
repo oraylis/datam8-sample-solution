@@ -119,7 +119,7 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             logger.debug("Skipping entity without folder information: %s", locator)
             continue
 
-        column_tags = collect_column_tags(entity)
+        column_tags = collect_column_tags(entity, include_attribute_tags=False)
         refactored_columns = collect_refactored_columns(entity)
         product_info = resolver.folder_info(tuple(locator.folders[:2])) if len(locator.folders) >= 2 else None
         module_info = resolver.folder_info(tuple(locator.folders[:3])) if len(locator.folders) >= 3 else None
@@ -141,12 +141,26 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             raw_columns = resolver.build_raw_columns(entity, source)
             raw_imports = collect_imports(raw_columns)
             source_alias = getattr(source, "sourceAlias", None) or raw_name
-            table_tags = merge_table_tags(entity, product_info, module_info)
             source_properties = resolver.source_properties(source)
+            entity_properties = resolver.entity_properties(entity)
+
+            base_table_tags: dict[str, Any] = {}
+            if product_info:
+                base_table_tags.update(product_info.properties)
+            if module_info:
+                base_table_tags.update(module_info.properties)
+
+            table_properties_input = dict(base_table_tags)
+            table_properties_input.update(entity_properties)
             if source_properties:
-                table_tags = {**table_tags, **source_properties}
-            table_properties = build_delta_table_properties(table_tags)
-            table_tags_output = format_table_tag_values(table_tags)
+                table_properties_input.update(source_properties)
+
+            table_display_tags = dict(base_table_tags)
+            if source_properties:
+                table_display_tags.update(source_properties)
+
+            table_properties = build_delta_table_properties(table_properties_input)
+            table_tags_output = format_table_tag_values(table_display_tags)
 
             payloads.append(
                 BasePayload(

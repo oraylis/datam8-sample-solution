@@ -495,7 +495,6 @@ class MetadataResolver:
         data_source_name = getattr(source, "dataSource", "")
 
         for attribute in entity.attributes:
-            extra_metadata = self.attribute_metadata(attribute)
             canonical_override = None
             mapping = mapping_by_target.get(attribute.name)
             if mapping and getattr(mapping, "sourceDataType", None):
@@ -517,9 +516,9 @@ class MetadataResolver:
                     nullable=attribute.dataType.nullable
                     if attribute.dataType.nullable is not None
                     else True,
-                    comment=attribute.description or None,
+                    comment=None,
                     data_type_model=attribute.dataType,
-                    extra_metadata=extra_metadata or None,
+                    extra_metadata=None,
                 )
             )
 
@@ -1044,33 +1043,40 @@ def collect_imports(columns: Iterable[dict[str, Any]]) -> list[str]:
     return ["StructType", "StructField", "DataType"]
 
 
-def collect_column_tags(entity) -> list[dict[str, Any]]:
+def collect_column_tags(
+    entity,
+    *,
+    include_attribute_tags: bool = True,
+    include_mapping_tags: bool = True,
+) -> list[dict[str, Any]]:
     """Return column-level tag assignments from attribute and mapping properties."""
     tag_map: dict[str, dict[str, Any]] = {}
 
-    for attribute in getattr(entity, "attributes", []) or []:
-        if not getattr(attribute, "properties", None):
-            continue
-        tags = {
-            prop.property: _convert_property_value(prop.value)
-            for prop in attribute.properties
-        }
-        if tags:
-            tag_map[attribute.name] = tags
+    if include_attribute_tags:
+        for attribute in getattr(entity, "attributes", []) or []:
+            if not getattr(attribute, "properties", None):
+                continue
+            tags = {
+                prop.property: _convert_property_value(prop.value)
+                for prop in attribute.properties
+            }
+            if tags:
+                tag_map[attribute.name] = tags
 
-    for source in getattr(entity, "sources", []) or []:
-        for mapping in getattr(source, "mapping", []) or []:
-            if not getattr(mapping, "properties", None):
-                continue
-            target_name = getattr(mapping, "targetName", None)
-            if not target_name:
-                continue
-            tags = tag_map.setdefault(target_name, {})
-            for prop in mapping.properties:
-                name = getattr(prop, "property", None)
-                if not name:
+    if include_mapping_tags:
+        for source in getattr(entity, "sources", []) or []:
+            for mapping in getattr(source, "mapping", []) or []:
+                if not getattr(mapping, "properties", None):
                     continue
-                tags[name] = _convert_property_value(getattr(prop, "value", None))
+                target_name = getattr(mapping, "targetName", None)
+                if not target_name:
+                    continue
+                tags = tag_map.setdefault(target_name, {})
+                for prop in mapping.properties:
+                    name = getattr(prop, "property", None)
+                    if not name:
+                        continue
+                    tags[name] = _convert_property_value(getattr(prop, "value", None))
 
     return [{"column": column, "tags_repr": repr(tags)} for column, tags in tag_map.items()]
 
