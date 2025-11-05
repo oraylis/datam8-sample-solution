@@ -13,9 +13,11 @@ from dm8gen.utils.cache import Cache
 from metadata_utils import (
     MetadataResolver,
     build_business_key_partitions,
+    build_delta_table_properties,
     collect_column_tags,
     collect_imports,
     collect_refactored_columns,
+    format_table_tag_values,
     merge_table_tags,
 )
 from jobs_helpers import JobsPlanner
@@ -61,6 +63,8 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         imports = collect_imports(columns)
         partitions = build_business_key_partitions(entity)
         table_tags = merge_table_tags(entity, product_info, module_info)
+        table_properties = build_delta_table_properties(table_tags)
+        table_tags_output = format_table_tag_values(table_tags)
         column_tags = collect_column_tags(entity)
         refactored_columns = collect_refactored_columns(entity)
         zone_folder_name = resolver.zone_folder_name(zone_meta)
@@ -77,7 +81,8 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                     "columns": columns,
                     "imports": imports,
                     "partitions": partitions,
-                    "table_tags_repr": repr(table_tags),
+                    "table_tags_repr": repr(table_tags_output),
+                    "table_properties": table_properties,
                     "column_tags": column_tags,
                     "refactored_columns": refactored_columns,
                 },
@@ -136,6 +141,12 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             raw_columns = resolver.build_raw_columns(entity, source)
             raw_imports = collect_imports(raw_columns)
             source_alias = getattr(source, "sourceAlias", None) or raw_name
+            table_tags = merge_table_tags(entity, product_info, module_info)
+            source_properties = resolver.source_properties(source)
+            if source_properties:
+                table_tags = {**table_tags, **source_properties}
+            table_properties = build_delta_table_properties(table_tags)
+            table_tags_output = format_table_tag_values(table_tags)
 
             payloads.append(
                 BasePayload(
@@ -155,7 +166,8 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                         "columns": raw_columns,
                         "imports": raw_imports,
                         "partitions": ["__Year", "__Month", "__Day", "__InsertTimestampUTC"],
-                        "table_tags_repr": repr({}),
+                        "table_tags_repr": repr(table_tags_output),
+                        "table_properties": table_properties,
                         "column_tags": column_tags,
                         "refactored_columns": refactored_columns,
                     },

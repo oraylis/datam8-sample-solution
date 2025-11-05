@@ -397,6 +397,7 @@ class MetadataResolver:
         nullable: bool,
         comment: str | None,
         data_type_model,
+        extra_metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
         Convert a canonical type into a column descriptor with Spark/Delta types.
@@ -423,7 +424,12 @@ class MetadataResolver:
                 target_type = "string"
 
         ddl_type = target_type.upper()
-        metadata_repr = "{'comment': " + repr(comment) + "}" if comment else None
+        metadata: dict[str, Any] = {}
+        if comment:
+            metadata["comment"] = comment
+        if extra_metadata:
+            metadata.update(extra_metadata)
+        metadata_repr = repr(metadata) if metadata else None
 
         return {
             "name": name,
@@ -436,10 +442,25 @@ class MetadataResolver:
         }
 
     # ----------------------------------------------------------- Column builds
+    def attribute_metadata(self, attribute) -> dict[str, Any]:
+        """Derive metadata flags for an attribute."""
+        metadata: dict[str, Any] = {}
+        if getattr(attribute, "isBusinessKey", False):
+            metadata["business_key"] = True
+            #metadata.setdefault("primary_key", True)
+
+        attribute_type = getattr(attribute, "attributeType", "") or ""
+        if attribute_type.lower() == "sid":
+            metadata["surrogate_key"] = True
+            #metadata["primary_key"] = True
+
+        return metadata
+
     def build_standard_columns(self, entity) -> list[dict[str, Any]]:
         """Create column descriptors for a modeled entity (non-raw)."""
         columns: list[dict[str, Any]] = []
         for attribute in entity.attributes:
+            extra_metadata = self.attribute_metadata(attribute)
             columns.append(
                 self.build_column_from_canonical(
                     name=attribute.name,
@@ -449,6 +470,7 @@ class MetadataResolver:
                     else True,
                     comment=attribute.description or None,
                     data_type_model=attribute.dataType,
+                    extra_metadata=extra_metadata or None,
                 )
             )
         return columns
@@ -473,6 +495,7 @@ class MetadataResolver:
         data_source_name = getattr(source, "dataSource", "")
 
         for attribute in entity.attributes:
+            extra_metadata = self.attribute_metadata(attribute)
             canonical_override = None
             mapping = mapping_by_target.get(attribute.name)
             if mapping and getattr(mapping, "sourceDataType", None):
@@ -496,6 +519,7 @@ class MetadataResolver:
                     else True,
                     comment=attribute.description or None,
                     data_type_model=attribute.dataType,
+                    extra_metadata=extra_metadata or None,
                 )
             )
 
@@ -570,6 +594,10 @@ class MetadataResolver:
     def entity_properties(self, entity) -> dict[str, Any]:
         """Expose entity-level properties as a dictionary."""
         return _properties_to_dict(getattr(entity, "properties", None))
+
+    def source_properties(self, source) -> dict[str, Any]:
+        """Expose properties defined on a source configuration."""
+        return _properties_to_dict(getattr(source, "properties", None))
 
     def write_mode(
         self,
@@ -1017,17 +1045,34 @@ def collect_imports(columns: Iterable[dict[str, Any]]) -> list[str]:
 
 
 def collect_column_tags(entity) -> list[dict[str, Any]]:
-    """Return column-level tag assignments from attribute properties."""
-    tagged: list[dict[str, Any]] = []
-    for attribute in entity.attributes:
-        if not attribute.properties:
+    """Return column-level tag assignments from attribute and mapping properties."""
+    tag_map: dict[str, dict[str, Any]] = {}
+
+    for attribute in getattr(entity, "attributes", []) or []:
+        if not getattr(attribute, "properties", None):
             continue
         tags = {
             prop.property: _convert_property_value(prop.value)
             for prop in attribute.properties
         }
-        tagged.append({"column": attribute.name, "tags_repr": repr(tags)})
-    return tagged
+        if tags:
+            tag_map[attribute.name] = tags
+
+    for source in getattr(entity, "sources", []) or []:
+        for mapping in getattr(source, "mapping", []) or []:
+            if not getattr(mapping, "properties", None):
+                continue
+            target_name = getattr(mapping, "targetName", None)
+            if not target_name:
+                continue
+            tags = tag_map.setdefault(target_name, {})
+            for prop in mapping.properties:
+                name = getattr(prop, "property", None)
+                if not name:
+                    continue
+                tags[name] = _convert_property_value(getattr(prop, "value", None))
+
+    return [{"column": column, "tags_repr": repr(tags)} for column, tags in tag_map.items()]
 
 
 def collect_refactored_columns(entity) -> list[dict[str, Any]]:
@@ -1064,6 +1109,52 @@ def merge_table_tags(
             }
         )
     return tags
+
+
+def format_table_tag_values(tags: dict[str, Any]) -> dict[str, Any]:
+    """Convert table tag values to notebook-friendly representations."""
+    formatted: dict[str, Any] = {}
+    for key, value in tags.items():
+        if isinstance(value, bool):
+            formatted[key] = "true" if value else "false"
+        else:
+            formatted[key] = value
+    return formatted
+
+
+def _to_bool_string(value: Any) -> str:
+    """Convert a boolean-like value to a lowercase string."""
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"true", "false"}:
+            return lowered
+        return value
+    return str(value)
+
+
+def build_delta_table_properties(table_tags: dict[str, Any]) -> dict[str, str]:
+    """Translate table tags into Delta table properties used in SQL DDL."""
+    properties: dict[str, str] = {}
+
+    column_mapping_mode = table_tags.get("column_mapping_mode")
+    if column_mapping_mode:
+        properties["delta.columnMapping.mode"] = str(column_mapping_mode)
+
+    enable_type_widening = table_tags.get("enable_type_widening")
+    if enable_type_widening is not None:
+        properties["delta.enableTypeWidening"] = _to_bool_string(enable_type_widening)
+
+    data_retention = table_tags.get("data_retention")
+    if data_retention:
+        interval_value = str(data_retention).replace("_", " ")
+        if not interval_value.lower().startswith("interval"):
+            interval_value = f"interval {interval_value}"
+        properties["delta.logRetentionDuration"] = interval_value
+        properties["delta.deletedFileRetentionDuration"] = interval_value
+
+    return properties
 
 
 def build_business_key_partitions(entity) -> list[str]:

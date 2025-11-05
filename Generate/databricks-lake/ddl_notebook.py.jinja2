@@ -38,7 +38,7 @@ from delta.tables import DeltaTable
 # COMMAND ----------
 
 dbutils.widgets.text("env", "dev", "Environment")
-dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka, "Catalog Name")
+dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka", "Catalog Name")
 dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
 # dbutils.widgets.dropdown(
 #     "run_mode",
@@ -78,12 +78,17 @@ print("Data Module: %s" % data_module)
 # COMMAND ----------
 
 catalog = Catalog(catalog_name)
+table_instance = Table(f"{zone}.{full_table_name}")
+
 catalog.schema = zone
 catalog.set_active()
 
 # COMMAND ----------
 
 # DBTITLE 1,Define schema
+table_name = f"{catalog_name}.{zone}.{full_table_name}"
+table_comment = {{ data.table_comment | tojson }}
+
 schema = StructType([
 {%- for column in data.columns %}
     StructField("{{ column.name }}", {{ column.spark_type_expr }}, {{ "True" if column.struct_nullable else "False" }}{% if column.metadata_repr %}, metadata={{ column.metadata_repr }}{% endif %}),
@@ -94,28 +99,66 @@ schema = StructType([
 
 # DBTITLE 1,Define partitions
 {%- if data.partitions %}
-partitions = (
+partitions = [
 {%- for partition in data.partitions %}
-    "{{ partition }}"{% if not loop.last %},{% endif %}
+    "{{ partition }}",
 {%- endfor %}
-)
+]
 {%- else %}
-partitions = ()
+partitions = []
 {%- endif %}
 
 # COMMAND ----------
 
-# DBTITLE 1,Define DDL statement
-(
-    DeltaTable.createIfNotExists(spark)
-    .tableName(f"{catalog_name}.{zone}.{full_table_name}")
-    .comment("{{ data.table_comment | replace('\"', '\\"') }}")
-{%- for column in data.columns %}
-    .addColumn("{{ column.name }}", "{{ column.delta_type }}", nullable={{ "True" if column.delta_nullable else "False" }}{% if column.delta_comment %}, comment="{{ column.delta_comment | replace('\"', '\\"') }}"{% endif %})
+# DBTITLE 1,Define table properties
+tblproperties_parts = {
+{%- for key, value in data.table_properties.items() %}
+    "{{ key }}": "{{ value | replace('"', '\\"') }}",
 {%- endfor %}
-    .clusterBy(partitions)
-    .execute()
-)
+}
+
+tblproperties_sql = ', '.join([f"'{key}'='{value}'" for key, value in tblproperties_parts.items()])
+tblproperties_sql = f"TBLPROPERTIES ({tblproperties_sql})" if tblproperties_sql else ""
+
+# COMMAND ----------
+
+# DBTITLE 1,Build & execute SQL Statement
+table_base = table_name.replace(".", "_")
+col_lines, pk_cols = [], []
+
+# Build column definitions
+for f in schema.fields:
+    md = getattr(f, "metadata", {}) or {}
+    col = f"`{f.name}` {f.dataType.simpleString().upper()}"
+    if md.get("surrogate_key"): col += " GENERATED ALWAYS AS IDENTITY" # Flag as Identity column if it's a surrogate key
+    if not f.nullable: col += " NOT NULL" # Add NOT NULL if column is non-nullable
+    if md.get("comment"): col += f" COMMENT '{md['comment']}'" # Add COMMENT for column if available
+    if md.get("surrogate_key"): pk_cols.append(f"`{f.name}`")
+    col_lines.append(col)
+
+# Add a table-level primary key constraint if surrogate_key fields exist
+if pk_cols:
+    col_lines.append(f"CONSTRAINT `pk_{table_base}` PRIMARY KEY ({', '.join(pk_cols)})")
+
+# Start CREATE TABLE statement
+parts = [f"CREATE TABLE IF NOT EXISTS {table_name} (", "  " + ",\n  ".join(col_lines), ")", "USING DELTA"]
+
+# Optional: add table comment
+if table_comment: parts.append(f"COMMENT '{table_comment}'")
+
+# Add CLUSTER BY if partitions are defined
+if partitions:
+    part_str = ", ".join(f"`{p}`" for p in partitions)
+    parts.append(f"CLUSTER BY ({part_str})")
+
+# Add TBLPROPERTIES if provided
+if tblproperties_sql: parts.append(tblproperties_sql)
+
+create_sql = "\n".join(parts) + ";"
+print(create_sql)
+
+# Execute SQL statement
+spark.sql(create_sql)
 
 # COMMAND ----------
 
@@ -138,12 +181,10 @@ refactored_columns = [
 # DBTITLE 1,Call migrate_schema method
 try:
     result = table_instance.migrate_schema(
-        ddl=ddl,
+        ddl=create_sql,
         schema=schema,
         refactored_columns=refactored_columns,
         new_partitions=partitions,
-        # INFO: set to true an rerun in case of expected warning, e.g. column dropped
-        force=force,
     )
 
     print("Result: %s" % str(result))
