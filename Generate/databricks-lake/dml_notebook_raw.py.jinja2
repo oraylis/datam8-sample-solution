@@ -11,12 +11,12 @@
 
 # DBTITLE 1,Initialize Migration Framework
 # MAGIC
-# MAGIC %run ../../../../000-utils/MigrationFramework
+# MAGIC %run ../../../../../../utils/MigrationFramework
 
 # COMMAND ----------
 
 dbutils.widgets.text("env", "dev", "Environment")
-dbutils.widgets.text("catalog_name", spark.catalog.currentCatalog(), "Catalog Name")
+dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka, "Catalog Name")
 dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
 # dbutils.widgets.dropdown(
 #     "run_mode",
@@ -26,8 +26,6 @@ dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
 # )
 #dbutils.widgets.text("sandbox", "_", "Sandbox")
 
-dbutils.widgets.text("data_lake_name", "datam80adl0dev", "Data Lake Name")
-dbutils.widgets.text("container_name", "lakehousesample", "Container Name")
 dbutils.widgets.text("keyvault_name", "akv_standard", "Key Vault Name")
 
 # COMMAND ----------
@@ -39,8 +37,6 @@ owner = dbutils.widgets.get("owner")
 # run_mode = dbutils.widgets.get("run_mode")
 # sandbox = dbutils.widgets.get("sandbox")
 
-data_lake_name = dbutils.widgets.get("data_lake_name")
-container_name = dbutils.widgets.get("container_name")
 keyvault_name = dbutils.widgets.get("keyvault_name")
 
 # static values

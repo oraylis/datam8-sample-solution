@@ -33,12 +33,12 @@ from delta.tables import DeltaTable
 
 # DBTITLE 1,Initialize Migration Framework
 # MAGIC
-# MAGIC %run ../../../../000-utils/MigrationFramework
+# MAGIC %run ../../../../../../utils/MigrationFramework
 
 # COMMAND ----------
 
 dbutils.widgets.text("env", "dev", "Environment")
-dbutils.widgets.text("catalog_name", spark.catalog.currentCatalog(), "Catalog Name")
+dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka, "Catalog Name")
 dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
 # dbutils.widgets.dropdown(
 #     "run_mode",
@@ -48,9 +48,6 @@ dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
 # )
 #dbutils.widgets.text("sandbox", "_", "Sandbox")
 
-dbutils.widgets.text("data_lake_name", "datam80adl0dev", "Data Lake Name")
-dbutils.widgets.text("container_name", "lakehousesample", "Container Name")
-
 # COMMAND ----------
 
 # Retrieve a job-level parameter (will use default if it doesn't exist)
@@ -59,9 +56,6 @@ catalog_name = dbutils.widgets.get("catalog_name")
 owner = dbutils.widgets.get("owner")
 # run_mode = dbutils.widgets.get("run_mode")
 # sandbox = dbutils.widgets.get("sandbox")
-
-data_lake_name = dbutils.widgets.get("data_lake_name")
-container_name = dbutils.widgets.get("container_name")
 
 # static values
 zone = "{{ data.zone }}"
@@ -98,7 +92,7 @@ schema = StructType([
 
 # COMMAND ----------
 
-# DBTITLE 1,Define new partitions
+# DBTITLE 1,Define partitions
 {%- if data.partitions %}
 partitions = (
 {%- for partition in data.partitions %}
@@ -157,24 +151,6 @@ except Exception as e:
     print(f"Migration failed: {e}")
 
 table_instance.owner = owner
-
-# COMMAND ----------
-
-# DBTITLE 1,Check for older historized table versions and keep only latest historized version
-import re
-
-# pattern: {table_name}_{unix_timestamp}
-pattern = re.compile(f"^{re.escape(full_table_name)}_(\\d+)$")
-historized_tables = [t.name for t in spark.catalog.listTables(
-    database) if pattern.match(t.name)]
-
-if historized_tables:
-    sorted_tables = sorted(historized_tables, key=lambda t: int(
-        t.rsplit("_", 1)[-1]), reverse=True)
-    tables_to_delete = sorted_tables[1:]  # keep only the latest
-    for t in tables_to_delete:
-        spark.sql(f"DROP TABLE IF EXISTS `{catalog_name}`.`{database}`.`{t}`")
-        print(f"Deleted historized table {t}.")
 
 # COMMAND ----------
 
