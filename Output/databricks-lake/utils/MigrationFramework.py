@@ -222,89 +222,6 @@ class Catalog(object):
             )
         )
 
-    def list_columns(self, table_name: str) -> tuple[str]:
-        """ List columns for a give table.
-
-        Arguments:
-            table_name (str): The table name (partial or full).
-
-        Returns:
-            A tuple of Row objects.
-        """
-        (search_catalog, search_schema,
-         search_table) = self.get_search_names(table_name)
-
-        if search_catalog not in ["hive_metastore", "spark_catalog"]:
-            columns = (
-                self.spark.sql(f"""
-                    SELECT column_name, comment, full_data_type as data_type, is_nullable, is_identity, partition_index
-                    FROM {search_catalog}.information_schema.columns
-                    WHERE 1=1
-                      AND table_catalog = '{search_catalog}'
-                      AND table_schema = '{search_schema}'
-                      AND table_name = '{search_table}'
-                  """)
-                .withColumn("is_nullable", Catalog.__map_yes_no("is_nullable"))
-                .withColumn("is_identity", Catalog.__map_yes_no("is_identity"))
-                .withColumn("is_partition",
-                            when(
-                                col("partition_index").isNotNull(),
-                                lit(True))
-                            .otherwise(
-                                lit(False))
-                            )
-                .drop("partition_index")
-            )
-
-        # hive_metastore variant (more complex)
-        else:
-            desc_df = self.spark.sql("desc `%s`.`%s`.`%s`" % (
-                search_catalog, search_schema, search_table
-            ))
-
-            partition_column_df = (
-                desc_df
-                .filter("data_type <> 'data_type'")
-                .withColumn("idx", row_number().over(W.orderBy(lit(1))))
-                .withColumn("idx-part", coalesce(
-                    _max(when(col("col_name") == "# Partition Information",
-                              col("idx")
-                              )
-                         .otherwise(lit(None))
-                         )
-                    .over(W.orderBy(lit(1))),
-                    lit(9999))
-                )
-                .filter("idx > `idx-part`")
-                .select("col_name")
-            )
-
-            partition_columns = list(i.col_name
-                                     for i in partition_column_df.collect()
-                                     )
-
-            columns = (
-                desc_df
-                .filter(~ col("col_name").startswith("#"))
-                .distinct()
-                .withColumn("is_nullable", lit(False))
-                .withColumn("is_identity", lit(False))
-                .withColumn("is_partition",
-                            when(col("col_name").isin(partition_columns),
-                                 lit(True)
-                                 )
-                            .otherwise(lit(False))
-                            )
-                .withColumnRenamed("col_name", "column_name")
-            )
-
-        if columns.count() < 1:
-            raise AnalysisException("Table %s.%s.%s was not found" % (
-                search_catalog, search_schema, search_table
-            ))
-
-        return columns.collect()
-
     def create_schema_if_not_exists(self, schema_name: str, location: str = None, comment: str = None) -> NoReturn:
         """ Create a new schema in the currently selected catalog if it does not exist yet.
 
@@ -648,7 +565,7 @@ class Table(object):
     @owner.setter
     def owner(self, owner: str) -> NoReturn:
         """Sets the owner of a table."""
-
+        print(self.catalog.name)
         self.spark.sql(
             """
             ALTER TABLE `%(catalog)s`.`%(schema)s`.`%(table)s`
@@ -734,9 +651,9 @@ class Table(object):
                            for c in self.schema}
 
         existing_partition_fields = tuple(
-            map(lambda x: x.column_name,
-                filter(lambda c: c.is_partition,
-                       self.catalog.list_columns(self.table_name)
+            map(lambda x: x.name,
+                filter(lambda c: c.isCluster,
+                       self.spark.catalog.list_columns(self.table_name)
                        )
                 )
         )
@@ -830,7 +747,7 @@ class Table(object):
 
             # load the archived data
             df_archive = self.spark.table("`%(catalog)s`.%(table)s_%(time)s" % {
-                "catalog": self.catlaog.name,
+                "catalog": self.catalog.name,
                 "table": self.full_table_name,
                 "time": archive_time,
             })
@@ -973,10 +890,6 @@ class Table(object):
             SET TAGS (%(tags)s);
         """
 
-        # tags need at least DBR 13.3
-        if not check_dbr_version("13.3"):
-            return 1
-
         tag_list = Table.__create_tag_list(tags)
 
         spark = SparkSession.builder.getOrCreate()
@@ -1012,10 +925,6 @@ class Table(object):
             ALTER TABLE `%(catalog)s`.`%(schema)s`.`%(table)s`
             ALTER COLUMN `%(column)s` SET TAGS (%(tags)s);
         """
-
-        # tags need at least DBR 13.3
-        if not check_dbr_version("13.3"):
-            return 1
 
         tag_list = Table.__create_tag_list(tags)
 
