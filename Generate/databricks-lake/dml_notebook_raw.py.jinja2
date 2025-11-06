@@ -87,34 +87,93 @@ database_connectionstring = dbutils.secrets.get(scope=keyvault_name, key="{{ dat
 
 # COMMAND ----------
 
-base_select = {{ data.source_location | default("", true) | tojson }}
-if not isinstance(base_select, str):
-    base_select = ""
+{% if data.extract_mode and data.extract_mode|lower == "delta" %}
+# DBTITLE 1,Determine delta value
+delta_column = "{{ data.delta_column or '' }}"
+max_raw = spark.sql(f"""
+SELECT
+  COALESCE(MAX(`{delta_column}`), CAST('1970-01-01' AS STRING)) AS MaxDelta
+FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
+""").first()[0]
 
-if base_select.strip() == "":
-    base_select = f"SELECT * FROM [{source_name}]"
-elif not base_select.strip().upper().startswith("SELECT"):
-    base_select = f"SELECT * FROM {base_select.strip()}"
+print(f"Using delta value: {max_raw}")
 
-technical_columns = """
-    CAST(YEAR(SYSUTCDATETIME()) AS SMALLINT) AS __Year,
-    CAST(MONTH(SYSUTCDATETIME()) AS SMALLINT) AS __Month,
-    CAST(DAY(SYSUTCDATETIME()) AS SMALLINT) AS __Day,
-    SYSUTCDATETIME() AS __InsertTimestampUTC
-"""
+# COMMAND ----------
+{% endif %}
 
-pushdown_query = f"""
+# DBTITLE 1,Define query
+if "max_raw" not in locals():
+    max_raw = None
+
+extract_mode = ("{{ data.extract_mode or '' }}").lower()
+source_location = {{ data.source_location | default("", true) | tojson }}
+if not isinstance(source_location, str):
+    source_location = ""
+source_location = source_location.strip()
+
+source_default = f"[{source_name}]"
+technical_columns = [
+    "CAST(YEAR(SYSUTCDATETIME()) AS SMALLINT) AS __Year",
+    "CAST(MONTH(SYSUTCDATETIME()) AS SMALLINT) AS __Month",
+    "CAST(DAY(SYSUTCDATETIME()) AS SMALLINT) AS __Day",
+    "SYSUTCDATETIME() AS __InsertTimestampUTC",
+]
+
+select_columns = [
+{%- for column in data.select_columns %}
+    {{ (column.source ~ " AS " ~ column.target) | tojson }},
+{%- endfor %}
+]
+if not select_columns:
+    select_columns = ["*"]
+
+delta_source_expression = {{ data.delta_source_expression | default("", true) | tojson }}
+
+if extract_mode == "query":
+    base_query = source_location or source_default
+    if not base_query.upper().startswith("SELECT"):
+        base_query = f"SELECT * FROM {base_query}"
+    technical_sql = ",\n        ".join(technical_columns)
+    pushdown_query = f"""
 (
     SELECT
-        -- Add technical columns
-        {technical_columns},
+        {technical_sql},
         t.*
     FROM (
-        -- Add query
-        {base_select}
+{base_query}
     ) AS t
 ) AS src
 """
+else:
+    if not source_location or source_location.upper().startswith("SELECT"):
+        from_clause = source_default
+    else:
+        from_clause = source_location
+
+    select_sql = ",\n        ".join(technical_columns + select_columns)
+    where_clause = ""
+    if extract_mode == "delta" and delta_source_expression:
+        delta_literal = "CAST('1970-01-01' AS TIMESTAMP)"
+        if max_raw is not None:
+            try:
+                if isinstance(max_raw, datetime.datetime):
+                    delta_literal = f"CAST('{max_raw.strftime(\"%Y-%m-%d %H:%M:%S\")}' AS TIMESTAMP)"
+                elif isinstance(max_raw, datetime.date):
+                    delta_literal = f"CAST('{max_raw.strftime(\"%Y-%m-%d\")}' AS DATE)"
+                else:
+                    delta_literal = f"'{max_raw}'"
+            except Exception:
+                delta_literal = f"'{max_raw}'"
+        where_clause = f"\n    WHERE {delta_source_expression} > {delta_literal}"
+
+    pushdown_query = f"""
+(
+    SELECT
+        {select_sql}
+    FROM {from_clause}{where_clause}
+) AS src
+"""
+
 print(
     f"""Query:
 

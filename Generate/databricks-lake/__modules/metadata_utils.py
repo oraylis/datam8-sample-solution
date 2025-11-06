@@ -479,48 +479,85 @@ class MetadataResolver:
         """
         Create column descriptors for a raw notebook.
 
-        The method maps source data types to canonical ones and then to parquet types.
+        The method reads the source mapping to determine the target column names
+        and source data types. When no explicit mapping is present, it falls
+        back to the modeled attributes (old behaviour).
         """
-        # Always start with the ingestion metadata columns.
         columns = self.build_raw_base_columns()
 
-        mapping_by_target = {}
-        if getattr(source, "mapping", None):
-            mapping_by_target = {
-                mapping.targetName: mapping
-                for mapping in source.mapping
-                if getattr(mapping, "targetName", None)
+        mapping_entries = getattr(source, "mapping", None) or []
+        data_source_name = getattr(source, "dataSource", "") or ""
+
+        if mapping_entries:
+            attributes_by_name = {
+                attribute.name: attribute
+                for attribute in getattr(entity, "attributes", []) or []
             }
 
-        data_source_name = getattr(source, "dataSource", "")
+            for mapping in mapping_entries:
+                target_name = getattr(mapping, "targetName", None)
+                if not target_name:
+                    continue
 
-        for attribute in entity.attributes:
-            canonical_override = None
-            mapping = mapping_by_target.get(attribute.name)
-            if mapping and getattr(mapping, "sourceDataType", None):
-                source_type = getattr(mapping.sourceDataType, "type", None)
-                if source_type:
-                    canonical_override = self.map_source_type_to_canonical(data_source_name, source_type)
-                    if canonical_override is None:
-                        logger.warning(
-                            "Missing data type mapping for '%s' in data source '%s'. Falling back to modeled type.",
-                            source_type,
-                            data_source_name,
-                        )
+                source_data_type = getattr(mapping, "sourceDataType", None)
+                canonical = None
+                nullable = True
+                if source_data_type:
+                    source_type = getattr(source_data_type, "type", None)
+                    if source_type:
+                        mapped_type = self.map_source_type_to_canonical(data_source_name, source_type)
+                        if mapped_type is None:
+                            logger.warning(
+                                "Missing data type mapping for '%s' in data source '%s'. Falling back to modeled type or string.",
+                                source_type,
+                                data_source_name,
+                            )
+                        else:
+                            canonical = mapped_type
+                    nullable = getattr(source_data_type, "nullable", None)
 
-            canonical = canonical_override or attribute.dataType.type
-            columns.append(
-                self.build_column_from_canonical(
-                    name=attribute.name,
-                    canonical=canonical,
-                    nullable=attribute.dataType.nullable
-                    if attribute.dataType.nullable is not None
-                    else True,
-                    comment=None,
-                    data_type_model=attribute.dataType,
-                    extra_metadata=None,
+                attribute_model = attributes_by_name.get(target_name)
+                data_type_model = getattr(attribute_model, "dataType", None) if attribute_model else None
+
+                if canonical is None and attribute_model:
+                    canonical = attribute_model.dataType.type
+                if nullable is None and attribute_model:
+                    nullable = (
+                        attribute_model.dataType.nullable
+                        if attribute_model.dataType.nullable is not None
+                        else True
+                    )
+
+                if canonical is None:
+                    canonical = "string"
+                if nullable is None:
+                    nullable = True
+
+                columns.append(
+                    self.build_column_from_canonical(
+                        name=target_name,
+                        canonical=canonical,
+                        nullable=nullable,
+                        comment=None,
+                        data_type_model=data_type_model,
+                        extra_metadata=None,
+                    )
                 )
-            )
+        else:
+            # Fallback: reuse the modeled attributes if no mapping is present.
+            for attribute in getattr(entity, "attributes", []) or []:
+                columns.append(
+                    self.build_column_from_canonical(
+                        name=attribute.name,
+                        canonical=attribute.dataType.type,
+                        nullable=attribute.dataType.nullable
+                        if attribute.dataType.nullable is not None
+                        else True,
+                        comment=None,
+                        data_type_model=attribute.dataType,
+                        extra_metadata=None,
+                    )
+                )
 
         return columns
 
@@ -899,13 +936,37 @@ class MetadataResolver:
 
             identifiers = self.raw_table_identifiers(locator, source)
             properties = _properties_to_dict(getattr(source, "properties", None))
-            mapping_dict = {}
+            mapping_dict: dict[str, str] = {}
+            mapping_entries: list[dict[str, Any]] = []
             for mapping in getattr(source, "mapping", []) or []:
                 target_name = getattr(mapping, "targetName", None)
                 source_name = getattr(mapping, "sourceName", None)
                 if not target_name or not source_name:
                     continue
                 mapping_dict[target_name] = source_name
+                source_data_type = getattr(mapping, "sourceDataType", None)
+                mapping_entries.append(
+                    {
+                        "target": target_name,
+                        "source": source_name,
+                        "properties": _properties_to_dict(getattr(mapping, "properties", None)),
+                        "source_data_type": {
+                            "type": getattr(source_data_type, "type", None),
+                            "nullable": getattr(source_data_type, "nullable", None),
+                        }
+                        if source_data_type
+                        else None,
+                    }
+                )
+
+            delta_entry = next(
+                (
+                    entry
+                    for entry in mapping_entries
+                    if entry["properties"].get("extract_column") == "delta"
+                ),
+                None,
+            )
 
             sources.append(
                 {
@@ -919,8 +980,11 @@ class MetadataResolver:
                     "full_table_name": identifiers["full_table_name"],
                     "properties": properties,
                     "mapping": mapping_dict,
+                    "mapping_entries": mapping_entries,
                     "source_location": getattr(source, "sourceLocation", None),
                     "source_type": self._data_source_type_by_name.get(data_source),
+                    "delta_column": delta_entry["target"] if delta_entry else None,
+                    "delta_source_expression": delta_entry["source"] if delta_entry else None,
                 }
             )
         return sources

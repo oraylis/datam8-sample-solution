@@ -353,6 +353,22 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             if data_source_entry.get("type") == "SynapseDataSource":
                 driver = "com.databricks.spark.sqldw"
 
+            extract_mode = properties.get("extract_mode")
+            if extract_mode == "overwrite":
+                write_mode = "overwrite"
+            else:
+                write_mode = "append"
+
+            mapping_entries = raw_source.get("mapping_entries", [])
+            select_columns = [
+                {
+                    "target": entry.get("target"),
+                    "source": entry.get("source"),
+                }
+                for entry in mapping_entries
+                if entry.get("target") and entry.get("source")
+            ]
+
             data = {
                 "zone": raw_zone.name,
                 "zone_display": raw_zone.display_name,
@@ -362,9 +378,14 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 "full_table_name": full_table_name,
                 "write_mode": write_mode,
                 "source_location": raw_source.get("source_location"),
-                "extract_mode": properties.get("extract_mode"),
+                "extract_mode": extract_mode,
                 "driver": driver,
                 "connection_secret": f"datasource-{data_source_name}-connectionstring",
+                "mapping": raw_source.get("mapping"),
+                "mapping_entries": mapping_entries,
+                "select_columns": select_columns,
+                "delta_column": raw_source.get("delta_column"),
+                "delta_source_expression": raw_source.get("delta_source_expression"),
             }
 
             payloads.append(
