@@ -21,7 +21,7 @@ from delta import DeltaTable  # noqa: F401
 # COMMAND ----------
 
 dbutils.widgets.text("env", "dev", "Environment")
-dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka, "Catalog Name")
+dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka", "Catalog Name")
 dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
 # dbutils.widgets.dropdown(
 #     "run_mode",
@@ -81,6 +81,9 @@ catalog.set_active()
 max_raw: dict = {}
 
 {%- for raw_source in data.raw_sources %}
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Max timestamp for source table '{{ raw_source.raw_full_table }}'
 
@@ -98,6 +101,9 @@ FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
 source_delta_df_list = []
 
 {%- for raw_source in data.raw_sources %}
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ### Delta extraction for '{{ raw_source.raw_full_table }}'
 

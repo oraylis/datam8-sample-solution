@@ -16,7 +16,7 @@
 # COMMAND ----------
 
 dbutils.widgets.text("env", "dev", "Environment")
-dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka, "Catalog Name")
+dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka", "Catalog Name")
 dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
 # dbutils.widgets.dropdown(
 #     "run_mode",
@@ -26,7 +26,7 @@ dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
 # )
 #dbutils.widgets.text("sandbox", "_", "Sandbox")
 
-dbutils.widgets.text("keyvault_name", "akv_standard", "Key Vault Name")
+dbutils.widgets.text("keyvault_name", "aut0kvt0dev0campus", "Key Vault Name")
 
 # COMMAND ----------
 
@@ -93,6 +93,8 @@ if not isinstance(base_select, str):
 
 if base_select.strip() == "":
     base_select = f"SELECT * FROM [{source_name}]"
+elif not base_select.strip().upper().startswith("SELECT"):
+    base_select = f"SELECT * FROM {base_select.strip()}"
 
 technical_columns = """
     CAST(YEAR(SYSUTCDATETIME()) AS SMALLINT) AS __Year,
@@ -106,8 +108,11 @@ pushdown_query = f"""
     SELECT
         -- Add technical columns
         {technical_columns},
+        t.*
+    FROM (
         -- Add query
-        {base_select.strip()[len('SELECT '):] if base_select.strip().upper().startswith('SELECT ') else '*'}
+        {base_select}
+    ) AS t
 ) AS src
 """
 print(
