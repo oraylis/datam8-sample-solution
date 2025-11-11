@@ -102,16 +102,15 @@ print(f"Using delta value: {max_raw}")
 {% endif %}
 
 # DBTITLE 1,Define query
-if "max_raw" not in locals():
-    max_raw = None
-
 extract_mode = ("{{ data.extract_mode or '' }}").lower()
 source_location = {{ data.source_location | default("", true) | tojson }}
-if not isinstance(source_location, str):
-    source_location = ""
-source_location = source_location.strip()
+where_clause = ""
 
-source_default = f"[{source_name}]"
+if source_location.strip() == "":
+    source_location = f"SELECT * FROM [{source_name}]"
+elif not source_location.strip().upper().startswith("SELECT"):
+    source_location = f"SELECT * FROM {source_location.strip()}"
+
 technical_columns = [
     "CAST(YEAR(SYSUTCDATETIME()) AS SMALLINT) AS __Year",
     "CAST(MONTH(SYSUTCDATETIME()) AS SMALLINT) AS __Month",
@@ -127,50 +126,20 @@ select_columns = [
 if not select_columns:
     select_columns = ["*"]
 
-delta_source_expression = {{ data.delta_source_expression | default("", true) | tojson }}
+if extract_mode == "delta":
+    source_delta_column = "{{ data.source_delta_column or '' }}"
+    where_clause = f"\n    WHERE {source_delta_column} > '{max_raw}'"
 
-if extract_mode == "query":
-    base_query = source_location or source_default
-    if not base_query.upper().startswith("SELECT"):
-        base_query = f"SELECT * FROM {base_query}"
-    technical_sql = ",\n        ".join(technical_columns)
-    pushdown_query = f"""
+technical_sql = ",\n        ".join(technical_columns)
+select_sql = ",\n        ".join(select_columns)
+
+pushdown_query = f"""
 (
     SELECT
-        {technical_sql},
-        t.*
+        {technical_sql}, {select_sql}
     FROM (
-{base_query}
+        {source_location}{where_clause}
     ) AS t
-) AS src
-"""
-else:
-    if not source_location or source_location.upper().startswith("SELECT"):
-        from_clause = source_default
-    else:
-        from_clause = source_location
-
-    select_sql = ",\n        ".join(technical_columns + select_columns)
-    where_clause = ""
-    if extract_mode == "delta" and delta_source_expression:
-        delta_literal = "CAST('1970-01-01' AS TIMESTAMP)"
-        if max_raw is not None:
-            try:
-                if isinstance(max_raw, datetime.datetime):
-                    delta_literal = f"CAST('{max_raw.strftime(\"%Y-%m-%d %H:%M:%S\")}' AS TIMESTAMP)"
-                elif isinstance(max_raw, datetime.date):
-                    delta_literal = f"CAST('{max_raw.strftime(\"%Y-%m-%d\")}' AS DATE)"
-                else:
-                    delta_literal = f"'{max_raw}'"
-            except Exception:
-                delta_literal = f"'{max_raw}'"
-        where_clause = f"\n    WHERE {delta_source_expression} > {delta_literal}"
-
-    pushdown_query = f"""
-(
-    SELECT
-        {select_sql}
-    FROM {from_clause}{where_clause}
 ) AS src
 """
 

@@ -984,7 +984,7 @@ class MetadataResolver:
                     "source_location": getattr(source, "sourceLocation", None),
                     "source_type": self._data_source_type_by_name.get(data_source),
                     "delta_column": delta_entry["target"] if delta_entry else None,
-                    "delta_source_expression": delta_entry["source"] if delta_entry else None,
+                    "source_delta_column": delta_entry["source"] if delta_entry else None,
                 }
             )
         return sources

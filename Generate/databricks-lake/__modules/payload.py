@@ -385,7 +385,7 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 "mapping_entries": mapping_entries,
                 "select_columns": select_columns,
                 "delta_column": raw_source.get("delta_column"),
-                "delta_source_expression": raw_source.get("delta_source_expression"),
+                "source_delta_column": raw_source.get("source_delta_column"),
             }
 
             payloads.append(

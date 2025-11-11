@@ -79,7 +79,7 @@ print("Source Name: %s" % source_name)
 # COMMAND ----------
 
 catalog = Catalog(catalog_name)
-table_instance = Table(f"{zone}.{full_table_name}")
+table_instance = Table(f"{zone}.{full_table_name}", catalog)
 
 catalog.schema = zone
 catalog.set_active()
