@@ -87,7 +87,73 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         data_module_name = module_info.name if module_info else (locator.folders[2] if len(locator.folders) >= 3 else "General")
 
         # Assemble shared metadata for the standard notebook.
-        columns = resolver.build_standard_columns(entity)
+        modeled_columns = resolver.build_standard_columns(entity)
+        entity_sources = getattr(entity, "sources", []) or []
+        has_external_source = any(getattr(source, "dataSource", None) for source in entity_sources)
+        technical_columns: list[dict[str, Any]] = [
+            resolver.build_column_from_canonical(
+                name="__InsertTimestampUTC",
+                canonical="datetime",
+                nullable=False,
+                comment="Load timestamp (UTC)",
+                data_type_model=None,
+            ),
+            resolver.build_column_from_canonical(
+                name="__UpdateTimestampUTC",
+                canonical="datetime",
+                nullable=False,
+                comment="Last update timestamp (UTC)",
+                data_type_model=None,
+            ),
+        ]
+        if has_external_source:
+            technical_columns.append(
+                resolver.build_column_from_canonical(
+                    name="__InsertTimestampRawUTC",
+                    canonical="datetime",
+                    nullable=False,
+                    comment="Raw load timestamp (UTC)",
+                    data_type_model=None,
+                )
+            )
+        else:
+            technical_columns.append(
+                resolver.build_column_from_canonical(
+                    name="__BusinessFunction",
+                    canonical="string",
+                    nullable=False,
+                    comment="Business function marker",
+                    data_type_model=None,
+                )
+            )
+        columns = technical_columns + modeled_columns
+        history_config = resolver.history_configuration(entity)
+        scd2_tracking_columns: list[dict[str, Any]] = []
+        if history_config.get("scd2"):
+            scd2_tracking_columns = [
+                resolver.build_column_from_canonical(
+                    name="__ValidFrom",
+                    canonical="datetime",
+                    nullable=False,
+                    comment="SCD2 start date",
+                    data_type_model=None,
+                ),
+                resolver.build_column_from_canonical(
+                    name="__ValidTo",
+                    canonical="datetime",
+                    nullable=False,
+                    comment="SCD2 end date",
+                    data_type_model=None,
+                ),
+                resolver.build_column_from_canonical(
+                    name="__IsCurrent",
+                    canonical="boolean",
+                    nullable=False,
+                    comment="SCD2 current flag",
+                    data_type_model=None,
+                ),
+            ]
+            columns.extend(scd2_tracking_columns)
         imports = collect_imports(columns)
         partitions = build_business_key_partitions(entity)
         table_tags = merge_table_tags(entity, product_info, module_info)
@@ -107,6 +173,7 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                     "full_table_name": f"{data_product_name}_{data_module_name}_{entity.name}",
                     "table_comment": entity.description or "",
                     "columns": columns,
+                    "has_scd2_history": bool(history_config.get("scd2")),
                     "imports": imports,
                     "partitions": partitions,
                     "table_tags_repr": repr(table_tags_output),
@@ -319,6 +386,22 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         ]
         scd0_helper_lookup = {entry["column"]: entry["helper"] for entry in scd0_helper_columns}
 
+        merge_enabled = write_mode == "merge" and bool(business_keys)
+        merge_config = {
+            "enabled": merge_enabled,
+            "has_scd2_history": bool(scd2_columns),
+            "business_keys": business_keys,
+            "scd0_helper_lookup": scd0_helper_lookup,
+            "scd0_helper_columns": scd0_helper_columns,
+            "scd2_non_business_columns": scd2_non_business,
+            "scd1_update_assignments": scd1_update_assignments,
+            "scd1_change_condition": scd1_change_condition_sql,
+            "insert_assignments": insert_assignments,
+            "merge_condition": merge_condition_flat,
+        }
+        raw_merge_config = merge_config if merge_enabled and stage_sources else None
+        final_merge_config = merge_config if merge_enabled and transformations else None
+
         data = {
             "zone": zone_meta.name,
             "zone_display": zone_meta.display_name,
@@ -346,11 +429,11 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             "scd0_helper_lookup": scd0_helper_lookup,
             "scd1_columns": scd1_columns,
             "scd1_non_business_columns": scd1_non_business,
-            "scd1_change_condition": scd1_change_condition_sql,
-            "scd1_update_assignments": scd1_update_assignments,
             "scd2_columns": scd2_columns,
             "scd2_non_business_columns": scd2_non_business,
             "has_scd2_history": bool(scd2_columns),
+            "raw_merge_config": raw_merge_config,
+            "final_merge_config": final_merge_config,
         }
 
         payloads.append(

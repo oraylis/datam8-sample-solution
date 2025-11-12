@@ -44,142 +44,6 @@ owner = dbutils.widgets.get("owner")
 
 # static values
 MAX_VALID_TO_DATE = "9999-12-31"
-
-
-{%- macro nullsafe_diff_expr(columns) -%}
-{%- if columns %}
-(
-    {%- for column in columns %}
-    (~F.col("tgt.`{{ column }}`").eqNullSafe(F.col("src.`{{ column }}`"))){% if not loop.last %} |
-    {% endif %}
-    {%- endfor %}
-)
-{%- else %}
-F.lit(False)
-{%- endif %}
-{%- endmacro %}
-
-
-{%- macro prepare_merge(df_name) -%}
-target_table = DeltaTable.forName(spark, table_name_ref)
-{%- if data.has_scd2_history %}
-current_snapshot_df = (
-    spark.table(table_name_ref)
-    .where(F.col("__IsCurrent").eqNullSafe(True))
-)
-
-staged_base = (
-    {{ df_name }}.alias("src")
-    .join(
-        current_snapshot_df.alias("tgt"),
-        [
-            {%- for column in data.business_keys %}
-            (F.col("src.`{{ column }}`") == F.col("tgt.`{{ column }}`")){% if not loop.last %},
-            {% endif %}
-            {%- endfor %}
-        ],
-        "left",
-    )
-    .withColumns({
-        "__target_exists": F.col("tgt.__IsCurrent").isNotNull(),
-        "scd2_changed": {{ nullsafe_diff_expr(data.scd2_non_business_columns) }},
-        "__ValidFrom": F.col("src.__InsertTimestampUTC"),
-        "__ValidTo": F.to_timestamp(F.lit(MAX_VALID_TO_DATE)),
-        "__IsCurrent": F.lit(True),
-    })
-)
-{%- for helper in data.scd0_helper_columns %}
-staged_base = staged_base.withColumn(
-    "{{ helper.helper }}",
-    F.coalesce(
-        F.col("tgt.`{{ helper.column }}`"),
-        F.col("src.`{{ helper.column }}`"),
-    ),
-)
-{%- endfor %}
-
-staged_updates = staged_base.filter(F.col("__target_exists")).withColumn("__merge_action", F.lit("update"))
-staged_inserts = (
-    staged_base
-    .filter(
-        (~F.col("__target_exists")) | F.col("scd2_changed")
-    )
-    .withColumn("__merge_action", F.lit("insert"))
-)
-staged_union = staged_updates.unionByName(staged_inserts)
-{%- endif %}
-{%- endmacro %}
-
-
-{%- macro build_merge(df_name) -%}
-{%- if data.has_scd2_history %}
-merge_builder = (
-    target_table.alias("tgt")
-    .merge(
-        staged_union.alias("src"),
-        "({{ data.merge_conditions_flat }}) AND src.__merge_action = 'update'",
-    )
-    .whenMatchedUpdate(
-        condition="src.scd2_changed",
-        set={
-            "__ValidTo": "src.__InsertTimestampUTC",
-            "__IsCurrent": "False",
-            "__UpdateTimestampUTC": "src.__UpdateTimestampUTC",
-        },
-    )
-)
-{%- if data.scd1_change_condition and data.scd1_update_assignments %}
-merge_builder = merge_builder.whenMatchedUpdate(
-    condition="(~src.scd2_changed) AND ({{ data.scd1_change_condition }})",
-    set={
-        {%- for assignment in data.scd1_update_assignments %}
-        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
-        {%- endfor %}
-    },
-)
-{%- endif %}
-merge_builder = merge_builder.whenNotMatchedInsert(
-    values={
-        "__ValidFrom": "src.__ValidFrom",
-        "__ValidTo": "src.__ValidTo",
-        "__IsCurrent": "src.__IsCurrent",
-        {%- for assignment in data.insert_assignments %}
-        "{{ assignment.column }}": {%- if assignment.column in data.scd0_helper_lookup -%}
-{{ ("src." ~ data.scd0_helper_lookup[assignment.column]) | tojson }}{% else %} {{ assignment.expression }}{% endif %}{% if not loop.last %}, {% endif %}
-        {%- endfor %}
-    },
-)
-{%- else %}
-merge_builder = (
-    target_table.alias("tgt")
-    .merge(
-        {{ df_name }}.alias("src"),
-        "{{ data.merge_conditions_flat }}",
-    )
-)
-{%- if data.scd1_update_assignments %}
-merge_builder = merge_builder.whenMatchedUpdate(
-    {%- if data.scd1_change_condition %}
-    condition="""
-        {{ data.scd1_change_condition }}
-    """,
-    {%- endif %}
-    set={
-        {%- for assignment in data.scd1_update_assignments %}
-        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
-        {%- endfor %}
-    },
-)
-{%- endif %}
-merge_builder = merge_builder.whenNotMatchedInsert(
-    values={
-        {%- for assignment in data.insert_assignments %}
-        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
-        {%- endfor %}
-    },
-)
-{%- endif %}
-{%- endmacro %}
 zone = "{{ data.zone }}"
 data_product = "{{ data.data_product }}"
 data_module = "{{ data.data_module }}"
@@ -275,7 +139,8 @@ union_df.createOrReplaceTempView("union_df")
 
 # COMMAND ----------
 
-{%- if data.write_mode == "merge" and data.business_keys %}
+{%- set merge_cfg = data.raw_merge_config %}
+{%- if merge_cfg and merge_cfg.enabled %}
 
 # COMMAND ----------
 
@@ -284,7 +149,64 @@ union_df.createOrReplaceTempView("union_df")
 
 # COMMAND ----------
 
-{{ prepare_merge("union_df") }}
+target_table = DeltaTable.forName(spark, table_name_ref)
+{%- if merge_cfg.has_scd2_history %}
+current_snapshot_df = (
+    spark.table(table_name_ref)
+    .where(F.col("__IsCurrent").eqNullSafe(True))
+)
+
+staged_base = (
+    union_df.alias("src")
+    .join(
+        current_snapshot_df.alias("tgt"),
+        [
+            {%- for column in merge_cfg.business_keys %}
+            (F.col("src.`{{ column }}`") == F.col("tgt.`{{ column }}`")){% if not loop.last %},
+            {% endif %}
+            {%- endfor %}
+        ],
+        "left",
+    )
+    .withColumns({
+        "__target_exists": F.col("tgt.__IsCurrent").isNotNull(),
+        "scd2_changed": 
+        {%- if merge_cfg.scd2_non_business_columns %}
+        (
+            {%- for column in merge_cfg.scd2_non_business_columns %}
+            (~F.col("tgt.`{{ column }}`").eqNullSafe(F.col("src.`{{ column }}`"))){% if not loop.last %} |
+            {% endif %}
+            {%- endfor %}
+        )
+        {%- else %}
+        F.lit(False)
+        {%- endif %}
+        ,
+        "__ValidFrom": F.col("src.__InsertTimestampUTC"),
+        "__ValidTo": F.to_timestamp(F.lit(MAX_VALID_TO_DATE)),
+        "__IsCurrent": F.lit(True),
+    })
+)
+{%- for helper in merge_cfg.scd0_helper_columns %}
+staged_base = staged_base.withColumn(
+    "{{ helper.helper }}",
+    F.coalesce(
+        F.col("tgt.`{{ helper.column }}`"),
+        F.col("src.`{{ helper.column }}`"),
+    ),
+)
+{%- endfor %}
+
+staged_updates = staged_base.filter(F.col("__target_exists")).withColumn("__merge_action", F.lit("update"))
+staged_inserts = (
+    staged_base
+    .filter(
+        (~F.col("__target_exists")) | F.col("scd2_changed")
+    )
+    .withColumn("__merge_action", F.lit("insert"))
+)
+staged_union = staged_updates.unionByName(staged_inserts)
+{%- endif %}
 
 # COMMAND ----------
 
@@ -293,8 +215,82 @@ union_df.createOrReplaceTempView("union_df")
 
 # COMMAND ----------
 
-{{ build_merge("union_df") }}
+{%- if merge_cfg.has_scd2_history %}
+merge_builder = (
+    target_table.alias("tgt")
+    .merge(
+        staged_union.alias("src"),
+        "({{ merge_cfg.merge_condition }}) AND src.__merge_action = 'update'",
+    )
+    .whenMatchedUpdate(
+        condition="src.scd2_changed",
+        set={
+            "__ValidTo": "src.__InsertTimestampUTC",
+            "__IsCurrent": "False",
+            "__UpdateTimestampUTC": "src.__UpdateTimestampUTC",
+        },
+    )
+)
+{%- if merge_cfg.scd1_change_condition and merge_cfg.scd1_update_assignments %}
+merge_builder = merge_builder.whenMatchedUpdate(
+    condition="(~src.scd2_changed) AND ({{ merge_cfg.scd1_change_condition }})",
+    set={
+        {%- for assignment in merge_cfg.scd1_update_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+{%- elif merge_cfg.scd1_update_assignments %}
+merge_builder = merge_builder.whenMatchedUpdate(
+    set={
+        {%- for assignment in merge_cfg.scd1_update_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+{%- endif %}
+merge_builder = merge_builder.whenNotMatchedInsert(
+    values={
+        "__ValidFrom": "src.__ValidFrom",
+        "__ValidTo": "src.__ValidTo",
+        "__IsCurrent": "src.__IsCurrent",
+        {%- for assignment in merge_cfg.insert_assignments %}
+        "{{ assignment.column }}": {%- if assignment.column in merge_cfg.scd0_helper_lookup -%}'src.{{ merge_cfg.scd0_helper_lookup[assignment.column] }}'{%- else -%}{{ assignment.expression }}{%- endif %}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
 merge_builder.execute()
+{%- else %}
+merge_builder = (
+    target_table.alias("tgt")
+    .merge(
+        union_df.alias("src"),
+        "{{ merge_cfg.merge_condition }}",
+    )
+)
+{%- if merge_cfg.scd1_update_assignments %}
+merge_builder = merge_builder.whenMatchedUpdate(
+    {%- if merge_cfg.scd1_change_condition %}
+    condition="""
+        {{ merge_cfg.scd1_change_condition }}
+    """,
+    {%- endif %}
+    set={
+        {%- for assignment in merge_cfg.scd1_update_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+{%- endif %}
+merge_builder = merge_builder.whenNotMatchedInsert(
+    values={
+        {%- for assignment in merge_cfg.insert_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+merge_builder.execute()
+{%- endif %}
 {%- else %}
 (
     union_df
@@ -420,7 +416,8 @@ final_df = final_df.withColumns({
 
 # COMMAND ----------
 
-{%- if data.write_mode == "merge" and data.business_keys %}
+{%- set merge_cfg = data.final_merge_config %}
+{%- if merge_cfg and merge_cfg.enabled %}
 
 # COMMAND ----------
 
@@ -429,7 +426,64 @@ final_df = final_df.withColumns({
 
 # COMMAND ----------
 
-{{ prepare_merge("final_df") }}
+target_table = DeltaTable.forName(spark, table_name_ref)
+{%- if merge_cfg.has_scd2_history %}
+current_snapshot_df = (
+    spark.table(table_name_ref)
+    .where(F.col("__IsCurrent").eqNullSafe(True))
+)
+
+staged_base = (
+    final_df.alias("src")
+    .join(
+        current_snapshot_df.alias("tgt"),
+        [
+            {%- for column in merge_cfg.business_keys %}
+            (F.col("src.`{{ column }}`") == F.col("tgt.`{{ column }}`")){% if not loop.last %},
+            {% endif %}
+            {%- endfor %}
+        ],
+        "left",
+    )
+    .withColumns({
+        "__target_exists": F.col("tgt.__IsCurrent").isNotNull(),
+        "scd2_changed": 
+        {%- if merge_cfg.scd2_non_business_columns %}
+        (
+            {%- for column in merge_cfg.scd2_non_business_columns %}
+            (~F.col("tgt.`{{ column }}`").eqNullSafe(F.col("src.`{{ column }}`"))){% if not loop.last %} |
+            {% endif %}
+            {%- endfor %}
+        )
+        {%- else %}
+        F.lit(False)
+        {%- endif %}
+        ,
+        "__ValidFrom": F.col("src.__InsertTimestampUTC"),
+        "__ValidTo": F.to_timestamp(F.lit(MAX_VALID_TO_DATE)),
+        "__IsCurrent": F.lit(True),
+    })
+)
+{%- for helper in merge_cfg.scd0_helper_columns %}
+staged_base = staged_base.withColumn(
+    "{{ helper.helper }}",
+    F.coalesce(
+        F.col("tgt.`{{ helper.column }}`"),
+        F.col("src.`{{ helper.column }}`"),
+    ),
+)
+{%- endfor %}
+
+staged_updates = staged_base.filter(F.col("__target_exists")).withColumn("__merge_action", F.lit("update"))
+staged_inserts = (
+    staged_base
+    .filter(
+        (~F.col("__target_exists")) | F.col("scd2_changed")
+    )
+    .withColumn("__merge_action", F.lit("insert"))
+)
+staged_union = staged_updates.unionByName(staged_inserts)
+{%- endif %}
 
 # COMMAND ----------
 
@@ -438,8 +492,82 @@ final_df = final_df.withColumns({
 
 # COMMAND ----------
 
-{{ build_merge("final_df") }}
+{%- if merge_cfg.has_scd2_history %}
+merge_builder = (
+    target_table.alias("tgt")
+    .merge(
+        staged_union.alias("src"),
+        "({{ merge_cfg.merge_condition }}) AND src.__merge_action = 'update'",
+    )
+    .whenMatchedUpdate(
+        condition="src.scd2_changed",
+        set={
+            "__ValidTo": "src.__InsertTimestampUTC",
+            "__IsCurrent": "False",
+            "__UpdateTimestampUTC": "src.__UpdateTimestampUTC",
+        },
+    )
+)
+{%- if merge_cfg.scd1_change_condition and merge_cfg.scd1_update_assignments %}
+merge_builder = merge_builder.whenMatchedUpdate(
+    condition="(~src.scd2_changed) AND ({{ merge_cfg.scd1_change_condition }})",
+    set={
+        {%- for assignment in merge_cfg.scd1_update_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+{%- elif merge_cfg.scd1_update_assignments %}
+merge_builder = merge_builder.whenMatchedUpdate(
+    set={
+        {%- for assignment in merge_cfg.scd1_update_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+{%- endif %}
+merge_builder = merge_builder.whenNotMatchedInsert(
+    values={
+        "__ValidFrom": "src.__ValidFrom",
+        "__ValidTo": "src.__ValidTo",
+        "__IsCurrent": "src.__IsCurrent",
+        {%- for assignment in merge_cfg.insert_assignments %}
+        "{{ assignment.column }}": {%- if assignment.column in merge_cfg.scd0_helper_lookup -%}'src.{{ merge_cfg.scd0_helper_lookup[assignment.column] }}'{%- else -%}{{ assignment.expression }}{%- endif %}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
 merge_builder.execute()
+{%- else %}
+merge_builder = (
+    target_table.alias("tgt")
+    .merge(
+        final_df.alias("src"),
+        "{{ merge_cfg.merge_condition }}",
+    )
+)
+{%- if merge_cfg.scd1_update_assignments %}
+merge_builder = merge_builder.whenMatchedUpdate(
+    {%- if merge_cfg.scd1_change_condition %}
+    condition="""
+        {{ merge_cfg.scd1_change_condition }}
+    """,
+    {%- endif %}
+    set={
+        {%- for assignment in merge_cfg.scd1_update_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+{%- endif %}
+merge_builder = merge_builder.whenNotMatchedInsert(
+    values={
+        {%- for assignment in merge_cfg.insert_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+merge_builder.execute()
+{%- endif %}
 {%- else %}
 final_df.write.saveAsTable(table_name_ref, mode="{{ data.spark_write_mode }}")
 {%- endif %}
