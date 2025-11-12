@@ -10,6 +10,7 @@
 # COMMAND ----------
 
 from pyspark.sql import functions as F  # noqa: F401
+from pyspark.sql.window import Window  # noqa: F401
 from delta import DeltaTable  # noqa: F401
 
 # COMMAND ----------
@@ -129,6 +130,19 @@ if not source_delta_df_list:
 union_df = source_delta_df_list[0]
 for additional_df in source_delta_df_list[1:]:
     union_df = union_df.unionByName(additional_df)
+
+latest_snapshot_key_cols = [{% for column in data.history.business_keys %}"{{ column }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+if latest_snapshot_key_cols:
+    # Keep only the latest snapshot per business key to avoid duplicate records from external feeds.
+    latest_snapshot_window = Window.partitionBy(*latest_snapshot_key_cols).orderBy(
+        F.col("__InsertTimestampRawUTC").desc(),
+    )
+    union_df = (
+        union_df
+        .withColumn("__dm8_latest_snapshot_rank", F.row_number().over(latest_snapshot_window))
+        .where(F.col("__dm8_latest_snapshot_rank") == 1)
+        .drop("__dm8_latest_snapshot_rank")
+    )
 
 union_df.createOrReplaceTempView("union_df")
 
