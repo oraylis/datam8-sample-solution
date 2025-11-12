@@ -24,9 +24,37 @@ from jobs_helpers import JobsPlanner
 
 logger = start_logger(__name__)
 
-TECHNICAL_COLUMNS = ["__InsertTimestampUTC", "__UpdateTimestampUTC", "__InsertTimestampRawUTC"]
 MODELLED_ZONES = {"stage", "core", "curated"}
 JOB_ZONES = MODELLED_ZONES | {"raw"}
+
+
+def _assignment_literal(column: str, expression: str) -> dict[str, str]:
+    """Represent a merge assignment with a ready-to-use Python literal."""
+    return {"column": column, "expression": repr(expression)}
+
+
+def _scd0_helper_name(column: str) -> str:
+    """Generate a deterministic helper column name for SCD0 preservation."""
+    sanitized = re.sub(r"\W+", "_", column or "").strip("_")
+    if not sanitized:
+        sanitized = "value"
+    return f"__scd0__{sanitized}"
+
+
+def _build_insert_assignments(attribute_names: Sequence[str], include_raw_timestamp: bool) -> list[dict[str, str]]:
+    """Create default insert assignments for merge statements."""
+    assignments: list[dict[str, str]] = []
+    technical_columns = ["__InsertTimestampUTC", "__UpdateTimestampUTC"]
+    if include_raw_timestamp:
+        technical_columns.append("__InsertTimestampRawUTC")
+
+    for column in technical_columns:
+        assignments.append(_assignment_literal(column, f"src.{column}"))
+
+    for name in attribute_names:
+        assignments.append(_assignment_literal(name, f"src.`{name}`"))
+
+    return assignments
 
 
 @register_payload("ddl_notebook.py.jinja2")
@@ -234,6 +262,11 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         attribute_names = resolver.attribute_names(entity)
         business_keys = history_config["business_keys"]
         non_business_columns = [name for name in attribute_names if name not in business_keys]
+        scd0_columns = history_config["scd0"]
+        scd1_columns = history_config["scd1"]
+        scd2_columns = history_config["scd2"]
+        scd1_non_business = [name for name in scd1_columns if name not in business_keys]
+        scd2_non_business = [name for name in scd2_columns if name not in business_keys]
 
         raw_sources = resolver.raw_sources(locator, entity)
         stage_sources = []
@@ -270,15 +303,21 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         write_mode = resolver.write_mode(entity, product_info, module_info, default="overwrite")
         spark_write_mode = {"overwrite": "overwrite", "append": "append"}.get(write_mode, "overwrite")
         merge_conditions = [f"tgt.`{col}` <=> src.`{col}`" for col in business_keys]
-        insert_columns = TECHNICAL_COLUMNS + [f"`{name}`" for name in attribute_names]
-        insert_values = [f"src.{col}" for col in TECHNICAL_COLUMNS] + [f"src.`{name}`" for name in attribute_names]
-        update_assignments = [f"tgt.`{name}` = src.`{name}`" for name in non_business_columns]
-        update_assignments_with_timestamp = update_assignments + ["tgt.__UpdateTimestampUTC = src.__UpdateTimestampUTC"]
-        merge_condition_sql = "\n  AND ".join(merge_conditions) if merge_conditions else ""
         merge_condition_flat = " AND ".join(merge_conditions) if merge_conditions else ""
-        insert_columns_sql = ",\n  ".join(insert_columns)
-        insert_values_sql = ",\n  ".join(insert_values)
-        update_assignments_sql = ",\n  ".join(update_assignments_with_timestamp)
+        include_raw_timestamp = source_mode == "raw_delta"
+        insert_assignments = _build_insert_assignments(attribute_names, include_raw_timestamp)
+        scd1_update_assignments = [
+            _assignment_literal(name, f"src.`{name}`") for name in scd1_non_business
+        ]
+        if scd1_update_assignments:
+            scd1_update_assignments.append(_assignment_literal("__UpdateTimestampUTC", "src.__UpdateTimestampUTC"))
+        scd1_change_condition_sql = " OR ".join(
+            f"NOT (tgt.`{column}` <=> src.`{column}`)" for column in scd1_non_business
+        )
+        scd0_helper_columns = [
+            {"column": column, "helper": _scd0_helper_name(column)} for column in scd0_columns
+        ]
+        scd0_helper_lookup = {entry["column"]: entry["helper"] for entry in scd0_helper_columns}
 
         data = {
             "zone": zone_meta.name,
@@ -297,14 +336,21 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             "business_keys": business_keys,
             "non_business_columns": non_business_columns,
             "attribute_columns": attribute_names,
-            "insert_columns_sql": insert_columns_sql,
-            "insert_values_sql": insert_values_sql,
-            "merge_conditions_sql": merge_condition_sql,
             "merge_conditions_flat": merge_condition_flat,
-            "update_assignments_sql": update_assignments_sql,
             "source_references": resolver.entity_source_references(entity),
             "has_lookup_dimensions": bool(dimension_lookups),
             "dimension_lookups": dimension_lookups,
+            "insert_assignments": insert_assignments,
+            "scd0_columns": scd0_columns,
+            "scd0_helper_columns": scd0_helper_columns,
+            "scd0_helper_lookup": scd0_helper_lookup,
+            "scd1_columns": scd1_columns,
+            "scd1_non_business_columns": scd1_non_business,
+            "scd1_change_condition": scd1_change_condition_sql,
+            "scd1_update_assignments": scd1_update_assignments,
+            "scd2_columns": scd2_columns,
+            "scd2_non_business_columns": scd2_non_business,
+            "has_scd2_history": bool(scd2_columns),
         }
 
         payloads.append(
