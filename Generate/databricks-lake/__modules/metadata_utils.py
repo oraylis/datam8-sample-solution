@@ -1097,6 +1097,31 @@ class MetadataResolver:
         )
         return expressions
 
+    def calculated_columns(self, entity) -> list[dict[str, Any]]:
+        """Return SQL-based calculated columns defined on the entity attributes."""
+        calculated: list[dict[str, Any]] = []
+        for attribute in getattr(entity, "attributes", []) or []:
+            expression = getattr(attribute, "expression", None)
+            if not expression:
+                continue
+            language = getattr(attribute, "expressionLanguage", None)
+            if hasattr(language, "value"):
+                language_value = language.value
+            else:
+                language_value = (language or "sql")
+            language_value = str(language_value).lower()
+            if language_value != "sql":
+                continue
+            calculated.append(
+                {
+                    "name": attribute.name,
+                    "expression": expression,
+                    "expression_literal": repr(expression),
+                    "language": language_value,
+                }
+            )
+        return calculated
+
 # --------------------------------------------------------------------- helpers
 def collect_imports(columns: Iterable[dict[str, Any]]) -> list[str]:
     """

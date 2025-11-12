@@ -360,6 +360,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             if lookup_dimensions_enabled
             else []
         )
+        calculated_columns = resolver.calculated_columns(entity)
 
         source_mode = "none"
         if transformations:
@@ -434,6 +435,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             "has_scd2_history": bool(scd2_columns),
             "raw_merge_config": raw_merge_config,
             "final_merge_config": final_merge_config,
+            "calculated_columns": calculated_columns,
         }
 
         payloads.append(

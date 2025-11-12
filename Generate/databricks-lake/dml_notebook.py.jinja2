@@ -144,6 +144,26 @@ if latest_snapshot_key_cols:
         .drop("__dm8_latest_snapshot_rank")
     )
 
+{%- if data.calculated_columns %}
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Apply calculated columns
+
+# COMMAND ----------
+
+union_df = union_df.withColumns({
+    {%- for column in data.calculated_columns %}
+    "{{ column.name }}": F.expr({{ column.expression_literal }}){% if not loop.last %},
+    {% endif %}
+    {%- endfor %}
+})
+
+# COMMAND ----------
+
+{%- endif %}
+
 union_df.createOrReplaceTempView("union_df")
 
 # COMMAND ----------
@@ -417,6 +437,26 @@ final_df = final_df.drop(
 )
 
 {%- endfor %}
+{%- endif %}
+
+{%- if data.calculated_columns %}
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Apply calculated columns
+
+# COMMAND ----------
+
+final_df = final_df.withColumns({
+    {%- for column in data.calculated_columns %}
+    "{{ column.name }}": F.expr({{ column.expression_literal }}){% if not loop.last %},
+    {% endif %}
+    {%- endfor %}
+})
+
+# COMMAND ----------
+
 {%- endif %}
 
 final_df = final_df.withColumns({
