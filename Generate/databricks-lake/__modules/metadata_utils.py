@@ -1076,6 +1076,7 @@ class MetadataResolver:
                     "merge_type": "replace",
                     "frequency": "no_restriction",
                     "sources": self.entity_source_references(entity),
+                    "source_literal": repr(display_name or script_name),
                 }
             )
         return transformations
@@ -1083,11 +1084,21 @@ class MetadataResolver:
     def stage_select_expressions(self, entity, raw_source: dict[str, Any]) -> list[str]:
         """Build selectExpr expressions for stage entities fed from raw sources."""
         expressions: list[str] = []
-        mapping = raw_source.get("mapping", {})
         for attribute in getattr(entity, "attributes", []):
-            source_expr = mapping.get(attribute.name, attribute.name)
-            expressions.append(_select_expr(source_expr, attribute.name))
+            # Calculated columns (with expressions) are materialized later in the notebook.
+            if getattr(attribute, "expression", None):
+                continue
+            # Raw tables already use the modeled/target column names, so select them directly.
+            expressions.append(f"`{attribute.name}`")
 
+        source_label = (
+            raw_source.get("source_alias")
+            or raw_source.get("raw_full_table")
+            or raw_source.get("table_name")
+            or raw_source.get("data_source")
+            or "_unknown_source"
+        )
+        expressions.append(f"{repr(source_label)} AS __SourceTable")
         expressions.extend(
             [
                 "current_timestamp() AS __InsertTimestampUTC",

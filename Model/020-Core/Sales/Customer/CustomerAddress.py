@@ -1,4 +1,9 @@
 business_function = spark.sql("""
-    SELECT *
-    FROM stage.sales_customer_customeraddress
+    SELECT
+    concat(CustomerID, AddressID) AS _CustomerAddressBK,
+    AddressID,
+    CustomerID,
+    AddressType
+    FROM
+    datam8_campus_dev_fka.stage.sales_customer_customeraddress
 """)

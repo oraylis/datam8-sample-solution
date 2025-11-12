@@ -5,12 +5,12 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # Initialize base settings
+# MAGIC ## Initialize base settings
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Imports
+# MAGIC ### Imports
 
 # COMMAND ----------
 
@@ -27,12 +27,10 @@ from delta.tables import DeltaTable
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Get variable values
+# MAGIC ### Get variable values
 
 # COMMAND ----------
 
-# DBTITLE 1,Initialize Migration Framework
-# MAGIC
 # MAGIC %run ../../../../../../utils/MigrationFramework
 
 # COMMAND ----------
@@ -85,6 +83,11 @@ catalog.set_active()
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ## Define table schema
+
+# COMMAND ----------
+
 # DBTITLE 1,Define schema
 table_name = f"{catalog_name}.{zone}.{full_table_name}"
 table_comment = {{ data.table_comment | tojson }}
@@ -119,6 +122,11 @@ tblproperties_parts = {
 
 tblproperties_sql = ', '.join([f"'{key}'='{value}'" for key, value in tblproperties_parts.items()])
 tblproperties_sql = f"TBLPROPERTIES ({tblproperties_sql})" if tblproperties_sql else ""
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Create or migrate table
 
 # COMMAND ----------
 
@@ -192,6 +200,11 @@ except Exception as e:
     print(f"Migration failed: {e}")
 
 table_instance.owner = owner
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Tags
 
 # COMMAND ----------
 

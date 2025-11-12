@@ -70,12 +70,24 @@ catalog = Catalog(catalog_name)
 catalog.schema = zone
 catalog.set_active()
 
+# Reference to the fully-qualified target table (with backticks for catalog/schema/table).
+table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
+    "catalog": catalog.name,
+    "schema": zone,
+    "table": full_table_name,
+}
+
 # COMMAND ----------
 
 {%- if data.source_mode == "raw_delta" and data.raw_sources %}
 
 # MAGIC %md
-# MAGIC # Read delta from RAW zone
+# MAGIC ## Process captured snapshots
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Max timestamp in target table
 
 # COMMAND ----------
 
@@ -86,7 +98,7 @@ max_raw: dict = {}
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Max timestamp for source table '{{ raw_source.raw_full_table }}'
+# MAGIC #### '{{ raw_source.raw_full_table }}'
 
 # COMMAND ----------
 
@@ -101,12 +113,17 @@ FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
 
 source_delta_df_list = []
 
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Extraction from source tables
+
 {%- for raw_source in data.raw_sources %}
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Delta extraction for '{{ raw_source.raw_full_table }}'
+# MAGIC #### '{{ raw_source.raw_full_table }}'
 
 # COMMAND ----------
 
@@ -169,7 +186,7 @@ union_df.createOrReplaceTempView("union_df")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # Write changes to {{ data.zone | upper }}
+# MAGIC ## Write changes to {{ data.zone | upper }}
 
 # COMMAND ----------
 
@@ -179,7 +196,7 @@ union_df.createOrReplaceTempView("union_df")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Prepare merge statement
+# MAGIC ### Prepare merge statement
 
 # COMMAND ----------
 
@@ -220,6 +237,7 @@ staged_base = (
         "__ValidTo": F.to_timestamp(F.lit(MAX_VALID_TO_DATE)),
         "__IsCurrent": F.lit(True),
     })
+    .select("src.*", "__target_exists", "scd2_changed", "__ValidFrom", "__ValidTo", "__IsCurrent")
 )
 {%- for helper in merge_cfg.scd0_helper_columns %}
 staged_base = staged_base.withColumn(
@@ -245,7 +263,7 @@ staged_union = staged_updates.unionByName(staged_inserts)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Execute merge
+# MAGIC ### Execute merge
 
 # COMMAND ----------
 
@@ -267,7 +285,7 @@ merge_builder = (
 )
 {%- if merge_cfg.scd1_change_condition and merge_cfg.scd1_update_assignments %}
 merge_builder = merge_builder.whenMatchedUpdate(
-    condition="(~src.scd2_changed) AND ({{ merge_cfg.scd1_change_condition }})",
+    condition="(NOT src.scd2_changed) AND ({{ merge_cfg.scd1_change_condition }})",
     set={
         {%- for assignment in merge_cfg.scd1_update_assignments %}
         "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
@@ -293,7 +311,8 @@ merge_builder = merge_builder.whenNotMatchedInsert(
         {%- endfor %}
     },
 )
-merge_builder.execute()
+results = merge_builder.execute()
+results.show()
 {%- else %}
 merge_builder = (
     target_table.alias("tgt")
@@ -323,7 +342,8 @@ merge_builder = merge_builder.whenNotMatchedInsert(
         {%- endfor %}
     },
 )
-merge_builder.execute()
+results = merge_builder.execute()
+results.show()
 {%- endif %}
 {%- else %}
 (
@@ -340,21 +360,17 @@ merge_builder.execute()
 {%- elif data.source_mode == "transformation" %}
 
 # MAGIC %md
-# MAGIC ## Execute transformation functions
+# MAGIC ### Execute transformation functions
 
 # COMMAND ----------
 
-table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
-  "catalog": catalog.name,
-  "schema": zone,
-  "table": full_table_name,
-}
-
 functions = {}
+
+# COMMAND ----------
 
 {%- for transform in data.transformations %}
 # MAGIC %md
-# MAGIC ### {{ transform.key }}
+# MAGIC #### {{ transform.key }}
 
 # COMMAND ----------
 
@@ -390,7 +406,7 @@ final_df = functions["{{ data.final_function_key }}"]["df"]
 
 {%- if data.has_lookup_dimensions and data.dimension_lookups %}
 # MAGIC %md
-# MAGIC ## Lookup dimensions
+# MAGIC ### Lookup dimensions
 
 # COMMAND ----------
 
@@ -476,7 +492,7 @@ final_df = final_df.withColumns({
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Prepare merge statement
+# MAGIC ### Prepare merge statement
 
 # COMMAND ----------
 
@@ -542,7 +558,7 @@ staged_union = staged_updates.unionByName(staged_inserts)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Execute merge
+# MAGIC ### Execute merge
 
 # COMMAND ----------
 

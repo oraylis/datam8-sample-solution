@@ -5,12 +5,10 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # Initialize base settings
+# MAGIC ## Initialize base settings
 
 # COMMAND ----------
 
-# DBTITLE 1,Initialize Migration Framework
-# MAGIC
 # MAGIC %run ../../../../../../utils/MigrationFramework
 
 # COMMAND ----------
@@ -67,12 +65,7 @@ catalog.set_active()
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # Read data from source system
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Get & assign variable values
+# MAGIC ## Read data from source system
 
 # COMMAND ----------
 
@@ -151,11 +144,6 @@ print(
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC ## Create dataframe
-
-# COMMAND ----------
-
 # DBTITLE 1,Read from source
 table_df = (
     spark.read
@@ -169,7 +157,7 @@ table_df = (
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # Write to RAW zone
+# MAGIC ## Write to RAW zone
 
 # COMMAND ----------
 
@@ -178,11 +166,6 @@ table_df = (
     .mode(write_mode)
     .saveAsTable(f"{catalog_name}.{zone}.{full_table_name}")
 )
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC # Update extraction status
 
 # COMMAND ----------
 

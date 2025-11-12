@@ -41,10 +41,16 @@ def _scd0_helper_name(column: str) -> str:
     return f"__scd0__{sanitized}"
 
 
-def _build_insert_assignments(attribute_names: Sequence[str], include_raw_timestamp: bool) -> list[dict[str, str]]:
+def _build_insert_assignments(
+    attribute_names: Sequence[str],
+    include_raw_timestamp: bool,
+    include_source_table: bool,
+) -> list[dict[str, str]]:
     """Create default insert assignments for merge statements."""
     assignments: list[dict[str, str]] = []
     technical_columns = ["__InsertTimestampUTC", "__UpdateTimestampUTC"]
+    if include_source_table:
+        technical_columns.append("__SourceTable")
     if include_raw_timestamp:
         technical_columns.append("__InsertTimestampRawUTC")
 
@@ -113,6 +119,15 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                     canonical="datetime",
                     nullable=False,
                     comment="Raw load timestamp (UTC)",
+                    data_type_model=None,
+                )
+            )
+            technical_columns.append(
+                resolver.build_column_from_canonical(
+                    name="__SourceTable",
+                    canonical="string",
+                    nullable=False,
+                    comment="Origin reference for the record",
                     data_type_model=None,
                 )
             )
@@ -373,7 +388,12 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         merge_conditions = [f"tgt.`{col}` <=> src.`{col}`" for col in business_keys]
         merge_condition_flat = " AND ".join(merge_conditions) if merge_conditions else ""
         include_raw_timestamp = source_mode == "raw_delta"
-        insert_assignments = _build_insert_assignments(attribute_names, include_raw_timestamp)
+        include_source_table = source_mode == "raw_delta"
+        insert_assignments = _build_insert_assignments(
+            attribute_names,
+            include_raw_timestamp,
+            include_source_table,
+        )
         scd1_update_assignments = [
             _assignment_literal(name, f"src.`{name}`") for name in scd1_non_business
         ]
