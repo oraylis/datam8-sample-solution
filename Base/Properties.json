@@ -24,6 +24,16 @@
             ]
         },
         {
+            "name": "cluster",
+            "displayName": "cluster",
+            "schema": "./cluster.json",
+            "scopes": [
+                {
+                    "type": "none"
+                }
+            ]
+        },
+        {
             "name": "tags",
             "displayName": "tags",
             "schema": "./tags.json",

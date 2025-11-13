@@ -920,25 +920,6 @@ class MetadataResolver:
             if not target_locator or target_entity is None or not getattr(target_locator, "folders", None):
                 continue
 
-            join_mappings = getattr(relationship, "attributes", None)
-            if join_mappings is None and isinstance(relationship, dict):
-                join_mappings = relationship.get("attributes")
-
-            relationship_join_columns: list[dict[str, str]] = []
-            if join_mappings:
-                for mapping in join_mappings:
-                    fact_column = getattr(mapping, "sourceName", None)
-                    dimension_column = getattr(mapping, "targetName", None)
-                    if fact_column is None and isinstance(mapping, dict):
-                        fact_column = mapping.get("sourceName")
-                    if dimension_column is None and isinstance(mapping, dict):
-                        dimension_column = mapping.get("targetName")
-                    if not fact_column or not dimension_column:
-                        continue
-                    relationship_join_columns.append(
-                        {"fact_column": fact_column, "dimension_column": dimension_column}
-                    )
-
             dimension_zone_meta = self.zone_from_folder(target_locator.folders[0])
             if dimension_zone_meta is None:
                 continue
@@ -977,16 +958,45 @@ class MetadataResolver:
                 if _attribute_property_equals(attr, "attribute_type", "sk")
             ]
 
+            join_mappings = getattr(relationship, "attributes", None)
+            if join_mappings is None and isinstance(relationship, dict):
+                join_mappings = relationship.get("attributes")
+
+            relationship_join_columns: list[dict[str, str]] = []
+            sk_fact_columns: list[str] = []
+            if join_mappings:
+                for mapping in join_mappings:
+                    fact_column = getattr(mapping, "sourceName", None)
+                    dimension_column = getattr(mapping, "targetName", None)
+                    if fact_column is None and isinstance(mapping, dict):
+                        fact_column = mapping.get("sourceName")
+                    if dimension_column is None and isinstance(mapping, dict):
+                        dimension_column = mapping.get("targetName")
+                    if not fact_column or not dimension_column:
+                        continue
+                    relationship_join_columns.append(
+                        {"fact_column": fact_column, "dimension_column": dimension_column}
+                    )
+                    target_attribute = dimension_attributes.get(dimension_column)
+                    if target_attribute and _attribute_property_equals(
+                        target_attribute, "attribute_type", "sk"
+                    ):
+                        sk_fact_columns.append(fact_column)
+
+            if not relationship_join_columns or not sk_fact_columns:
+                continue
+
             # Determine which fact column receives the surrogate key update.
-            sid_column = None
-            for column in relationship_join_columns:
-                fact_attr = fact_attributes.get(column["fact_column"])
-                if fact_attr and getattr(fact_attr, "attributeType", "").lower() == "sid":
-                    sid_column = column["fact_column"]
-                    break
-                if fact_attr and _attribute_property_equals(fact_attr, "attribute_type", "sk"):
-                    sid_column = column["fact_column"]
-                    break
+            sid_column = next((column for column in sk_fact_columns if column), None)
+            if sid_column is None:
+                for column in relationship_join_columns:
+                    fact_attr = fact_attributes.get(column["fact_column"])
+                    if fact_attr and (
+                        getattr(fact_attr, "attributeType", "").lower() == "sid"
+                        or _attribute_property_equals(fact_attr, "attribute_type", "sk")
+                    ):
+                        sid_column = column["fact_column"]
+                        break
             if sid_column is None and relationship_join_columns:
                 sid_column = relationship_join_columns[0]["fact_column"]
             if sid_column is None:

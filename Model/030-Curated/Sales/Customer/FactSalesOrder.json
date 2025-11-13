@@ -5,10 +5,6 @@
     "description": "Fact table with sales orders",
     "properties": [
         {
-            "property": "jobs",
-            "value": "sales_daily"
-        },
-        {
             "property": "write_mode",
             "value": "overwrite"
         },
