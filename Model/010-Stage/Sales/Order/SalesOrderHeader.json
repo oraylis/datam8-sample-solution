@@ -37,7 +37,7 @@
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "byte",
+                "type": "short",
                 "nullable": false
             },
             "dateAdded": "2025-01-01T01:01:01Z"
@@ -81,7 +81,7 @@
             "description": "",
             "attributeType": "ID",
             "dataType": {
-                "type": "byte",
+                "type": "short",
                 "nullable": false
             },
             "dateAdded": "2025-01-01T01:01:01Z"

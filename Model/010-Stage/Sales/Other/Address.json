@@ -10,7 +10,7 @@
         },
         {
             "property": "write_mode",
-            "value": "merge"
+            "value": "overwrite"
         },
         {
             "property": "data_retention",

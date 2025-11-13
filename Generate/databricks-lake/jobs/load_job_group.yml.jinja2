@@ -26,7 +26,7 @@ resources:
       tasks:
         - task_key: Generate_Load_UUID
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/000-utils/Start_Load
+            notebook_path: ${workspace.root_path}/files/utils/Start_Load
 {% if data.job_value %}
             base_parameters:
               target_zone: {{ data.job_value }}
@@ -72,7 +72,7 @@ resources:
             - task_key: {{ dependency }}
 {%- endfor %}
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/000-utils/Complete_Load
+            notebook_path: ${workspace.root_path}/files/utils/Complete_Load
             source: WORKSPACE
           existing_cluster_id: ${var.{{ data.cluster_var }}}
 {% endif %}

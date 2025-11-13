@@ -10,7 +10,7 @@
         },
         {
             "property": "write_mode",
-            "value": "merge"
+            "value": "overwrite"
         },
         {
             "property": "data_retention",
@@ -31,7 +31,7 @@
             "properties": [
                 {
                     "property": "data_layout",
-                    "value": "liquid_clustering"
+                    "value": "hive_partitioning"
                 }
             ],
             "dateModified": "2025-03-28T16:16:38Z",
