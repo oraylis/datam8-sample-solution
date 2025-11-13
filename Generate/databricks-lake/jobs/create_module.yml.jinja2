@@ -17,6 +17,13 @@ resources:
           level: "CAN_MANAGE_RUN"
         - group_name: ${var.permission_group_name}
           level: "CAN_MANAGE_RUN"
+{%- if data.job_clusters %}
+      job_clusters:
+{%- for cluster in data.job_clusters %}
+        - job_cluster_key: {{ cluster.job_cluster_key }}
+          new_cluster: ${var.{{ cluster.job_cluster_key }}}
+{%- endfor %}
+{%- endif %}
       tasks:
 {% for task in data.tasks %}
         - task_key: {{ task.task_key }}
@@ -26,5 +33,5 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
-          existing_cluster_id: ${var.{{ data.cluster_var }}}
+          job_cluster_key: {{ data.default_job_cluster_key }}
 {% endfor %}

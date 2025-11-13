@@ -24,7 +24,12 @@ resources:
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/{{ task.notebook_path }}
             source: WORKSPACE
+{%- set task_cluster_ref = task.cluster_ref or data.cluster_ref %}
+{%- if task_cluster_ref %}
+          existing_cluster_id: ${resources.clusters.{{ task_cluster_ref }}.id}
+{%- else %}
           existing_cluster_id: ${var.{{ task.cluster_var | default(data.cluster_var) }}}
+{%- endif %}
 {% else %}
           run_job_task:
             job_id: ${resources.jobs.{{ task.job_ref }}.id}

@@ -104,6 +104,15 @@ def _sanitize_identifier(value: str | None) -> str:
     return cleaned.strip("_")
 
 
+def _slug(value: str | None) -> str:
+    """Generate a filesystem-safe slug from a value."""
+    if not value:
+        return "default"
+    cleaned = re.sub(r"[^A-Za-z0-9]+", "_", value.strip())
+    cleaned = re.sub(r"_+", "_", cleaned).strip("_").lower()
+    return cleaned or "default"
+
+
 def _select_expr(source_expr: str, target: str) -> str:
     """Build a selectExpr statement with alias."""
     identifier = _strip_brackets(source_expr)
@@ -153,11 +162,12 @@ class MetadataResolver:
     # ------------------------------------------------------ Property values
     @property
     @lru_cache
-    def _property_values_map(self) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
-        """Split PropertyValues.json into job and schedule lookups."""
+    def _property_values_map(self) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+        """Split PropertyValues.json into job, schedule, and cluster lookups."""
         data = _load_json(self.base_root / "PropertyValues.json")
         jobs: dict[str, dict[str, Any]] = {}
         schedules: dict[str, dict[str, Any]] = {}
+        clusters: dict[str, dict[str, Any]] = {}
         for entry in data.get("propertyValues", []):
             prop = entry.get("property")
             name = entry.get("name")
@@ -167,7 +177,9 @@ class MetadataResolver:
                 jobs[name] = entry
             elif prop == "schedules":
                 schedules[name] = entry
-        return jobs, schedules
+            elif prop == "cluster":
+                clusters[name] = entry
+        return jobs, schedules, clusters
 
     def resolve_property(self, locator, entity, property_name: str) -> Any:
         """Resolve an entity property using entity -> module -> product fallback."""
@@ -192,16 +204,18 @@ class MetadataResolver:
         if not job_value:
             return None
 
-        jobs, schedules = self._property_values_map
+        jobs, schedules, clusters = self._property_values_map
         job_entry = jobs.get(job_value)
         if not job_entry:
             return None
 
         schedule_name = None
+        cluster_name = job_entry.get("cluster")
         for prop in job_entry.get("properties", []) or []:
             if prop.get("property") == "schedules":
                 schedule_name = prop.get("value")
-                break
+            elif prop.get("property") == "cluster":
+                cluster_name = prop.get("value")
 
         schedule_entry = schedules.get(schedule_name) if schedule_name else None
         schedule_data = None
@@ -212,10 +226,24 @@ class MetadataResolver:
                 "cron": schedule_entry.get("cron"),
             }
 
+        cluster_entry = clusters.get(cluster_name) if cluster_name else None
+        cluster_data = None
+        if cluster_entry:
+            cluster_data = {
+                "name": cluster_name,
+                "display_name": cluster_entry.get("displayName", cluster_name),
+                "node_type": cluster_entry.get("node_type"),
+                "num_workers": cluster_entry.get("num_workers"),
+                "workload_type": cluster_entry.get("workload_type"),
+                "spark_version": cluster_entry.get("spark_version"),
+                "autotermination_minutes": cluster_entry.get("autotermination_minutes"),
+                "variable_name": self.cluster_variable_name(cluster_name),
+            }
+
         return {
             "value": job_value,
             "display_name": job_entry.get("displayName", job_value),
-            "cluster": job_entry.get("cluster", {}),
+            "cluster": cluster_data,
             "schedule": schedule_data,
         }
 
@@ -901,6 +929,42 @@ class MetadataResolver:
                 fk_columns[source_name] = referenced_table
 
         return fk_columns
+
+    def cluster_variable_name(self, cluster_name: str | None) -> str | None:
+        """Return the variable name for a cluster value."""
+        if not cluster_name:
+            return None
+        return f"cluster_{_slug(cluster_name)}"
+
+    def cluster_definitions(self) -> list[dict[str, Any]]:
+        """Return cluster definitions from PropertyValues."""
+        _, _, clusters = self._property_values_map
+        definitions: list[dict[str, Any]] = []
+        for name, entry in clusters.items():
+            definitions.append(
+                {
+                    "name": name,
+                    "display_name": entry.get("displayName", name),
+                    "node_type": entry.get("node_type") or "Standard_D4ds_v5",
+                    "num_workers": entry.get("num_workers", 2),
+                    "workload_type": entry.get("workload_type", "job"),
+                    "spark_version": entry.get("spark_version", "16.4.x-scala2.12"),
+                    "autotermination_minutes": entry.get("autotermination_minutes", 60),
+                    "data_security_mode": entry.get("data_security_mode", "STANDARD"),
+                    "runtime_engine": entry.get("runtime_engine", "STANDARD"),
+                    "variable_name": self.cluster_variable_name(name),
+                    "is_default": bool(entry.get("default")),
+                }
+            )
+        return definitions
+
+    def default_cluster_variable_name(self) -> str | None:
+        """Return the variable name for the default cluster."""
+        definitions = self.cluster_definitions()
+        for entry in definitions:
+            if entry.get("is_default"):
+                return entry.get("variable_name")
+        return definitions[0]["variable_name"] if definitions else None
 
     def dimension_lookups_for_fact(self, locator, entity) -> list[dict[str, Any]]:
         """

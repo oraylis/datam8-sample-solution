@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Sequence, Iterable
 from pathlib import Path
 from typing import Any
 import re
@@ -709,6 +709,52 @@ def generate_schema_resources(model: Model, cache: Cache) -> Sequence[IPayload]:
 
 
 
+@register_payload("clusters/clusters.yml.jinja2")
+def generate_cluster_resources(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Emit dedicated cluster resources for bundle deployment."""
+    resolver = MetadataResolver(model)
+    clusters = resolver.cluster_definitions()
+    if not clusters:
+        return []
+
+    cluster_entries: list[dict[str, Any]] = []
+    for cluster in clusters:
+        variable_name = cluster.get("variable_name")
+        if not variable_name:
+            continue
+        custom_tags: dict[str, str] = {}
+        display_name = cluster.get("display_name")
+        if display_name:
+            custom_tags["friendly_name"] = repr(display_name)
+        workload_type = cluster.get("workload_type")
+        if workload_type:
+            custom_tags["workload_type"] = repr(workload_type)
+
+        cluster_entries.append(
+            {
+                "variable_name": variable_name,
+                "description": f"Cluster settings for {cluster.get('name', variable_name)}",
+                "spark_version": cluster.get("spark_version", "13.3.x-scala2.12"),
+                "node_type": cluster.get("node_type", "Standard_D4ds_v5"),
+                "num_workers": cluster.get("num_workers"),
+                "autotermination_minutes": cluster.get("autotermination_minutes", 60),
+                "data_security_mode": cluster.get("data_security_mode", "STANDARD"),
+                "runtime_engine": cluster.get("runtime_engine", "STANDARD"),
+                "custom_tags": custom_tags or None,
+            }
+        )
+
+    if not cluster_entries:
+        return []
+
+    return [
+        BasePayload(
+            data={"clusters": cluster_entries},
+            output_path=Path("clusters", "clusters.yml"),
+        )
+    ]
+
+
 def _get_jobs_plan(model: Model, cache: Cache) -> dict[str, Any]:
     cache_key = ("databricks_jobs_plan",)
     try:
@@ -727,13 +773,28 @@ def _prepare_job_data(job: dict[str, Any], **extra: Any) -> dict[str, Any]:
     return data
 
 
+def _assign_job_clusters(data: dict[str, Any], cluster_vars: Iterable[str]) -> None:
+    """Populate job cluster descriptors based on the requested variable names."""
+    unique_keys: list[str] = []
+    for var in cluster_vars:
+        if not var:
+            continue
+        if var not in unique_keys:
+            unique_keys.append(var)
+    if not unique_keys:
+        return
+    clusters = [{"job_cluster_key": key} for key in unique_keys]
+    data["job_clusters"] = clusters
+    data["default_job_cluster_key"] = clusters[0]["job_cluster_key"]
+
+
 @register_payload("jobs/create_all.yml.jinja2")
 def generate_jobs_create_all(model: Model, cache: Cache) -> Sequence[IPayload]:
     plan = _get_jobs_plan(model, cache)
     job = plan.get("create_all")
     if not job:
         return []
-    data = _prepare_job_data(job, cluster_var="cluster_id")
+    data = _prepare_job_data(job)
     return [BasePayload(data=data, output_path=job["output_path"])]
 
 
@@ -742,7 +803,7 @@ def generate_jobs_create_zones(model: Model, cache: Cache) -> Sequence[IPayload]
     plan = _get_jobs_plan(model, cache)
     payloads: list[IPayload] = []
     for job in plan.get("create_zones", []):
-        data = _prepare_job_data(job, cluster_var="cluster_id")
+        data = _prepare_job_data(job)
         payloads.append(BasePayload(data=data, output_path=job["output_path"]))
     return payloads
 
@@ -751,13 +812,15 @@ def generate_jobs_create_zones(model: Model, cache: Cache) -> Sequence[IPayload]
 def generate_jobs_create_modules(model: Model, cache: Cache) -> Sequence[IPayload]:
     plan = _get_jobs_plan(model, cache)
     payloads: list[IPayload] = []
+    resolver = MetadataResolver(model)
+    default_cluster = resolver.default_cluster_variable_name()
     for job in plan.get("create_modules", []):
-        data = _prepare_job_data(
-            job,
-            cluster_var="cluster_id",
-        )
+        data = _prepare_job_data(job)
         if not data.get("tasks"):
             continue
+        if not data.get("cluster_variable"):
+            data["cluster_variable"] = default_cluster
+        _assign_job_clusters(data, [data.get("cluster_variable")])
         payloads.append(BasePayload(data=data, output_path=job["output_path"]))
     return payloads
 
@@ -768,7 +831,7 @@ def generate_jobs_load_all(model: Model, cache: Cache) -> Sequence[IPayload]:
     job = plan.get("load_all")
     if not job:
         return []
-    data = _prepare_job_data(job, cluster_var="cluster_id")
+    data = _prepare_job_data(job)
     return [BasePayload(data=data, output_path=job["output_path"])]
 
 
@@ -778,5 +841,6 @@ def generate_jobs_load_groups(model: Model, cache: Cache) -> Sequence[IPayload]:
     payloads: list[IPayload] = []
     for job in plan.get("load_jobs", []):
         data = _prepare_job_data(job)
+        _assign_job_clusters(data, [data.get("cluster_variable")])
         payloads.append(BasePayload(data=data, output_path=job["output_path"]))
     return payloads

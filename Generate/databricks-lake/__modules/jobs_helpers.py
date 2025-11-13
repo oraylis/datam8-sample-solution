@@ -267,6 +267,7 @@ class JobsPlanner:
 
         create_modules: list[dict[str, Any]] = []
         create_zones: list[dict[str, Any]] = []
+        default_cluster_variable = self.resolver.default_cluster_variable_name()
 
         for zone_name in self.ZONE_ORDER:
             zone_modules = zone_map.get(zone_name, [])
@@ -304,6 +305,7 @@ class JobsPlanner:
                         "zone_name": module.zone_name,
                         "zone_title": _zone_title(module.zone_name),
                         "tasks": tasks,
+                        "cluster_variable": default_cluster_variable,
                         "output_path": output_path,
                     }
                 )
@@ -388,7 +390,12 @@ class JobsPlanner:
 
             job_config = group.get("job_config") or self.resolver.job_definition(job_value) or {}
             job_display = job_config.get("display_name", job_value)
-            cluster_var = f"cluster_id_{_slug(job_value)}"
+            cluster_variable = None
+            cluster_data = job_config.get("cluster") if job_config else None
+            if cluster_data:
+                cluster_variable = cluster_data.get("variable_name")
+            if cluster_variable is None:
+                cluster_variable = self.resolver.default_cluster_variable_name()
             schedule_info = job_config.get("schedule") or {}
             cron_expression = self._format_cron(schedule_info.get("cron"))
 
@@ -396,7 +403,7 @@ class JobsPlanner:
                 job_value=job_value,
                 job_display=job_display,
                 entities=entities,
-                cluster_var=cluster_var,
+                cluster_variable=cluster_variable,
             )
             if not job:
                 continue
@@ -452,7 +459,7 @@ class JobsPlanner:
         job_value: str,
         job_display: str,
         entities: list[EntityJobInfo],
-        cluster_var: str,
+        cluster_variable: str | None,
     ) -> dict[str, Any] | None:
         """Build the task graph for a specific job value, including raw prerequisites."""
         entity_task_keys: dict[int, str] = {}
@@ -484,6 +491,7 @@ class JobsPlanner:
                         "task_key": raw_key,
                         "notebook_path": self._raw_notebook_path(entity, table_name),
                         "depends_on": ["Generate_Load_UUID"],
+                        "job_cluster_key": cluster_variable,
                     }
                 )
                 raw_task_lookup[entity.entity_id].append(raw_key)
@@ -509,6 +517,7 @@ class JobsPlanner:
                     "task_key": task_key,
                     "notebook_path": entity.dml_notebook,
                     "depends_on": depends_on,
+                    "job_cluster_key": cluster_variable,
                 }
             )
             complete_dependencies.append(task_key)
@@ -520,7 +529,7 @@ class JobsPlanner:
             "job_key": self._job_key(["Load", job_value]),
             "job_name": f"Load {job_display}",
             "job_value": job_value,
-            "cluster_var": cluster_var,
+            "cluster_variable": cluster_variable,
             "raw_tasks": raw_tasks,
             "entity_tasks": entity_tasks,
             "complete_dependencies": complete_dependencies,

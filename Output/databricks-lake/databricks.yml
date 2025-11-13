@@ -5,6 +5,7 @@ bundle:
 
 include:
   - generated/schemas/*.yml
+  - generated/clusters/*.yml
   - generated/jobs/*.yml  # top-level
   - generated/jobs/*/*.yml  # layer-level
   - generated/jobs/*/*/*/*.yml  # product/module-level
@@ -39,12 +40,6 @@ variables:
   unpause_schedules:
     description: Override the default schedule status
     default: PAUSED
-  cluster_id:
-    description: Id of the databricks cluster to use 
-    default: 0815-120347-hidt1cxe
-  cluster_id_sales_daily:
-    description: Id of the databricks cluster for the sales daily job to use 
-    default: 0815-120347-hidt1cxe
   permission_group_name:
       description: Group name for generell permissions on cluster and jobs
       default: teilnehmer
