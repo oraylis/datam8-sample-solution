@@ -10,7 +10,7 @@
         },
         {
             "property": "write_mode",
-            "value": "overwrite"
+            "value": "merge"
         },
         {
             "property": "data_retention",
@@ -90,7 +90,7 @@
                 "type": "string",
                 "nullable": true
             },
-            "history": "SCD1",
+            "history": "SCD0",
             "refactorNames": [],
             "dateAdded": "2025-01-01T01:01:01Z"
         },

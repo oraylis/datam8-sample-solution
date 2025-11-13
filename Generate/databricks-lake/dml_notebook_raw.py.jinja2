@@ -5,18 +5,16 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # Initialize base settings
+# MAGIC ## Initialize base settings
 
 # COMMAND ----------
 
-# DBTITLE 1,Initialize Migration Framework
-# MAGIC
-# MAGIC %run ../../../../000-utils/MigrationFramework
+# MAGIC %run ../../../../../../utils/MigrationFramework
 
 # COMMAND ----------
 
 dbutils.widgets.text("env", "dev", "Environment")
-dbutils.widgets.text("catalog_name", spark.catalog.currentCatalog(), "Catalog Name")
+dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka", "Catalog Name")
 dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
 # dbutils.widgets.dropdown(
 #     "run_mode",
@@ -26,9 +24,7 @@ dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
 # )
 #dbutils.widgets.text("sandbox", "_", "Sandbox")
 
-dbutils.widgets.text("data_lake_name", "datam80adl0dev", "Data Lake Name")
-dbutils.widgets.text("container_name", "lakehousesample", "Container Name")
-dbutils.widgets.text("keyvault_name", "akv_standard", "Key Vault Name")
+dbutils.widgets.text("keyvault_name", "aut0kvt0dev0campus", "Key Vault Name")
 
 # COMMAND ----------
 
@@ -39,8 +35,6 @@ owner = dbutils.widgets.get("owner")
 # run_mode = dbutils.widgets.get("run_mode")
 # sandbox = dbutils.widgets.get("sandbox")
 
-data_lake_name = dbutils.widgets.get("data_lake_name")
-container_name = dbutils.widgets.get("container_name")
 keyvault_name = dbutils.widgets.get("keyvault_name")
 
 # static values
@@ -71,12 +65,7 @@ catalog.set_active()
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # Read data from source system
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Get & assign variable values
+# MAGIC ## Read data from source system
 
 # COMMAND ----------
 
@@ -91,39 +80,67 @@ database_connectionstring = dbutils.secrets.get(scope=keyvault_name, key="{{ dat
 
 # COMMAND ----------
 
-base_select = {{ data.source_location | default("", true) | tojson }}
-if not isinstance(base_select, str):
-    base_select = ""
+{% if data.extract_mode and data.extract_mode|lower == "delta" %}
+# DBTITLE 1,Determine delta value
+delta_column = "{{ data.delta_column or '' }}"
+max_raw = spark.sql(f"""
+SELECT
+  COALESCE(MAX(`{delta_column}`), CAST('1970-01-01' AS STRING)) AS MaxDelta
+FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
+""").first()[0]
 
-if base_select.strip() == "":
-    base_select = f"SELECT * FROM [{source_name}]"
+print(f"Using delta value: {max_raw}")
 
-technical_columns = """
-    CAST(YEAR(SYSUTCDATETIME()) AS SMALLINT) AS __Year,
-    CAST(MONTH(SYSUTCDATETIME()) AS SMALLINT) AS __Month,
-    CAST(DAY(SYSUTCDATETIME()) AS SMALLINT) AS __Day,
-    SYSUTCDATETIME() AS __InsertTimestampUTC
-"""
+# COMMAND ----------
+{% endif %}
+
+# DBTITLE 1,Define query
+extract_mode = ("{{ data.extract_mode or '' }}").lower()
+source_location = {{ data.source_location | default("", true) | tojson }}
+where_clause = ""
+
+if source_location.strip() == "":
+    source_location = f"SELECT * FROM [{source_name}]"
+elif not source_location.strip().upper().startswith("SELECT"):
+    source_location = f"SELECT * FROM {source_location.strip()}"
+
+technical_columns = [
+    "CAST(YEAR(SYSUTCDATETIME()) AS SMALLINT) AS __Year",
+    "CAST(MONTH(SYSUTCDATETIME()) AS SMALLINT) AS __Month",
+    "CAST(DAY(SYSUTCDATETIME()) AS SMALLINT) AS __Day",
+    "SYSUTCDATETIME() AS __InsertTimestampUTC",
+]
+
+select_columns = [
+{%- for column in data.select_columns %}
+    {{ (column.source ~ " AS " ~ column.target) | tojson }},
+{%- endfor %}
+]
+if not select_columns:
+    select_columns = ["*"]
+
+if extract_mode == "delta":
+    source_delta_column = "{{ data.source_delta_column or '' }}"
+    where_clause = f"\n    WHERE {source_delta_column} > '{max_raw}'"
+
+technical_sql = ",\n        ".join(technical_columns)
+select_sql = ",\n        ".join(select_columns)
 
 pushdown_query = f"""
 (
     SELECT
-        -- Add technical columns
-        {technical_columns},
-        -- Add query
-        {base_select.strip()[len('SELECT '):] if base_select.strip().upper().startswith('SELECT ') else '*'}
+        {technical_sql}, {select_sql}
+    FROM (
+        {source_location}{where_clause}
+    ) AS t
 ) AS src
 """
+
 print(
     f"""Query:
 
 {pushdown_query}"""
 )
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Create dataframe
 
 # COMMAND ----------
 
@@ -140,7 +157,7 @@ table_df = (
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # Write to RAW zone
+# MAGIC ## Write to RAW zone
 
 # COMMAND ----------
 
@@ -149,11 +166,6 @@ table_df = (
     .mode(write_mode)
     .saveAsTable(f"{catalog_name}.{zone}.{full_table_name}")
 )
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC # Update extraction status
 
 # COMMAND ----------
 

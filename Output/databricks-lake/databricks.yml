@@ -4,22 +4,23 @@ bundle:
   name: automation_sample_solution
 
 include:
-  - /generated/jobs/*.yml  # top-level
-  - /generated/jobs/*/*.yml  # layer-level
-  - /generated/jobs/*/*/*/*.yml  # product/module-level
+  - generated/schemas/*.yml
+  - generated/jobs/*.yml  # top-level
+  - generated/jobs/*/*.yml  # layer-level
+  - generated/jobs/*/*/*/*.yml  # product/module-level
 
 sync:
   include:
-    - notebooks/
+    - utils/
 
 # all defaults are preset with dev values
 variables:
   notebook_path:
     description: Location of the notebooks within the bundle
-    default: 'files/notebooks'
+    default: 'files/generated/notebooks'
   catalog_name:
     description: The name of the unity catalog
-    default: datam8_campus_dev
+    default: datam8_campus_dev_fka
   environment:
     description: The logical environment
     default: dev
@@ -59,7 +60,6 @@ targets:
     default: true
     workspace:
       host: https://adb-1451794858897186.6.azuredatabricks.net
-      file_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}
       root_path: ~/.bundle/${bundle.name}/${bundle.target}
 
   dev:

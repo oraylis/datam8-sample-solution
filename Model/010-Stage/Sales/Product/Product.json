@@ -104,7 +104,7 @@
             "attributeType": "ID",
             "dataType": {
                 "type": "decimal",
-                "precision": 10,
+                "precision": 8,
                 "scale": 2,
                 "nullable": true
             },
