@@ -73,6 +73,15 @@
                     "targetName": "CustomerSID"
                 }
             ]
+        },
+        {
+            "targetLocation": 3002,
+            "attributes": [
+                {
+                    "sourceName": "ShipDateID",
+                    "targetName": "DateID"
+                }
+            ]
         }
     ],
     "transformations": [

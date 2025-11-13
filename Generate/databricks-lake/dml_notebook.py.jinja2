@@ -411,14 +411,17 @@ final_df = functions["{{ data.final_function_key }}"]["df"]
 # COMMAND ----------
 
 {%- for lookup in data.dimension_lookups %}
+{%- set join_dimension_columns = lookup.join_columns | map(attribute='dimension_column') | list %}
+{%- set dimension_sid_in_join = lookup.dimension_sid_column in join_dimension_columns %}
 dimension_df_{{ loop.index }} = (
     spark.table(f"{catalog.name}.{{ lookup.dimension_zone }}.{{ lookup.dimension_full_table_name }}")
     .select(
         {%- for join_column in lookup.join_columns %}
-        F.col("{{ join_column.dimension_column }}").alias("{{ lookup.dimension_alias }}__{{ join_column.dimension_column }}"){% if not loop.last %}, {% endif %}
+        F.col("{{ join_column.dimension_column }}").alias("{{ lookup.dimension_alias }}__{{ join_column.dimension_column }}"){% if not loop.last or (not dimension_sid_in_join) %}, {% endif %}
         {%- endfor %}
-        {%- if lookup.join_columns %}, {% endif -%}
+        {%- if not dimension_sid_in_join %}
         F.col("{{ lookup.dimension_sid_column }}").alias("{{ lookup.dimension_alias }}__{{ lookup.dimension_sid_column }}")
+        {%- endif %}
     )
 )
 
@@ -448,8 +451,11 @@ final_df = final_df.withColumn(
 
 final_df = final_df.drop(
     {%- for join_column in lookup.join_columns %}
-    "{{ lookup.dimension_alias }}__{{ join_column.dimension_column }}",{% endfor %}
+    "{{ lookup.dimension_alias }}__{{ join_column.dimension_column }}"{% if not loop.last or (not dimension_sid_in_join) %}, {% endif %}
+    {%- endfor %}
+    {%- if not dimension_sid_in_join %}
     "{{ lookup.dimension_alias }}__{{ lookup.dimension_sid_column }}"
+    {%- endif %}
 )
 
 {%- endfor %}
@@ -642,7 +648,12 @@ result = merge_builder.execute()
 print(result)
 {%- endif %}
 {%- else %}
-final_df.write.saveAsTable(table_name_ref, mode="{{ data.spark_write_mode }}")
+final_write_df = final_df.select(
+    {%- for column in data.schema_columns %}
+    "{{ column }}"{% if not loop.last %}, {% endif %}
+    {%- endfor %}
+)
+final_write_df.write.saveAsTable(table_name_ref, mode="{{ data.spark_write_mode }}")
 {%- endif %}
 {%- endif %}
 

@@ -131,7 +131,11 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         data_module_name = module_info.name if module_info else (locator.folders[2] if len(locator.folders) >= 3 else "General")
 
         # Assemble shared metadata for the standard notebook.
-        modeled_columns = resolver.build_standard_columns(entity)
+        foreign_key_columns = resolver.foreign_key_columns(entity)
+        modeled_columns = resolver.build_standard_columns(
+            entity,
+            foreign_key_columns=foreign_key_columns,
+        )
         entity_sources = getattr(entity, "sources", []) or []
         has_external_source = any(getattr(source, "dataSource", None) for source in entity_sources)
         technical_columns: list[dict[str, Any]] = [
@@ -432,6 +436,17 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         include_raw_timestamp = source_mode == "raw_delta"
         include_source_table = source_mode == "raw_delta"
         include_business_function = not has_external_source
+        schema_columns = [
+            "__InsertTimestampUTC",
+            "__UpdateTimestampUTC",
+        ]
+        if include_business_function:
+            schema_columns.append("__BusinessFunction")
+        if include_source_table:
+            schema_columns.append("__SourceTable")
+        if include_raw_timestamp:
+            schema_columns.append("__InsertTimestampRawUTC")
+        schema_columns.extend(attribute_names)
         assignment_attribute_names = attribute_names
         scd1_merge_columns = scd1_non_business
         scd2_merge_columns = scd2_non_business
@@ -497,6 +512,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             "business_keys": business_keys,
             "non_business_columns": non_business_columns,
             "attribute_columns": attribute_names,
+            "schema_columns": schema_columns,
             "merge_conditions_flat": merge_condition_flat,
             "source_references": resolver.entity_source_references(entity),
             "has_lookup_dimensions": bool(dimension_lookups),
