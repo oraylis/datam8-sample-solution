@@ -45,10 +45,13 @@ def _build_insert_assignments(
     attribute_names: Sequence[str],
     include_raw_timestamp: bool,
     include_source_table: bool,
+    include_business_function: bool = False,
 ) -> list[dict[str, str]]:
     """Create default insert assignments for merge statements."""
     assignments: list[dict[str, str]] = []
     technical_columns = ["__InsertTimestampUTC", "__UpdateTimestampUTC"]
+    if include_business_function:
+        technical_columns.append("__BusinessFunction")
     if include_source_table:
         technical_columns.append("__SourceTable")
     if include_raw_timestamp:
@@ -377,6 +380,8 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
 
         history_config = resolver.history_configuration(entity)
         attribute_names = resolver.attribute_names(entity)
+        entity_sources = getattr(entity, "sources", []) or []
+        has_external_source = any(getattr(source, "dataSource", None) for source in entity_sources)
         business_keys = history_config["business_keys"]
         non_business_columns = [name for name in attribute_names if name not in business_keys]
         scd0_columns = history_config["scd0"]
@@ -426,6 +431,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         merge_condition_flat = " AND ".join(merge_conditions) if merge_conditions else ""
         include_raw_timestamp = source_mode == "raw_delta"
         include_source_table = source_mode == "raw_delta"
+        include_business_function = not has_external_source
         assignment_attribute_names = attribute_names
         scd1_merge_columns = scd1_non_business
         scd2_merge_columns = scd2_non_business
@@ -443,6 +449,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             assignment_attribute_names,
             include_raw_timestamp,
             include_source_table,
+            include_business_function=include_business_function,
         )
         scd1_update_assignments = [
             _assignment_literal(name, f"src.`{name}`") for name in scd1_merge_columns

@@ -607,7 +607,8 @@ merge_builder = merge_builder.whenNotMatchedInsert(
         {%- endfor %}
     },
 )
-merge_builder.execute()
+result = merge_builder.execute()
+print(result)
 {%- else %}
 merge_builder = (
     target_table.alias("tgt")
@@ -637,7 +638,8 @@ merge_builder = merge_builder.whenNotMatchedInsert(
         {%- endfor %}
     },
 )
-merge_builder.execute()
+result = merge_builder.execute()
+print(result)
 {%- endif %}
 {%- else %}
 final_df.write.saveAsTable(table_name_ref, mode="{{ data.spark_write_mode }}")
