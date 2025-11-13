@@ -402,6 +402,8 @@ functions["{{ transform.key }}"]["df"] = business_function  # noqa: F821
 {%- if data.final_function_key %}
 final_df = functions["{{ data.final_function_key }}"]["df"]
 
+# COMMAND ----------
+
 {%- if data.has_lookup_dimensions and data.dimension_lookups %}
 # MAGIC %md
 # MAGIC ### Lookup dimensions
@@ -531,6 +533,7 @@ staged_base = (
         "__ValidTo": F.to_timestamp(F.lit(MAX_VALID_TO_DATE)),
         "__IsCurrent": F.lit(True),
     })
+    .select("src.*", "__target_exists", "scd2_changed", "__ValidFrom", "__ValidTo", "__IsCurrent")
 )
 {%- for helper in merge_cfg.scd0_helper_columns %}
 staged_base = staged_base.withColumn(
@@ -578,7 +581,7 @@ merge_builder = (
 )
 {%- if merge_cfg.scd1_change_condition and merge_cfg.scd1_update_assignments %}
 merge_builder = merge_builder.whenMatchedUpdate(
-    condition="(~src.scd2_changed) AND ({{ merge_cfg.scd1_change_condition }})",
+    condition="(NOT src.scd2_changed) AND ({{ merge_cfg.scd1_change_condition }})",
     set={
         {%- for assignment in merge_cfg.scd1_update_assignments %}
         "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}

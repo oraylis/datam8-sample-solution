@@ -63,6 +63,41 @@ def _build_insert_assignments(
     return assignments
 
 
+def _attribute_property_equals(attribute: Any, property_name: str, expected_value: str) -> bool:
+    """Check if an attribute exposes a given property/value pair."""
+    properties = getattr(attribute, "properties", None) or []
+    if not properties:
+        return False
+
+    target_property = (property_name or "").strip().lower()
+    target_value = (expected_value or "").strip().lower()
+    if not target_property:
+        return False
+
+    for prop in properties:
+        name = getattr(prop, "property", None)
+        if not name:
+            continue
+        if str(name).strip().lower() != target_property:
+            continue
+        value = getattr(prop, "value", None)
+        if value is None:
+            continue
+        if str(value).strip().lower() == target_value:
+            return True
+
+    return False
+
+
+def _surrogate_key_columns(entity: Any) -> list[str]:
+    """Return attribute names flagged as surrogate keys via attribute_type property."""
+    columns: list[str] = []
+    for attribute in getattr(entity, "attributes", []) or []:
+        if _attribute_property_equals(attribute, "attribute_type", "sk"):
+            columns.append(attribute.name)
+    return columns
+
+
 @register_payload("ddl_notebook.py.jinja2")
 def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
     """Build DDL payloads for modeled (non-raw) entities."""
@@ -349,6 +384,8 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         scd2_columns = history_config["scd2"]
         scd1_non_business = [name for name in scd1_columns if name not in business_keys]
         scd2_non_business = [name for name in scd2_columns if name not in business_keys]
+        surrogate_key_columns = _surrogate_key_columns(entity)
+        surrogate_key_column_set = set(surrogate_key_columns)
 
         raw_sources = resolver.raw_sources(locator, entity)
         stage_sources = []
@@ -389,18 +426,31 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         merge_condition_flat = " AND ".join(merge_conditions) if merge_conditions else ""
         include_raw_timestamp = source_mode == "raw_delta"
         include_source_table = source_mode == "raw_delta"
+        assignment_attribute_names = attribute_names
+        scd1_merge_columns = scd1_non_business
+        scd2_merge_columns = scd2_non_business
+        if write_mode == "merge" and surrogate_key_column_set:
+            assignment_attribute_names = [
+                name for name in attribute_names if name not in surrogate_key_column_set
+            ]
+            scd1_merge_columns = [
+                name for name in scd1_non_business if name not in surrogate_key_column_set
+            ]
+            scd2_merge_columns = [
+                name for name in scd2_non_business if name not in surrogate_key_column_set
+            ]
         insert_assignments = _build_insert_assignments(
-            attribute_names,
+            assignment_attribute_names,
             include_raw_timestamp,
             include_source_table,
         )
         scd1_update_assignments = [
-            _assignment_literal(name, f"src.`{name}`") for name in scd1_non_business
+            _assignment_literal(name, f"src.`{name}`") for name in scd1_merge_columns
         ]
         if scd1_update_assignments:
             scd1_update_assignments.append(_assignment_literal("__UpdateTimestampUTC", "src.__UpdateTimestampUTC"))
         scd1_change_condition_sql = " OR ".join(
-            f"NOT (tgt.`{column}` <=> src.`{column}`)" for column in scd1_non_business
+            f"NOT (tgt.`{column}` <=> src.`{column}`)" for column in scd1_merge_columns
         )
         scd0_helper_columns = [
             {"column": column, "helper": _scd0_helper_name(column)} for column in scd0_columns
@@ -414,7 +464,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             "business_keys": business_keys,
             "scd0_helper_lookup": scd0_helper_lookup,
             "scd0_helper_columns": scd0_helper_columns,
-            "scd2_non_business_columns": scd2_non_business,
+            "scd2_non_business_columns": scd2_merge_columns,
             "scd1_update_assignments": scd1_update_assignments,
             "scd1_change_condition": scd1_change_condition_sql,
             "insert_assignments": insert_assignments,
