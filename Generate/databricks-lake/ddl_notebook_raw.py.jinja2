@@ -77,8 +77,6 @@ print("Source Name: %s" % source_name)
 # COMMAND ----------
 
 catalog = Catalog(catalog_name)
-table_instance = Table(f"{zone}.{full_table_name}", catalog)
-
 catalog.schema = zone
 catalog.set_active()
 
@@ -188,6 +186,8 @@ refactored_columns = [
 # COMMAND ----------
 
 # DBTITLE 1,Call migrate_schema method
+table_instance = Table(f"{zone}.{full_table_name}", catalog)
+
 try:
     result = table_instance.migrate_schema(
         ddl=create_sql,

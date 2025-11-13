@@ -188,8 +188,6 @@ union_df.createOrReplaceTempView("union_df")
 # MAGIC %md
 # MAGIC ## Write changes to {{ data.zone | upper }}
 
-# COMMAND ----------
-
 {%- set merge_cfg = data.raw_merge_config %}
 {%- if merge_cfg and merge_cfg.enabled %}
 
@@ -311,8 +309,8 @@ merge_builder = merge_builder.whenNotMatchedInsert(
         {%- endfor %}
     },
 )
-results = merge_builder.execute()
-results.show()
+result = merge_builder.execute()
+print(result)
 {%- else %}
 merge_builder = (
     target_table.alias("tgt")
@@ -342,8 +340,8 @@ merge_builder = merge_builder.whenNotMatchedInsert(
         {%- endfor %}
     },
 )
-results = merge_builder.execute()
-results.show()
+result = merge_builder.execute()
+print(result)
 {%- endif %}
 {%- else %}
 (
