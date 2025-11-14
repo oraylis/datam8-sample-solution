@@ -82,6 +82,7 @@ resources:
 {%- for dependency in data.complete_dependencies %}
             - task_key: {{ dependency }}
 {%- endfor %}
+          run_if: ALL_DONE
           notebook_task:
             notebook_path: ${workspace.root_path}/files/utils/Complete_Load
             source: WORKSPACE
