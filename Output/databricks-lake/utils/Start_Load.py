@@ -5,7 +5,11 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # Initialize base settings
+# MAGIC ## Initialize base settings
+
+# COMMAND ----------
+
+import datetime
 
 # COMMAND ----------
 
@@ -20,82 +24,50 @@
 
 # COMMAND ----------
 
-dbutils.widgets.text("catalog", "aut0adl0dev", "Catalog")
-dbutils.widgets.text("sandbox", "_", "Sandbox")
-dbutils.widgets.dropdown(
-    "run_mode",
-    "INFO",
-    ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-    "Run Mode",
-)
+dbutils.widgets.text("env", "dev", "Environment")
+dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka", "Catalog Name")
+dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
+
+dbutils.widgets.text("job_name", "", "Job Name")
+dbutils.widgets.text("job_run_id", "", "Job Run ID")
+
+# dbutils.widgets.dropdown(
+#     "run_mode",
+#     "INFO",
+#     ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+#     "Run Mode",
+# )
+#dbutils.widgets.text("sandbox", "_", "Sandbox")
 
 # COMMAND ----------
 
-env = spark.conf.get("datam8.environment")
-catalog_name = dbutils.widgets.get("catalog")
-owner = spark.conf.get("datam8.catalog.owner")
-run_mode = dbutils.widgets.get("run_mode")
-sandbox = dbutils.widgets.get("sandbox")
+# Retrieve a job-level parameter (will use default if it doesn't exist)
+env = dbutils.widgets.get("env")
+catalog_name = dbutils.widgets.get("catalog_name")
+owner = dbutils.widgets.get("owner")
+
+job_name = dbutils.widgets.get("job_name")
+job_run_id = dbutils.widgets.get("job_run_id")
+
+# run_mode = dbutils.widgets.get("run_mode")
+# sandbox = dbutils.widgets.get("sandbox")
+
+# COMMAND ----------
+
+dbutils.jobs.taskValues.set("job_name", job_name)
+dbutils.jobs.taskValues.set("job_run_id", job_run_id)
 
 # COMMAND ----------
 
 # DBTITLE 1,Get variable values
-# configsif entity else none
-data_lake_name = spark.conf.get("datam8.datalake.name", "aut0adl0dev")
-container_name = spark.conf.get("datam8.datalake.container.name", "campus")
-raw_zone = spark.conf.get("datam8.zone.raw.name", "raw")
-stage_zone = spark.conf.get("datam8.zone.stage.name", "stage")
-core_zone = spark.conf.get("datam8.zone.core.name", "core")
-curated_zone = spark.conf.get("datam8.zone.curated.name", "curated")
-logging_zone = spark.conf.get("datam8.zone.logging.name", "logging")
-zone = logging_zone
-base_location = "abfss://%(container)s@%(storage)s.dfs.core.windows.net/" % {
-    "container": container_name,
-    "storage": data_lake_name,
-}
-
-# static values
-MAX_VALID_TO_DATE = "2999-12-31"
-
+print("Environment: %s" % env)
+print("Catalog: %s" % catalog_name)
+# print("Mode: %s" % run_mode)
 
 # COMMAND ----------
 
-try:
-    catalog = Catalog(catalog_name)
-    print(f"catalog already exists: {catalog.name}")
-except:
-    spark.sql(
-        f"CREATE CATALOG IF NOT EXISTS {catalog_name} MANAGED LOCATION '{base_location}/catalog_root'")
-    spark.sql(f"ALTER CATALOG {catalog_name} OWNER TO `{owner}`")
-    print(f"Catalog '{catalog_name}' created and ownership set to '{owner}'.")
-    catalog = Catalog(catalog_name)
-catalog.schema = zone
+catalog = Catalog(catalog_name)
 catalog.set_active()
-
-if not catalog.is_unity_enabled:
-    spark.conf.set(
-        "fs.azure.account.key.%s.dfs.core.windows.net" % data_lake_name,
-        dbutils.secrets.get(
-            "aut0kvt0dev0campus", "fs-azure-account-key-%s-dfs-core-windows-net" % data_lake_name),
-    )
-
-# COMMAND ----------
-
-# DBTITLE 1,Initialize widgets
-dbutils.widgets.text("target_zone", "", "1. Target zone")
-
-# COMMAND ----------
-
-# DBTITLE 1,Get parameter values
-target_zone = dbutils.widgets.get("target_zone")
-
-print(f"Target zone: {target_zone}")
-
-# COMMAND ----------
-
-# DBTITLE 1,Get load job name
-load_job_name = LoggingFramework.get_job_name()
-print(f"Load job name: {load_job_name}")
 
 # COMMAND ----------
 
@@ -105,10 +77,9 @@ print(f"Load job name: {load_job_name}")
 # COMMAND ----------
 
 # DBTITLE 1,Start load and store load UUID
-load_uuid = LoggingFramework.start_load(target_zone, load_job_name)
-
-print(f"Load UUID: {load_uuid}")
-
-dbutils.jobs.taskValues.set("load_uuid", load_uuid)
-dbutils.jobs.taskValues.set("target_zone", target_zone)
-dbutils.jobs.taskValues.set("load_job_name", load_job_name)
+{
+    "Job_Run_ID": job_run_id,
+    "Job_Name": job_name,
+    "Insert_Time_UTC": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    "Status": "Started",
+}

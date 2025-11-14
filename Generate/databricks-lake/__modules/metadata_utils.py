@@ -950,7 +950,7 @@ class MetadataResolver:
                     "workload_type": entry.get("workload_type", "job"),
                     "spark_version": entry.get("spark_version", "16.4.x-scala2.12"),
                     "autotermination_minutes": entry.get("autotermination_minutes", 60),
-                    "data_security_mode": entry.get("data_security_mode", "STANDARD"),
+                    "data_security_mode": entry.get("data_security_mode", "DATA_SECURITY_MODE_DEDICATED"),
                     "runtime_engine": entry.get("runtime_engine", "STANDARD"),
                     "variable_name": self.cluster_variable_name(name),
                     "is_default": bool(entry.get("default")),

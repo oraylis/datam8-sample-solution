@@ -10,6 +10,7 @@ variables:
       num_workers: {{ cluster.num_workers }}
 {%- endif %}
       autotermination_minutes: {{ cluster.autotermination_minutes }}
+      kind: CLASSIC_PREVIEW
       data_security_mode: {{ cluster.data_security_mode }}
       runtime_engine: {{ cluster.runtime_engine }}
 {%- if cluster.custom_tags %}

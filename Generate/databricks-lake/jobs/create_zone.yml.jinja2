@@ -12,6 +12,10 @@ resources:
           default: ${var.owner}
         - name: workspace_host
           default: ${workspace.host}
+        - name: job_name
+          default: "{{ '{{job.name}}' }}"
+        - name: job_run_id
+          default: "{{ '{{job.run_id}}' }}"
       permissions:
         - service_principal_name: ${var.run_as_service_principal}
           level: "CAN_MANAGE_RUN"

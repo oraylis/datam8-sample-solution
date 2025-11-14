@@ -24,6 +24,8 @@ from delta import DeltaTable  # noqa: F401
 dbutils.widgets.text("env", "dev", "Environment")
 dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka", "Catalog Name")
 dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
+dbutils.widgets.text("job_run_id", "", "Job Run ID")
+
 # dbutils.widgets.dropdown(
 #     "run_mode",
 #     "INFO",
@@ -39,6 +41,8 @@ dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
 env = dbutils.widgets.get("env")
 catalog_name = dbutils.widgets.get("catalog_name")
 owner = dbutils.widgets.get("owner")
+job_run_id = dbutils.widgets.get("job_run_id")
+
 # run_mode = dbutils.widgets.get("run_mode")
 # sandbox = dbutils.widgets.get("sandbox")
 
