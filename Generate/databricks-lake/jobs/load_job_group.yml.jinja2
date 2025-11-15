@@ -35,7 +35,7 @@ resources:
         pause_status: ${var.unpause_schedules}
 {% endif %}
       tasks:
-        - task_key: Generate_Load_UUID
+        - task_key: Start_Load
           notebook_task:
             notebook_path: ${workspace.root_path}/files/utils/Start_Load
 {% if data.job_value %}

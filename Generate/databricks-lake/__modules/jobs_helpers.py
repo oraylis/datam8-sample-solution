@@ -490,7 +490,7 @@ class JobsPlanner:
                     {
                         "task_key": raw_key,
                         "notebook_path": self._raw_notebook_path(entity, table_name),
-                        "depends_on": ["Generate_Load_UUID"],
+                        "depends_on": ["Start_Load"],
                         "job_cluster_key": cluster_variable,
                     }
                 )
@@ -509,7 +509,7 @@ class JobsPlanner:
                 if dep in entity_task_keys
             ]
             depends_on = self._unique(
-                ["Generate_Load_UUID", *raw_task_lookup.get(entity.entity_id, []), *dependency_keys]
+                ["Start_Load", *raw_task_lookup.get(entity.entity_id, []), *dependency_keys]
             )
 
             entity_tasks.append(
