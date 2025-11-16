@@ -652,8 +652,9 @@ result = merge_builder.execute()
 print(result)
 {%- endif %}
 {%- else %}
+{%- set final_write_columns = data.write_schema_columns or data.schema_columns %}
 final_write_df = final_df.select(
-    {%- for column in data.schema_columns %}
+    {%- for column in final_write_columns %}
     "{{ column }}"{% if not loop.last %}, {% endif %}
     {%- endfor %}
 )

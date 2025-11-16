@@ -234,7 +234,7 @@
         {
             "dataSource": "OracleDev",
             "sourceAlias": "dimtime",
-            "sourceLocation": "[DATAM8].[DIMTIME]",
+            "sourceLocation": "DATAM8.DIMTIME",
             "properties": [
                 {
                     "property": "extract_mode",

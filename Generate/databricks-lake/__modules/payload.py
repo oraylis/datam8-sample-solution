@@ -447,6 +447,9 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         if include_raw_timestamp:
             schema_columns.append("__InsertTimestampRawUTC")
         schema_columns.extend(attribute_names)
+        write_schema_columns = [
+            column for column in schema_columns if column not in surrogate_key_column_set
+        ]
         assignment_attribute_names = attribute_names
         scd1_merge_columns = scd1_non_business
         scd2_merge_columns = scd2_non_business
@@ -513,6 +516,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             "non_business_columns": non_business_columns,
             "attribute_columns": attribute_names,
             "schema_columns": schema_columns,
+            "write_schema_columns": write_schema_columns,
             "merge_conditions_flat": merge_condition_flat,
             "source_references": resolver.entity_source_references(entity),
             "has_lookup_dimensions": bool(dimension_lookups),
