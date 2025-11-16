@@ -596,25 +596,26 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 for entry in mapping_entries
                 if entry.get("target") and entry.get("source")
             ]
-            schema_entries: list[dict[str, Any]] = []
             column_renames: list[dict[str, str]] = []
-            delta_column_details: list[str] = []
+            delta_column_details: list[dict[str, Any]] = []
             for entry in mapping_entries:
                 source_name = entry.get("source")
                 target_name = entry.get("target")
                 entry_props = entry.get("properties", {}) or {}
                 is_delta_column = str(entry_props.get("extract_column", "") or "").strip().lower() == "delta"
-                if source_name:
-                    schema_entries.append(
-                        {
-                            "sourceName": source_name,
-                            "sourceDataType": (entry.get("source_data_type") or {}).get("type"),
-                        }
-                    )
                 if source_name and target_name and source_name != target_name:
                     column_renames.append({"source": source_name, "target": target_name})
                 if is_delta_column and source_name:
-                    delta_column_details.append(source_name)
+                    source_type = (entry.get("source_data_type") or {}).get("type")
+                    canonical_type = None
+                    if source_type:
+                        canonical_type = resolver.map_source_type_to_canonical(data_source_name, source_type) or source_type
+                    delta_column_details.append(
+                        {
+                            "sourceName": source_name,
+                            "canonicalDataType": canonical_type,
+                        }
+                    )
             data_source_type = raw_source.get("source_type") or data_source_entry.get("type")
 
             data = {
@@ -633,7 +634,6 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 "mapping": raw_source.get("mapping"),
                 "mapping_entries": mapping_entries,
                 "select_columns": select_columns,
-                "source_schema": schema_entries,
                 "column_renames": column_renames,
                 "delta_column_details": delta_column_details or None,
                 "delta_column": raw_source.get("delta_column"),

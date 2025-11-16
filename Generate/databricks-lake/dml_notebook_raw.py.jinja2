@@ -110,14 +110,13 @@ print(f"Using delta value: {max_raw}")
 {% endif %}
 source_location = {{ data.source_location | default("", true) | tojson }}
 extract_mode = ("{{ data.extract_mode or '' }}").lower()
-source_schema = {{ data.source_schema | default([], true) | tojson }}
 data_source_type = "{{ data.data_source_type or '' }}"
 column_renames = {{ data.column_renames | default([], true) | tojson }}
 delta_column_details = {{ data.delta_column_details | default([], true) | tojson }}
 if not source_location:
     source_location = source_name
 
-SourceTable = ExtractionFramework(source_location, extract_mode, source_schema)
+SourceTable = ExtractionFramework(source_location, extract_mode)
 extractSourceTable = SourceTable
 if not data_source_type:
     raise ValueError(f"Data source type is missing for '{data_source}'.")
