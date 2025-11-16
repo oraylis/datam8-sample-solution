@@ -244,7 +244,7 @@
             "mapping": [
                 {
                     "targetName": "TIMEKEY",
-                    "sourceName": "[TIMEKEY]",
+                    "sourceName": "TIMEKEY",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -252,7 +252,7 @@
                 },
                 {
                     "targetName": "FULLDATEALTERNATEKEY",
-                    "sourceName": "[FULLDATEALTERNATEKEY]",
+                    "sourceName": "FULLDATEALTERNATEKEY",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": true
@@ -260,7 +260,7 @@
                 },
                 {
                     "targetName": "DAYNUMBEROFWEEK",
-                    "sourceName": "[DAYNUMBEROFWEEK]",
+                    "sourceName": "DAYNUMBEROFWEEK",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -268,7 +268,7 @@
                 },
                 {
                     "targetName": "ENGLISHDAYNAMEOFWEEK",
-                    "sourceName": "[ENGLISHDAYNAMEOFWEEK]",
+                    "sourceName": "ENGLISHDAYNAMEOFWEEK",
                     "sourceDataType": {
                         "type": "string",
                         "charLen": 10,
@@ -277,7 +277,7 @@
                 },
                 {
                     "targetName": "SPANISHDAYNAMEOFWEEK",
-                    "sourceName": "[SPANISHDAYNAMEOFWEEK]",
+                    "sourceName": "SPANISHDAYNAMEOFWEEK",
                     "sourceDataType": {
                         "type": "string",
                         "charLen": 10,
@@ -286,7 +286,7 @@
                 },
                 {
                     "targetName": "FRENCHDAYNAMEOFWEEK",
-                    "sourceName": "[FRENCHDAYNAMEOFWEEK]",
+                    "sourceName": "FRENCHDAYNAMEOFWEEK",
                     "sourceDataType": {
                         "type": "string",
                         "charLen": 10,
@@ -295,7 +295,7 @@
                 },
                 {
                     "targetName": "DAYNUMBEROFMONTH",
-                    "sourceName": "[DAYNUMBEROFMONTH]",
+                    "sourceName": "DAYNUMBEROFMONTH",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -303,7 +303,7 @@
                 },
                 {
                     "targetName": "DAYNUMBEROFYEAR",
-                    "sourceName": "[DAYNUMBEROFYEAR]",
+                    "sourceName": "DAYNUMBEROFYEAR",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -311,7 +311,7 @@
                 },
                 {
                     "targetName": "WEEKNUMBEROFYEAR",
-                    "sourceName": "[WEEKNUMBEROFYEAR]",
+                    "sourceName": "WEEKNUMBEROFYEAR",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -319,7 +319,7 @@
                 },
                 {
                     "targetName": "ENGLISHMONTHNAME",
-                    "sourceName": "[ENGLISHMONTHNAME]",
+                    "sourceName": "ENGLISHMONTHNAME",
                     "sourceDataType": {
                         "type": "string",
                         "charLen": 10,
@@ -328,7 +328,7 @@
                 },
                 {
                     "targetName": "SPANISHMONTHNAME",
-                    "sourceName": "[SPANISHMONTHNAME]",
+                    "sourceName": "SPANISHMONTHNAME",
                     "sourceDataType": {
                         "type": "string",
                         "charLen": 10,
@@ -337,7 +337,7 @@
                 },
                 {
                     "targetName": "FRENCHMONTHNAME",
-                    "sourceName": "[FRENCHMONTHNAME]",
+                    "sourceName": "FRENCHMONTHNAME",
                     "sourceDataType": {
                         "type": "string",
                         "charLen": 10,
@@ -346,7 +346,7 @@
                 },
                 {
                     "targetName": "MONTHNUMBEROFYEAR",
-                    "sourceName": "[MONTHNUMBEROFYEAR]",
+                    "sourceName": "MONTHNUMBEROFYEAR",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -354,7 +354,7 @@
                 },
                 {
                     "targetName": "CALENDARQUARTER",
-                    "sourceName": "[CALENDARQUARTER]",
+                    "sourceName": "CALENDARQUARTER",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -362,7 +362,7 @@
                 },
                 {
                     "targetName": "CALENDARYEAR",
-                    "sourceName": "[CALENDARYEAR]",
+                    "sourceName": "CALENDARYEAR",
                     "sourceDataType": {
                         "type": "string",
                         "charLen": 4,
@@ -371,7 +371,7 @@
                 },
                 {
                     "targetName": "CALENDARSEMESTER",
-                    "sourceName": "[CALENDARSEMESTER]",
+                    "sourceName": "CALENDARSEMESTER",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -379,7 +379,7 @@
                 },
                 {
                     "targetName": "FISCALQUARTER",
-                    "sourceName": "[FISCALQUARTER]",
+                    "sourceName": "FISCALQUARTER",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -387,7 +387,7 @@
                 },
                 {
                     "targetName": "FISCALYEAR",
-                    "sourceName": "[FISCALYEAR]",
+                    "sourceName": "FISCALYEAR",
                     "sourceDataType": {
                         "type": "string",
                         "charLen": 4,
@@ -396,7 +396,7 @@
                 },
                 {
                     "targetName": "FISCALSEMESTER",
-                    "sourceName": "[FISCALSEMESTER]",
+                    "sourceName": "FISCALSEMESTER",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true

@@ -596,12 +596,33 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 for entry in mapping_entries
                 if entry.get("target") and entry.get("source")
             ]
+            schema_entries: list[dict[str, Any]] = []
+            column_renames: list[dict[str, str]] = []
+            delta_column_details: list[str] = []
+            for entry in mapping_entries:
+                source_name = entry.get("source")
+                target_name = entry.get("target")
+                entry_props = entry.get("properties", {}) or {}
+                is_delta_column = str(entry_props.get("extract_column", "") or "").strip().lower() == "delta"
+                if source_name:
+                    schema_entries.append(
+                        {
+                            "sourceName": source_name,
+                            "sourceDataType": (entry.get("source_data_type") or {}).get("type"),
+                        }
+                    )
+                if source_name and target_name and source_name != target_name:
+                    column_renames.append({"source": source_name, "target": target_name})
+                if is_delta_column and source_name:
+                    delta_column_details.append(source_name)
+            data_source_type = raw_source.get("source_type") or data_source_entry.get("type")
 
             data = {
                 "zone": raw_zone.name,
                 "zone_display": raw_zone.display_name,
                 "data_source": data_source_name,
                 "data_source_display": data_source_entry.get("displayName", data_source_name),
+                "data_source_type": data_source_type,
                 "source_name": source_alias,
                 "full_table_name": full_table_name,
                 "write_mode": write_mode,
@@ -612,6 +633,9 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 "mapping": raw_source.get("mapping"),
                 "mapping_entries": mapping_entries,
                 "select_columns": select_columns,
+                "source_schema": schema_entries,
+                "column_renames": column_renames,
+                "delta_column_details": delta_column_details or None,
                 "delta_column": raw_source.get("delta_column"),
                 "source_delta_column": raw_source.get("source_delta_column"),
             }
