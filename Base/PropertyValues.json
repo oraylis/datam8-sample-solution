@@ -99,6 +99,21 @@
             "name": "sales",
             "displayName": "Sales",
             "property": "business_area"
+        },
+        {
+            "name": "true",
+            "displayName": "Has TypeWidening",
+            "property": "enable_type_widening"
+        },
+        {
+            "name": "name",
+            "property": "column_mapping_mode",
+            "displayName": "Name Column Mapping"
+        },
+        {
+            "name": "7_days",
+            "property": "data_retention",
+            "displayName": "7 Days Data Retention"
         }
     ]
 }
