@@ -63,6 +63,29 @@ def _properties_to_dict(properties: Iterable[Any] | None) -> dict[str, Any]:
     return result
 
 
+def _attribute_property_equals(attribute: Any, property_name: str, expected_value: str) -> bool:
+    """Check if an attribute exposes a property matching the provided value."""
+    props = getattr(attribute, "properties", None) or []
+    if not props:
+        return False
+    target_name = (property_name or "").strip().lower()
+    target_value = (expected_value or "").strip().lower()
+    if not target_name:
+        return False
+    for prop in props:
+        name = getattr(prop, "property", None)
+        if not name:
+            continue
+        if str(name).strip().lower() != target_name:
+            continue
+        value = getattr(prop, "value", None)
+        if value is None:
+            continue
+        if str(value).strip().lower() == target_value:
+            return True
+    return False
+
+
 def _strip_brackets(value: str) -> str:
     """Remove surrounding square brackets from identifiers."""
     trimmed = value.strip()
@@ -79,6 +102,15 @@ def _sanitize_identifier(value: str | None) -> str:
     cleaned = re.sub(r"\W+", "_", value.strip())
     cleaned = re.sub(r"_+", "_", cleaned)
     return cleaned.strip("_")
+
+
+def _slug(value: str | None) -> str:
+    """Generate a filesystem-safe slug from a value."""
+    if not value:
+        return "default"
+    cleaned = re.sub(r"[^A-Za-z0-9]+", "_", value.strip())
+    cleaned = re.sub(r"_+", "_", cleaned).strip("_").lower()
+    return cleaned or "default"
 
 
 def _select_expr(source_expr: str, target: str) -> str:
@@ -130,11 +162,12 @@ class MetadataResolver:
     # ------------------------------------------------------ Property values
     @property
     @lru_cache
-    def _property_values_map(self) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
-        """Split PropertyValues.json into job and schedule lookups."""
+    def _property_values_map(self) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+        """Split PropertyValues.json into job, schedule, and cluster lookups."""
         data = _load_json(self.base_root / "PropertyValues.json")
         jobs: dict[str, dict[str, Any]] = {}
         schedules: dict[str, dict[str, Any]] = {}
+        clusters: dict[str, dict[str, Any]] = {}
         for entry in data.get("propertyValues", []):
             prop = entry.get("property")
             name = entry.get("name")
@@ -144,7 +177,9 @@ class MetadataResolver:
                 jobs[name] = entry
             elif prop == "schedules":
                 schedules[name] = entry
-        return jobs, schedules
+            elif prop == "cluster":
+                clusters[name] = entry
+        return jobs, schedules, clusters
 
     def resolve_property(self, locator, entity, property_name: str) -> Any:
         """Resolve an entity property using entity -> module -> product fallback."""
@@ -169,16 +204,18 @@ class MetadataResolver:
         if not job_value:
             return None
 
-        jobs, schedules = self._property_values_map
+        jobs, schedules, clusters = self._property_values_map
         job_entry = jobs.get(job_value)
         if not job_entry:
             return None
 
         schedule_name = None
+        cluster_name = job_entry.get("cluster")
         for prop in job_entry.get("properties", []) or []:
             if prop.get("property") == "schedules":
                 schedule_name = prop.get("value")
-                break
+            elif prop.get("property") == "cluster":
+                cluster_name = prop.get("value")
 
         schedule_entry = schedules.get(schedule_name) if schedule_name else None
         schedule_data = None
@@ -189,10 +226,24 @@ class MetadataResolver:
                 "cron": schedule_entry.get("cron"),
             }
 
+        cluster_entry = clusters.get(cluster_name) if cluster_name else None
+        cluster_data = None
+        if cluster_entry:
+            cluster_data = {
+                "name": cluster_name,
+                "display_name": cluster_entry.get("displayName", cluster_name),
+                "node_type": cluster_entry.get("node_type"),
+                "num_workers": cluster_entry.get("num_workers"),
+                "workload_type": cluster_entry.get("workload_type"),
+                "spark_version": cluster_entry.get("spark_version"),
+                "autotermination_minutes": cluster_entry.get("autotermination_minutes"),
+                "variable_name": self.cluster_variable_name(cluster_name),
+            }
+
         return {
             "value": job_value,
             "display_name": job_entry.get("displayName", job_value),
-            "cluster": job_entry.get("cluster", {}),
+            "cluster": cluster_data,
             "schedule": schedule_data,
         }
 
@@ -442,25 +493,27 @@ class MetadataResolver:
         }
 
     # ----------------------------------------------------------- Column builds
-    def attribute_metadata(self, attribute) -> dict[str, Any]:
+    def attribute_metadata(self, attribute, *, foreign_key_table: str | None = None) -> dict[str, Any]:
         """Derive metadata flags for an attribute."""
         metadata: dict[str, Any] = {}
         if getattr(attribute, "isBusinessKey", False):
             metadata["business_key"] = True
-            #metadata.setdefault("primary_key", True)
-
-        attribute_type = getattr(attribute, "attributeType", "") or ""
-        if attribute_type.lower() == "sid":
+        if _attribute_property_equals(attribute, "attribute_type", "sk"):
             metadata["surrogate_key"] = True
-            #metadata["primary_key"] = True
-
+        if foreign_key_table:
+            metadata["foreign_key"] = True
+            metadata["foreign_key_table"] = foreign_key_table
         return metadata
 
-    def build_standard_columns(self, entity) -> list[dict[str, Any]]:
+    def build_standard_columns(self, entity, *, foreign_key_columns: dict[str, str] | None = None) -> list[dict[str, Any]]:
         """Create column descriptors for a modeled entity (non-raw)."""
         columns: list[dict[str, Any]] = []
+        fk_columns = foreign_key_columns or {}
         for attribute in entity.attributes:
-            extra_metadata = self.attribute_metadata(attribute)
+            extra_metadata = self.attribute_metadata(
+                attribute,
+                foreign_key_table=fk_columns.get(attribute.name),
+            )
             columns.append(
                 self.build_column_from_canonical(
                     name=attribute.name,
@@ -788,6 +841,131 @@ class MetadataResolver:
                 return True
         return False
 
+    def _relationship_target_entity(self, relationship):
+        """Resolve the locator/entity referenced by a relationship's target."""
+        target_location = getattr(relationship, "targetLocation", None)
+        if target_location is None and isinstance(relationship, dict):
+            target_location = relationship.get("targetLocation")
+
+        locator = None
+        target_entity = None
+
+        if isinstance(target_location, int):
+            locator_entity = self._entity_by_id.get(target_location)
+            if locator_entity:
+                locator, target_entity = locator_entity
+        elif isinstance(target_location, str):
+            search_target = target_location.strip()
+            if search_target:
+                for candidate_locator, candidate_wrapper in self.model.modelEntities.items():
+                    if self.locator_to_dm8l(candidate_locator) == search_target:
+                        locator = candidate_locator
+                        target_entity = candidate_wrapper.entity
+                        break
+
+        return locator, target_entity
+
+    def foreign_key_columns(self, entity) -> dict[str, str]:
+        """Return mapping of attribute name -> foreign dimension table."""
+        fk_columns: dict[str, str] = {}
+        relationships = getattr(entity, "relationships", []) or []
+        if not relationships:
+            return fk_columns
+
+        for relationship in relationships:
+            target_locator, target_entity = self._relationship_target_entity(relationship)
+            if target_entity is None:
+                continue
+
+            dimension_zone_meta = self.zone_from_folder(target_locator.folders[0]) if getattr(target_locator, "folders", None) else None
+            if dimension_zone_meta is None:
+                continue
+
+            target_attributes = {
+                attribute.name: attribute for attribute in getattr(target_entity, "attributes", [])
+            }
+
+            mappings = getattr(relationship, "attributes", None)
+            if mappings is None and isinstance(relationship, dict):
+                mappings = relationship.get("attributes")
+
+            for mapping in mappings or []:
+                source_name = getattr(mapping, "sourceName", None)
+                target_name = getattr(mapping, "targetName", None)
+                if source_name is None and isinstance(mapping, dict):
+                    source_name = mapping.get("sourceName")
+                if target_name is None and isinstance(mapping, dict):
+                    target_name = mapping.get("targetName")
+                if not source_name or not target_name:
+                    continue
+                target_attribute = target_attributes.get(target_name)
+                if not target_attribute:
+                    continue
+                if not _attribute_property_equals(target_attribute, "attribute_type", "sk"):
+                    continue
+
+                dimension_product_info = (
+                    self.folder_info(tuple(target_locator.folders[:2]))
+                    if len(target_locator.folders) >= 2
+                    else None
+                )
+                dimension_module_info = (
+                    self.folder_info(tuple(target_locator.folders[:3]))
+                    if len(target_locator.folders) >= 3
+                    else None
+                )
+                data_product_name = (
+                    dimension_product_info.name
+                    if dimension_product_info
+                    else (target_locator.folders[1] if len(target_locator.folders) >= 2 else "UnknownProduct")
+                )
+                data_module_name = (
+                    dimension_module_info.name
+                    if dimension_module_info
+                    else (target_locator.folders[2] if len(target_locator.folders) >= 3 else "General")
+                )
+                dimension_full_table_name = f"{data_product_name}_{data_module_name}_{target_entity.name}"
+                referenced_table = f"{dimension_zone_meta.name}.{dimension_full_table_name}"
+                fk_columns[source_name] = referenced_table
+
+        return fk_columns
+
+    def cluster_variable_name(self, cluster_name: str | None) -> str | None:
+        """Return the variable name for a cluster value."""
+        if not cluster_name:
+            return None
+        return f"cluster_{_slug(cluster_name)}"
+
+    def cluster_definitions(self) -> list[dict[str, Any]]:
+        """Return cluster definitions from PropertyValues."""
+        _, _, clusters = self._property_values_map
+        definitions: list[dict[str, Any]] = []
+        for name, entry in clusters.items():
+            definitions.append(
+                {
+                    "name": name,
+                    "display_name": entry.get("displayName", name),
+                    "node_type": entry.get("node_type") or "Standard_D4ds_v5",
+                    "num_workers": entry.get("num_workers", 2),
+                    "workload_type": entry.get("workload_type", "job"),
+                    "spark_version": entry.get("spark_version", "16.4.x-scala2.12"),
+                    "autotermination_minutes": entry.get("autotermination_minutes", 60),
+                    "data_security_mode": entry.get("data_security_mode", "DATA_SECURITY_MODE_DEDICATED"),
+                    "runtime_engine": entry.get("runtime_engine", "STANDARD"),
+                    "variable_name": self.cluster_variable_name(name),
+                    "is_default": bool(entry.get("default")),
+                }
+            )
+        return definitions
+
+    def default_cluster_variable_name(self) -> str | None:
+        """Return the variable name for the default cluster."""
+        definitions = self.cluster_definitions()
+        for entry in definitions:
+            if entry.get("is_default"):
+                return entry.get("variable_name")
+        return definitions[0]["variable_name"] if definitions else None
+
     def dimension_lookups_for_fact(self, locator, entity) -> list[dict[str, Any]]:
         """
         Determine dimension join instructions for a fact entity using explicit relationships.
@@ -802,49 +980,8 @@ class MetadataResolver:
 
         relationships = getattr(entity, "relationships", []) or []
         for relationship in relationships:
-            target_location = getattr(relationship, "targetLocation", None)
-            if target_location is None and isinstance(relationship, dict):
-                target_location = relationship.get("targetLocation")
-
-            target_locator = None
-            target_entity = None
-
-            if isinstance(target_location, int):
-                locator_entity = self._entity_by_id.get(target_location)
-                if locator_entity:
-                    target_locator, target_entity = locator_entity
-            elif isinstance(target_location, str):
-                search_target = target_location.strip()
-                if search_target:
-                    for candidate_locator, candidate_wrapper in self.model.modelEntities.items():
-                        if self.locator_to_dm8l(candidate_locator) == search_target:
-                            target_locator = candidate_locator
-                            target_entity = candidate_wrapper.entity
-                            break
-
+            target_locator, target_entity = self._relationship_target_entity(relationship)
             if not target_locator or target_entity is None or not getattr(target_locator, "folders", None):
-                continue
-
-            join_mappings = getattr(relationship, "attributes", None)
-            if join_mappings is None and isinstance(relationship, dict):
-                join_mappings = relationship.get("attributes")
-
-            join_columns: list[dict[str, str]] = []
-            if join_mappings:
-                for mapping in join_mappings:
-                    fact_column = getattr(mapping, "sourceName", None)
-                    dimension_column = getattr(mapping, "targetName", None)
-                    if fact_column is None and isinstance(mapping, dict):
-                        fact_column = mapping.get("sourceName")
-                    if dimension_column is None and isinstance(mapping, dict):
-                        dimension_column = mapping.get("targetName")
-                    if not fact_column or not dimension_column:
-                        continue
-                    join_columns.append(
-                        {"fact_column": fact_column, "dimension_column": dimension_column}
-                    )
-
-            if not join_columns:
                 continue
 
             dimension_zone_meta = self.zone_from_folder(target_locator.folders[0])
@@ -876,17 +1013,109 @@ class MetadataResolver:
             dimension_attributes = {
                 attribute.name: attribute for attribute in getattr(target_entity, "attributes", [])
             }
-            dimension_sid_column = next(
-                (
-                    column["dimension_column"]
-                    for column in join_columns
-                    if (
-                        dim_attr := dimension_attributes.get(column["dimension_column"])
+            dimension_business_keys = [
+                attr.name for attr in dimension_attributes.values() if getattr(attr, "isBusinessKey", False)
+            ]
+            dimension_surrogate_keys = [
+                attr.name
+                for attr in dimension_attributes.values()
+                if _attribute_property_equals(attr, "attribute_type", "sk")
+            ]
+
+            join_mappings = getattr(relationship, "attributes", None)
+            if join_mappings is None and isinstance(relationship, dict):
+                join_mappings = relationship.get("attributes")
+
+            relationship_join_columns: list[dict[str, str]] = []
+            sk_fact_columns: list[str] = []
+            if join_mappings:
+                for mapping in join_mappings:
+                    fact_column = getattr(mapping, "sourceName", None)
+                    dimension_column = getattr(mapping, "targetName", None)
+                    if fact_column is None and isinstance(mapping, dict):
+                        fact_column = mapping.get("sourceName")
+                    if dimension_column is None and isinstance(mapping, dict):
+                        dimension_column = mapping.get("targetName")
+                    if not fact_column or not dimension_column:
+                        continue
+                    relationship_join_columns.append(
+                        {"fact_column": fact_column, "dimension_column": dimension_column}
                     )
-                    and getattr(dim_attr, "attributeType", "").lower() == "sid"
-                ),
-                None,
-            )
+                    target_attribute = dimension_attributes.get(dimension_column)
+                    if target_attribute and _attribute_property_equals(
+                        target_attribute, "attribute_type", "sk"
+                    ):
+                        sk_fact_columns.append(fact_column)
+
+            if not relationship_join_columns or not sk_fact_columns:
+                continue
+
+            # Determine which fact column receives the surrogate key update.
+            sid_column = next((column for column in sk_fact_columns if column), None)
+            if sid_column is None:
+                for column in relationship_join_columns:
+                    fact_attr = fact_attributes.get(column["fact_column"])
+                    if fact_attr and (
+                        getattr(fact_attr, "attributeType", "").lower() == "sid"
+                        or _attribute_property_equals(fact_attr, "attribute_type", "sk")
+                    ):
+                        sid_column = column["fact_column"]
+                        break
+            if sid_column is None and relationship_join_columns:
+                sid_column = relationship_join_columns[0]["fact_column"]
+            if sid_column is None:
+                sid_column = next(
+                    (
+                        name
+                        for name, attr in fact_attributes.items()
+                        if getattr(attr, "attributeType", "").lower() == "sid"
+                        or _attribute_property_equals(attr, "attribute_type", "sk")
+                    ),
+                    None,
+                )
+            if sid_column is None:
+                continue
+
+            join_columns: list[dict[str, str]] = []
+            if dimension_business_keys:
+                seen_pairs: set[tuple[str, str]] = set()
+                for bk in dimension_business_keys:
+                    fact_column = next(
+                        (
+                            column["fact_column"]
+                            for column in relationship_join_columns
+                            if column["dimension_column"] == bk
+                        ),
+                        None,
+                    )
+                    if fact_column is None:
+                        fact_column = bk
+                    key = (fact_column, bk)
+                    if fact_column and key not in seen_pairs:
+                        join_columns.append({"fact_column": fact_column, "dimension_column": bk})
+                        seen_pairs.add(key)
+
+            if not join_columns:
+                join_columns = relationship_join_columns
+
+            if not join_columns:
+                continue
+
+            dimension_sid_column = None
+            if dimension_surrogate_keys:
+                dimension_sid_column = dimension_surrogate_keys[0]
+            if dimension_sid_column is None:
+                dimension_sid_column = next(
+                    (
+                        column["dimension_column"]
+                        for column in relationship_join_columns
+                        if (
+                            dim_attr := dimension_attributes.get(column["dimension_column"])
+                        )
+                        and getattr(dim_attr, "attributeType", "").lower() == "sid"
+                    ),
+                    None,
+                )
             if dimension_sid_column is None:
                 dimension_sid_candidates = [
                     attr.name
@@ -895,22 +1124,10 @@ class MetadataResolver:
                 ]
                 if dimension_sid_candidates:
                     dimension_sid_column = dimension_sid_candidates[0]
+                elif dimension_surrogate_keys:
+                    dimension_sid_column = dimension_surrogate_keys[0]
                 else:
                     dimension_sid_column = join_columns[0]["dimension_column"]
-
-            sid_column = next(
-                (
-                    column["fact_column"]
-                    for column in join_columns
-                    if (
-                        fact_attr := fact_attributes.get(column["fact_column"])
-                    )
-                    and getattr(fact_attr, "attributeType", "").lower() == "sid"
-                ),
-                None,
-            )
-            if sid_column is None:
-                sid_column = join_columns[0]["fact_column"]
 
             lookups.append(
                 {

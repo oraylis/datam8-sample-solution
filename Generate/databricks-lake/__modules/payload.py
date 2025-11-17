@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Sequence, Iterable
 from pathlib import Path
 from typing import Any
 import re
@@ -45,10 +45,13 @@ def _build_insert_assignments(
     attribute_names: Sequence[str],
     include_raw_timestamp: bool,
     include_source_table: bool,
+    include_business_function: bool = False,
 ) -> list[dict[str, str]]:
     """Create default insert assignments for merge statements."""
     assignments: list[dict[str, str]] = []
     technical_columns = ["__InsertTimestampUTC", "__UpdateTimestampUTC"]
+    if include_business_function:
+        technical_columns.append("__BusinessFunction")
     if include_source_table:
         technical_columns.append("__SourceTable")
     if include_raw_timestamp:
@@ -61,6 +64,41 @@ def _build_insert_assignments(
         assignments.append(_assignment_literal(name, f"src.`{name}`"))
 
     return assignments
+
+
+def _attribute_property_equals(attribute: Any, property_name: str, expected_value: str) -> bool:
+    """Check if an attribute exposes a given property/value pair."""
+    properties = getattr(attribute, "properties", None) or []
+    if not properties:
+        return False
+
+    target_property = (property_name or "").strip().lower()
+    target_value = (expected_value or "").strip().lower()
+    if not target_property:
+        return False
+
+    for prop in properties:
+        name = getattr(prop, "property", None)
+        if not name:
+            continue
+        if str(name).strip().lower() != target_property:
+            continue
+        value = getattr(prop, "value", None)
+        if value is None:
+            continue
+        if str(value).strip().lower() == target_value:
+            return True
+
+    return False
+
+
+def _surrogate_key_columns(entity: Any) -> list[str]:
+    """Return attribute names flagged as surrogate keys via attribute_type property."""
+    columns: list[str] = []
+    for attribute in getattr(entity, "attributes", []) or []:
+        if _attribute_property_equals(attribute, "attribute_type", "sk"):
+            columns.append(attribute.name)
+    return columns
 
 
 @register_payload("ddl_notebook.py.jinja2")
@@ -93,7 +131,11 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         data_module_name = module_info.name if module_info else (locator.folders[2] if len(locator.folders) >= 3 else "General")
 
         # Assemble shared metadata for the standard notebook.
-        modeled_columns = resolver.build_standard_columns(entity)
+        foreign_key_columns = resolver.foreign_key_columns(entity)
+        modeled_columns = resolver.build_standard_columns(
+            entity,
+            foreign_key_columns=foreign_key_columns,
+        )
         entity_sources = getattr(entity, "sources", []) or []
         has_external_source = any(getattr(source, "dataSource", None) for source in entity_sources)
         technical_columns: list[dict[str, Any]] = [
@@ -342,6 +384,8 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
 
         history_config = resolver.history_configuration(entity)
         attribute_names = resolver.attribute_names(entity)
+        entity_sources = getattr(entity, "sources", []) or []
+        has_external_source = any(getattr(source, "dataSource", None) for source in entity_sources)
         business_keys = history_config["business_keys"]
         non_business_columns = [name for name in attribute_names if name not in business_keys]
         scd0_columns = history_config["scd0"]
@@ -349,6 +393,8 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         scd2_columns = history_config["scd2"]
         scd1_non_business = [name for name in scd1_columns if name not in business_keys]
         scd2_non_business = [name for name in scd2_columns if name not in business_keys]
+        surrogate_key_columns = _surrogate_key_columns(entity)
+        surrogate_key_column_set = set(surrogate_key_columns)
 
         raw_sources = resolver.raw_sources(locator, entity)
         stage_sources = []
@@ -389,18 +435,47 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         merge_condition_flat = " AND ".join(merge_conditions) if merge_conditions else ""
         include_raw_timestamp = source_mode == "raw_delta"
         include_source_table = source_mode == "raw_delta"
+        include_business_function = not has_external_source
+        schema_columns = [
+            "__InsertTimestampUTC",
+            "__UpdateTimestampUTC",
+        ]
+        if include_business_function:
+            schema_columns.append("__BusinessFunction")
+        if include_source_table:
+            schema_columns.append("__SourceTable")
+        if include_raw_timestamp:
+            schema_columns.append("__InsertTimestampRawUTC")
+        schema_columns.extend(attribute_names)
+        write_schema_columns = [
+            column for column in schema_columns if column not in surrogate_key_column_set
+        ]
+        assignment_attribute_names = attribute_names
+        scd1_merge_columns = scd1_non_business
+        scd2_merge_columns = scd2_non_business
+        if write_mode == "merge" and surrogate_key_column_set:
+            assignment_attribute_names = [
+                name for name in attribute_names if name not in surrogate_key_column_set
+            ]
+            scd1_merge_columns = [
+                name for name in scd1_non_business if name not in surrogate_key_column_set
+            ]
+            scd2_merge_columns = [
+                name for name in scd2_non_business if name not in surrogate_key_column_set
+            ]
         insert_assignments = _build_insert_assignments(
-            attribute_names,
+            assignment_attribute_names,
             include_raw_timestamp,
             include_source_table,
+            include_business_function=include_business_function,
         )
         scd1_update_assignments = [
-            _assignment_literal(name, f"src.`{name}`") for name in scd1_non_business
+            _assignment_literal(name, f"src.`{name}`") for name in scd1_merge_columns
         ]
         if scd1_update_assignments:
             scd1_update_assignments.append(_assignment_literal("__UpdateTimestampUTC", "src.__UpdateTimestampUTC"))
         scd1_change_condition_sql = " OR ".join(
-            f"NOT (tgt.`{column}` <=> src.`{column}`)" for column in scd1_non_business
+            f"NOT (tgt.`{column}` <=> src.`{column}`)" for column in scd1_merge_columns
         )
         scd0_helper_columns = [
             {"column": column, "helper": _scd0_helper_name(column)} for column in scd0_columns
@@ -414,7 +489,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             "business_keys": business_keys,
             "scd0_helper_lookup": scd0_helper_lookup,
             "scd0_helper_columns": scd0_helper_columns,
-            "scd2_non_business_columns": scd2_non_business,
+            "scd2_non_business_columns": scd2_merge_columns,
             "scd1_update_assignments": scd1_update_assignments,
             "scd1_change_condition": scd1_change_condition_sql,
             "insert_assignments": insert_assignments,
@@ -440,6 +515,8 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             "business_keys": business_keys,
             "non_business_columns": non_business_columns,
             "attribute_columns": attribute_names,
+            "schema_columns": schema_columns,
+            "write_schema_columns": write_schema_columns,
             "merge_conditions_flat": merge_condition_flat,
             "source_references": resolver.entity_source_references(entity),
             "has_lookup_dimensions": bool(dimension_lookups),
@@ -519,12 +596,37 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 for entry in mapping_entries
                 if entry.get("target") and entry.get("source")
             ]
+            column_renames: list[dict[str, str]] = []
+            target_columns: list[str] = []
+            delta_column_details: list[dict[str, Any]] = []
+            for entry in mapping_entries:
+                source_name = entry.get("source")
+                target_name = entry.get("target")
+                entry_props = entry.get("properties", {}) or {}
+                is_delta_column = str(entry_props.get("extract_column", "") or "").strip().lower() == "delta"
+                if target_name:
+                    target_columns.append(target_name)
+                if source_name and target_name and source_name != target_name:
+                    column_renames.append({"source": source_name, "target": target_name})
+                if is_delta_column and source_name:
+                    source_type = (entry.get("source_data_type") or {}).get("type")
+                    canonical_type = None
+                    if source_type:
+                        canonical_type = resolver.map_source_type_to_canonical(data_source_name, source_type) or source_type
+                    delta_column_details.append(
+                        {
+                            "sourceName": source_name,
+                            "canonicalDataType": canonical_type,
+                        }
+                    )
+            data_source_type = raw_source.get("source_type") or data_source_entry.get("type")
 
             data = {
                 "zone": raw_zone.name,
                 "zone_display": raw_zone.display_name,
                 "data_source": data_source_name,
                 "data_source_display": data_source_entry.get("displayName", data_source_name),
+                "data_source_type": data_source_type,
                 "source_name": source_alias,
                 "full_table_name": full_table_name,
                 "write_mode": write_mode,
@@ -535,6 +637,9 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 "mapping": raw_source.get("mapping"),
                 "mapping_entries": mapping_entries,
                 "select_columns": select_columns,
+                "target_columns": target_columns,
+                "column_renames": column_renames,
+                "delta_column_details": delta_column_details or None,
                 "delta_column": raw_source.get("delta_column"),
                 "source_delta_column": raw_source.get("source_delta_column"),
             }
@@ -635,6 +740,53 @@ def generate_schema_resources(model: Model, cache: Cache) -> Sequence[IPayload]:
     ]
 
 
+
+@register_payload("clusters/clusters.yml.jinja2")
+def generate_cluster_resources(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Emit dedicated cluster resources for bundle deployment."""
+    resolver = MetadataResolver(model)
+    clusters = resolver.cluster_definitions()
+    if not clusters:
+        return []
+
+    cluster_entries: list[dict[str, Any]] = []
+    for cluster in clusters:
+        variable_name = cluster.get("variable_name")
+        if not variable_name:
+            continue
+        custom_tags: dict[str, str] = {}
+        display_name = cluster.get("display_name")
+        if display_name:
+            custom_tags["friendly_name"] = repr(display_name)
+        workload_type = cluster.get("workload_type")
+        if workload_type:
+            custom_tags["workload_type"] = repr(workload_type)
+
+        cluster_entries.append(
+            {
+                "variable_name": variable_name,
+                "description": f"Cluster settings for {cluster.get('name', variable_name)}",
+                "spark_version": cluster.get("spark_version", "13.3.x-scala2.12"),
+                "node_type": cluster.get("node_type", "Standard_D4ds_v5"),
+                "num_workers": cluster.get("num_workers"),
+                "autotermination_minutes": cluster.get("autotermination_minutes", 60),
+                "data_security_mode": cluster.get("data_security_mode", "STANDARD"),
+                "runtime_engine": cluster.get("runtime_engine", "STANDARD"),
+                "custom_tags": custom_tags or None,
+            }
+        )
+
+    if not cluster_entries:
+        return []
+
+    return [
+        BasePayload(
+            data={"clusters": cluster_entries},
+            output_path=Path("clusters", "clusters.yml"),
+        )
+    ]
+
+
 def _get_jobs_plan(model: Model, cache: Cache) -> dict[str, Any]:
     cache_key = ("databricks_jobs_plan",)
     try:
@@ -653,13 +805,28 @@ def _prepare_job_data(job: dict[str, Any], **extra: Any) -> dict[str, Any]:
     return data
 
 
+def _assign_job_clusters(data: dict[str, Any], cluster_vars: Iterable[str]) -> None:
+    """Populate job cluster descriptors based on the requested variable names."""
+    unique_keys: list[str] = []
+    for var in cluster_vars:
+        if not var:
+            continue
+        if var not in unique_keys:
+            unique_keys.append(var)
+    if not unique_keys:
+        return
+    clusters = [{"job_cluster_key": key} for key in unique_keys]
+    data["job_clusters"] = clusters
+    data["default_job_cluster_key"] = clusters[0]["job_cluster_key"]
+
+
 @register_payload("jobs/create_all.yml.jinja2")
 def generate_jobs_create_all(model: Model, cache: Cache) -> Sequence[IPayload]:
     plan = _get_jobs_plan(model, cache)
     job = plan.get("create_all")
     if not job:
         return []
-    data = _prepare_job_data(job, cluster_var="cluster_id")
+    data = _prepare_job_data(job)
     return [BasePayload(data=data, output_path=job["output_path"])]
 
 
@@ -668,7 +835,7 @@ def generate_jobs_create_zones(model: Model, cache: Cache) -> Sequence[IPayload]
     plan = _get_jobs_plan(model, cache)
     payloads: list[IPayload] = []
     for job in plan.get("create_zones", []):
-        data = _prepare_job_data(job, cluster_var="cluster_id")
+        data = _prepare_job_data(job)
         payloads.append(BasePayload(data=data, output_path=job["output_path"]))
     return payloads
 
@@ -677,13 +844,15 @@ def generate_jobs_create_zones(model: Model, cache: Cache) -> Sequence[IPayload]
 def generate_jobs_create_modules(model: Model, cache: Cache) -> Sequence[IPayload]:
     plan = _get_jobs_plan(model, cache)
     payloads: list[IPayload] = []
+    resolver = MetadataResolver(model)
+    default_cluster = resolver.default_cluster_variable_name()
     for job in plan.get("create_modules", []):
-        data = _prepare_job_data(
-            job,
-            cluster_var="cluster_id",
-        )
+        data = _prepare_job_data(job)
         if not data.get("tasks"):
             continue
+        if not data.get("cluster_variable"):
+            data["cluster_variable"] = default_cluster
+        _assign_job_clusters(data, [data.get("cluster_variable")])
         payloads.append(BasePayload(data=data, output_path=job["output_path"]))
     return payloads
 
@@ -694,7 +863,7 @@ def generate_jobs_load_all(model: Model, cache: Cache) -> Sequence[IPayload]:
     job = plan.get("load_all")
     if not job:
         return []
-    data = _prepare_job_data(job, cluster_var="cluster_id")
+    data = _prepare_job_data(job)
     return [BasePayload(data=data, output_path=job["output_path"])]
 
 
@@ -704,5 +873,6 @@ def generate_jobs_load_groups(model: Model, cache: Cache) -> Sequence[IPayload]:
     payloads: list[IPayload] = []
     for job in plan.get("load_jobs", []):
         data = _prepare_job_data(job)
+        _assign_job_clusters(data, [data.get("cluster_variable")])
         payloads.append(BasePayload(data=data, output_path=job["output_path"]))
     return payloads

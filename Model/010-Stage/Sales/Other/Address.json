@@ -134,7 +134,7 @@
             "mapping": [
                 {
                     "targetName": "AddressID",
-                    "sourceName": "[AddressID]",
+                    "sourceName": "AddressID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -142,7 +142,7 @@
                 },
                 {
                     "targetName": "AddressLine1",
-                    "sourceName": "[AddressLine1]",
+                    "sourceName": "AddressLine1",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 60,
@@ -151,7 +151,7 @@
                 },
                 {
                     "targetName": "AddressLine2",
-                    "sourceName": "[AddressLine2]",
+                    "sourceName": "AddressLine2",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 60,
@@ -160,7 +160,7 @@
                 },
                 {
                     "targetName": "City",
-                    "sourceName": "[City]",
+                    "sourceName": "City",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 30,
@@ -169,7 +169,7 @@
                 },
                 {
                     "targetName": "StateProvince",
-                    "sourceName": "[StateProvince]",
+                    "sourceName": "StateProvince",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 50,
@@ -178,7 +178,7 @@
                 },
                 {
                     "targetName": "CountryRegion",
-                    "sourceName": "[CountryRegion]",
+                    "sourceName": "CountryRegion",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 50,
@@ -187,7 +187,7 @@
                 },
                 {
                     "targetName": "PostalCode",
-                    "sourceName": "[PostalCode]",
+                    "sourceName": "PostalCode",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 15,
@@ -196,7 +196,7 @@
                 },
                 {
                     "targetName": "rowguid",
-                    "sourceName": "[rowguid]",
+                    "sourceName": "rowguid",
                     "sourceDataType": {
                         "type": "uniqueidentifier",
                         "nullable": false
@@ -204,7 +204,7 @@
                 },
                 {
                     "targetName": "ModifiedDate",
-                    "sourceName": "[ModifiedDate]",
+                    "sourceName": "ModifiedDate",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": false

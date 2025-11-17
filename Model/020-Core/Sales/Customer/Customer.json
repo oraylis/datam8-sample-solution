@@ -6,7 +6,7 @@
     "properties": [
         {
             "property": "jobs",
-            "value": "sales_daily"
+            "value": "sales_weekly"
         },
         {
             "property": "write_mode",

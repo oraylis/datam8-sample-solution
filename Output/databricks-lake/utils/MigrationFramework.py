@@ -18,6 +18,7 @@ import time
 from copy import copy
 from typing import NoReturn, Any, List, Dict, Final
 from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql import functions as F
 # from delta import DeltaTable
 
 # COMMAND ----------
@@ -651,12 +652,30 @@ class Table(object):
                            for c in self.schema}
 
         existing_partition_fields = tuple(
-            map(lambda x: x.name,
-                filter(lambda c: c.isCluster,
-                       self.spark.catalog.list_columns(self.table_name)
-                       )
+            map(
+                lambda x: x.name,
+                filter(
+                    lambda c: c.isCluster or c.isPartition,
+                    self.spark.catalog.listColumns(f"{self.catalog.name}.{self.full_table_name}")
                 )
+            )
         )
+
+        existing_data_layout = list({
+            val
+            for c in self.spark.catalog.listColumns(f"{self.catalog.name}.stage.{self.full_table_name}")
+            for val in [
+                "liquid_clustering" if c.isCluster else None,
+                "hive_partitioning" if c.isPartition else None
+            ]
+            if val is not None
+        })
+
+        target_data_layout = list({
+            field.metadata.get("data_layout")
+            for field in schema
+            if "data_layout" in field.metadata
+        })
 
         # Target table information
         new_column_names = set(schema.fieldNames())
@@ -727,13 +746,15 @@ class Table(object):
         has_changed_columns_datatype = len(columns_datatype_to_change) > 0
         has_changed_partition_key = sorted(
             new_partitions) != sorted(existing_partition_fields)
+        has_changed_data_layout = set(existing_data_layout) != set(target_data_layout)
 
         if any([
             has_deleted_columns,
             has_new_columns,
             has_changed_columns_datatype,
             has_renamed_columns,
-            has_changed_partition_key
+            has_changed_partition_key,
+            has_changed_data_layout
         ]):
 
             # Archive the old table
@@ -777,7 +798,7 @@ class Table(object):
                           (c.name, c.dataType))
                     df_archive = df_archive.withColumn(
                         c.name,
-                        col(c.name).cast(c.dataType)
+                        F.col(c.name).cast(c.dataType)
                     )
 
             # Insert data into the final structure
@@ -799,7 +820,7 @@ class Table(object):
                         .write
                         .format("delta")
                         .mode("overwrite")
-                        .insertInto("'%s'.%s" % (self.catalog.name, self.full_table_name))
+                        .insertInto("%s.%s" % (self.catalog.name, self.full_table_name))
                     )
             except Exception as e:
                 raise ValueError(

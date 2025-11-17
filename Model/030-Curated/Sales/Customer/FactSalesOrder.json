@@ -5,10 +5,6 @@
     "description": "Fact table with sales orders",
     "properties": [
         {
-            "property": "jobs",
-            "value": "sales_daily"
-        },
-        {
             "property": "write_mode",
             "value": "overwrite"
         },
@@ -71,6 +67,15 @@
                 {
                     "sourceName": "CustomerSID",
                     "targetName": "CustomerSID"
+                }
+            ]
+        },
+        {
+            "targetLocation": 3002,
+            "attributes": [
+                {
+                    "sourceName": "ShipDateID",
+                    "targetName": "DateID"
                 }
             ]
         }

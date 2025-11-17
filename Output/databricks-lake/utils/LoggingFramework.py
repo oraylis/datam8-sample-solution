@@ -403,7 +403,7 @@ class LoggingFramework:
     def get_value_dict() -> dict:
         return {
             var: dbutils.jobs.taskValues.get(
-                taskKey="Generate_Load_UUID",
+                taskKey="Start_Load",
                 key=var,
                 default=(-1 if var == "load_uuid" else "Debug"),
                 debugValue=(-1 if var == "load_uuid" else "Debug"),

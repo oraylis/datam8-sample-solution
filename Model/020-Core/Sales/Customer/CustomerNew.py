@@ -13,6 +13,7 @@ business_function = (
             F.col("ca.AddressType") == "Main Office"
         ]
     )
+    .filter("c.__IsCurrent = True")
     .select(
         F.col("c.KundenID").alias("KundenNummer"),
         "c.Vorname",
