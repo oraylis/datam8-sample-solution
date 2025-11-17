@@ -15,7 +15,7 @@ business_function = (
         other=customer_address.alias("ca"),
         how="left",
         on=[
-            F.col("c.CustomerID") == F.col("ca.CustomerID"),
+            F.col("c.Kundennummer") == F.col("ca.CustomerID"),
             F.col("ca.AddressType") == "Main Office"
         ]
     )
@@ -27,8 +27,10 @@ business_function = (
         ]
     )
     .select(
-        F.col("c._CustomerSID").alias("CustomerSID"),
-        "c.DisplayName",
+        F.col("c.Kundennummer").alias("CustomerID"),
+        F.concat("c.Nachname", "c.Vorname").alias("DisplayName"),
+        F.col("c.Vorname").alias("FirstName"),
+        F.col("c.Nachname").alias("LastName"),
         "ca.AddressType",
         F.concat("a.AddressLine1", "a.AddressLine2").alias("Address"),
         "a.PostalCode",

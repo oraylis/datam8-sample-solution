@@ -12,6 +12,10 @@ resources:
           default: ${var.owner}
         - name: workspace_host
           default: ${workspace.host}
+        - name: job_name
+          default: "{{ '{{job.name}}' }}"
+        - name: job_run_id
+          default: "{{ '{{job.run_id}}' }}"
       permissions:
         - service_principal_name: ${var.run_as_service_principal}
           level: "CAN_MANAGE_RUN"
@@ -24,7 +28,12 @@ resources:
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/{{ task.notebook_path }}
             source: WORKSPACE
+{%- set task_cluster_ref = task.cluster_ref or data.cluster_ref %}
+{%- if task_cluster_ref %}
+          existing_cluster_id: ${resources.clusters.{{ task_cluster_ref }}.id}
+{%- else %}
           existing_cluster_id: ${var.{{ task.cluster_var | default(data.cluster_var) }}}
+{%- endif %}
 {% else %}
           run_job_task:
             job_id: ${resources.jobs.{{ task.job_ref }}.id}

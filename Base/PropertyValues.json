@@ -40,12 +40,28 @@
                 {
                     "property": "schedules",
                     "value": "daily"
+                },
+                {
+                    "property": "cluster",
+                    "value": "small"
                 }
-            ],
-            "cluster": {
-                "size": "XS",
-                "type": "test"
-            }
+            ]
+        },
+        {
+            "name": "sales_weekly",
+            "displayName": "Sales (Weekly)",
+            "default": false,
+            "property": "jobs",
+            "properties": [
+                {
+                    "property": "schedules",
+                    "value": "weekly"
+                },
+                {
+                    "property": "cluster",
+                    "value": "extra_small"
+                }
+            ]
         },
         {
             "name": "daily",
@@ -53,6 +69,31 @@
             "default": true,
             "property": "schedules",
             "cron": "1 0"
+        },
+        {
+            "name": "weekly",
+            "displayName": "Weekly",
+            "default": false,
+            "property": "schedules",
+            "cron": "1 0"
+        },
+        {
+            "name": "small",
+            "displayName": "S",
+            "default": false,
+            "property": "cluster",
+            "node_type": "Standard_D4ds_v5",
+            "num_workers": 4,
+            "workload_type": "job"
+        },
+        {
+            "name": "extra_small",
+            "displayName": "XY",
+            "default": true,
+            "property": "cluster",
+            "node_type": "Standard_D4ds_v5",
+            "num_workers": 2,
+            "workload_type": "job"
         },
         {
             "name": "sales",

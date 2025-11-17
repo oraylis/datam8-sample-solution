@@ -138,7 +138,7 @@
             "mapping": [
                 {
                     "targetName": "SalesOrderID",
-                    "sourceName": "[SalesOrderID]",
+                    "sourceName": "SalesOrderID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -146,7 +146,7 @@
                 },
                 {
                     "targetName": "SalesOrderDetailID",
-                    "sourceName": "[SalesOrderDetailID]",
+                    "sourceName": "SalesOrderDetailID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -154,7 +154,7 @@
                 },
                 {
                     "targetName": "OrderQty",
-                    "sourceName": "[OrderQty]",
+                    "sourceName": "OrderQty",
                     "sourceDataType": {
                         "type": "short",
                         "nullable": false
@@ -162,7 +162,7 @@
                 },
                 {
                     "targetName": "ProductID",
-                    "sourceName": "[ProductID]",
+                    "sourceName": "ProductID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -170,7 +170,7 @@
                 },
                 {
                     "targetName": "UnitPrice",
-                    "sourceName": "[UnitPrice]",
+                    "sourceName": "UnitPrice",
                     "sourceDataType": {
                         "type": "money",
                         "nullable": false
@@ -178,7 +178,7 @@
                 },
                 {
                     "targetName": "UnitPriceDiscount",
-                    "sourceName": "[UnitPriceDiscount]",
+                    "sourceName": "UnitPriceDiscount",
                     "sourceDataType": {
                         "type": "money",
                         "nullable": false
@@ -186,7 +186,7 @@
                 },
                 {
                     "targetName": "LineTotal",
-                    "sourceName": "[LineTotal]",
+                    "sourceName": "LineTotal",
                     "sourceDataType": {
                         "type": "decimal",
                         "precision": 38,
@@ -196,7 +196,7 @@
                 },
                 {
                     "targetName": "rowguid",
-                    "sourceName": "[rowguid]",
+                    "sourceName": "rowguid",
                     "sourceDataType": {
                         "type": "uniqueidentifier",
                         "nullable": false
@@ -204,7 +204,7 @@
                 },
                 {
                     "targetName": "ModifiedDate",
-                    "sourceName": "[ModifiedDate]",
+                    "sourceName": "ModifiedDate",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": false

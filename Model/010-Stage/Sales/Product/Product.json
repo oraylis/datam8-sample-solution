@@ -224,7 +224,7 @@
             "mapping": [
                 {
                     "targetName": "ProductID",
-                    "sourceName": "[ProductID]",
+                    "sourceName": "ProductID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -232,7 +232,7 @@
                 },
                 {
                     "targetName": "Name",
-                    "sourceName": "[Name]",
+                    "sourceName": "Name",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 50,
@@ -241,7 +241,7 @@
                 },
                 {
                     "targetName": "ProductNumber",
-                    "sourceName": "[ProductNumber]",
+                    "sourceName": "ProductNumber",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 25,
@@ -250,7 +250,7 @@
                 },
                 {
                     "targetName": "Color",
-                    "sourceName": "[Color]",
+                    "sourceName": "Color",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 15,
@@ -259,7 +259,7 @@
                 },
                 {
                     "targetName": "StandardCost",
-                    "sourceName": "[StandardCost]",
+                    "sourceName": "StandardCost",
                     "sourceDataType": {
                         "type": "money",
                         "nullable": false
@@ -267,7 +267,7 @@
                 },
                 {
                     "targetName": "ListPrice",
-                    "sourceName": "[ListPrice]",
+                    "sourceName": "ListPrice",
                     "sourceDataType": {
                         "type": "money",
                         "nullable": false
@@ -275,7 +275,7 @@
                 },
                 {
                     "targetName": "Size",
-                    "sourceName": "[Size]",
+                    "sourceName": "Size",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 5,
@@ -284,7 +284,7 @@
                 },
                 {
                     "targetName": "Weight",
-                    "sourceName": "[Weight]",
+                    "sourceName": "Weight",
                     "sourceDataType": {
                         "type": "decimal",
                         "precision": 8,
@@ -294,7 +294,7 @@
                 },
                 {
                     "targetName": "ProductCategoryID",
-                    "sourceName": "[ProductCategoryID]",
+                    "sourceName": "ProductCategoryID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -302,7 +302,7 @@
                 },
                 {
                     "targetName": "ProductModelID",
-                    "sourceName": "[ProductModelID]",
+                    "sourceName": "ProductModelID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -310,7 +310,7 @@
                 },
                 {
                     "targetName": "SellStartDate",
-                    "sourceName": "[SellStartDate]",
+                    "sourceName": "SellStartDate",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": false
@@ -318,7 +318,7 @@
                 },
                 {
                     "targetName": "SellEndDate",
-                    "sourceName": "[SellEndDate]",
+                    "sourceName": "SellEndDate",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": true
@@ -326,7 +326,7 @@
                 },
                 {
                     "targetName": "DiscontinuedDate",
-                    "sourceName": "[DiscontinuedDate]",
+                    "sourceName": "DiscontinuedDate",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": true
@@ -334,7 +334,7 @@
                 },
                 {
                     "targetName": "ThumbNailPhoto",
-                    "sourceName": "[ThumbNailPhoto]",
+                    "sourceName": "ThumbNailPhoto",
                     "sourceDataType": {
                         "type": "binary",
                         "nullable": true
@@ -342,7 +342,7 @@
                 },
                 {
                     "targetName": "ThumbnailPhotoFileName",
-                    "sourceName": "[ThumbnailPhotoFileName]",
+                    "sourceName": "ThumbnailPhotoFileName",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 50,
@@ -351,7 +351,7 @@
                 },
                 {
                     "targetName": "rowguid",
-                    "sourceName": "[rowguid]",
+                    "sourceName": "rowguid",
                     "sourceDataType": {
                         "type": "uniqueidentifier",
                         "nullable": false
@@ -359,7 +359,7 @@
                 },
                 {
                     "targetName": "ModifiedDate",
-                    "sourceName": "[ModifiedDate]",
+                    "sourceName": "ModifiedDate",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": false

@@ -82,7 +82,7 @@
             "mapping": [
                 {
                     "targetName": "CustomerID",
-                    "sourceName": "[CustomerID]",
+                    "sourceName": "CustomerID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": false
@@ -90,7 +90,7 @@
                 },
                 {
                     "targetName": "AddressID",
-                    "sourceName": "[AddressID]",
+                    "sourceName": "AddressID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": false
@@ -98,7 +98,7 @@
                 },
                 {
                     "targetName": "AddressType",
-                    "sourceName": "[AddressType]",
+                    "sourceName": "AddressType",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 50,
@@ -107,7 +107,7 @@
                 },
                 {
                     "targetName": "rowguid",
-                    "sourceName": "[rowguid]",
+                    "sourceName": "rowguid",
                     "sourceDataType": {
                         "type": "uniqueidentifier",
                         "nullable": false
@@ -115,7 +115,7 @@
                 },
                 {
                     "targetName": "ModifiedDate",
-                    "sourceName": "[ModifiedDate]",
+                    "sourceName": "ModifiedDate",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": false

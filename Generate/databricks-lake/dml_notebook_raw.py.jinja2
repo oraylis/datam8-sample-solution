@@ -4,6 +4,10 @@
 
 # COMMAND ----------
 
+from pyspark.sql import functions as F  # noqa: F401
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Initialize base settings
 
@@ -13,9 +17,20 @@
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ## Initialize Extraction Framework
+
+# COMMAND ----------
+
+# MAGIC %run ../../../../../../utils/ExtractionFramework
+
+# COMMAND ----------
+
 dbutils.widgets.text("env", "dev", "Environment")
 dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka", "Catalog Name")
 dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
+dbutils.widgets.text("job_run_id", "", "Job Run ID")
+
 # dbutils.widgets.dropdown(
 #     "run_mode",
 #     "INFO",
@@ -32,6 +47,7 @@ dbutils.widgets.text("keyvault_name", "aut0kvt0dev0campus", "Key Vault Name")
 env = dbutils.widgets.get("env")
 catalog_name = dbutils.widgets.get("catalog_name")
 owner = dbutils.widgets.get("owner")
+job_run_id = dbutils.widgets.get("job_run_id")
 # run_mode = dbutils.widgets.get("run_mode")
 # sandbox = dbutils.widgets.get("sandbox")
 
@@ -70,22 +86,26 @@ catalog.set_active()
 # COMMAND ----------
 
 # DBTITLE 1,Get connection values
-DRIVER = "{{ data.driver }}"
 database_connectionstring = dbutils.secrets.get(scope=keyvault_name, key="{{ data.connection_secret }}")
+source_location = {{ data.source_location | default("", true) | tojson }}
+extract_mode = ("{{ data.extract_mode or '' }}").lower()
+data_source_type = "{{ data.data_source_type or '' }}"
+column_renames = {{ data.column_renames | default([], true) | tojson }}
+delta_column_details = {{ data.delta_column_details | default([], true) | tojson }}
+target_columns = {{ data.target_columns | default([], true) | tojson }}
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Define query
+# MAGIC ## Extract source data
 
 # COMMAND ----------
-
 {% if data.extract_mode and data.extract_mode|lower == "delta" %}
 # DBTITLE 1,Determine delta value
 delta_column = "{{ data.delta_column or '' }}"
 max_raw = spark.sql(f"""
 SELECT
-  COALESCE(MAX(`{delta_column}`), CAST('1970-01-01' AS STRING)) AS MaxDelta
+  CAST(COALESCE(MAX(`{delta_column}`), '1970-01-01') AS STRING) AS MaxDelta
 FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
 """).first()[0]
 
@@ -93,67 +113,53 @@ print(f"Using delta value: {max_raw}")
 
 # COMMAND ----------
 {% endif %}
+# DBTITLE 1,Initialize framework & execute function
+if not source_location:
+    source_location = source_name
 
-# DBTITLE 1,Define query
-extract_mode = ("{{ data.extract_mode or '' }}").lower()
-source_location = {{ data.source_location | default("", true) | tojson }}
-where_clause = ""
+SourceTable = ExtractionFramework(source_location, extract_mode, delta_column_details)
+extractSourceTable = SourceTable
 
-if source_location.strip() == "":
-    source_location = f"SELECT * FROM [{source_name}]"
-elif not source_location.strip().upper().startswith("SELECT"):
-    source_location = f"SELECT * FROM {source_location.strip()}"
+if not data_source_type:
+    raise ValueError(f"Data source type is missing for '{data_source}'.")
 
-technical_columns = [
-    "CAST(YEAR(SYSUTCDATETIME()) AS SMALLINT) AS __Year",
-    "CAST(MONTH(SYSUTCDATETIME()) AS SMALLINT) AS __Month",
-    "CAST(DAY(SYSUTCDATETIME()) AS SMALLINT) AS __Day",
-    "SYSUTCDATETIME() AS __InsertTimestampUTC",
-]
+extract_function = getattr(extractSourceTable, data_source_type, None)
 
-select_columns = [
-{%- for column in data.select_columns %}
-    {{ (column.source ~ " AS " ~ column.target) | tojson }},
-{%- endfor %}
-]
-if not select_columns:
-    select_columns = ["*"]
+if extract_function is None:
+    raise AttributeError(
+        f"ExtractionFramework does not implement '{data_source_type}' for '{data_source}'."
+    )
 
-if extract_mode == "delta":
-    source_delta_column = "{{ data.source_delta_column or '' }}"
-    where_clause = f"\n    WHERE {source_delta_column} > '{max_raw}'"
-
-technical_sql = ",\n        ".join(technical_columns)
-select_sql = ",\n        ".join(select_columns)
-
-pushdown_query = f"""
-(
-    SELECT
-        {technical_sql}, {select_sql}
-    FROM (
-        {source_location}{where_clause}
-    ) AS t
-) AS src
-"""
-
-print(
-    f"""Query:
-
-{pushdown_query}"""
+table_df = extract_function(
+    database_connectionstring
+    {% if data.extract_mode and data.extract_mode|lower == "delta" %}, max_raw{% endif %}
 )
-
 # COMMAND ----------
 
-# DBTITLE 1,Read from source
-table_df = (
-    spark.read
-    .format("jdbc")
-    .option("driver", DRIVER)
-    .option("url", database_connectionstring)
-    .option("dbtable", pushdown_query)
-    .load()
-)
+# MAGIC %md
+# MAGIC ## Finish extraction
 
+# COMMAND ----------
+# DBTITLE 1,Add technical columns
+load_timestamp = F.current_timestamp()
+table_df = (
+    table_df
+    .withColumn("__Year", F.year(load_timestamp).cast("smallint"))
+    .withColumn("__Month", F.month(load_timestamp).cast("smallint"))
+    .withColumn("__Day", F.dayofmonth(load_timestamp).cast("smallint"))
+    .withColumn("__InsertTimestampUTC", load_timestamp)
+)
+# COMMAND ----------
+# DBTITLE 1,Rename & select columns
+for rename in column_renames:
+    source_column = rename.get("source")
+    target_column = rename.get("target")
+    if not source_column or not target_column or source_column == target_column:
+        continue
+    table_df = table_df.withColumnRenamed(source_column, target_column)
+
+if target_columns:
+    table_df = table_df.select(*(["__Year","__Month","__Day","__InsertTimestampUTC"] + target_columns))
 # COMMAND ----------
 
 # MAGIC %md

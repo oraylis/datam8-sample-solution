@@ -90,7 +90,7 @@
             "mapping": [
                 {
                     "targetName": "ProductModelID",
-                    "sourceName": "[ProductModelID]",
+                    "sourceName": "ProductModelID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -98,7 +98,7 @@
                 },
                 {
                     "targetName": "Name",
-                    "sourceName": "[Name]",
+                    "sourceName": "Name",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 50,
@@ -107,7 +107,7 @@
                 },
                 {
                     "targetName": "CatalogDescription",
-                    "sourceName": "[CatalogDescription]",
+                    "sourceName": "CatalogDescription",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 200,
@@ -116,7 +116,7 @@
                 },
                 {
                     "targetName": "rowguid",
-                    "sourceName": "[rowguid]",
+                    "sourceName": "rowguid",
                     "sourceDataType": {
                         "type": "uniqueidentifier",
                         "nullable": false
@@ -124,7 +124,7 @@
                 },
                 {
                     "targetName": "ModifiedDate",
-                    "sourceName": "[ModifiedDate]",
+                    "sourceName": "ModifiedDate",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": false

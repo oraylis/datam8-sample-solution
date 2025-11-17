@@ -27,12 +27,30 @@
                 "type": "long",
                 "nullable": false
             },
-            "isBusinessKey": true,
+            "properties": [
+                {
+                    "property": "attribute_type",
+                    "value": "SK"
+                }
+            ],
             "dateModified": "2025-07-23T01:01:01Z",
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
             "ordinalNumber": 2,
+            "name": "DateID",
+            "description": "Calendar date ID",
+            "attributeType": "ID",
+            "dataType": {
+                "type": "integer",
+                "nullable": false
+            },
+            "isBusinessKey": true,
+            "dateModified": "2025-07-23T01:01:01Z",
+            "dateAdded": "2025-01-01T01:01:01Z"
+        },
+        {
+            "ordinalNumber": 3,
             "name": "Date",
             "description": "Calendar date",
             "attributeType": "ID",
@@ -44,69 +62,40 @@
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 3,
+            "ordinalNumber": 4,
             "name": "CalendarYear",
             "description": "Calendar year label",
             "attributeType": "ID",
             "dataType": {
                 "type": "string",
-                "nullable": true
+                "nullable": false
             },
             "dateModified": "2025-07-23T01:01:01Z",
             "dateAdded": "2025-01-01T01:01:01Z"
         },
         {
-            "ordinalNumber": 4,
+            "ordinalNumber": 5,
             "name": "MonthName",
             "description": "English month name",
             "attributeType": "Name",
             "dataType": {
                 "type": "string",
-                "nullable": true
+                "nullable": false
             },
             "dateModified": "2025-07-23T01:01:01Z",
             "dateAdded": "2025-01-01T01:01:01Z"
         }
     ],
-    "sources": [
-        {
-            "sourceLocation": 1010,
-            "mapping": [
-                {
-                    "targetName": "DateSID",
-                    "sourceName": "TIMEKEY",
-                    "sourceDataType": {
-                        "type": "int",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "Date",
-                    "sourceName": "FULLDATEALTERNATEKEY",
-                    "sourceDataType": {
-                        "type": "datetime",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "CalendarYear",
-                    "sourceName": "CALENDARYEAR",
-                    "sourceDataType": {
-                        "type": "string",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "MonthName",
-                    "sourceName": "ENGLISHMONTHNAME",
-                    "sourceDataType": {
-                        "type": "string",
-                        "nullable": true
-                    }
-                }
-            ]
-        }
-    ],
+    "sources": [],
     "relationships": [],
-    "transformations": []
+    "transformations": [
+        {
+            "stepNo": 1,
+            "kind": "function",
+            "name": "transform_dimdate",
+            "function": {
+                "source": "GenerateDates.py"
+            }
+        }
+    ]
 }

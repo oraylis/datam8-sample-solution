@@ -79,7 +79,7 @@
             "mapping": [
                 {
                     "targetName": "ProductDescriptionID",
-                    "sourceName": "[ProductDescriptionID]",
+                    "sourceName": "ProductDescriptionID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -87,7 +87,7 @@
                 },
                 {
                     "targetName": "Description",
-                    "sourceName": "[Description]",
+                    "sourceName": "Description",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 400,
@@ -96,7 +96,7 @@
                 },
                 {
                     "targetName": "rowguid",
-                    "sourceName": "[rowguid]",
+                    "sourceName": "rowguid",
                     "sourceDataType": {
                         "type": "uniqueidentifier",
                         "nullable": false
@@ -104,7 +104,7 @@
                 },
                 {
                     "targetName": "ModifiedDate",
-                    "sourceName": "[ModifiedDate]",
+                    "sourceName": "ModifiedDate",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": false

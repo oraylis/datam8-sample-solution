@@ -296,6 +296,10 @@
                     "targetType": "long"
                 },
                 {
+                    "sourceType": "decimal",
+                    "targetType": "decimal"
+                },
+                {
                     "sourceType": "nchar",
                     "targetType": "string"
                 },
