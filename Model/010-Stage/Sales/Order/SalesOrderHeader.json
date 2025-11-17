@@ -277,7 +277,7 @@
             "mapping": [
                 {
                     "targetName": "SalesOrderID",
-                    "sourceName": "[SalesOrderID]",
+                    "sourceName": "SalesOrderID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -285,7 +285,7 @@
                 },
                 {
                     "targetName": "RevisionNumber",
-                    "sourceName": "[RevisionNumber]",
+                    "sourceName": "RevisionNumber",
                     "sourceDataType": {
                         "type": "smallint",
                         "nullable": false
@@ -293,7 +293,7 @@
                 },
                 {
                     "targetName": "OrderDate",
-                    "sourceName": "[OrderDate]",
+                    "sourceName": "OrderDate",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": false
@@ -301,7 +301,7 @@
                 },
                 {
                     "targetName": "DueDate",
-                    "sourceName": "[DueDate]",
+                    "sourceName": "DueDate",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": false
@@ -309,7 +309,7 @@
                 },
                 {
                     "targetName": "ShipDate",
-                    "sourceName": "[ShipDate]",
+                    "sourceName": "ShipDate",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": true
@@ -317,7 +317,7 @@
                 },
                 {
                     "targetName": "Status",
-                    "sourceName": "[Status]",
+                    "sourceName": "Status",
                     "sourceDataType": {
                         "type": "smallint",
                         "nullable": false
@@ -325,7 +325,7 @@
                 },
                 {
                     "targetName": "OnlineOrderFlag",
-                    "sourceName": "[OnlineOrderFlag]",
+                    "sourceName": "OnlineOrderFlag",
                     "sourceDataType": {
                         "type": "bit",
                         "nullable": false
@@ -333,7 +333,7 @@
                 },
                 {
                     "targetName": "SalesOrderNumber",
-                    "sourceName": "[SalesOrderNumber]",
+                    "sourceName": "SalesOrderNumber",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 25,
@@ -342,7 +342,7 @@
                 },
                 {
                     "targetName": "PurchaseOrderNumber",
-                    "sourceName": "[PurchaseOrderNumber]",
+                    "sourceName": "PurchaseOrderNumber",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 25,
@@ -351,7 +351,7 @@
                 },
                 {
                     "targetName": "AccountNumber",
-                    "sourceName": "[AccountNumber]",
+                    "sourceName": "AccountNumber",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 15,
@@ -360,7 +360,7 @@
                 },
                 {
                     "targetName": "CustomerID",
-                    "sourceName": "[CustomerID]",
+                    "sourceName": "CustomerID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -368,7 +368,7 @@
                 },
                 {
                     "targetName": "ShipToAddressID",
-                    "sourceName": "[ShipToAddressID]",
+                    "sourceName": "ShipToAddressID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -376,7 +376,7 @@
                 },
                 {
                     "targetName": "BillToAddressID",
-                    "sourceName": "[BillToAddressID]",
+                    "sourceName": "BillToAddressID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -384,7 +384,7 @@
                 },
                 {
                     "targetName": "ShipMethod",
-                    "sourceName": "[ShipMethod]",
+                    "sourceName": "ShipMethod",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 50,
@@ -393,7 +393,7 @@
                 },
                 {
                     "targetName": "CreditCardApprovalCode",
-                    "sourceName": "[CreditCardApprovalCode]",
+                    "sourceName": "CreditCardApprovalCode",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 15,
@@ -402,7 +402,7 @@
                 },
                 {
                     "targetName": "SubTotal",
-                    "sourceName": "[SubTotal]",
+                    "sourceName": "SubTotal",
                     "sourceDataType": {
                         "type": "money",
                         "nullable": false
@@ -410,7 +410,7 @@
                 },
                 {
                     "targetName": "TaxAmt",
-                    "sourceName": "[TaxAmt]",
+                    "sourceName": "TaxAmt",
                     "sourceDataType": {
                         "type": "money",
                         "nullable": false
@@ -418,7 +418,7 @@
                 },
                 {
                     "targetName": "Freight",
-                    "sourceName": "[Freight]",
+                    "sourceName": "Freight",
                     "sourceDataType": {
                         "type": "money",
                         "nullable": false
@@ -426,7 +426,7 @@
                 },
                 {
                     "targetName": "TotalDue",
-                    "sourceName": "[TotalDue]",
+                    "sourceName": "TotalDue",
                     "sourceDataType": {
                         "type": "money",
                         "nullable": false
@@ -434,7 +434,7 @@
                 },
                 {
                     "targetName": "Comment",
-                    "sourceName": "[Comment]",
+                    "sourceName": "Comment",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 200,
@@ -443,7 +443,7 @@
                 },
                 {
                     "targetName": "rowguid",
-                    "sourceName": "[rowguid]",
+                    "sourceName": "rowguid",
                     "sourceDataType": {
                         "type": "uniqueidentifier",
                         "nullable": false
@@ -451,7 +451,7 @@
                 },
                 {
                     "targetName": "ModifiedDate",
-                    "sourceName": "[ModifiedDate]",
+                    "sourceName": "ModifiedDate",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": false

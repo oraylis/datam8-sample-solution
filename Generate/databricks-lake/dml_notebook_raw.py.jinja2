@@ -87,6 +87,12 @@ catalog.set_active()
 
 # DBTITLE 1,Get connection values
 database_connectionstring = dbutils.secrets.get(scope=keyvault_name, key="{{ data.connection_secret }}")
+source_location = {{ data.source_location | default("", true) | tojson }}
+extract_mode = ("{{ data.extract_mode or '' }}").lower()
+data_source_type = "{{ data.data_source_type or '' }}"
+column_renames = {{ data.column_renames | default([], true) | tojson }}
+delta_column_details = {{ data.delta_column_details | default([], true) | tojson }}
+target_columns = {{ data.target_columns | default([], true) | tojson }}
 
 # COMMAND ----------
 
@@ -94,13 +100,12 @@ database_connectionstring = dbutils.secrets.get(scope=keyvault_name, key="{{ dat
 # MAGIC ## Extract source data
 
 # COMMAND ----------
-
 {% if data.extract_mode and data.extract_mode|lower == "delta" %}
 # DBTITLE 1,Determine delta value
 delta_column = "{{ data.delta_column or '' }}"
 max_raw = spark.sql(f"""
 SELECT
-  COALESCE(MAX(`{delta_column}`), CAST('1970-01-01' AS STRING)) AS MaxDelta
+  CAST(COALESCE(MAX(`{delta_column}`), '1970-01-01') AS STRING) AS MaxDelta
 FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
 """).first()[0]
 
@@ -108,25 +113,34 @@ print(f"Using delta value: {max_raw}")
 
 # COMMAND ----------
 {% endif %}
-source_location = {{ data.source_location | default("", true) | tojson }}
-extract_mode = ("{{ data.extract_mode or '' }}").lower()
-data_source_type = "{{ data.data_source_type or '' }}"
-column_renames = {{ data.column_renames | default([], true) | tojson }}
-delta_column_details = {{ data.delta_column_details | default([], true) | tojson }}
+# DBTITLE 1,Initialize framework & execute function
 if not source_location:
     source_location = source_name
 
-SourceTable = ExtractionFramework(source_location, extract_mode)
+SourceTable = ExtractionFramework(source_location, extract_mode, delta_column_details)
 extractSourceTable = SourceTable
+
 if not data_source_type:
     raise ValueError(f"Data source type is missing for '{data_source}'.")
+
 extract_function = getattr(extractSourceTable, data_source_type, None)
+
 if extract_function is None:
     raise AttributeError(
         f"ExtractionFramework does not implement '{data_source_type}' for '{data_source}'."
     )
-table_df = extract_function(database_connectionstring)
 
+table_df = extract_function(
+    database_connectionstring
+    {% if data.extract_mode and data.extract_mode|lower == "delta" %}, max_raw{% endif %}
+)
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Finish extraction
+
+# COMMAND ----------
+# DBTITLE 1,Add technical columns
 load_timestamp = F.current_timestamp()
 table_df = (
     table_df
@@ -135,7 +149,8 @@ table_df = (
     .withColumn("__Day", F.dayofmonth(load_timestamp).cast("smallint"))
     .withColumn("__InsertTimestampUTC", load_timestamp)
 )
-
+# COMMAND ----------
+# DBTITLE 1,Rename & select columns
 for rename in column_renames:
     source_column = rename.get("source")
     target_column = rename.get("target")
@@ -143,6 +158,8 @@ for rename in column_renames:
         continue
     table_df = table_df.withColumnRenamed(source_column, target_column)
 
+if target_columns:
+    table_df = table_df.select(*(["__Year","__Month","__Day","__InsertTimestampUTC"] + target_columns))
 # COMMAND ----------
 
 # MAGIC %md

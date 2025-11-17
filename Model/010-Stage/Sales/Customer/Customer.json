@@ -198,7 +198,7 @@
             "mapping": [
                 {
                     "targetName": "KundenID",
-                    "sourceName": "[KundenID]",
+                    "sourceName": "KundenID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -206,7 +206,7 @@
                 },
                 {
                     "targetName": "NamensTyp",
-                    "sourceName": "[NamensTyp]",
+                    "sourceName": "NamensTyp",
                     "sourceDataType": {
                         "type": "bit",
                         "nullable": false
@@ -214,7 +214,7 @@
                 },
                 {
                     "targetName": "Titel",
-                    "sourceName": "[Titel]",
+                    "sourceName": "Titel",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 8,
@@ -223,7 +223,7 @@
                 },
                 {
                     "targetName": "Vorname",
-                    "sourceName": "[Vorname]",
+                    "sourceName": "Vorname",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 50,
@@ -232,7 +232,7 @@
                 },
                 {
                     "targetName": "Nameszusatz1",
-                    "sourceName": "[Nameszusatz1]",
+                    "sourceName": "Nameszusatz1",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 50,
@@ -241,7 +241,7 @@
                 },
                 {
                     "targetName": "Nachname",
-                    "sourceName": "[Nachname]",
+                    "sourceName": "Nachname",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 50,
@@ -250,7 +250,7 @@
                 },
                 {
                     "targetName": "Namenszusatz2",
-                    "sourceName": "[Namenszusatz2]",
+                    "sourceName": "Namenszusatz2",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 10,
@@ -259,7 +259,7 @@
                 },
                 {
                     "targetName": "Firma",
-                    "sourceName": "[Firma]",
+                    "sourceName": "Firma",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 128,
@@ -268,7 +268,7 @@
                 },
                 {
                     "targetName": "Verkaeufer",
-                    "sourceName": "[Verkaeufer]",
+                    "sourceName": "Verkaeufer",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 256,
@@ -277,7 +277,7 @@
                 },
                 {
                     "targetName": "Email",
-                    "sourceName": "[Email]",
+                    "sourceName": "Email",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 50,
@@ -286,7 +286,7 @@
                 },
                 {
                     "targetName": "Telefon",
-                    "sourceName": "[Telefon]",
+                    "sourceName": "Telefon",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 25,
@@ -295,7 +295,7 @@
                 },
                 {
                     "targetName": "PasswordHash",
-                    "sourceName": "[PasswordHash]",
+                    "sourceName": "PasswordHash",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 128,
@@ -304,7 +304,7 @@
                 },
                 {
                     "targetName": "PasswordSalt",
-                    "sourceName": "[PasswordSalt]",
+                    "sourceName": "PasswordSalt",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 10,
@@ -313,7 +313,7 @@
                 },
                 {
                     "targetName": "rowguid",
-                    "sourceName": "[rowguid]",
+                    "sourceName": "rowguid",
                     "sourceDataType": {
                         "type": "uniqueidentifier",
                         "nullable": false
@@ -321,7 +321,7 @@
                 },
                 {
                     "targetName": "GeaendertAm",
-                    "sourceName": "[GeaendertAm]",
+                    "sourceName": "GeaendertAm",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": false
@@ -342,7 +342,7 @@
             "mapping": [
                 {
                     "targetName": "KundenID",
-                    "sourceName": "[CustomerID]",
+                    "sourceName": "CustomerID",
                     "sourceDataType": {
                         "type": "int",
                         "nullable": true
@@ -350,7 +350,7 @@
                 },
                 {
                     "targetName": "NamensTyp",
-                    "sourceName": "[NameStyle]",
+                    "sourceName": "NameStyle",
                     "sourceDataType": {
                         "type": "bit",
                         "nullable": false
@@ -358,7 +358,7 @@
                 },
                 {
                     "targetName": "Titel",
-                    "sourceName": "[Title]",
+                    "sourceName": "Title",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 8,
@@ -367,7 +367,7 @@
                 },
                 {
                     "targetName": "Vorname",
-                    "sourceName": "[FirstName]",
+                    "sourceName": "FirstName",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 50,
@@ -376,7 +376,7 @@
                 },
                 {
                     "targetName": "Nameszusatz1",
-                    "sourceName": "[MiddleName]",
+                    "sourceName": "MiddleName",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 50,
@@ -385,7 +385,7 @@
                 },
                 {
                     "targetName": "Nachname",
-                    "sourceName": "[LastName]",
+                    "sourceName": "LastName",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 50,
@@ -394,7 +394,7 @@
                 },
                 {
                     "targetName": "Namenszusatz2",
-                    "sourceName": "[Suffix]",
+                    "sourceName": "Suffix",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 10,
@@ -403,7 +403,7 @@
                 },
                 {
                     "targetName": "Firma",
-                    "sourceName": "[CompanyName]",
+                    "sourceName": "CompanyName",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 128,
@@ -412,7 +412,7 @@
                 },
                 {
                     "targetName": "Verkaeufer",
-                    "sourceName": "[SalesPerson]",
+                    "sourceName": "SalesPerson",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 256,
@@ -421,7 +421,7 @@
                 },
                 {
                     "targetName": "Email",
-                    "sourceName": "[EmailAddress]",
+                    "sourceName": "EmailAddress",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 50,
@@ -430,7 +430,7 @@
                 },
                 {
                     "targetName": "Telefon",
-                    "sourceName": "[Phone]",
+                    "sourceName": "Phone",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 25,
@@ -439,7 +439,7 @@
                 },
                 {
                     "targetName": "PasswordHash",
-                    "sourceName": "[PasswordHash]",
+                    "sourceName": "PasswordHash",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 128,
@@ -448,7 +448,7 @@
                 },
                 {
                     "targetName": "PasswordSalt",
-                    "sourceName": "[PasswordSalt]",
+                    "sourceName": "PasswordSalt",
                     "sourceDataType": {
                         "type": "nvarchar",
                         "charLen": 10,
@@ -457,7 +457,7 @@
                 },
                 {
                     "targetName": "rowguid",
-                    "sourceName": "[rowguid]",
+                    "sourceName": "rowguid",
                     "sourceDataType": {
                         "type": "uniqueidentifier",
                         "nullable": false
@@ -465,7 +465,7 @@
                 },
                 {
                     "targetName": "GeaendertAm",
-                    "sourceName": "[ModifiedDate]",
+                    "sourceName": "ModifiedDate",
                     "sourceDataType": {
                         "type": "datetime",
                         "nullable": false

@@ -597,12 +597,15 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 if entry.get("target") and entry.get("source")
             ]
             column_renames: list[dict[str, str]] = []
+            target_columns: list[str] = []
             delta_column_details: list[dict[str, Any]] = []
             for entry in mapping_entries:
                 source_name = entry.get("source")
                 target_name = entry.get("target")
                 entry_props = entry.get("properties", {}) or {}
                 is_delta_column = str(entry_props.get("extract_column", "") or "").strip().lower() == "delta"
+                if target_name:
+                    target_columns.append(target_name)
                 if source_name and target_name and source_name != target_name:
                     column_renames.append({"source": source_name, "target": target_name})
                 if is_delta_column and source_name:
@@ -634,6 +637,7 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 "mapping": raw_source.get("mapping"),
                 "mapping_entries": mapping_entries,
                 "select_columns": select_columns,
+                "target_columns": target_columns,
                 "column_renames": column_renames,
                 "delta_column_details": delta_column_details or None,
                 "delta_column": raw_source.get("delta_column"),
