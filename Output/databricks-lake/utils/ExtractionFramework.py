@@ -24,20 +24,20 @@ class ExtractionFramework:
         url = f"jdbc:oracle:thin:@{host}:{port}/{sid}"
 
         where_clause = ""
-        if self.table.strip() == "":
-            source_location = f"SELECT * FROM [{self.table}]"
-        elif not self.table.strip().upper().startswith("SELECT"):
-            source_location = f"SELECT * FROM {self.table.strip()}"
+        source_location = self.table
 
         if self.extract_mode == "delta":
             delta_column_name = [col["sourceName"] for col in self.delta_column]
             source_delta_column = ",".join(delta_column_name)
             where_clause = f"\n    WHERE {source_delta_column} > '{max_raw}'"
 
-        pushdown_query = f"""
-            SELECT *
-            FROM {source_location}{where_clause}
-        """
+        if source_location.strip().upper().startswith("SELECT"):
+            pushdown_query = source_location
+        else:
+            pushdown_query = f"""
+                SELECT *
+                FROM {source_location}{where_clause}
+            """
         print(
             f"Query: {pushdown_query}"
         )
@@ -75,10 +75,13 @@ class ExtractionFramework:
 
             where_clause = f"\n    WHERE {source_delta_column} > '{max_raw}'"
 
-        pushdown_query = f"""
-            SELECT *
-            FROM {source_location}{where_clause}
-        """
+        if source_location.strip().upper().startswith("SELECT"):
+            pushdown_query = source_location
+        else:
+            pushdown_query = f"""
+                SELECT *
+                FROM {source_location}{where_clause}
+            """
         print(
             f"Query:{pushdown_query}"
         )
