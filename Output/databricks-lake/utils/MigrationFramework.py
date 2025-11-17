@@ -18,6 +18,7 @@ import time
 from copy import copy
 from typing import NoReturn, Any, List, Dict, Final
 from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql import functions as F
 # from delta import DeltaTable
 
 # COMMAND ----------
@@ -797,7 +798,7 @@ class Table(object):
                           (c.name, c.dataType))
                     df_archive = df_archive.withColumn(
                         c.name,
-                        col(c.name).cast(c.dataType)
+                        F.col(c.name).cast(c.dataType)
                     )
 
             # Insert data into the final structure
@@ -819,7 +820,7 @@ class Table(object):
                         .write
                         .format("delta")
                         .mode("overwrite")
-                        .insertInto("'%s'.%s" % (self.catalog.name, self.full_table_name))
+                        .insertInto("%s.%s" % (self.catalog.name, self.full_table_name))
                     )
             except Exception as e:
                 raise ValueError(
