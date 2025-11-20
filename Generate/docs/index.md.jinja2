@@ -1,0 +1,51 @@
+{% set doc = data.doc %}
+# {{ doc.solution_name }} - Metadata Documentation
+
+Generated at **{{ doc.generated_at }}** (schema {{ doc.schema_version or "n/a" }}).
+
+## Snapshot
+
+| Metric | Value |
+| --- | --- |
+| Entities | {{ doc.stats.entity_count }} |
+| Attributes | {{ doc.stats.attribute_count }} |
+| Zones | {{ doc.stats.zones }} |
+| External Sources | {{ doc.stats.external_sources }} |
+| Modeled Sources | {{ doc.stats.modeled_sources }} |
+| Relationships | {{ doc.stats.relationship_count }} |
+| Entities with Description | {{ doc.stats.entities_with_descriptions }} |
+| Frequent Properties | {% for name, count in doc.stats.top_properties %}`{{ name }}` ({{ count }}){% if not loop.last %}, {% endif %}{% else %}N/A{% endfor %} |
+
+## Zone Overview
+
+| Zone | Folder | Entities | Modules |
+| --- | --- | --- | --- |
+{% for zone in doc.zones -%}
+| {{ zone.display_name }} | {{ zone.folder or "N/A" }} | {{ zone.entity_count }} | {% for module in zone.module_summaries %}{{ module.product_display or module.product or "N/A" }} / {{ module.module_display or module.module or "N/A" }} ({{ module.entity_count }}){% if not loop.last %}<br>{% endif %}{% else %}N/A{% endfor %} |
+{% endfor %}
+
+## Lineage Highlights
+
+{% if doc.lineage_highlights %}
+| Source | Target | Zones | Columns |
+| --- | --- | --- | --- |
+{% for edge in doc.lineage_highlights -%}
+| {{ edge.source }} | {{ edge.target }} | {{ edge.source_zone }} -> {{ edge.target_zone }} | {{ edge.column_summary }} |
+{% endfor %}
+{% else %}
+No relationships detected.
+{% endif %}
+
+## Entity Catalog
+
+Use the links below to jump directly to the entity specific documentation.
+
+| Zone | Product | Module | Entity | Attr. | BK | Sources | Rel. | Description |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+{% for row in doc.catalog_rows -%}
+| {{ row.zone }} | {{ row.product or "N/A" }} | {{ row.module or "N/A" }} | [{{ row.entity }}]({{ row.link }}) | {{ row.attributes }} | {{ row.business_keys }} | {{ row.sources }} | {{ row.relationships }} | {{ row.description or "N/A" }} |
+{% endfor %}
+
+## Diagram
+
+The Entity Relationship diagram is available at `diagrams/entity-relationships.drawio`. Open it with [draw.io](https://www.drawio.com/) to explore the relationships visually.

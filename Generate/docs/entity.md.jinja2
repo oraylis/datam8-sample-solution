@@ -1,0 +1,141 @@
+{% set doc = data.doc %}
+{% set entity = data.entity %}
+# {{ entity.display_name }} ({{ entity.name }})
+
+| Zone | Product | Module | Entity ID | Kind | Path |
+| --- | --- | --- | --- | --- | --- |
+| {{ entity.zone_display }} | {{ entity.product_display or entity.product_name or "-" }} | {{ entity.module_display or entity.module_name or "-" }} | {{ entity.id or "-" }} | {{ entity.entity_kind|capitalize }} | `{{ entity.locator_path }}` |
+
+| Attributes | Business Keys | History Types | Sources | Relationships |
+| --- | --- | --- | --- | --- |
+| {{ entity.attribute_summary.total }} | {{ entity.attribute_summary.business_keys|length }} | {% if entity.attribute_summary.history_types|length > 0 %}{{ entity.attribute_summary.history_types|join(", ") }}{% else %}N/A{% endif %} | {{ entity.source_summary.total }} | {{ entity.relationship_summary.total }} |
+
+Generated {{ doc.generated_at }} from schema {{ doc.schema_version or "n/a" }}.
+
+## Description
+
+{{ entity.description or "_No description provided._" }}
+
+## Entity Properties
+
+{% if entity.entity_properties %}
+| Property | Value |
+| --- | --- |
+{% for name, value in entity.entity_properties.items() -%}
+| `{{ name }}` | {{ value if value is not none else "null" }} |
+{% endfor %}
+{% else %}
+_No entity-specific properties assigned._
+{% endif %}
+
+{% if entity.inherited_properties %}
+## Inherited Folder Context
+
+{% for level, context in entity.inherited_properties.items() -%}
+### {{ level | replace("_", " ") | title }}
+
+| Name | Property | Value |
+| --- | --- | --- |
+{% for name, value in context.properties.items() -%}
+| {{ context.name }} | `{{ name }}` | {{ value if value is not none else "null" }} |
+{% endfor %}
+{% if context.properties|length == 0 %}
+| {{ context.name }} | - | - |
+{% endif %}
+{% endfor %}
+{% endif %}
+
+## Attribute Catalogue
+
+{% if entity.attributes %}
+| # | Attribute | Type | Nullable | BK | SK | History | Description | Properties |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+{% for attr in entity.attributes -%}
+| {{ attr.ordinal }} | `{{ attr.name }}` | {{ attr.data_type }}{% if attr.attribute_type %} ({{ attr.attribute_type }}){% endif %} | {{ "yes" if attr.nullable else "no" }} | {{ "yes" if attr.is_business_key else "no" }} | {{ "yes" if attr.is_surrogate_key else "no" }} | {{ attr.history or "N/A" }} | {{ attr.description or "N/A" }} | {% if attr.properties %}{% for name, value in attr.properties.items() %}`{{ name }}`={{ value if value is not none else "null" }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}N/A{% endif %} |
+{% endfor %}
+{% else %}
+_No attributes modelled._
+{% endif %}
+
+## Sources
+
+{% if entity.sources %}
+{% for source in entity.sources -%}
+### {{ loop.index }}. {{ source.display_name or source.name }}
+
+| Type | Reference | Zone | Product / Module | Alias | Location |
+| --- | --- | --- | --- | --- | --- |
+| {{ source.kind }}{% if source.data_source_type %} ({{ source.data_source_type }}){% endif %} | {{ source.reference }} | {{ source.zone or "-" }} | {{ source.product or "-" }} / {{ source.module or "-" }} | {{ source.source_alias or "-" }} | {{ source.location or "-" }} |
+
+{% if source.properties %}
+**Source Properties:** {% for name, value in source.properties.items() %}`{{ name }}`={{ value if value is not none else "null" }}{% if not loop.last %}, {% endif %}{% endfor %}
+
+{% endif %}
+{% if source.mapping %}
+| Target | Source | Source Type | Nullable |
+| --- | --- | --- | --- |
+{% for map in source.mapping -%}
+| `{{ map.target }}` | `{{ map.source }}` | {{ map.source_data_type or "N/A" }} | {{ map.nullable if map.nullable is not none else "N/A" }} |
+{% endfor %}
+{% else %}
+_No column mapping defined._
+{% endif %}
+{% endfor %}
+{% else %}
+_No sources defined._
+{% endif %}
+
+## Relationships
+
+### Downstream
+
+{% if entity.relationships_out %}
+| Target Entity | Zone | Columns |
+| --- | --- | --- |
+{% for rel in entity.relationships_out -%}
+| {{ rel.peer_display_name }} | {{ rel.peer_zone }} | {{ rel.label or "N/A" }} |
+{% endfor %}
+{% else %}
+_No outgoing relationships declared._
+{% endif %}
+
+### Upstream
+
+{% if entity.relationships_in %}
+| Source Entity | Zone | Columns |
+| --- | --- | --- |
+{% for rel in entity.relationships_in -%}
+| {{ rel.peer_display_name }} | {{ rel.peer_zone }} | {{ rel.label or "N/A" }} |
+{% endfor %}
+{% else %}
+_No upstream relationships declared._
+{% endif %}
+
+## Transformations
+
+{% if entity.transformations %}
+| Step | Kind | Name | Details |
+| --- | --- | --- | --- |
+{% for step in entity.transformations -%}
+| {{ step.step_no or loop.index }} | {{ step.kind or "N/A" }} | {{ step.name or "N/A" }} | {% if step.details %}{% for name, value in step.details.items() %}`{{ name }}`={{ value }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}N/A{% endif %} |
+{% endfor %}
+{% else %}
+_No transformation steps registered._
+{% endif %}
+
+{% if entity.code_snippets %}
+## Custom Code
+
+{% for snippet in entity.code_snippets -%}
+### {{ snippet.name }} ({{ snippet.path }})
+
+```{{ snippet.language }}
+{{ snippet.content }}
+```
+{% endfor %}
+{% endif %}
+
+---
+
+{% set overview_prefix = ("../" * (entity.slug_path|length)) %}
+[Return to the documentation overview]({{ overview_prefix }}index.md) or open the lineage diagram at `{{ overview_prefix }}diagrams/entity-relationships.drawio`.
