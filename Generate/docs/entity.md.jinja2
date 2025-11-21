@@ -2,13 +2,34 @@
 {% set entity = data.entity %}
 # {{ entity.display_name }} ({{ entity.name }})
 
-| Zone | Product | Module | Entity ID | Kind | Path |
-| --- | --- | --- | --- | --- | --- |
-| {{ entity.zone_display }} | {{ entity.product_display or entity.product_name or "-" }} | {{ entity.module_display or entity.module_name or "-" }} | {{ entity.id or "-" }} | {{ entity.entity_kind|capitalize }} | `{{ entity.locator_path }}` |
+{% set entity_metrics = [
+    ("Attributes", entity.attribute_summary.total),
+    ("Business Keys", entity.attribute_summary.business_keys|length),
+    ("Sources", entity.source_summary.total),
+    ("Relationships", entity.relationship_summary.total)
+] %}
+<table>
+  <tr>
+  {%- for metric in entity_metrics %}
+    <td style="padding:12px; border:1px solid #ddd;">
+      <div style="font-size:24px; font-weight:bold;">{{ metric[1] }}</div>
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">{{ metric[0] }}</div>
+    </td>
+    {%- if loop.index % 3 == 0 %}
+  </tr><tr>
+    {%- endif %}
+  {%- endfor %}
+  </tr>
+</table>
 
-| Attributes | Business Keys | History Types | Sources | Relationships |
-| --- | --- | --- | --- | --- |
-| {{ entity.attribute_summary.total }} | {{ entity.attribute_summary.business_keys|length }} | {% if entity.attribute_summary.history_types|length > 0 %}{{ entity.attribute_summary.history_types|join(", ") }}{% else %}N/A{% endif %} | {{ entity.source_summary.total }} | {{ entity.relationship_summary.total }} |
+| Field | Value |
+| --- | --- |
+| Zone | {{ entity.zone_display }} |
+| Product | {{ entity.product_display or entity.product_name or "-" }} |
+| Module | {{ entity.module_display or entity.module_name or "-" }} |
+| Entity ID | {{ entity.id or "-" }} |
+| Kind | {{ entity.entity_kind|capitalize }} |
+| Path | `{{ entity.locator_path }}` |
 
 Generated {{ doc.generated_at }} from schema {{ doc.schema_version or "n/a" }}.
 
@@ -19,11 +40,12 @@ Generated {{ doc.generated_at }} from schema {{ doc.schema_version or "n/a" }}.
 ## Entity Properties
 
 {% if entity.entity_properties %}
-| Property | Value |
-| --- | --- |
+<dl>
 {% for name, value in entity.entity_properties.items() -%}
-| `{{ name }}` | {{ value if value is not none else "null" }} |
+  <dt>{{ name }}</dt>
+  <dd>{{ value if value is not none else "null" }}</dd>
 {% endfor %}
+</dl>
 {% else %}
 _No entity-specific properties assigned._
 {% endif %}
@@ -34,14 +56,16 @@ _No entity-specific properties assigned._
 {% for level, context in entity.inherited_properties.items() -%}
 ### {{ level | replace("_", " ") | title }}
 
-| Name | Property | Value |
-| --- | --- | --- |
+<dl>
 {% for name, value in context.properties.items() -%}
-| {{ context.name }} | `{{ name }}` | {{ value if value is not none else "null" }} |
+  <dt>{{ context.name }} - {{ name }}</dt>
+  <dd>{{ value if value is not none else "null" }}</dd>
 {% endfor %}
 {% if context.properties|length == 0 %}
-| {{ context.name }} | - | - |
+  <dt>{{ context.name }}</dt>
+  <dd>No inherited properties.</dd>
 {% endif %}
+</dl>
 {% endfor %}
 {% endif %}
 
@@ -60,65 +84,84 @@ _No attributes modelled._
 ## Sources
 
 {% if entity.sources %}
+<div class="source-list">
 {% for source in entity.sources -%}
-### {{ loop.index }}. {{ source.display_name or source.name }}
-
-| Type | Reference | Zone | Product / Module | Alias | Location |
-| --- | --- | --- | --- | --- | --- |
-| {{ source.kind }}{% if source.data_source_type %} ({{ source.data_source_type }}){% endif %} | {{ source.reference }} | {{ source.zone or "-" }} | {{ source.product or "-" }} / {{ source.module or "-" }} | {{ source.source_alias or "-" }} | {{ source.location or "-" }} |
-
-{% if source.properties %}
-**Source Properties:** {% for name, value in source.properties.items() %}`{{ name }}`={{ value if value is not none else "null" }}{% if not loop.last %}, {% endif %}{% endfor %}
-
-{% endif %}
-{% if source.mapping %}
-| Target | Source | Source Type | Nullable |
-| --- | --- | --- | --- |
-{% for map in source.mapping -%}
-| `{{ map.target }}` | `{{ map.source }}` | {{ map.source_data_type or "N/A" }} | {{ map.nullable if map.nullable is not none else "N/A" }} |
+<details>
+  <summary>{{ source.display_name or source.name }} ({{ source.kind }})</summary>
+  <p><strong>Reference:</strong> {{ source.reference }} | <strong>Zone:</strong> {{ source.zone or "-" }} | <strong>Alias:</strong> {{ source.source_alias or "-" }}</p>
+  <p><strong>Product/Module:</strong> {{ source.product or "-" }} / {{ source.module or "-" }} | <strong>Location:</strong> {{ source.location or "-" }}</p>
+  {% if source.properties %}
+  <p><strong>Source Properties:</strong> {% for name, value in source.properties.items() %}`{{ name }}`={{ value if value is not none else "null" }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+  {% endif %}
+  {% if source.mapping %}
+  <table>
+    <thead><tr><th>Target</th><th>Source</th><th>Source Type</th><th>Nullable</th></tr></thead>
+    <tbody>
+    {% for map in source.mapping -%}
+    <tr><td><code>{{ map.target }}</code></td><td><code>{{ map.source }}</code></td><td>{{ map.source_data_type or "N/A" }}</td><td>{{ map.nullable if map.nullable is not none else "N/A" }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No column mapping defined.</p>
+  {% endif %}
+</details>
 {% endfor %}
-{% else %}
-_No column mapping defined._
-{% endif %}
-{% endfor %}
+</div>
 {% else %}
 _No sources defined._
 {% endif %}
 
 ## Relationships
 
-### Downstream
+<details open>
+  <summary>Downstream Relationships ({{ entity.relationships_out|length }})</summary>
+  {% if entity.relationships_out %}
+  <ul>
+  {% for rel in entity.relationships_out -%}
+    <li><strong>{{ rel.peer_display_name }}</strong> ({{ rel.peer_zone }}): {{ rel.label or "N/A" }}</li>
+  {% endfor %}
+  </ul>
+  {% else %}
+  <p>No outgoing relationships declared.</p>
+  {% endif %}
+</details>
 
-{% if entity.relationships_out %}
-| Target Entity | Zone | Columns |
-| --- | --- | --- |
-{% for rel in entity.relationships_out -%}
-| {{ rel.peer_display_name }} | {{ rel.peer_zone }} | {{ rel.label or "N/A" }} |
-{% endfor %}
-{% else %}
-_No outgoing relationships declared._
-{% endif %}
-
-### Upstream
-
-{% if entity.relationships_in %}
-| Source Entity | Zone | Columns |
-| --- | --- | --- |
-{% for rel in entity.relationships_in -%}
-| {{ rel.peer_display_name }} | {{ rel.peer_zone }} | {{ rel.label or "N/A" }} |
-{% endfor %}
-{% else %}
-_No upstream relationships declared._
-{% endif %}
+<details>
+  <summary>Upstream Relationships ({{ entity.relationships_in|length }})</summary>
+  {% if entity.relationships_in %}
+  <ul>
+  {% for rel in entity.relationships_in -%}
+    <li><strong>{{ rel.peer_display_name }}</strong> ({{ rel.peer_zone }}): {{ rel.label or "N/A" }}</li>
+  {% endfor %}
+  </ul>
+  {% else %}
+  <p>No upstream relationships declared.</p>
+  {% endif %}
+</details>
 
 ## Transformations
 
 {% if entity.transformations %}
-| Step | Kind | Name | Details |
-| --- | --- | --- | --- |
-{% for step in entity.transformations -%}
-| {{ step.step_no or loop.index }} | {{ step.kind or "N/A" }} | {{ step.name or "N/A" }} | {% if step.details %}{% for name, value in step.details.items() %}`{{ name }}`={{ value }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}N/A{% endif %} |
-{% endfor %}
+<table>
+  <thead><tr><th>Step</th><th>Kind</th><th>Name</th><th>Details</th></tr></thead>
+  <tbody>
+  {% for step in entity.transformations -%}
+  <tr>
+    <td>{{ step.step_no or loop.index }}</td>
+    <td>{{ step.kind or "N/A" }}</td>
+    <td>{{ step.name or "N/A" }}</td>
+    <td>
+      {% if step.details %}
+        {% for name, value in step.details.items() %}`{{ name }}`={{ value }}{% if not loop.last %}, {% endif %}{% endfor %}
+      {% else %}
+        N/A
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
 {% else %}
 _No transformation steps registered._
 {% endif %}
