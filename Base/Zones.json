@@ -29,6 +29,12 @@
             "targetName": "platin",
             "displayName": "Consumer Tabular Layer",
             "localFolderName": "040-Consumer"
+        },
+        {
+            "name": "atscale",
+            "targetName": "serving",
+            "displayName": "SML Layer for AtScale",
+            "localFolderName": "050-AtScale"
         }
     ]
 }
