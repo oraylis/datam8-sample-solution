@@ -1,0 +1,83 @@
+{
+  "id": 3013,
+  "name": "reason",
+  "displayName": "Reason",
+  "description": "Dimension table reason (TPC-DS).",
+  "properties": [
+    {
+      "property": "table_role",
+      "value": "dimension"
+    },
+    {
+      "property": "write_mode",
+      "value": "merge"
+    },
+    {
+      "property": "data_retention",
+      "value": "full"
+    }
+  ],
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "r_reason_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": [
+        {
+          "property": "attribute_type",
+          "value": "SK"
+        }
+      ]
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "r_reason_id",
+      "description": "",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "isBusinessKey": true,
+      "properties": []
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "r_reason_desc",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 2013
+    }
+  ],
+  "relationships": [],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "curate_reason",
+      "function": {
+        "source": "reason.py"
+      }
+    }
+  ]
+}

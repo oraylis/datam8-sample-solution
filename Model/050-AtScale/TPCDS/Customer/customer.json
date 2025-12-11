@@ -1,0 +1,273 @@
+{
+  "id": 3004,
+  "name": "customer",
+  "displayName": "Customer",
+  "description": "Dimension table customer (TPC-DS).",
+  "properties": [
+    {
+      "property": "table_role",
+      "value": "dimension"
+    },
+    {
+      "property": "write_mode",
+      "value": "merge"
+    },
+    {
+      "property": "data_retention",
+      "value": "full"
+    }
+  ],
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "c_customer_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": [
+        {
+          "property": "attribute_type",
+          "value": "SK"
+        }
+      ]
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "c_customer_id",
+      "description": "",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "isBusinessKey": true,
+      "properties": []
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "c_current_cdemo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "c_current_hdemo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "c_current_addr_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "c_first_shipto_date_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "c_first_sales_date_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z"
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "c_salutation",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "c_first_name",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 10,
+      "name": "c_last_name",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 11,
+      "name": "c_preferred_cust_flag",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 12,
+      "name": "c_birth_day",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 13,
+      "name": "c_birth_month",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 14,
+      "name": "c_birth_year",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 15,
+      "name": "c_birth_country",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 16,
+      "name": "c_login",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 17,
+      "name": "c_email_address",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 18,
+      "name": "c_last_review_date",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 2004
+    }
+  ],
+  "relationships": [],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "curate_customer",
+      "function": {
+        "source": "customer.py"
+      }
+    }
+  ]
+}

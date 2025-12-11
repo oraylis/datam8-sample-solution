@@ -876,3 +876,152 @@ def generate_jobs_load_groups(model: Model, cache: Cache) -> Sequence[IPayload]:
         _assign_job_clusters(data, [data.get("cluster_variable")])
         payloads.append(BasePayload(data=data, output_path=job["output_path"]))
     return payloads
+
+@register_payload("atscale/dump.jinja2")
+def generate_atscale_sml(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Build SML from 050-AtScale zone."""
+    resolver = MetadataResolver(model)
+    payloads: list[IPayload] = []
+
+    for locator, wrapper in model.modelEntities.items():
+        entity = wrapper.entity
+
+        if not locator.folders:
+            logger.debug("Skipping entity without folder information: %s", locator)
+            continue
+
+        zone_meta = resolver.zone_from_folder(locator.folders[0])
+        if zone_meta is None:
+            logger.warning("Zone metadata missing for folder '%s'. Skipping entity %s.", locator.folders[0], locator)
+            continue
+
+        if zone_meta.name not in ["atscale"] :
+            logger.debug("Skipping unsupported zone '%s' for Databricks DDL: %s", zone_meta.name, locator)
+            continue
+
+        # Determine product/module metadata via folder properties.
+        product_info = resolver.folder_info(tuple(locator.folders[:2])) if len(locator.folders) >= 2 else None
+        module_info = resolver.folder_info(tuple(locator.folders[:3])) if len(locator.folders) >= 3 else None
+
+        data_product_name = product_info.name if product_info else (locator.folders[1] if len(locator.folders) >= 2 else "UnknownProduct")
+        data_module_name = module_info.name if module_info else (locator.folders[2] if len(locator.folders) >= 3 else "General")
+
+        # Assemble shared metadata for the standard notebook.
+        foreign_key_columns = resolver.foreign_key_columns(entity)
+        modeled_columns = resolver.build_standard_columns(
+            entity,
+            foreign_key_columns=foreign_key_columns,
+        )
+        entity_sources = getattr(entity, "sources", []) or []
+        has_external_source = any(getattr(source, "dataSource", None) for source in entity_sources)
+        technical_columns: list[dict[str, Any]] = [
+            resolver.build_column_from_canonical(
+                name="__InsertTimestampUTC",
+                canonical="datetime",
+                nullable=False,
+                comment="Load timestamp (UTC)",
+                data_type_model=None,
+            ),
+            resolver.build_column_from_canonical(
+                name="__UpdateTimestampUTC",
+                canonical="datetime",
+                nullable=False,
+                comment="Last update timestamp (UTC)",
+                data_type_model=None,
+            ),
+        ]
+        if has_external_source:
+            technical_columns.append(
+                resolver.build_column_from_canonical(
+                    name="__InsertTimestampRawUTC",
+                    canonical="datetime",
+                    nullable=False,
+                    comment="Raw load timestamp (UTC)",
+                    data_type_model=None,
+                )
+            )
+            technical_columns.append(
+                resolver.build_column_from_canonical(
+                    name="__SourceTable",
+                    canonical="string",
+                    nullable=False,
+                    comment="Origin reference for the record",
+                    data_type_model=None,
+                )
+            )
+        else:
+            technical_columns.append(
+                resolver.build_column_from_canonical(
+                    name="__BusinessFunction",
+                    canonical="string",
+                    nullable=False,
+                    comment="Business function marker",
+                    data_type_model=None,
+                )
+            )
+        columns = technical_columns + modeled_columns
+        history_config = resolver.history_configuration(entity)
+        scd2_tracking_columns: list[dict[str, Any]] = []
+        if history_config.get("scd2"):
+            scd2_tracking_columns = [
+                resolver.build_column_from_canonical(
+                    name="__ValidFrom",
+                    canonical="datetime",
+                    nullable=False,
+                    comment="SCD2 start date",
+                    data_type_model=None,
+                ),
+                resolver.build_column_from_canonical(
+                    name="__ValidTo",
+                    canonical="datetime",
+                    nullable=False,
+                    comment="SCD2 end date",
+                    data_type_model=None,
+                ),
+                resolver.build_column_from_canonical(
+                    name="__IsCurrent",
+                    canonical="boolean",
+                    nullable=False,
+                    comment="SCD2 current flag",
+                    data_type_model=None,
+                ),
+            ]
+            columns.extend(scd2_tracking_columns)
+        imports = collect_imports(columns)
+        partitions = build_business_key_partitions(entity)
+        table_tags = merge_table_tags(entity, product_info, module_info)
+        table_properties = build_delta_table_properties(table_tags)
+        table_tags_output = format_table_tag_values(table_tags)
+        column_tags = collect_column_tags(entity)
+        refactored_columns = collect_refactored_columns(entity)
+        zone_folder_name = resolver.zone_folder_name(zone_meta)
+        payloads.append(
+            BasePayload(
+                data={
+                    "zone": zone_meta.name,
+                    "zone_display": zone_meta.display_name,
+                    "data_product": data_product_name,
+                    "data_module": data_module_name,
+                    "table_name": entity.name,
+                    "full_table_name": f"{data_product_name}_{data_module_name}_{entity.name}",
+                    "table_comment": entity.description or "",
+                    "columns": columns,
+                    "has_scd2_history": bool(history_config.get("scd2")),
+                    "imports": imports,
+                    "partitions": partitions,
+                    "table_tags_repr": repr(table_tags_output),
+                    "table_properties": table_properties,
+                    "column_tags": column_tags,
+                    "refactored_columns": refactored_columns,
+                },
+                output_path=Path(
+                    "atscale",
+                    zone_folder_name,
+                    "sml",
+                    *tuple(locator.folders[1:]),
+                    f"{locator.entityName or entity.name}.sml",
+                ),
+            )
+        )
+
+    return payloads

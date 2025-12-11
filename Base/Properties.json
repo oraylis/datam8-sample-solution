@@ -69,6 +69,17 @@
                     "type": "folder"
                 }
             ]
+        },
+        {
+            "name": "table_role",
+            "displayName": "table role",
+            "scopes": [
+                {
+                    "type": "entity",
+                    "mandatory": false
+                }
+            ]
         }
+        
     ]
 }

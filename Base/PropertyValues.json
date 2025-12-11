@@ -14,6 +14,12 @@
             "property": "write_mode"
         },
         {
+            "name": "append",
+            "displayName": "append",
+            "default": false,
+            "property": "write_mode"
+        },
+        {
             "name": "delta",
             "displayName": "Delta",
             "default": false,
@@ -114,6 +120,26 @@
             "name": "7_days",
             "property": "data_retention",
             "displayName": "7 Days Data Retention"
+        },
+        {
+            "name": "7_years",
+            "property": "data_retention",
+            "displayName": "7 Years Data Retention"
+        },
+        {
+            "name": "full",
+            "property": "data_retention",
+            "displayName": "full"
+        },
+        {
+            "name": "dimension",
+            "property": "table_role",
+            "displayName": "dimension"
+        },
+        {
+            "name": "fact",
+            "property": "table_role",
+            "displayName": "fact"
         }
     ]
 }

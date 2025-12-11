@@ -1,0 +1,501 @@
+{
+  "id": 3002,
+  "name": "catalog_returns",
+  "displayName": "CatalogReturns",
+  "description": "Fact table catalog_returns (TPC-DS).",
+  "properties": [
+    {
+      "property": "table_role",
+      "value": "fact"
+    },
+    {
+      "property": "write_mode",
+      "value": "append"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_years"
+    }
+  ],
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "cr_returned_date_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "cr_returned_time_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "cr_item_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "cr_refunded_customer_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "cr_refunded_cdemo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "cr_refunded_hdemo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "cr_refunded_addr_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "cr_returning_customer_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "cr_returning_cdemo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 10,
+      "name": "cr_returning_hdemo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 11,
+      "name": "cr_returning_addr_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 12,
+      "name": "cr_call_center_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 13,
+      "name": "cr_catalog_page_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 14,
+      "name": "cr_ship_mode_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 15,
+      "name": "cr_warehouse_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 16,
+      "name": "cr_reason_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 17,
+      "name": "cr_order_number",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 18,
+      "name": "cr_return_quantity",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 19,
+      "name": "cr_return_amount",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 20,
+      "name": "cr_return_tax",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 21,
+      "name": "cr_return_amt_inc_tax",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 22,
+      "name": "cr_fee",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 23,
+      "name": "cr_return_ship_cost",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 24,
+      "name": "cr_refunded_cash",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 25,
+      "name": "cr_reversed_charge",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 26,
+      "name": "cr_store_credit",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 27,
+      "name": "cr_net_loss",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 2002
+    }
+  ],
+  "relationships": [
+    {
+      "targetLocation": 3007,
+      "attributes": [
+        {
+          "targetName": "cr_returned_date_sk",
+          "sourceName": "d_date_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3018,
+      "attributes": [
+        {
+          "targetName": "cr_returned_time_sk",
+          "sourceName": "t_time_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3011,
+      "attributes": [
+        {
+          "targetName": "cr_item_sk",
+          "sourceName": "i_item_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3006,
+      "attributes": [
+        {
+          "targetName": "cr_refunded_cdemo_sk",
+          "sourceName": "cd_demo_sk"
+        },
+        {
+          "targetName": "cr_returning_cdemo_sk",
+          "sourceName": "cd_demo_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3008,
+      "attributes": [
+        {
+          "targetName": "cr_refunded_hdemo_sk",
+          "sourceName": "hd_demo_sk"
+        },
+        {
+          "targetName": "cr_returning_hdemo_sk",
+          "sourceName": "hd_demo_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3005,
+      "attributes": [
+        {
+          "targetName": "cr_refunded_addr_sk",
+          "sourceName": "ca_address_sk"
+        },
+        {
+          "targetName": "cr_returning_addr_sk",
+          "sourceName": "ca_address_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3000,
+      "attributes": [
+        {
+          "targetName": "cr_call_center_sk",
+          "sourceName": "cc_call_center_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3001,
+      "attributes": [
+        {
+          "targetName": "cr_catalog_page_sk",
+          "sourceName": "cp_catalog_page_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3014,
+      "attributes": [
+        {
+          "targetName": "cr_ship_mode_sk",
+          "sourceName": "sm_ship_mode_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3019,
+      "attributes": [
+        {
+          "targetName": "cr_warehouse_sk",
+          "sourceName": "w_warehouse_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3013,
+      "attributes": [
+        {
+          "targetName": "cr_reason_sk",
+          "sourceName": "r_reason_sk"
+        }
+      ]
+    }
+  ],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "curate_catalog_returns",
+      "function": {
+        "source": "catalog_returns.py"
+      }
+    }
+  ]
+}

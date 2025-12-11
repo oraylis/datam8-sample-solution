@@ -15,7 +15,8 @@
         },
         {
             "fileMatch": [
-                "/Model/**/*.json",
+                "!/Model/**/*.json",
+                "/Model/**/.properties.json",
             ],
             "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/heads/feature/v2/schema/folder.json"
         },
