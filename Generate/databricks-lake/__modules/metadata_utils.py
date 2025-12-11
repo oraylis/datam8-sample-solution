@@ -487,6 +487,7 @@ class MetadataResolver:
             "spark_type_expr": f'DataType.fromDDL("{ddl_type}")',
             "struct_nullable": nullable,
             "metadata_repr": metadata_repr,
+            "atscale_type": ddl_type.lower(),
             "delta_type": ddl_type,
             "delta_nullable": nullable,
             "delta_comment": comment,

@@ -8,5 +8,5 @@ table: {{ data.table_name }}
 columns:
 {% for column in data.columns %}
   - name: {{ column.name }}
-    data_type: {{ column.delta_type }}
+    data_type: {{ column.atscale_type }}
 {% endfor %}

@@ -27,6 +27,11 @@ from system_properties import AtScale
 logger = start_logger(__name__)
 
 
+
+
+
+
+
 @register_payload("atscale/catalog.yml.jinja2")
 def generate_atscale_catalog_sml(model: Model, cache: Cache) -> Sequence[IPayload]:
     """Build SML from 050-AtScale zone."""
@@ -39,7 +44,7 @@ def generate_atscale_catalog_sml(model: Model, cache: Cache) -> Sequence[IPayloa
             },
             output_path=Path(
                 "atscale",
-                f"catalog.sml",
+                f"catalog.yml",
             ),
         )
     )
@@ -58,7 +63,7 @@ def generate_atscale_connections_sml(model: Model, cache: Cache) -> Sequence[IPa
             output_path=Path(
                 "atscale",
                 "connections",
-                f"{AtScale().connection_filename}.sml",
+                f"{AtScale().connection_filename}.yml",
             ),
         )
     )
