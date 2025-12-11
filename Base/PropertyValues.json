@@ -114,6 +114,16 @@
             "name": "7_days",
             "property": "data_retention",
             "displayName": "7 Days Data Retention"
+        },
+        {
+            "name": "dimension",
+            "property": "table_role",
+            "displayName": "dimension"
+        },
+        {
+            "name": "fact",
+            "property": "table_role",
+            "displayName": "fact"
         }
     ]
 }
