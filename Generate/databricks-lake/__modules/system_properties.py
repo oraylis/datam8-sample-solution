@@ -61,7 +61,12 @@ class Databricks:
 
 
 class AtScale:
-    """Provides access to databricks related properties"""
+    """Provides access to AtScale related properties"""
 
     connection_name = "tpcds_connection"
     connection_label = "TPCDS Connection"
+
+    catalog_name = "tpcds_catalog"
+    catalog_label = "TPCDS Catalog"
+
+

@@ -28,24 +28,19 @@ logger = start_logger(__name__)
 
 
 @register_payload("atscale/catalog.yml.jinja2")
-def generate_atscale_sml(model: Model, cache: Cache) -> Sequence[IPayload]:
+def generate_atscale_catalog_sml(model: Model, cache: Cache) -> Sequence[IPayload]:
     """Build SML from 050-AtScale zone."""
     resolver = MetadataResolver(model)
     payloads: list[IPayload] = []
     payloads.append(
         BasePayload(
             data={
-                "catalog_name": AtScale().catalog_name,
-                "catalog_label": AtScale().catalog_label,
+                "atscale_prpoerties": AtScale()
             },
             output_path=Path(
                 "atscale",
-                zone_folder_name,
-                "sml",
-                *tuple(locator.folders[1:]),
-                f"{locator.entityName or entity.name}.sml",
+                f"catalog.sml",
             ),
         )
-   
-
+    )
     return payloads
