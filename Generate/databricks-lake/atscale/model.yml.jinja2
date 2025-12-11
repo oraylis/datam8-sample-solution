@@ -1,8 +1,22 @@
 unique_name: {{data.model_name}}
 object_type: model
 label: {{data.model_label}}
-dimensions:
-
-metrics:
-
 relationships:
+{% for relationship in data.model_name.relationships %}
+  - unique_name: {{ relationship.unique_name }}
+    from:
+      dataset: {{ relationship.from.dataset }}
+      join_columns:
+        - {{ relationship.from.column }}
+    to:
+      dimension: {{ relationship.to.dimension }}
+      level: {{ relationship.to.column }}
+{% endfor %}
+dimensions:
+{% for dimension in data.model_name.dimensions %}
+  - unique_name: {{ dimension.name }}
+{% endfor %}
+metrics:
+{% for metric in data.model_name.metrics %}
+  - unique_name: {{ metric.name }}
+{% endfor %}

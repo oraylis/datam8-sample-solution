@@ -1,0 +1,67 @@
+# {{ data.displayName }} Dimension
+# Generated from DataM8 Curated Entity: {{ data.name }}
+
+unique_name: {{ data.name }}
+object_type: dimension
+label: {{ data.name }}
+{% if data.description %}
+description: {{ data.description }}
+{% endif %}
+hierarchies:
+  - unique_name: {{ data.name }}
+    label: {{ data.name }}
+    filter_empty: "yes"
+    levels:
+      - unique_name: {{ data.sk_column }}
+{%- set has_secondary = data.columns | selectattr('is_secondary_attribute') | list | length > 0 %}
+{%- if has_secondary %}
+        secondary_attributes:
+{%- for column in data.columns %}
+{%- if column.is_secondary_attribute %}
+          - unique_name: {{ column.name }}
+            label: {{ column.name }}
+            dataset: {{ data.dataset_name }}
+            name_column: {{ column.name }}
+            key_columns:
+              - {{ column.name }}
+            sort_column: {{ column.name }}
+{%- if column.is_hidden %}
+            is_hidden: true
+{%- endif %}
+{%- if column.contains_unique_names %}
+            contains_unique_names: true
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- set has_metrics = data.columns | selectattr('is_metrical_attribute') | list | length > 0 %}
+{%- if has_metrics %}
+        metrics:
+{%- for column in data.columns %}
+{%- if column.is_metrical_attribute %}
+          - unique_name: {{ column.name }}
+            label: {{ column.name }}
+            dataset: {{ data.dataset_name }}
+            column: {{ column.name }}
+            calculation_method: {{ column.calculation_method }}
+{%- if column.format %}
+            format: {{ column.format }}
+{%- endif %}
+{%- if column.is_hidden %}
+            is_hidden: true
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+level_attributes:
+  - unique_name: {{ data.sk_column }}
+    label: {{ data.sk_column }}
+    is_unique_key: true
+    dataset: {{ data.dataset_name }}
+    name_column: {{ data.sk_column }}
+    key_columns:
+      - {{ data.sk_column }}
+type: {{ data.dimension_type }}
+modeler_metadata:
+  version: 0
+  modified: "false"
