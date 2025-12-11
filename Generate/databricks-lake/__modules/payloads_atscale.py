@@ -169,6 +169,10 @@ def generate_atscale_dimensions_sml(model: Model, cache: Cache) -> Sequence[IPay
             logger.debug("Skipping unsupported zone '%s' for Databricks DDL: %s", zone_meta.name, locator)
             continue
 
+        if not resolver.is_dimension_table(entity):
+            logger.debug("Skipping other that dimensions: %s", locator)
+            continue
+
         # Determine product/module metadata via folder properties.
         product_info = resolver.folder_info(tuple(locator.folders[:2])) if len(locator.folders) >= 2 else None
         module_info = resolver.folder_info(tuple(locator.folders[:3])) if len(locator.folders) >= 3 else None

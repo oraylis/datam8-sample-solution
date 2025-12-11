@@ -85,6 +85,28 @@ def _attribute_property_equals(attribute: Any, property_name: str, expected_valu
             return True
     return False
 
+def _entity_property_equals(entity: Any, property_name: str, expected_value: str) -> bool:
+    """Check if an attribute exposes a property matching the provided value."""
+    props = getattr(entity, "properties", None) or []
+    if not props:
+        return False
+    target_name = (property_name or "").strip().lower()
+    target_value = (expected_value or "").strip().lower()
+    if not target_name:
+        return False
+    for prop in props:
+        name = getattr(prop, "property", None)
+        if not name:
+            continue
+        if str(name).strip().lower() != target_name:
+            continue
+        value = getattr(prop, "value", None)
+        if value is None:
+            continue
+        if str(value).strip().lower() == target_value:
+            return True
+    return False
+
 
 def _strip_brackets(value: str) -> str:
     """Remove surrounding square brackets from identifiers."""
@@ -274,6 +296,9 @@ class MetadataResolver:
 
         return folder_map, name_map
 
+    def is_dimension_table(self, entity) -> bool:
+        return _entity_property_equals(entity, "table_role", "dimension")
+
     def zone_from_folder(self, folder_name: str) -> ZoneMetadata | None:
         """Resolve a zone using a folder prefix like '010-Stage'."""
         folder_map, name_map = self._zones_maps
@@ -424,7 +449,7 @@ class MetadataResolver:
             yield source, self.data_sources.get(data_source_name)
 
     def build_hierarchies(self, entity) :
-        sids = [a.name for a in entity.attributes if a.attributeType.upper() == "SID"]
+        sids = [a.name for a in entity.attributes if _attribute_property_equals(a, "attribute_type", "SK" )]
         nonsids = [
             {
                 "name" : a.name,
@@ -433,7 +458,7 @@ class MetadataResolver:
                 "key_columns": [a.name],
                 "is_hidden": False
             }
-            for a in entity.attributes if a.attributeType.upper() != "SID"]
+            for a in entity.attributes if not _attribute_property_equals(a, "attribute_type", "SK" )]
         
         return [
             {
@@ -448,7 +473,8 @@ class MetadataResolver:
             }
         ]
     def build_level_attributes(self, entity) :
-        sids = [a.name for a in entity.attributes if a.attributeType.upper() == "SID"]
+        
+        sids = [a.name for a in entity.attributes if _attribute_property_equals(a, "attribute_type", "SK" )]
 
         return [
             {
