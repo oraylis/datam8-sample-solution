@@ -144,3 +144,77 @@ def generate_atscale_datasets_sml(model: Model, cache: Cache) -> Sequence[IPaylo
         )
 
     return payloads
+
+
+
+@register_payload("atscale/dimension.yml.jinja2")
+def generate_atscale_dimensions_sml(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Build DDL payloads for modeled (non-raw) entities."""
+    resolver = MetadataResolver(model)
+    payloads: list[IPayload] = []
+
+    for locator, wrapper in model.modelEntities.items():
+        entity = wrapper.entity
+
+        if not locator.folders:
+            logger.debug("Skipping entity without folder information: %s", locator)
+            continue
+
+        zone_meta = resolver.zone_from_folder(locator.folders[0])
+        if zone_meta is None:
+            logger.warning("Zone metadata missing for folder '%s'. Skipping entity %s.", locator.folders[0], locator)
+            continue
+
+        if zone_meta.name not in "atscale":
+            logger.debug("Skipping unsupported zone '%s' for Databricks DDL: %s", zone_meta.name, locator)
+            continue
+
+        # Determine product/module metadata via folder properties.
+        product_info = resolver.folder_info(tuple(locator.folders[:2])) if len(locator.folders) >= 2 else None
+        module_info = resolver.folder_info(tuple(locator.folders[:3])) if len(locator.folders) >= 3 else None
+
+        data_product_name = product_info.name if product_info else (locator.folders[1] if len(locator.folders) >= 2 else "UnknownProduct")
+        data_module_name = module_info.name if module_info else (locator.folders[2] if len(locator.folders) >= 3 else "General")
+
+        # Assemble shared metadata for the standard notebook.
+        foreign_key_columns = resolver.foreign_key_columns(entity)
+        modeled_columns = resolver.build_standard_columns(
+            entity,
+            foreign_key_columns=foreign_key_columns,
+        )
+        hierarchies = resolver.build_hierarchies(entity);
+        level_attributes = resolver.build_level_attributes(entity);
+        
+        
+        partitions = build_business_key_partitions(entity)
+        table_tags = merge_table_tags(entity, product_info, module_info)
+        table_properties = build_delta_table_properties(table_tags)
+        table_tags_output = format_table_tag_values(table_tags)
+        column_tags = collect_column_tags(entity)
+        refactored_columns = collect_refactored_columns(entity)
+        zone_folder_name = resolver.zone_folder_name(zone_meta)
+        payloads.append(
+            BasePayload(
+                data={
+                    "atscale_prpoerties": AtScale(),
+                    "zone": zone_meta.name,
+                    "zone_display": zone_meta.display_name,
+                    "data_product": data_product_name,
+                    "data_module": data_module_name,
+                    "table_name": entity.name,
+                    "dimension_name": f"dim_{entity.name}",
+                    "dimension_label": f"dim_{entity.name}",
+                    "dimension_description": entity.description,
+                    "hierarchies": hierarchies,
+                    "level_attributes": level_attributes,
+                },
+                output_path=Path(
+                    "atscale",
+                    "dimensions",
+                    data_module_name,
+                    f"{locator.entityName or entity.name}.yml",
+                ),
+            )
+        )
+
+    return payloads

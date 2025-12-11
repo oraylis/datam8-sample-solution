@@ -1,0 +1,51 @@
+# {{ data.dimension_name }} Dimension
+# Generated from DataM8 Curated Entity: {{ data.table_name }}
+
+unique_name: {{ data.dimension_name }}
+object_type: dimension
+label: {{ data.dimension_label }}
+{% if data.dimension_description %}
+description: {{ data.dimension_description }}
+{% endif %}
+hierarchies:
+  {%- for h in data.hierarchies %}
+  - unique_name: {{ h.name }}
+    label: {{ h.label }}
+    filter_empty: "yes"
+    levels:
+    {%- for l in h.levels %}
+      - unique_name: {{ l.name }}
+      {%- if l.has_secondary %}
+        secondary_attributes:
+        {%- for s in l.secondary_attributes %}
+          - unique_name: {{ s.name }}
+            label: {{ s.label }}
+            dataset: {{ s.dataset_name }}
+            name_column: {{ s.name }}
+            key_columns:
+            {%- for k in s.key_columns %}
+              - {{ k }}
+            {%- endfor %}
+            sort_column: {{ s.name }}
+            is_hidden: {{ s.is_hidden }}
+        {%- endfor %}
+      {%- endif %}
+    {%- endfor %}
+  {%- endfor %}
+
+level_attributes:
+  {% for la in data.level_attributes %}
+  - unique_name: {{ la.name }}
+    label: {{ la.label }}
+    dataset: {{ la.dataset_name }}
+    is_unique_key: {{ la.is_unique_key }}
+    key_columns:
+    {%- for kc in la.key_columns %}
+      - {{ kc }}
+    {%- endfor %}
+  {% endfor %}
+modeler_metadata:
+  version: 0
+  modified: 'false'
+type: standard  
+

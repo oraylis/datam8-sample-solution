@@ -423,6 +423,43 @@ class MetadataResolver:
                 continue
             yield source, self.data_sources.get(data_source_name)
 
+    def build_hierarchies(self, entity) :
+        sids = [a.name for a in entity.attributes if a.attributeType.upper() == "SID"]
+        nonsids = [
+            {
+                "name" : a.name,
+                "label" : a.name,
+                "dataset_name": entity.name,
+                "key_columns": [a.name],
+                "is_hidden": False
+            }
+            for a in entity.attributes if a.attributeType.upper() != "SID"]
+        
+        return [
+            {
+                "name": f"{entity.name}_hierarchy",
+                "label": f"{'_'.join(sids)}",
+                "levels": [  {
+                    "name": "_".join(sids),
+                    "has_secondary" : len(nonsids) > 0,
+                    "secondary_attributes": nonsids
+                }]
+
+            }
+        ]
+    def build_level_attributes(self, entity) :
+        sids = [a.name for a in entity.attributes if a.attributeType.upper() == "SID"]
+
+        return [
+            {
+                "name": "_".join(sids),
+                "label": "_".join(sids),
+                "dataset_name": entity.name,
+                "is_unique_key": True,
+                "key_columns": sids
+            }
+        ]
+
     # ----------------------------------------------------------- Canonical map
     @property
     @lru_cache
@@ -1456,7 +1493,6 @@ def _to_bool_string(value: Any) -> str:
             return lowered
         return value
     return str(value)
-
 
 def build_delta_table_properties(table_tags: dict[str, Any]) -> dict[str, str]:
     """Translate table tags into Delta table properties used in SQL DDL."""
