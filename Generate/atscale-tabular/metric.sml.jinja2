@@ -1,0 +1,7 @@
+# Metric
+unique_name: {{ data.column.name }}_{{ data.column.aggregation_hint }}
+object_type: metric
+label: {{ data.column.name }}_{{ data.column.aggregation_hint }}
+calculation_method: {{ data.column.aggregation_hint }}
+dataset: {{ data.column.table.name }}
+column: {{ column.name }}

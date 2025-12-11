@@ -1,0 +1,11 @@
+# Dataset
+unique_name: {{ data.table.name }}
+object_type: dataset
+label: {{ data.table.name }}
+connection_id: {{ data.atscale_properties.connection_id }}
+table: {{ data.table.name }}
+
+columns:
+{% for column in data.table.columns %}
+  - name: {{ column.name }}
+    data_type: {{ column.data_type.type }}
