@@ -58,3 +58,10 @@ class Databricks:
     }
 
     permissions = [{"group_name": "datam8_sample_dev_operations", "level": "CAN_RUN"}]
+
+
+class AtScale:
+    """Provides access to databricks related properties"""
+
+    connection_name = "tpcds_connection"
+    connection_label = "TPCDS Connection"
