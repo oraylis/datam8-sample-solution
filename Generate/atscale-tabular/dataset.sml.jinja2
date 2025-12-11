@@ -1,26 +1,11 @@
 # Dataset
-unique_name: {{ dataset_unique_name }}
+unique_name: {{ data.table.name }}
 object_type: dataset
-label: {{ dataset_label or dataset_unique_name }}
-connection_id: {{ connection_id }}
-{% if sql %}
-sql: |
-  {{ sql }}
-{% elif table %}
-table: {{ table }}
-{% endif %}
+label: {{ data.table.name }}
+connection_id: {{ data.atscale_properties.connection_id }}
+table: {{ data.table.name }}
 
 columns:
-{% for col in columns %}
-  - name: {{ col.name }}
-    data_type: {{ col.data_type }}
-    {% if col.sql %}sql: |
-      {{ col.sql }}{% endif %}
-    {% if col.dialects %}dialects:
-    {% for d in col.dialects %}
-      - dialect: {{ d.dialect }}
-        sql: |
-          {{ d.sql }}
-    {% endfor %}
-    {% endif %}
-{% endfor %}
+{% for column in data.table.columns %}
+  - name: {{ column.name }}
+    data_type: {{ column.data_type.type }}
