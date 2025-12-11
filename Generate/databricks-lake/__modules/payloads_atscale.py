@@ -63,3 +63,22 @@ def generate_atscale_connections_sml(model: Model, cache: Cache) -> Sequence[IPa
         )
     )
     return payloads
+
+@register_payload("atscale/dataset.yml.jinja2")
+def generate_atscale_connections_sml(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Build SML from 050-AtScale zone."""
+    resolver = MetadataResolver(model)
+    payloads: list[IPayload] = []
+    payloads.append(
+        BasePayload(
+            data={
+                "atscale_prpoerties": AtScale()
+            },
+            output_path=Path(
+                "atscale",
+                "connections",
+                f"{AtScale().connection_filename}.sml",
+            ),
+        )
+    )
+    return payloads
