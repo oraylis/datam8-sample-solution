@@ -63,10 +63,16 @@ class Databricks:
 class AtScale:
     """Provides access to AtScale related properties"""
 
-    connection_name = "tpcds_connection"
-    connection_label = "TPCDS Connection"
 
     catalog_name = "tpcds_catalog"
     catalog_label = "TPCDS Catalog"
+    
+    connection_id = "1"
+    connection_name = "tpcds_connection"
+    connection_label = "TPCDS Connection"
+    connection_filename = "tpcds_connection"
+
+    connection_database = "innolab_atscale"
+    connection_schema = "tpcds_sf1"
 
 

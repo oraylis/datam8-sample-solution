@@ -79,7 +79,21 @@
                     "mandatory": false
                 }
             ]
+        },
+        {
+            "name": "aggregation_hint",
+            "displayName": "aggregation_hint",
+            "scopes": [
+                {
+                    "type": "attribute",
+                    "mandatory": false
+                }
+            ]
         }
+
+
+
+        
         
     ]
 }

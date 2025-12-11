@@ -140,6 +140,11 @@
             "name": "fact",
             "property": "table_role",
             "displayName": "fact"
+        },
+        {
+            "name": "sum",
+            "property": "aggregation_hint",
+            "displayName": "sum"
         }
     ]
 }
