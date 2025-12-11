@@ -1,663 +1,587 @@
 {
-    "id":  3003,
-    "name":  "catalog_sales",
-    "displayName":  "CatalogSales",
-    "description":  "Fact table catalog_sales (TPC-DS).",
-    "properties":  [
-                       {
-                           "property":  "table_role",
-                           "value":  "fact"
-                       },
-                       {
-                           "property":  "physical_table",
-                           "value":  "innolab_atscale.tpcds_sf10000.catalog_sales"
-                       },
-                       {
-                           "property":  "zone",
-                           "value":  "curated"
-                       },
-                       {
-                           "property":  "write_mode",
-                           "value":  "append"
-                       },
-                       {
-                           "property":  "data_retention",
-                           "value":  "7_years"
-                       }
-                   ],
-    "attributes":  [
-                       {
-                           "ordinalNumber":  1,
-                           "name":  "cs_sold_date_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  2,
-                           "name":  "cs_sold_time_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  3,
-                           "name":  "cs_ship_date_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  4,
-                           "name":  "cs_bill_customer_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  5,
-                           "name":  "cs_bill_cdemo_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  6,
-                           "name":  "cs_bill_hdemo_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  7,
-                           "name":  "cs_bill_addr_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  8,
-                           "name":  "cs_ship_customer_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  9,
-                           "name":  "cs_ship_cdemo_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  10,
-                           "name":  "cs_ship_hdemo_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  11,
-                           "name":  "cs_ship_addr_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  12,
-                           "name":  "cs_call_center_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  13,
-                           "name":  "cs_catalog_page_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  14,
-                           "name":  "cs_ship_mode_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  15,
-                           "name":  "cs_warehouse_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  16,
-                           "name":  "cs_item_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  false
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  17,
-                           "name":  "cs_promo_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  18,
-                           "name":  "cs_order_number",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "long",
-                                            "nullable":  false
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  19,
-                           "name":  "cs_quantity",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  20,
-                           "name":  "cs_wholesale_cost",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  21,
-                           "name":  "cs_list_price",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  22,
-                           "name":  "cs_sales_price",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  23,
-                           "name":  "cs_ext_discount_amt",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  24,
-                           "name":  "cs_ext_sales_price",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  25,
-                           "name":  "cs_ext_wholesale_cost",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  26,
-                           "name":  "cs_ext_list_price",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  27,
-                           "name":  "cs_ext_tax",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  28,
-                           "name":  "cs_coupon_amt",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  29,
-                           "name":  "cs_ext_ship_cost",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  30,
-                           "name":  "cs_net_paid",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  31,
-                           "name":  "cs_net_paid_inc_tax",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  32,
-                           "name":  "cs_net_paid_inc_ship",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  33,
-                           "name":  "cs_net_paid_inc_ship_tax",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  34,
-                           "name":  "cs_net_profit",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       }
-                   ],
-    "sources":  [
-                    {
-                        "sourceLocation":  2003
-                    }
-                ],
-    "relationships":  [
-                          {
-                              "targetLocation":  3007,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "cs_sold_date_sk",
-                                                     "sourceName":  "d_date_sk"
-                                                 },
-                                                 {
-                                                     "targetName":  "cs_ship_date_sk",
-                                                     "sourceName":  "d_date_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3018,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "cs_sold_time_sk",
-                                                     "sourceName":  "t_time_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3006,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "cs_bill_cdemo_sk",
-                                                     "sourceName":  "cd_demo_sk"
-                                                 },
-                                                 {
-                                                     "targetName":  "cs_ship_cdemo_sk",
-                                                     "sourceName":  "cd_demo_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3008,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "cs_bill_hdemo_sk",
-                                                     "sourceName":  "hd_demo_sk"
-                                                 },
-                                                 {
-                                                     "targetName":  "cs_ship_hdemo_sk",
-                                                     "sourceName":  "hd_demo_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3005,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "cs_bill_addr_sk",
-                                                     "sourceName":  "ca_address_sk"
-                                                 },
-                                                 {
-                                                     "targetName":  "cs_ship_addr_sk",
-                                                     "sourceName":  "ca_address_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3000,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "cs_call_center_sk",
-                                                     "sourceName":  "cc_call_center_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3001,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "cs_catalog_page_sk",
-                                                     "sourceName":  "cp_catalog_page_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3014,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "cs_ship_mode_sk",
-                                                     "sourceName":  "sm_ship_mode_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3019,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "cs_warehouse_sk",
-                                                     "sourceName":  "w_warehouse_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3011,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "cs_item_sk",
-                                                     "sourceName":  "i_item_sk"
-                                                 }
-                                             ]
-                          }
-                      ],
-    "transformations":  [
-                            {
-                                "stepNo":  1,
-                                "kind":  "function",
-                                "name":  "curate_catalog_sales",
-                                "function":  {
-                                                 "source":  "catalog_sales.py"
-                                             }
-                            }
-                        ]
+  "id": 3003,
+  "name": "catalog_sales",
+  "displayName": "CatalogSales",
+  "description": "Fact table catalog_sales (TPC-DS).",
+  "properties": [
+    {
+      "property": "table_role",
+      "value": "fact"
+    },
+    {
+      "property": "write_mode",
+      "value": "append"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_years"
+    }
+  ],
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "cs_sold_date_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "cs_sold_time_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "cs_ship_date_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "cs_bill_customer_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "cs_bill_cdemo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "cs_bill_hdemo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "cs_bill_addr_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "cs_ship_customer_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "cs_ship_cdemo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 10,
+      "name": "cs_ship_hdemo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 11,
+      "name": "cs_ship_addr_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 12,
+      "name": "cs_call_center_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 13,
+      "name": "cs_catalog_page_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 14,
+      "name": "cs_ship_mode_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 15,
+      "name": "cs_warehouse_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 16,
+      "name": "cs_item_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 17,
+      "name": "cs_promo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 18,
+      "name": "cs_order_number",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 19,
+      "name": "cs_quantity",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 20,
+      "name": "cs_wholesale_cost",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 21,
+      "name": "cs_list_price",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 22,
+      "name": "cs_sales_price",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 23,
+      "name": "cs_ext_discount_amt",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 24,
+      "name": "cs_ext_sales_price",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 25,
+      "name": "cs_ext_wholesale_cost",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 26,
+      "name": "cs_ext_list_price",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 27,
+      "name": "cs_ext_tax",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 28,
+      "name": "cs_coupon_amt",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 29,
+      "name": "cs_ext_ship_cost",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 30,
+      "name": "cs_net_paid",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 31,
+      "name": "cs_net_paid_inc_tax",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 32,
+      "name": "cs_net_paid_inc_ship",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 33,
+      "name": "cs_net_paid_inc_ship_tax",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 34,
+      "name": "cs_net_profit",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 2003
+    }
+  ],
+  "relationships": [
+    {
+      "targetLocation": 3007,
+      "attributes": [
+        {
+          "targetName": "cs_sold_date_sk",
+          "sourceName": "d_date_sk"
+        },
+        {
+          "targetName": "cs_ship_date_sk",
+          "sourceName": "d_date_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3018,
+      "attributes": [
+        {
+          "targetName": "cs_sold_time_sk",
+          "sourceName": "t_time_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3006,
+      "attributes": [
+        {
+          "targetName": "cs_bill_cdemo_sk",
+          "sourceName": "cd_demo_sk"
+        },
+        {
+          "targetName": "cs_ship_cdemo_sk",
+          "sourceName": "cd_demo_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3008,
+      "attributes": [
+        {
+          "targetName": "cs_bill_hdemo_sk",
+          "sourceName": "hd_demo_sk"
+        },
+        {
+          "targetName": "cs_ship_hdemo_sk",
+          "sourceName": "hd_demo_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3005,
+      "attributes": [
+        {
+          "targetName": "cs_bill_addr_sk",
+          "sourceName": "ca_address_sk"
+        },
+        {
+          "targetName": "cs_ship_addr_sk",
+          "sourceName": "ca_address_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3000,
+      "attributes": [
+        {
+          "targetName": "cs_call_center_sk",
+          "sourceName": "cc_call_center_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3001,
+      "attributes": [
+        {
+          "targetName": "cs_catalog_page_sk",
+          "sourceName": "cp_catalog_page_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3014,
+      "attributes": [
+        {
+          "targetName": "cs_ship_mode_sk",
+          "sourceName": "sm_ship_mode_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3019,
+      "attributes": [
+        {
+          "targetName": "cs_warehouse_sk",
+          "sourceName": "w_warehouse_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3011,
+      "attributes": [
+        {
+          "targetName": "cs_item_sk",
+          "sourceName": "i_item_sk"
+        }
+      ]
+    }
+  ],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "curate_catalog_sales",
+      "function": {
+        "source": "catalog_sales.py"
+      }
+    }
+  ]
 }

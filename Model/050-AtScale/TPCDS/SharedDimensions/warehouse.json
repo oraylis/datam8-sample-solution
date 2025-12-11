@@ -1,262 +1,226 @@
 {
-    "id":  3019,
-    "name":  "warehouse",
-    "displayName":  "Warehouse",
-    "description":  "Dimension table warehouse (TPC-DS).",
-    "properties":  [
-                       {
-                           "property":  "table_role",
-                           "value":  "dimension"
-                       },
-                       {
-                           "property":  "physical_table",
-                           "value":  "innolab_atscale.tpcds_sf10000.warehouse"
-                       },
-                       {
-                           "property":  "zone",
-                           "value":  "curated"
-                       },
-                       {
-                           "property":  "write_mode",
-                           "value":  "merge"
-                       },
-                       {
-                           "property":  "data_retention",
-                           "value":  "full"
-                       }
-                   ],
-    "attributes":  [
-                       {
-                           "ordinalNumber":  1,
-                           "name":  "w_warehouse_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  false
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-                                              {
-                                                  "property":  "attribute_type",
-                                                  "value":  "SK"
-                                              }
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  2,
-                           "name":  "w_warehouse_id",
-                           "description":  "",
-                           "attributeType":  "ID",
-                           "dataType":  {
-                                            "type":  "string",
-                                            "nullable":  false
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "isBusinessKey":  true,
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  3,
-                           "name":  "w_warehouse_name",
-                           "description":  "",
-                           "attributeType":  "Attribute",
-                           "dataType":  {
-                                            "type":  "string",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  4,
-                           "name":  "w_warehouse_sq_ft",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  5,
-                           "name":  "w_street_number",
-                           "description":  "",
-                           "attributeType":  "Attribute",
-                           "dataType":  {
-                                            "type":  "string",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  6,
-                           "name":  "w_street_name",
-                           "description":  "",
-                           "attributeType":  "Attribute",
-                           "dataType":  {
-                                            "type":  "string",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  7,
-                           "name":  "w_street_type",
-                           "description":  "",
-                           "attributeType":  "Attribute",
-                           "dataType":  {
-                                            "type":  "string",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  8,
-                           "name":  "w_suite_number",
-                           "description":  "",
-                           "attributeType":  "Attribute",
-                           "dataType":  {
-                                            "type":  "string",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  9,
-                           "name":  "w_city",
-                           "description":  "",
-                           "attributeType":  "Attribute",
-                           "dataType":  {
-                                            "type":  "string",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  10,
-                           "name":  "w_county",
-                           "description":  "",
-                           "attributeType":  "Attribute",
-                           "dataType":  {
-                                            "type":  "string",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  11,
-                           "name":  "w_state",
-                           "description":  "",
-                           "attributeType":  "Attribute",
-                           "dataType":  {
-                                            "type":  "string",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  12,
-                           "name":  "w_zip",
-                           "description":  "",
-                           "attributeType":  "Attribute",
-                           "dataType":  {
-                                            "type":  "string",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  13,
-                           "name":  "w_country",
-                           "description":  "",
-                           "attributeType":  "Attribute",
-                           "dataType":  {
-                                            "type":  "string",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  14,
-                           "name":  "w_gmt_offset",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       }
-                   ],
-    "sources":  [
-                    {
-                        "sourceLocation":  2019
-                    }
-                ],
-    "relationships":  [
-
-                      ],
-    "transformations":  [
-                            {
-                                "stepNo":  1,
-                                "kind":  "function",
-                                "name":  "curate_warehouse",
-                                "function":  {
-                                                 "source":  "warehouse.py"
-                                             }
-                            }
-                        ]
+  "id": 3019,
+  "name": "warehouse",
+  "displayName": "Warehouse",
+  "description": "Dimension table warehouse (TPC-DS).",
+  "properties": [
+    {
+      "property": "table_role",
+      "value": "dimension"
+    },
+    {
+      "property": "write_mode",
+      "value": "merge"
+    },
+    {
+      "property": "data_retention",
+      "value": "full"
+    }
+  ],
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "w_warehouse_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": [
+        {
+          "property": "attribute_type",
+          "value": "SK"
+        }
+      ]
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "w_warehouse_id",
+      "description": "",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "isBusinessKey": true,
+      "properties": []
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "w_warehouse_name",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "w_warehouse_sq_ft",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "w_street_number",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "w_street_name",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "w_street_type",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "w_suite_number",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "w_city",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 10,
+      "name": "w_county",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 11,
+      "name": "w_state",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 12,
+      "name": "w_zip",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 13,
+      "name": "w_country",
+      "description": "",
+      "attributeType": "Attribute",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 14,
+      "name": "w_gmt_offset",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 2019
+    }
+  ],
+  "relationships": [],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "curate_warehouse",
+      "function": {
+        "source": "warehouse.py"
+      }
+    }
+  ]
 }

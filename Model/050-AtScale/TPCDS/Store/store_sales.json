@@ -1,455 +1,401 @@
 {
-    "id":  3017,
-    "name":  "store_sales",
-    "displayName":  "StoreSales",
-    "description":  "Fact table store_sales (TPC-DS).",
-    "properties":  [
-                       {
-                           "property":  "table_role",
-                           "value":  "fact"
-                       },
-                       {
-                           "property":  "physical_table",
-                           "value":  "innolab_atscale.tpcds_sf10000.store_sales"
-                       },
-                       {
-                           "property":  "zone",
-                           "value":  "curated"
-                       },
-                       {
-                           "property":  "write_mode",
-                           "value":  "append"
-                       },
-                       {
-                           "property":  "data_retention",
-                           "value":  "7_years"
-                       }
-                   ],
-    "attributes":  [
-                       {
-                           "ordinalNumber":  1,
-                           "name":  "ss_sold_date_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  2,
-                           "name":  "ss_sold_time_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  3,
-                           "name":  "ss_item_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  false
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  4,
-                           "name":  "ss_customer_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  5,
-                           "name":  "ss_cdemo_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  6,
-                           "name":  "ss_hdemo_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  7,
-                           "name":  "ss_addr_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  8,
-                           "name":  "ss_store_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  9,
-                           "name":  "ss_promo_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  10,
-                           "name":  "ss_ticket_number",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "long",
-                                            "nullable":  false
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  11,
-                           "name":  "ss_quantity",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  12,
-                           "name":  "ss_wholesale_cost",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  13,
-                           "name":  "ss_list_price",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  14,
-                           "name":  "ss_sales_price",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  15,
-                           "name":  "ss_ext_discount_amt",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  16,
-                           "name":  "ss_ext_sales_price",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  17,
-                           "name":  "ss_ext_wholesale_cost",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  18,
-                           "name":  "ss_ext_list_price",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  19,
-                           "name":  "ss_ext_tax",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  20,
-                           "name":  "ss_coupon_amt",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  21,
-                           "name":  "ss_net_paid",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  22,
-                           "name":  "ss_net_paid_inc_tax",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  23,
-                           "name":  "ss_net_profit",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "decimal",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       }
-                   ],
-    "sources":  [
-                    {
-                        "sourceLocation":  2017
-                    }
-                ],
-    "relationships":  [
-                          {
-                              "targetLocation":  3007,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "ss_sold_date_sk",
-                                                     "sourceName":  "d_date_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3018,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "ss_sold_time_sk",
-                                                     "sourceName":  "t_time_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3011,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "ss_item_sk",
-                                                     "sourceName":  "i_item_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3006,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "ss_cdemo_sk",
-                                                     "sourceName":  "cd_demo_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3008,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "ss_hdemo_sk",
-                                                     "sourceName":  "hd_demo_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3005,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "ss_addr_sk",
-                                                     "sourceName":  "ca_address_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3015,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "ss_store_sk",
-                                                     "sourceName":  "s_store_sk"
-                                                 }
-                                             ]
-                          }
-                      ],
-    "transformations":  [
-                            {
-                                "stepNo":  1,
-                                "kind":  "function",
-                                "name":  "curate_store_sales",
-                                "function":  {
-                                                 "source":  "store_sales.py"
-                                             }
-                            }
-                        ]
+  "id": 3017,
+  "name": "store_sales",
+  "displayName": "StoreSales",
+  "description": "Fact table store_sales (TPC-DS).",
+  "properties": [
+    {
+      "property": "table_role",
+      "value": "fact"
+    },
+    {
+      "property": "write_mode",
+      "value": "append"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_years"
+    }
+  ],
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "ss_sold_date_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "ss_sold_time_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "ss_item_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "ss_customer_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "ss_cdemo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "ss_hdemo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "ss_addr_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "ss_store_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "ss_promo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 10,
+      "name": "ss_ticket_number",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 11,
+      "name": "ss_quantity",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 12,
+      "name": "ss_wholesale_cost",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 13,
+      "name": "ss_list_price",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 14,
+      "name": "ss_sales_price",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 15,
+      "name": "ss_ext_discount_amt",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 16,
+      "name": "ss_ext_sales_price",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 17,
+      "name": "ss_ext_wholesale_cost",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 18,
+      "name": "ss_ext_list_price",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 19,
+      "name": "ss_ext_tax",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 20,
+      "name": "ss_coupon_amt",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 21,
+      "name": "ss_net_paid",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 22,
+      "name": "ss_net_paid_inc_tax",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 23,
+      "name": "ss_net_profit",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 2017
+    }
+  ],
+  "relationships": [
+    {
+      "targetLocation": 3007,
+      "attributes": [
+        {
+          "targetName": "ss_sold_date_sk",
+          "sourceName": "d_date_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3018,
+      "attributes": [
+        {
+          "targetName": "ss_sold_time_sk",
+          "sourceName": "t_time_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3011,
+      "attributes": [
+        {
+          "targetName": "ss_item_sk",
+          "sourceName": "i_item_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3006,
+      "attributes": [
+        {
+          "targetName": "ss_cdemo_sk",
+          "sourceName": "cd_demo_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3008,
+      "attributes": [
+        {
+          "targetName": "ss_hdemo_sk",
+          "sourceName": "hd_demo_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3005,
+      "attributes": [
+        {
+          "targetName": "ss_addr_sk",
+          "sourceName": "ca_address_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3015,
+      "attributes": [
+        {
+          "targetName": "ss_store_sk",
+          "sourceName": "s_store_sk"
+        }
+      ]
+    }
+  ],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "curate_store_sales",
+      "function": {
+        "source": "store_sales.py"
+      }
+    }
+  ]
 }

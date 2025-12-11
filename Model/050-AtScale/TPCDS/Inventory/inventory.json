@@ -1,134 +1,118 @@
 {
-    "id":  3010,
-    "name":  "inventory",
-    "displayName":  "Inventory",
-    "description":  "Fact table inventory (TPC-DS).",
-    "properties":  [
-                       {
-                           "property":  "table_role",
-                           "value":  "fact"
-                       },
-                       {
-                           "property":  "physical_table",
-                           "value":  "innolab_atscale.tpcds_sf10000.inventory"
-                       },
-                       {
-                           "property":  "zone",
-                           "value":  "curated"
-                       },
-                       {
-                           "property":  "write_mode",
-                           "value":  "append"
-                       },
-                       {
-                           "property":  "data_retention",
-                           "value":  "7_years"
-                       }
-                   ],
-    "attributes":  [
-                       {
-                           "ordinalNumber":  1,
-                           "name":  "inv_date_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  false
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  2,
-                           "name":  "inv_item_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  false
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  3,
-                           "name":  "inv_warehouse_sk",
-                           "description":  "",
-                           "attributeType":  "SID",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  false
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       },
-                       {
-                           "ordinalNumber":  4,
-                           "name":  "inv_quantity_on_hand",
-                           "description":  "",
-                           "attributeType":  "Measure",
-                           "dataType":  {
-                                            "type":  "int",
-                                            "nullable":  true
-                                        },
-                           "dateModified":  "2025-12-08T14:36:04Z",
-                           "dateAdded":  "2025-12-08T14:36:04Z",
-                           "properties":  [
-
-                                          ]
-                       }
-                   ],
-    "sources":  [
-                    {
-                        "sourceLocation":  2010
-                    }
-                ],
-    "relationships":  [
-                          {
-                              "targetLocation":  3007,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "inv_date_sk",
-                                                     "sourceName":  "d_date_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3011,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "inv_item_sk",
-                                                     "sourceName":  "i_item_sk"
-                                                 }
-                                             ]
-                          },
-                          {
-                              "targetLocation":  3019,
-                              "attributes":  [
-                                                 {
-                                                     "targetName":  "inv_warehouse_sk",
-                                                     "sourceName":  "w_warehouse_sk"
-                                                 }
-                                             ]
-                          }
-                      ],
-    "transformations":  [
-                            {
-                                "stepNo":  1,
-                                "kind":  "function",
-                                "name":  "curate_inventory",
-                                "function":  {
-                                                 "source":  "inventory.py"
-                                             }
-                            }
-                        ]
+  "id": 3010,
+  "name": "inventory",
+  "displayName": "Inventory",
+  "description": "Fact table inventory (TPC-DS).",
+  "properties": [
+    {
+      "property": "table_role",
+      "value": "fact"
+    },
+    {
+      "property": "write_mode",
+      "value": "append"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_years"
+    }
+  ],
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "inv_date_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "inv_item_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "inv_warehouse_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "inv_quantity_on_hand",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 2010
+    }
+  ],
+  "relationships": [
+    {
+      "targetLocation": 3007,
+      "attributes": [
+        {
+          "targetName": "inv_date_sk",
+          "sourceName": "d_date_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3011,
+      "attributes": [
+        {
+          "targetName": "inv_item_sk",
+          "sourceName": "i_item_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3019,
+      "attributes": [
+        {
+          "targetName": "inv_warehouse_sk",
+          "sourceName": "w_warehouse_sk"
+        }
+      ]
+    }
+  ],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "curate_inventory",
+      "function": {
+        "source": "inventory.py"
+      }
+    }
+  ]
 }

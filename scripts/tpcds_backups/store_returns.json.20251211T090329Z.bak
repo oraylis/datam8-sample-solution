@@ -1,0 +1,375 @@
+{
+  "id": 3016,
+  "name": "store_returns",
+  "displayName": "StoreReturns",
+  "description": "Fact table store_returns (TPC-DS).",
+  "properties": [
+    {
+      "property": "table_role",
+      "value": "fact"
+    },
+    {
+      "property": "physical_table",
+      "value": "innolab_atscale.tpcds_sf10000.store_returns"
+    },
+    {
+      "property": "write_mode",
+      "value": "append"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_years"
+    }
+  ],
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "sr_returned_date_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "sr_return_time_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "sr_item_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "sr_customer_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "sr_cdemo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "sr_hdemo_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "sr_addr_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "sr_store_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "sr_reason_sk",
+      "description": "",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 10,
+      "name": "sr_ticket_number",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 11,
+      "name": "sr_return_quantity",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 12,
+      "name": "sr_return_amt",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 13,
+      "name": "sr_return_tax",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 14,
+      "name": "sr_return_amt_inc_tax",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 15,
+      "name": "sr_fee",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 16,
+      "name": "sr_return_ship_cost",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 17,
+      "name": "sr_refunded_cash",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 18,
+      "name": "sr_reversed_charge",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 19,
+      "name": "sr_store_credit",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    },
+    {
+      "ordinalNumber": 20,
+      "name": "sr_net_loss",
+      "description": "",
+      "attributeType": "Measure",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true
+      },
+      "dateModified": "2025-12-08T14:36:04Z",
+      "dateAdded": "2025-12-08T14:36:04Z",
+      "properties": []
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 2016
+    }
+  ],
+  "relationships": [
+    {
+      "targetLocation": 3007,
+      "attributes": [
+        {
+          "targetName": "sr_returned_date_sk",
+          "sourceName": "d_date_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3018,
+      "attributes": [
+        {
+          "targetName": "sr_return_time_sk",
+          "sourceName": "t_time_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3011,
+      "attributes": [
+        {
+          "targetName": "sr_item_sk",
+          "sourceName": "i_item_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3006,
+      "attributes": [
+        {
+          "targetName": "sr_cdemo_sk",
+          "sourceName": "cd_demo_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3008,
+      "attributes": [
+        {
+          "targetName": "sr_hdemo_sk",
+          "sourceName": "hd_demo_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3005,
+      "attributes": [
+        {
+          "targetName": "sr_addr_sk",
+          "sourceName": "ca_address_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3015,
+      "attributes": [
+        {
+          "targetName": "sr_store_sk",
+          "sourceName": "s_store_sk"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3013,
+      "attributes": [
+        {
+          "targetName": "sr_reason_sk",
+          "sourceName": "r_reason_sk"
+        }
+      ]
+    }
+  ],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "curate_store_returns",
+      "function": {
+        "source": "store_returns.py"
+      }
+    }
+  ]
+}

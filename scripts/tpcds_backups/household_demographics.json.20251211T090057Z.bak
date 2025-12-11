@@ -1,0 +1,123 @@
+{
+    "id":  3008,
+    "name":  "household_demographics",
+    "displayName":  "HouseholdDemographics",
+    "description":  "Dimension table household_demographics (TPC-DS).",
+    "properties":  [
+                       {
+                           "property":  "table_role",
+                           "value":  "dimension"
+                       },
+                       {
+                           "property":  "physical_table",
+                           "value":  "innolab_atscale.tpcds_sf10000.household_demographics"
+                       },
+                       {
+                           "property":  "zone",
+                           "value":  "curated"
+                       },
+                       {
+                           "property":  "write_mode",
+                           "value":  "merge"
+                       },
+                       {
+                           "property":  "data_retention",
+                           "value":  "full"
+                       }
+                   ],
+    "attributes":  [
+                       {
+                           "ordinalNumber":  1,
+                           "name":  "hd_demo_sk",
+                           "description":  "",
+                           "attributeType":  "SID",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  false
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+                                              {
+                                                  "property":  "attribute_type",
+                                                  "value":  "SK"
+                                              }
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  2,
+                           "name":  "hd_income_band_sk",
+                           "description":  "",
+                           "attributeType":  "SID",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z"
+                       },
+                       {
+                           "ordinalNumber":  3,
+                           "name":  "hd_buy_potential",
+                           "description":  "",
+                           "attributeType":  "Attribute",
+                           "dataType":  {
+                                            "type":  "string",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  4,
+                           "name":  "hd_dep_count",
+                           "description":  "",
+                           "attributeType":  "Measure",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  5,
+                           "name":  "hd_vehicle_count",
+                           "description":  "",
+                           "attributeType":  "Measure",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       }
+                   ],
+    "sources":  [
+                    {
+                        "sourceLocation":  2008
+                    }
+                ],
+    "relationships":  [
+
+                      ],
+    "transformations":  [
+                            {
+                                "stepNo":  1,
+                                "kind":  "function",
+                                "name":  "curate_household_demographics",
+                                "function":  {
+                                                 "source":  "household_demographics.py"
+                                             }
+                            }
+                        ]
+}
