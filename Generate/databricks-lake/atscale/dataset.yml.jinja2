@@ -1,11 +1,12 @@
 # Dataset
-unique_name: {{ data.table.name }}
+unique_name: {{ data.table_name }}
 object_type: dataset
-label: {{ data.table.name }}
-connection_id: {{ data.atscale_properties.connection_id }}
-table: {{ data.table.name }}
+label: {{ data.table_label }}
+connection_id: {{ data.atscale_prpoerties.connection_id }}
+table: {{ data.table_name }}
 
 columns:
-{% for column in data.table.columns %}
+{% for column in data.columns %}
   - name: {{ column.name }}
-    data_type: {{ column.data_type.type }}
+    data_type: {{ column.delta_type }}
+{% endfor %}
