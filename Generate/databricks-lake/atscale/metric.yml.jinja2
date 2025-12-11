@@ -1,7 +1,7 @@
 # Metric
-unique_name: {{ data.column.name }}_{{ data.column.aggregation_hint }}
+unique_name: {{ data.column_name }}_{{ data.column_aggregation_hint }}
 object_type: metric
-label: {{ data.column.name }}_{{ data.column.aggregation_hint }}
-calculation_method: {{ data.column.aggregation_hint }}
-dataset: {{ data.column.table.name }}
-column: {{ column.name }}
+label: {{ data.column_name }}_{{ data.column_aggregation_hint }}
+calculation_method: {{ data.column_aggregation_hint }}
+dataset: {{ data.column_dataset_name }}
+column: {{ data.column_name }}

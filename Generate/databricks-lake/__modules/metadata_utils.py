@@ -465,7 +465,7 @@ class MetadataResolver:
                 "name": f"{entity.name}_hierarchy",
                 "label": f"{'_'.join(sids)}",
                 "levels": [  {
-                    "name": "_".join(sids),
+                    "name": sids[0],
                     "has_secondary" : len(nonsids) > 0,
                     "secondary_attributes": nonsids
                 }]
@@ -557,6 +557,26 @@ class MetadataResolver:
         }
 
     # ----------------------------------------------------------- Column builds
+    def get_property_by_name(self, attribute, property_name: str) -> Any | None:
+        """Check if an attribute exposes a property matching the provided value."""
+        props = getattr(attribute, "properties", None) or []
+        if not props:
+            return None
+        target_name = (property_name or "").strip().lower()
+        if not target_name:
+            return None
+        for prop in props:
+            name = getattr(prop, "property", None)
+            if not name:
+                continue
+            if str(name).strip().lower() != target_name:
+                continue
+            value = getattr(prop, "value", None)
+            if value is None:
+                continue
+            return str(value).strip().lower()
+        return None
+    
     def attribute_metadata(self, attribute, *, foreign_key_table: str | None = None) -> dict[str, Any]:
         """Derive metadata flags for an attribute."""
         metadata: dict[str, Any] = {}

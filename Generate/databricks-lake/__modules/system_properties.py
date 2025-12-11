@@ -68,7 +68,7 @@ class AtScale:
     catalog_label = "TPCDS Catalog"
     
     connection_id = "databricks"
-    connection_name = "tpcds_connection"
+    connection_name = "databricks"
     connection_label = "TPCDS Connection"
     connection_filename = "tpcds_connection"
 
