@@ -1,0 +1,12 @@
+# Catalog
+unique_name: {{ catalog_unique_name }}
+object_type: catalog
+label: {{ catalog_label or catalog_unique_name }}
+version: {{ catalog_version or 1.0 }}
+aggressive_agg_promotion: {{ aggressive_agg_promotion | default(false) }}
+build_speculative_aggs: {{ build_speculative_aggs | default(false) }}
+hidden_models:{% if hidden_models and hidden_models|length > 0 %}
+{% for m in hidden_models %}
+	- {{ m }}
+{% endfor %}
+{% else %} []{% endif %}

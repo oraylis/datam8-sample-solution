@@ -1,0 +1,10 @@
+# Metric
+{% for m in metrics %}
+- unique_name: {{ m.unique_name or m.name }}
+  object_type: metric
+  label: {{ m.label or m.unique_name or m.name }}
+  calculation_method: {{ m.calculation_method }}
+  dataset: {{ m.dataset }}
+  column: {{ m.column }}
+  {% if m.format %}format: {{ m.format }}{% endif %}
+{% endfor %}

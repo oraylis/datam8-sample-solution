@@ -1,0 +1,491 @@
+﻿{
+    "id":  3021,
+    "name":  "web_returns",
+    "displayName":  "WebReturns",
+    "description":  "Fact table web_returns (TPC-DS).",
+    "properties":  [
+                       {
+                           "property":  "table_role",
+                           "value":  "fact"
+                       },
+                       {
+                           "property":  "physical_table",
+                           "value":  "innolab_atscale.tpcds_sf10000.web_returns"
+                       },
+                       {
+                           "property":  "zone",
+                           "value":  "curated"
+                       },
+                       {
+                           "property":  "write_mode",
+                           "value":  "append"
+                       },
+                       {
+                           "property":  "data_retention",
+                           "value":  "7_years"
+                       }
+                   ],
+    "attributes":  [
+                       {
+                           "ordinalNumber":  1,
+                           "name":  "wr_returned_date_sk",
+                           "description":  "",
+                           "attributeType":  "SID",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  2,
+                           "name":  "wr_returned_time_sk",
+                           "description":  "",
+                           "attributeType":  "SID",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  3,
+                           "name":  "wr_item_sk",
+                           "description":  "",
+                           "attributeType":  "SID",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  false
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  4,
+                           "name":  "wr_refunded_customer_sk",
+                           "description":  "",
+                           "attributeType":  "SID",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  5,
+                           "name":  "wr_refunded_cdemo_sk",
+                           "description":  "",
+                           "attributeType":  "SID",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  6,
+                           "name":  "wr_refunded_hdemo_sk",
+                           "description":  "",
+                           "attributeType":  "SID",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  7,
+                           "name":  "wr_refunded_addr_sk",
+                           "description":  "",
+                           "attributeType":  "SID",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  8,
+                           "name":  "wr_returning_customer_sk",
+                           "description":  "",
+                           "attributeType":  "SID",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  9,
+                           "name":  "wr_returning_cdemo_sk",
+                           "description":  "",
+                           "attributeType":  "SID",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  10,
+                           "name":  "wr_returning_hdemo_sk",
+                           "description":  "",
+                           "attributeType":  "SID",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  11,
+                           "name":  "wr_returning_addr_sk",
+                           "description":  "",
+                           "attributeType":  "SID",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  12,
+                           "name":  "wr_web_page_sk",
+                           "description":  "",
+                           "attributeType":  "SID",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  13,
+                           "name":  "wr_reason_sk",
+                           "description":  "",
+                           "attributeType":  "SID",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  14,
+                           "name":  "wr_order_number",
+                           "description":  "",
+                           "attributeType":  "Measure",
+                           "dataType":  {
+                                            "type":  "long",
+                                            "nullable":  false
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  15,
+                           "name":  "wr_return_quantity",
+                           "description":  "",
+                           "attributeType":  "Measure",
+                           "dataType":  {
+                                            "type":  "int",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  16,
+                           "name":  "wr_return_amt",
+                           "description":  "",
+                           "attributeType":  "Measure",
+                           "dataType":  {
+                                            "type":  "decimal",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  17,
+                           "name":  "wr_return_tax",
+                           "description":  "",
+                           "attributeType":  "Measure",
+                           "dataType":  {
+                                            "type":  "decimal",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  18,
+                           "name":  "wr_return_amt_inc_tax",
+                           "description":  "",
+                           "attributeType":  "Measure",
+                           "dataType":  {
+                                            "type":  "decimal",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  19,
+                           "name":  "wr_fee",
+                           "description":  "",
+                           "attributeType":  "Measure",
+                           "dataType":  {
+                                            "type":  "decimal",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  20,
+                           "name":  "wr_return_ship_cost",
+                           "description":  "",
+                           "attributeType":  "Measure",
+                           "dataType":  {
+                                            "type":  "decimal",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  21,
+                           "name":  "wr_refunded_cash",
+                           "description":  "",
+                           "attributeType":  "Measure",
+                           "dataType":  {
+                                            "type":  "decimal",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  22,
+                           "name":  "wr_reversed_charge",
+                           "description":  "",
+                           "attributeType":  "Measure",
+                           "dataType":  {
+                                            "type":  "decimal",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  23,
+                           "name":  "wr_account_credit",
+                           "description":  "",
+                           "attributeType":  "Measure",
+                           "dataType":  {
+                                            "type":  "decimal",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       },
+                       {
+                           "ordinalNumber":  24,
+                           "name":  "wr_net_loss",
+                           "description":  "",
+                           "attributeType":  "Measure",
+                           "dataType":  {
+                                            "type":  "decimal",
+                                            "nullable":  true
+                                        },
+                           "dateModified":  "2025-12-08T14:36:04Z",
+                           "dateAdded":  "2025-12-08T14:36:04Z",
+                           "properties":  [
+
+                                          ]
+                       }
+                   ],
+    "sources":  [
+                    {
+                        "sourceLocation":  2021
+                    }
+                ],
+    "relationships":  [
+                          {
+                              "targetLocation":  3007,
+                              "attributes":  [
+                                                 {
+                                                     "targetName":  "wr_returned_date_sk",
+                                                     "sourceName":  "d_date_sk"
+                                                 }
+                                             ]
+                          },
+                          {
+                              "targetLocation":  3018,
+                              "attributes":  [
+                                                 {
+                                                     "targetName":  "wr_returned_time_sk",
+                                                     "sourceName":  "t_time_sk"
+                                                 }
+                                             ]
+                          },
+                          {
+                              "targetLocation":  3011,
+                              "attributes":  [
+                                                 {
+                                                     "targetName":  "wr_item_sk",
+                                                     "sourceName":  "i_item_sk"
+                                                 }
+                                             ]
+                          },
+                          {
+                              "targetLocation":  3006,
+                              "attributes":  [
+                                                 {
+                                                     "targetName":  "wr_refunded_cdemo_sk",
+                                                     "sourceName":  "cd_demo_sk"
+                                                 },
+                                                 {
+                                                     "targetName":  "wr_returning_cdemo_sk",
+                                                     "sourceName":  "cd_demo_sk"
+                                                 }
+                                             ]
+                          },
+                          {
+                              "targetLocation":  3008,
+                              "attributes":  [
+                                                 {
+                                                     "targetName":  "wr_refunded_hdemo_sk",
+                                                     "sourceName":  "hd_demo_sk"
+                                                 },
+                                                 {
+                                                     "targetName":  "wr_returning_hdemo_sk",
+                                                     "sourceName":  "hd_demo_sk"
+                                                 }
+                                             ]
+                          },
+                          {
+                              "targetLocation":  3005,
+                              "attributes":  [
+                                                 {
+                                                     "targetName":  "wr_refunded_addr_sk",
+                                                     "sourceName":  "ca_address_sk"
+                                                 },
+                                                 {
+                                                     "targetName":  "wr_returning_addr_sk",
+                                                     "sourceName":  "ca_address_sk"
+                                                 }
+                                             ]
+                          },
+                          {
+                              "targetLocation":  3020,
+                              "attributes":  [
+                                                 {
+                                                     "targetName":  "wr_web_page_sk",
+                                                     "sourceName":  "wp_web_page_sk"
+                                                 }
+                                             ]
+                          },
+                          {
+                              "targetLocation":  3013,
+                              "attributes":  [
+                                                 {
+                                                     "targetName":  "wr_reason_sk",
+                                                     "sourceName":  "r_reason_sk"
+                                                 }
+                                             ]
+                          }
+                      ],
+    "transformations":  [
+                            {
+                                "stepNo":  1,
+                                "kind":  "function",
+                                "name":  "curate_web_returns",
+                                "function":  {
+                                                 "source":  "web_returns.py"
+                                             }
+                            }
+                        ]
+}
