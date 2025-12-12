@@ -63,6 +63,8 @@ class Databricks:
 class AtScale:
     """Provides access to AtScale related properties"""
 
+    model_name = "tpcds_model"
+    model_label = "TPCDS Model"
 
     catalog_name = "tpcds_catalog"
     catalog_label = "TPCDS Catalog"

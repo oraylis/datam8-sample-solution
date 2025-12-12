@@ -574,7 +574,7 @@ class MetadataResolver:
             value = getattr(prop, "value", None)
             if value is None:
                 continue
-            return str(value).strip().lower()
+            return value
         return None
     
     def attribute_metadata(self, attribute, *, foreign_key_table: str | None = None) -> dict[str, Any]:

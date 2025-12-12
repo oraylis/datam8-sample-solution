@@ -1,22 +1,18 @@
-unique_name: {{data.model_name}}
+unique_name: {{data.atscale_prpoerties.model_name}}
 object_type: model
-label: {{data.model_label}}
-relationships:
-{% for relationship in data.model_name.relationships %}
+label: {{data.atscale_prpoerties.model_label}}
+relationships: []
+{% for relationship in data.relationships %}
   - unique_name: {{ relationship.unique_name }}
     from:
-      dataset: {{ relationship.from.dataset }}
+      dataset: {{ relationship.from_dataset }}
       join_columns:
-        - {{ relationship.from.column }}
+        - {{ relationship.from_column }}
     to:
-      dimension: {{ relationship.to.dimension }}
-      level: {{ relationship.to.column }}
-{% endfor %}
-dimensions:
-{% for dimension in data.model_name.dimensions %}
-  - unique_name: {{ dimension.name }}
+      dimension: {{ relationship_to_dimension }}
+      level: {{ relationship.to_column }}
 {% endfor %}
 metrics:
-{% for metric in data.model_name.metrics %}
-  - unique_name: {{ metric.name }}
+{% for metric in data.metrics %}
+  - unique_name: {{ metric.column_name }}_{{ metric.column_aggregation_hint }}
 {% endfor %}
