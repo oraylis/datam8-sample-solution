@@ -1,0 +1,34 @@
+{% set diagram = data.diagram %}
+{% set doc = data.doc %}
+<mxfile host="app.diagrams.net" modified="{{ doc.generated_at }}" agent="datam8-docs" etag="{{ doc.solution_name | replace(' ', '-') }}">
+  <diagram name="{{ diagram.name }}" id="diagram-{{ doc.solution_name | replace(' ', '-') }}">
+    <mxGraphModel dx="{{ diagram.width }}" dy="{{ diagram.height }}" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="{{ diagram.width }}" pageHeight="{{ diagram.height }}" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        {% for node in diagram.nodes %}
+        <mxCell id="{{ node.id }}" value="{{ node.label | e }}" style="rounded=1;whiteSpace=wrap;html=1;strokeColor={{ node.stroke_color }};fillColor={{ node.fill_color }};" parent="1" vertex="1">
+          <mxGeometry x="{{ node.x }}" y="{{ node.y }}" width="{{ node.width }}" height="{{ node.height }}" as="geometry"/>
+        </mxCell>
+        {% endfor %}
+        {% for edge in diagram.edges %}
+        {% if edge.style == "relationship" -%}
+        {% set edge_style = "endArrow=block;html=1;rounded=0;strokeColor=#0B4F6C;fontSize=10;" %}
+        {% elif edge.style == "external" -%}
+        {% set edge_style = "endArrow=block;html=1;rounded=0;strokeColor=#FF7043;fontSize=10;dashed=1;" %}
+        {% else -%}
+        {% set edge_style = "endArrow=block;html=1;rounded=0;strokeColor=#26A69A;fontSize=10;dashed=1;" %}
+        {% endif -%}
+        <mxCell id="{{ edge.id }}" value="{{ edge.label | e }}" style="{{ edge_style }}" edge="1" parent="1" source="{{ edge.source }}" target="{{ edge.target }}">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        {% endfor %}
+        {% for legend in diagram.legend %}
+        <mxCell id="legend-{{ loop.index }}" value="{{ legend.label | e }}" style="rounded=1;whiteSpace=wrap;html=1;strokeColor={{ legend.stroke_color }};fillColor={{ legend.fill_color }};" parent="1" vertex="1">
+          <mxGeometry x="{{ legend.x }}" y="{{ legend.y }}" width="{{ legend.width }}" height="{{ legend.height }}" as="geometry"/>
+        </mxCell>
+        {% endfor %}
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -134,7 +134,7 @@ tblproperties_sql = f"TBLPROPERTIES ({tblproperties_sql})" if tblproperties_sql 
 
 # DBTITLE 1,Build & execute SQL Statement
 table_base = table_name.replace(".", "_")
-col_lines, pk_cols = [], []
+col_lines, pk_cols, fk_constraints = [], [], []
 
 # Build column definitions
 for f in schema.fields:
@@ -144,11 +144,22 @@ for f in schema.fields:
     if not f.nullable: col += " NOT NULL" # Add NOT NULL if column is non-nullable
     if md.get("comment"): col += f" COMMENT '{md['comment']}'" # Add COMMENT for column if available
     if md.get("surrogate_key"): pk_cols.append(f"`{f.name}`")
+    if md.get("foreign_key"):
+        ref_table = md.get("foreign_key_table")
+        if ref_table:
+            constraint_name = f"fk_{table_base}"
+            fk_constraints.append(
+                f"CONSTRAINT `{constraint_name}` "
+                f"FOREIGN KEY (`{f.name}`) REFERENCES {catalog.name}.{ref_table} RELY"
+            )
     col_lines.append(col)
 
 # Add a table-level primary key constraint if surrogate_key fields exist
 if pk_cols:
-    col_lines.append(f"CONSTRAINT `pk_{table_base}` PRIMARY KEY ({', '.join(pk_cols)})")
+    col_lines.append(f"CONSTRAINT `pk_{table_base}` PRIMARY KEY ({', '.join(pk_cols)}) RELY")
+
+# Add table-level foreign key constraints (if exist)
+col_lines.extend(fk_constraints)
 
 # Start CREATE TABLE statement
 parts = [f"CREATE TABLE IF NOT EXISTS {table_name} (", "  " + ",\n  ".join(col_lines), ")", "USING DELTA"]

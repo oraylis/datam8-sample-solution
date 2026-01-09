@@ -1,0 +1,63 @@
+{% set doc = data.doc %}
+# {{ doc.solution_name }} - Metadata Documentation
+
+Generated at **{{ doc.generated_at }}** (schema {{ doc.schema_version or "n/a" }}).
+
+## Snapshot
+
+{% set metrics = [
+    ("Entities", doc.stats.entity_count),
+    ("Attributes", doc.stats.attribute_count),
+    ("Zones", doc.stats.zones),
+    ("External Sources", doc.stats.external_sources),
+    ("Modeled Sources", doc.stats.modeled_sources),
+    ("Relationships", doc.stats.relationship_count),
+    ("Entities with Description", doc.stats.entities_with_descriptions),
+] %}
+<table>
+  <tr>
+  {% for metric in metrics -%}
+    <td style="padding:12px; border:1px solid #ddd;">
+      <div style="font-size:24px; font-weight:bold;">{{ metric[1] }}</div>
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">{{ metric[0] }}</div>
+    </td>
+    {% if loop.index % 3 == 0 %}
+  </tr><tr>
+    {% endif %}
+  {% endfor %}
+  </tr>
+</table>
+
+**Top Properties:** {% if doc.stats.top_properties %}{% for name, count in doc.stats.top_properties -%}`{{ name }}` ({{ count }}){% if not loop.last %}, {% endif %}{% endfor %}{% else %}N/A{% endif %}
+
+## Zone Overview
+
+{% for zone in doc.zones -%}
+<details open>
+  <summary><strong>{{ zone.display_name }}</strong> ({{ zone.entity_count }} entities)</summary>
+  <p><em>Folder:</em> {{ zone.folder or "N/A" }} | <em>Target:</em> {{ zone.target_name or "N/A" }}</p>
+  {% if zone.module_summaries %}
+  <ul>
+    {%- for module in zone.module_summaries %}
+    <li>{{ module.product_display or module.product or "N/A" }} / {{ module.module_display or module.module or "N/A" }} - {{ module.entity_count }} entities</li>
+    {%- endfor %}
+  </ul>
+  {% else %}
+  <p>No module details available.</p>
+  {% endif %}
+</details>
+{% endfor %}
+
+## Entity Catalog
+
+Use the links below to jump directly to the entity specific documentation.
+
+| Zone | Product | Module | Entity | Attr. | BK | Sources | Rel. | Description |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+{% for row in doc.catalog_rows -%}
+| {{ row.zone }} | {{ row.product or "N/A" }} | {{ row.module or "N/A" }} | [{{ row.entity }}]({{ row.link }}) | {{ row.attributes }} | {{ row.business_keys }} | {{ row.sources }} | {{ row.relationships }} | {{ row.description or "N/A" }} |
+{% endfor %}
+
+## Diagram
+
+The Entity Relationship diagram is available at `diagrams/entity-relationships.drawio`. Open it with [draw.io](https://www.drawio.com/) to explore the relationships visually.
