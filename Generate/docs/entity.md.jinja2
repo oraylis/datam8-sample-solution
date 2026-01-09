@@ -1,0 +1,184 @@
+{% set doc = data.doc %}
+{% set entity = data.entity %}
+# {{ entity.display_name }} ({{ entity.name }})
+
+{% set entity_metrics = [
+    ("Attributes", entity.attribute_summary.total),
+    ("Business Keys", entity.attribute_summary.business_keys|length),
+    ("Sources", entity.source_summary.total),
+    ("Relationships", entity.relationship_summary.total)
+] %}
+<table>
+  <tr>
+  {%- for metric in entity_metrics %}
+    <td style="padding:12px; border:1px solid #ddd;">
+      <div style="font-size:24px; font-weight:bold;">{{ metric[1] }}</div>
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">{{ metric[0] }}</div>
+    </td>
+    {%- if loop.index % 3 == 0 %}
+  </tr><tr>
+    {%- endif %}
+  {%- endfor %}
+  </tr>
+</table>
+
+| Field | Value |
+| --- | --- |
+| Zone | {{ entity.zone_display }} |
+| Product | {{ entity.product_display or entity.product_name or "-" }} |
+| Module | {{ entity.module_display or entity.module_name or "-" }} |
+| Entity ID | {{ entity.id or "-" }} |
+| Kind | {{ entity.entity_kind|capitalize }} |
+| Path | `{{ entity.locator_path }}` |
+
+Generated {{ doc.generated_at }} from schema {{ doc.schema_version or "n/a" }}.
+
+## Description
+
+{{ entity.description or "_No description provided._" }}
+
+## Entity Properties
+
+{% if entity.entity_properties %}
+<dl>
+{% for name, value in entity.entity_properties.items() -%}
+  <dt>{{ name }}</dt>
+  <dd>{{ value if value is not none else "null" }}</dd>
+{% endfor %}
+</dl>
+{% else %}
+_No entity-specific properties assigned._
+{% endif %}
+
+{% if entity.inherited_properties %}
+## Inherited Folder Context
+
+{% for level, context in entity.inherited_properties.items() -%}
+### {{ level | replace("_", " ") | title }}
+
+<dl>
+{% for name, value in context.properties.items() -%}
+  <dt>{{ context.name }} - {{ name }}</dt>
+  <dd>{{ value if value is not none else "null" }}</dd>
+{% endfor %}
+{% if context.properties|length == 0 %}
+  <dt>{{ context.name }}</dt>
+  <dd>No inherited properties.</dd>
+{% endif %}
+</dl>
+{% endfor %}
+{% endif %}
+
+## Attribute Catalogue
+
+{% if entity.attributes %}
+| # | Attribute | Type | Nullable | BK | SK | History | Description | Properties |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+{% for attr in entity.attributes -%}
+| {{ attr.ordinal }} | `{{ attr.name }}` | {{ attr.data_type }}{% if attr.attribute_type %} ({{ attr.attribute_type }}){% endif %} | {{ "yes" if attr.nullable else "no" }} | {{ "yes" if attr.is_business_key else "no" }} | {{ "yes" if attr.is_surrogate_key else "no" }} | {{ attr.history or "N/A" }} | {{ attr.description or "N/A" }} | {% if attr.properties %}{% for name, value in attr.properties.items() %}`{{ name }}`={{ value if value is not none else "null" }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}N/A{% endif %} |
+{% endfor %}
+{% else %}
+_No attributes modelled._
+{% endif %}
+
+## Sources
+
+{% if entity.sources %}
+<div class="source-list">
+{% for source in entity.sources -%}
+<details>
+  <summary>{{ source.display_name or source.name }} ({{ source.kind }})</summary>
+  <p><strong>Reference:</strong> {{ source.reference }} | <strong>Zone:</strong> {{ source.zone or "-" }} | <strong>Alias:</strong> {{ source.source_alias or "-" }}</p>
+  <p><strong>Product/Module:</strong> {{ source.product or "-" }} / {{ source.module or "-" }} | <strong>Location:</strong> {{ source.location or "-" }}</p>
+  {% if source.properties %}
+  <p><strong>Source Properties:</strong> {% for name, value in source.properties.items() %}`{{ name }}`={{ value if value is not none else "null" }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+  {% endif %}
+  {% if source.mapping %}
+  <table>
+    <thead><tr><th>Target</th><th>Source</th><th>Source Type</th><th>Nullable</th></tr></thead>
+    <tbody>
+    {% for map in source.mapping -%}
+    <tr><td><code>{{ map.target }}</code></td><td><code>{{ map.source }}</code></td><td>{{ map.source_data_type or "N/A" }}</td><td>{{ map.nullable if map.nullable is not none else "N/A" }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No column mapping defined.</p>
+  {% endif %}
+</details>
+{% endfor %}
+</div>
+{% else %}
+_No sources defined._
+{% endif %}
+
+## Relationships
+
+<details open>
+  <summary>Downstream Relationships ({{ entity.relationships_out|length }})</summary>
+  {% if entity.relationships_out %}
+  <ul>
+  {% for rel in entity.relationships_out -%}
+    <li><strong>{{ rel.peer_display_name }}</strong> ({{ rel.peer_zone }}): {{ rel.label or "N/A" }}</li>
+  {% endfor %}
+  </ul>
+  {% else %}
+  <p>No outgoing relationships declared.</p>
+  {% endif %}
+</details>
+
+<details>
+  <summary>Upstream Relationships ({{ entity.relationships_in|length }})</summary>
+  {% if entity.relationships_in %}
+  <ul>
+  {% for rel in entity.relationships_in -%}
+    <li><strong>{{ rel.peer_display_name }}</strong> ({{ rel.peer_zone }}): {{ rel.label or "N/A" }}</li>
+  {% endfor %}
+  </ul>
+  {% else %}
+  <p>No upstream relationships declared.</p>
+  {% endif %}
+</details>
+
+## Transformations
+
+{% if entity.transformations %}
+<table>
+  <thead><tr><th>Step</th><th>Kind</th><th>Name</th><th>Details</th></tr></thead>
+  <tbody>
+  {% for step in entity.transformations -%}
+  <tr>
+    <td>{{ step.step_no or loop.index }}</td>
+    <td>{{ step.kind or "N/A" }}</td>
+    <td>{{ step.name or "N/A" }}</td>
+    <td>
+      {% if step.details %}
+        {% for name, value in step.details.items() %}`{{ name }}`={{ value }}{% if not loop.last %}, {% endif %}{% endfor %}
+      {% else %}
+        N/A
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+_No transformation steps registered._
+{% endif %}
+
+{% if entity.code_snippets %}
+## Custom Code
+
+{% for snippet in entity.code_snippets -%}
+### {{ snippet.name }} ({{ snippet.path }})
+
+```{{ snippet.language }}
+{{ snippet.content }}
+```
+{% endfor %}
+{% endif %}
+
+---
+
+{% set overview_prefix = ("../" * (entity.slug_path|length)) %}
+[Return to the documentation overview]({{ overview_prefix }}index.md) or open the lineage diagram at `{{ overview_prefix }}diagrams/entity-relationships.drawio`.
