@@ -5,10 +5,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
-from dm8gen.generate import BasePayload, IPayload, register_payload
-from dm8gen.model import Locator, Model
-from dm8gen.utils import start_logger
-from dm8gen.utils.cache import Cache
+from datam8.generate import BasePayload, IPayload, register_payload
+from datam8.model import Locator, Model
+from datam8.utils import start_logger
+from datam8.utils.cache import Cache
 
 logger = start_logger(__name__)
 

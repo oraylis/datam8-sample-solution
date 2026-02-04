@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from dm8gen.model import Model
+from datam8.model import Model
 
 from metadata_utils import MetadataResolver
 
