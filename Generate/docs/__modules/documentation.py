@@ -8,9 +8,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
-from dm8gen import config
-from dm8gen.model import Locator, Model
-from dm8gen.utils import start_logger
+from datam8 import config
+from datam8.model import Locator, Model
+from datam8.utils import start_logger
 
 logger = start_logger(__name__)
 
