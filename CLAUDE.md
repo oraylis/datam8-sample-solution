@@ -4,7 +4,7 @@
 
 ### Validate/Refresh Index
 ```bash
-dm8gen -a validate_index -s ORAYLISDatabricksSample.dm8s
+datam8 -a validate_index -s ORAYLISDatabricksSample.dm8s
 ```
 **Purpose**: Validates entity definitions and rebuilds the entity index (`index.json`). This discovers all entities across zones and builds cross-references.
 
@@ -15,7 +15,7 @@ dm8gen -a validate_index -s ORAYLISDatabricksSample.dm8s
 
 ### Generate Templates
 ```bash
-dm8gen -a generate_template -s ORAYLISDatabricksSample.dm8s -src Generate/databricks-lake/ -dest Output/
+datam8 -a generate_template -s ORAYLISDatabricksSample.dm8s -src Generate/databricks-lake/ -dest Output/
 ```
 **Purpose**: Generates code from Jinja2 templates using entity definitions and zone configuration.
 
@@ -31,7 +31,7 @@ dm8gen -a generate_template -s ORAYLISDatabricksSample.dm8s -src Generate/databr
 
 ### Full Refresh & Generate
 ```bash
-dm8gen -a refresh_generate -s ORAYLISDatabricksSample.dm8s -src Generate/databricks-lake/ -dest Output/
+datam8 -a refresh_generate -s ORAYLISDatabricksSample.dm8s -src Generate/databricks-lake/ -dest Output/
 ```
 **Purpose**: Combines index validation and template generation in one command.
 
@@ -70,8 +70,8 @@ This project uses **dynamic zones** defined in `Base/Zones.json`:
 ## Quick Workflow
 
 1. **Modify entities** in `Model/` directories
-2. **Refresh index**: `dm8gen -a validate_index -s ORAYLISDatabricksSample.dm8s`
-3. **Generate code**: `dm8gen -a generate_template -s ORAYLISDatabricksSample.dm8s -src Generate/databricks-lake/ -dest Output/`
+2. **Refresh index**: `datam8 -a validate_index -s ORAYLISDatabricksSample.dm8s`
+3. **Generate code**: `datam8 -a generate_template -s ORAYLISDatabricksSample.dm8s -src Generate/databricks-lake/ -dest Output/`
 4. **Review output** in `Output/` directory
 
 ## Notes

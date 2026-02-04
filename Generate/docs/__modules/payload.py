@@ -3,10 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Sequence
 
-from dm8gen.generate import BasePayload, IPayload, register_payload
-from dm8gen.model import Model
-from dm8gen.utils import start_logger
-from dm8gen.utils.cache import Cache
+from datam8.generate import BasePayload, IPayload, register_payload
+from datam8.model import Model
+from datam8.utils import start_logger
+from datam8.utils.cache import Cache
 
 from documentation import DocumentationBuilder, DocumentationResult
 
