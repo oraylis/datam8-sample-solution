@@ -1,129 +1,126 @@
 {
-    "id": 1001,
-    "name": "CustomerAddress",
-    "displayName": "Customer_Address",
-    "description": "Customer address relationship entity",
-    "properties": [
+  "id": 1001,
+  "name": "CustomerAddress",
+  "displayName": "Customer_Address",
+  "description": "Customer address relationship entity",
+  "properties": [
+      {
+          "property": "jobs",
+          "value": "sales_daily"
+      },
+      {
+          "property": "write_mode",
+          "value": "overwrite"
+      },
+      {
+          "property": "data_retention",
+          "value": "7_days"
+      }
+  ],
+  "attributes": [
+      {
+          "ordinalNumber": 1,
+          "name": "CustomerID",
+          "attributeType": "ID",
+          "dataType": {
+              "type": "int",
+              "nullable": true
+          },
+          "isBusinessKey": true,
+          "properties": [
+              {
+                  "property": "data_layout",
+                  "value": "hive_partitioning"
+              }
+          ],
+          "dateModified": "2025-03-28T16:16:38Z",
+          "dateAdded": "2025-01-01T10:10:10Z"
+      },
+      {
+          "ordinalNumber": 2,
+          "name": "AddressID",
+          "attributeType": "ID",
+          "dataType": {
+              "type": "int",
+              "nullable": true
+          },
+          "isBusinessKey": true,
+          "properties": [
+              {
+                  "property": "data_layout",
+                  "value": "liquid_clustering"
+              }
+          ],
+          "dateModified": "2025-03-28T16:16:38Z",
+          "dateAdded": "2025-01-01T10:10:10Z"
+      },
+      {
+          "ordinalNumber": 3,
+          "name": "AddressType",
+          "attributeType": "Description",
+          "dataType": {
+              "type": "string",
+              "nullable": false
+          },
+          "dateAdded": "2025-01-01T10:10:10Z"
+      }
+  ],
+  "sources": [
+    {
+      "dataSource": "AdventureWorks",
+      "sourceAlias": "CustomerAddress",
+      "sourceLocation": "SELECT * FROM [SalesLT].[CustomerAddress] WHERE CustomerID > 1",
+      "properties": [
         {
-            "property": "jobs",
-            "value": "sales_daily"
-        },
-        {
-            "property": "write_mode",
-            "value": "overwrite"
-        },
-        {
-            "property": "data_retention",
-            "value": "7_days"
+          "property": "extract_mode",
+          "value": "query"
         }
-    ],
-    "attributes": [
+      ],
+      "mapping": [
         {
-            "ordinalNumber": 1,
-            "name": "CustomerID",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "int",
-                "nullable": true
-            },
-            "isBusinessKey": true,
-            "properties": [
-                {
-                    "property": "data_layout",
-                    "value": "hive_partitioning"
-                }
-            ],
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T10:10:10Z"
+          "sourceName": "CustomerID",
+          "targetName": "CustomerID",
+          "sourceDataType": {
+            "type": "int",
+            "nullable": false
+          }
         },
         {
-            "ordinalNumber": 2,
-            "name": "AddressID",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "int",
-                "nullable": true
-            },
-            "isBusinessKey": true,
-            "properties": [
-                {
-                    "property": "data_layout",
-                    "value": "liquid_clustering"
-                }
-            ],
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T10:10:10Z"
+          "sourceName": "AddressID",
+          "targetName": "AddressID",
+          "sourceDataType": {
+            "type": "int",
+            "nullable": false
+          }
         },
         {
-            "ordinalNumber": 3,
-            "name": "AddressType",
-            "description": "",
-            "attributeType": "Description",
-            "dataType": {
-                "type": "string",
-                "nullable": false
-            },
-            "dateAdded": "2025-01-01T10:10:10Z"
-        }
-    ],
-    "sources": [
+          "sourceName": "AddressType",
+          "targetName": "AddressType",
+          "sourceDataType": {
+            "type": "nvarchar",
+            "charLen": 50,
+            "nullable": true
+          }
+        },
         {
-            "dataSource": "AdventureWorks",
-            "sourceAlias": "CustomerAddress",
-            "sourceLocation": "SELECT * FROM [SalesLT].[CustomerAddress] WHERE CustomerID > 1",
-            "properties": [
-                {
-                    "property": "extract_mode",
-                    "value": "query"
-                }
-            ],
-            "mapping": [
-                {
-                    "targetName": "CustomerID",
-                    "sourceName": "CustomerID",
-                    "sourceDataType": {
-                        "type": "int",
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "AddressID",
-                    "sourceName": "AddressID",
-                    "sourceDataType": {
-                        "type": "int",
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "AddressType",
-                    "sourceName": "AddressType",
-                    "sourceDataType": {
-                        "type": "nvarchar",
-                        "charLen": 50,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "rowguid",
-                    "sourceName": "rowguid",
-                    "sourceDataType": {
-                        "type": "uniqueidentifier",
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "ModifiedDate",
-                    "sourceName": "ModifiedDate",
-                    "sourceDataType": {
-                        "type": "datetime",
-                        "nullable": false
-                    }
-                }
-            ]
+          "sourceName": "rowguid",
+          "targetName": "rowguid",
+          "sourceDataType": {
+            "type": "uniqueidentifier",
+            "nullable": false
+          }
+        },
+        {
+          "sourceName": "ModifiedDate",
+          "targetName": "ModifiedDate",
+          "sourceDataType": {
+            "type": "datetime",
+            "nullable": false
+          }
         }
-    ],
-    "relationships": [],
-    "transformations": []
+      ]
+    }
+  ],
+  "relationships": [],
+  "transformations": []
 }

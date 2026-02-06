@@ -1,34 +1,34 @@
 {
-    "type": "zones",
-    "zones": [
-        {
-            "name": "raw",
-            "targetName": "raw",
-            "displayName": "Raw Data Layer"
-        },
-        {
-            "name": "stage",
-            "targetName": "bronze",
-            "displayName": "Staging Data Layer",
-            "localFolderName": "010-Stage"
-        },
-        {
-            "name": "core",
-            "targetName": "silver",
-            "displayName": "Core Business Layer",
-            "localFolderName": "020-Core"
-        },
-        {
-            "name": "curated",
-            "targetName": "gold",
-            "displayName": "Curated Analytics Layer",
-            "localFolderName": "030-Curated"
-        },
-        {
-            "name": "consumer",
-            "targetName": "platin",
-            "displayName": "Consumer Tabular Layer",
-            "localFolderName": "040-Consumer"
-        }
-    ]
+  "type": "zones",
+  "zones": [
+    {
+      "name": "raw",
+      "displayName": "Raw Data Layer",
+      "targetName": "raw"
+    },
+    {
+      "name": "stage",
+      "displayName": "Staging Data Layer",
+      "targetName": "bronze",
+      "localFolderName": "010-Stage"
+    },
+    {
+      "name": "core",
+      "displayName": "Core Business Layer",
+      "targetName": "silver",
+      "localFolderName": "020-Core"
+    },
+    {
+      "name": "curated",
+      "displayName": "Curated Analytics Layer",
+      "targetName": "gold",
+      "localFolderName": "030-Curated"
+    },
+    {
+      "name": "consumer",
+      "displayName": "Consumer Tabular Layer",
+      "targetName": "platin",
+      "localFolderName": "040-Consumer"
+    }
+  ]
 }

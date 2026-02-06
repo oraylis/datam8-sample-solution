@@ -1,224 +1,215 @@
 {
-    "id": 1002,
-    "name": "Address",
-    "displayName": "Address",
-    "description": "Address information entity",
-    "properties": [
+  "id": 1002,
+  "name": "Address",
+  "displayName": "Address",
+  "description": "Address information entity",
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
+    }
+  ],
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "AddressID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "isBusinessKey": true,
+      "dateModified": "2025-03-28T16:16:38Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "AddressLine1",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "AddressLine2",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "City",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "StateProvince",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "CountryRegion",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "PostalCode",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "rowguid",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "uniqueidentifier",
+        "nullable": false
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "ModifiedDate",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    }
+  ],
+  "sources": [
+    {
+      "dataSource": "AdventureWorks",
+      "sourceAlias": "Address",
+      "sourceLocation": "[SalesLT].[Address]",
+      "properties": [
         {
-            "property": "jobs",
-            "value": "sales_daily"
-        },
-        {
-            "property": "write_mode",
-            "value": "overwrite"
-        },
-        {
-            "property": "data_retention",
-            "value": "7_days"
+          "property": "extract_mode",
+          "value": "delta"
         }
-    ],
-    "attributes": [
+      ],
+      "mapping": [
         {
-            "ordinalNumber": 1,
-            "name": "AddressID",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "int",
-                "nullable": true
-            },
-            "isBusinessKey": true,
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "AddressID",
+          "targetName": "AddressID",
+          "sourceDataType": {
+            "type": "int",
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 2,
-            "name": "AddressLine1",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": false
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "AddressLine1",
+          "targetName": "AddressLine1",
+          "sourceDataType": {
+            "type": "nvarchar",
+            "charLen": 60,
+            "nullable": false
+          }
         },
         {
-            "ordinalNumber": 3,
-            "name": "AddressLine2",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "AddressLine2",
+          "targetName": "AddressLine2",
+          "sourceDataType": {
+            "type": "nvarchar",
+            "charLen": 60,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 4,
-            "name": "City",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": false
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "City",
+          "targetName": "City",
+          "sourceDataType": {
+            "type": "nvarchar",
+            "charLen": 30,
+            "nullable": false
+          }
         },
         {
-            "ordinalNumber": 5,
-            "name": "StateProvince",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": false
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "StateProvince",
+          "targetName": "StateProvince",
+          "sourceDataType": {
+            "type": "nvarchar",
+            "charLen": 50,
+            "nullable": false
+          }
         },
         {
-            "ordinalNumber": 6,
-            "name": "CountryRegion",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": false
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "CountryRegion",
+          "targetName": "CountryRegion",
+          "sourceDataType": {
+            "type": "nvarchar",
+            "charLen": 50,
+            "nullable": false
+          }
         },
         {
-            "ordinalNumber": 7,
-            "name": "PostalCode",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": false
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "PostalCode",
+          "targetName": "PostalCode",
+          "sourceDataType": {
+            "type": "nvarchar",
+            "charLen": 15,
+            "nullable": false
+          }
         },
         {
-            "ordinalNumber": 8,
-            "name": "rowguid",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "uniqueidentifier",
-                "nullable": false
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "rowguid",
+          "targetName": "rowguid",
+          "sourceDataType": {
+            "type": "uniqueidentifier",
+            "nullable": false
+          }
         },
         {
-            "ordinalNumber": 9,
-            "name": "ModifiedDate",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "datetime",
-                "nullable": false
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "ModifiedDate",
+          "targetName": "ModifiedDate",
+          "sourceDataType": {
+            "type": "datetime",
+            "nullable": false
+          },
+          "properties": [
+            {
+              "property": "extract_column",
+              "value": "delta"
+            }
+          ]
         }
-    ],
-    "sources": [
-        {
-            "dataSource": "AdventureWorks",
-            "sourceAlias": "Address",
-            "sourceLocation": "[SalesLT].[Address]",
-            "properties": [
-                {
-                    "property": "extract_mode",
-                    "value": "delta"
-                }
-            ],
-            "mapping": [
-                {
-                    "targetName": "AddressID",
-                    "sourceName": "AddressID",
-                    "sourceDataType": {
-                        "type": "int",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "AddressLine1",
-                    "sourceName": "AddressLine1",
-                    "sourceDataType": {
-                        "type": "nvarchar",
-                        "charLen": 60,
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "AddressLine2",
-                    "sourceName": "AddressLine2",
-                    "sourceDataType": {
-                        "type": "nvarchar",
-                        "charLen": 60,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "City",
-                    "sourceName": "City",
-                    "sourceDataType": {
-                        "type": "nvarchar",
-                        "charLen": 30,
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "StateProvince",
-                    "sourceName": "StateProvince",
-                    "sourceDataType": {
-                        "type": "nvarchar",
-                        "charLen": 50,
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "CountryRegion",
-                    "sourceName": "CountryRegion",
-                    "sourceDataType": {
-                        "type": "nvarchar",
-                        "charLen": 50,
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "PostalCode",
-                    "sourceName": "PostalCode",
-                    "sourceDataType": {
-                        "type": "nvarchar",
-                        "charLen": 15,
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "rowguid",
-                    "sourceName": "rowguid",
-                    "sourceDataType": {
-                        "type": "uniqueidentifier",
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "ModifiedDate",
-                    "sourceName": "ModifiedDate",
-                    "sourceDataType": {
-                        "type": "datetime",
-                        "nullable": false
-                    },
-                    "properties": [
-                        {
-                            "property": "extract_column",
-                            "value": "delta"
-                        }
-                    ]
-                }
-            ]
-        }
-    ],
-    "relationships": [],
-    "transformations": []
+      ]
+    }
+  ],
+  "relationships": [],
+  "transformations": []
 }
