@@ -1,116 +1,111 @@
 {
-    "id": 2001,
-    "name": "CustomerAddress",
-    "displayName": "CustomerAddress",
-    "description": "Core customer address relationship entity",
-    "properties": [
+  "id": 2001,
+  "name": "CustomerAddress",
+  "displayName": "CustomerAddress",
+  "description": "Core customer address relationship entity",
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
+    }
+  ],
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "_CustomerAddressBK",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "refactorNames": [
+        "_CustomerBK"
+      ],
+      "dateModified": "2025-03-28T16:16:38Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "_CustomerAddressSID",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "properties": [
         {
-            "property": "jobs",
-            "value": "sales_daily"
-        },
-        {
-            "property": "write_mode",
-            "value": "overwrite"
-        },
-        {
-            "property": "data_retention",
-            "value": "7_days"
+          "property": "attribute_type",
+          "value": "SK"
         }
-    ],
-    "attributes": [
-        {
-            "ordinalNumber": 1,
-            "name": "_CustomerAddressBK",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": false
-            },
-            "isBusinessKey": true,
-            "refactorNames": [
-                "_CustomerBK"
-            ],
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 2,
-            "name": "_CustomerAddressSID",
-            "description": "",
-            "attributeType": "SID",
-            "dataType": {
-                "type": "long",
-                "nullable": false
-            },
-            "properties": [
-                {
-                    "property": "attribute_type",
-                    "value": "SK"
-                }
-            ],
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 3,
-            "name": "AddressID",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "int",
-                "nullable": false
-            },
-            "history": "SCD1",
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 4,
-            "name": "CustomerID",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "int",
-                "nullable": false
-            },
-            "history": "SCD0",
-            "refactorNames": [
-                "CustomerBK"
-            ],
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 5,
-            "name": "AddressType",
-            "description": "",
-            "attributeType": "Text",
-            "dataType": {
-                "type": "string",
-                "nullable": false
-            },
-            "history": "SCD1",
-            "refactorNames": [
-                "AddressType",
-                "AddressTypeName"
-            ],
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        }
-    ],
-    "sources": [
-        {
-            "sourceLocation": 1001
-        }
-    ],
-    "relationships": [],
-    "transformations": [
-        {
-            "stepNo": 1,
-            "kind": "function",
-            "name": "transform_first_step",
-            "function": {
-                "source": "CustomerAddress.py"
-            }
-        }
-    ]
+      ],
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "AddressID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "history": "SCD1",
+      "dateModified": "2025-03-28T16:16:38Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "CustomerID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "history": "SCD0",
+      "refactorNames": [
+        "CustomerBK"
+      ],
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "AddressType",
+      "attributeType": "Text",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "history": "SCD1",
+      "refactorNames": [
+        "AddressType",
+        "AddressTypeName"
+      ],
+      "dateModified": "2025-03-28T16:16:38Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 1001
+    }
+  ],
+  "relationships": [],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "transform_first_step",
+      "function": {
+        "source": "CustomerAddress.py"
+      }
+    }
+  ]
 }

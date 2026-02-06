@@ -1,116 +1,112 @@
 {
-    "id": 2000,
-    "name": "Customer",
-    "displayName": "Customer",
-    "description": "",
-    "properties": [
+  "id": 2000,
+  "name": "Customer",
+  "displayName": "Customer",
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_weekly"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
+    }
+  ],
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "KundenNummer",
+      "description": "Unique key for the customer",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "dateModified": "2025-03-28T16:16:38Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "Vorname",
+      "attributeType": "Name",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "dateModified": "2025-03-28T16:16:38Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "Nachname",
+      "attributeType": "Name",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "dateModified": "2025-03-28T16:16:38Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "AddressType",
+      "attributeType": "Address",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-03-28T16:16:38Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": "/010-Stage/Sales/Customer/Customer",
+      "mapping": [
         {
-            "property": "jobs",
-            "value": "sales_weekly"
+          "sourceName": "KundenID",
+          "targetName": "CustomerID"
         },
         {
-            "property": "write_mode",
-            "value": "overwrite"
+          "sourceName": "Vorname",
+          "targetName": "FirstName"
         },
         {
-            "property": "data_retention",
-            "value": "7_days"
+          "sourceName": "Nachname",
+          "targetName": "LastName"
+        },
+        {
+          "sourceName": "Firma",
+          "targetName": "CompanyName"
+        },
+        {
+          "sourceName": "EmailAddress",
+          "targetName": "CustomerEMail"
+        },
+        {
+          "sourceName": "Verkaeufer",
+          "targetName": "DisplayName"
         }
-    ],
-    "attributes": [
-        {
-            "ordinalNumber": 1,
-            "name": "KundenNummer",
-            "description": "Unique key for the customer",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "int",
-                "nullable": false
-            },
-            "isBusinessKey": true,
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 2,
-            "name": "Vorname",
-            "description": "",
-            "attributeType": "Name",
-            "dataType": {
-                "type": "string",
-                "nullable": false
-            },
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 3,
-            "name": "Nachname",
-            "description": "",
-            "attributeType": "Name",
-            "dataType": {
-                "type": "string",
-                "nullable": false
-            },
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 4,
-            "name": "AddressType",
-            "description": "",
-            "attributeType": "Address",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        }
-    ],
-    "sources": [
-        {
-            "sourceLocation": "/010-Stage/Sales/Customer/Customer",
-            "mapping": [
-                {
-                    "targetName": "CustomerID",
-                    "sourceName": "KundenID"
-                },
-                {
-                    "targetName": "FirstName",
-                    "sourceName": "Vorname"
-                },
-                {
-                    "targetName": "LastName",
-                    "sourceName": "Nachname"
-                },
-                {
-                    "targetName": "CompanyName",
-                    "sourceName": "Firma"
-                },
-                {
-                    "targetName": "CustomerEMail",
-                    "sourceName": "EmailAddress"
-                },
-                {
-                    "targetName": "DisplayName",
-                    "sourceName": "Verkaeufer"
-                }
-            ]
-        },
-        {
-            "sourceLocation": 1001
-        }
-    ],
-    "relationships": [],
-    "transformations": [
-        {
-            "stepNo": 1,
-            "kind": "function",
-            "name": "transform_first_step",
-            "function": {
-                "source": "./CustomerNew.py"
-            }
-        }
-    ]
+      ]
+    },
+    {
+      "sourceLocation": 1001
+    }
+  ],
+  "relationships": [],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "transform_first_step",
+      "function": {
+        "source": "CustomerNew.py"
+      }
+    }
+  ]
 }

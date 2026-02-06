@@ -1,450 +1,432 @@
 {
-    "id": 1010,
-    "name": "DIMTIME",
-    "displayName": "DIMTIME",
-    "description": "Time dimension entity for calendar and fiscal dates",
-    "properties": [
+  "id": 1010,
+  "name": "DIMTIME",
+  "displayName": "DIMTIME",
+  "description": "Time dimension entity for calendar and fiscal dates",
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "merge"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
+    }
+  ],
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "TIMEKEY",
+      "description": "",
+      "attributeType": "ID",
+      "dataType": {
+          "type": "decimal",
+          "precision": 38,
+          "scale": 0,
+          "nullable": true
+      },
+      "isBusinessKey": true,
+      "dateModified": "2025-03-28T16:16:38Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+  },
+    {
+      "ordinalNumber": 2,
+      "name": "FULLDATEALTERNATEKEY",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "datetime",
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "DAYNUMBEROFWEEK",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "decimal",
+        "precision": 38,
+        "scale": 10,
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "ENGLISHDAYNAMEOFWEEK",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "SPANISHDAYNAMEOFWEEK",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "FRENCHDAYNAMEOFWEEK",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "DAYNUMBEROFMONTH",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "decimal",
+        "precision": 38,
+        "scale": 10,
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "DAYNUMBEROFYEAR",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "decimal",
+        "precision": 38,
+        "scale": 10,
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "WEEKNUMBEROFYEAR",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "decimal",
+        "precision": 38,
+        "scale": 10,
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 10,
+      "name": "ENGLISHMONTHNAME",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 11,
+      "name": "SPANISHMONTHNAME",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 12,
+      "name": "FRENCHMONTHNAME",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 13,
+      "name": "MONTHNUMBEROFYEAR",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "decimal",
+        "precision": 38,
+        "scale": 10,
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 14,
+      "name": "CALENDARQUARTER",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "decimal",
+        "precision": 38,
+        "scale": 10,
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 15,
+      "name": "CALENDARYEAR",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 16,
+      "name": "CALENDARSEMESTER",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "decimal",
+        "precision": 38,
+        "scale": 10,
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 17,
+      "name": "FISCALQUARTER",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "decimal",
+        "precision": 38,
+        "scale": 10,
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 18,
+      "name": "FISCALYEAR",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 19,
+      "name": "FISCALSEMESTER",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "decimal",
+        "precision": 38,
+        "scale": 10,
+        "nullable": true
+      },
+      "dateAdded": "2025-01-01T01:01:01Z"
+    }
+  ],
+  "sources": [
+    {
+      "dataSource": "OracleDev",
+      "sourceAlias": "dimtime",
+      "sourceLocation": "DATAM8.DIMTIME",
+      "properties": [
         {
-            "property": "jobs",
-            "value": "sales_daily"
-        },
-        {
-            "property": "write_mode",
-            "value": "merge"
-        },
-        {
-            "property": "data_retention",
-            "value": "7_days"
+          "property": "extract_mode",
+          "value": "full"
         }
-    ],
-    "attributes": [
+      ],
+      "mapping": [
         {
-            "ordinalNumber": 1,
-            "name": "TIMEKEY",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "decimal",
-                "precision": 38,
-                "scale": 0,
-                "nullable": true
-            },
-            "isBusinessKey": true,
-            "dateModified": "2025-03-28T16:16:38Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "TIMEKEY",
+          "targetName": "TIMEKEY",
+          "sourceDataType": {
+            "type": "decimal",
+            "precision": 38,
+            "scale": 0,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 2,
-            "name": "FULLDATEALTERNATEKEY",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "datetime",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "FULLDATEALTERNATEKEY",
+          "targetName": "FULLDATEALTERNATEKEY",
+          "sourceDataType": {
+            "type": "datetime",
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 3,
-            "name": "DAYNUMBEROFWEEK",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "decimal",
-                "precision": 38,
-                "scale": 10,
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "DAYNUMBEROFWEEK",
+          "targetName": "DAYNUMBEROFWEEK",
+          "sourceDataType": {
+            "type": "decimal",
+            "precision": 38,
+            "scale": 10,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 4,
-            "name": "ENGLISHDAYNAMEOFWEEK",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "ENGLISHDAYNAMEOFWEEK",
+          "targetName": "ENGLISHDAYNAMEOFWEEK",
+          "sourceDataType": {
+            "type": "string",
+            "charLen": 10,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 5,
-            "name": "SPANISHDAYNAMEOFWEEK",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "SPANISHDAYNAMEOFWEEK",
+          "targetName": "SPANISHDAYNAMEOFWEEK",
+          "sourceDataType": {
+            "type": "string",
+            "charLen": 10,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 6,
-            "name": "FRENCHDAYNAMEOFWEEK",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "FRENCHDAYNAMEOFWEEK",
+          "targetName": "FRENCHDAYNAMEOFWEEK",
+          "sourceDataType": {
+            "type": "string",
+            "charLen": 10,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 7,
-            "name": "DAYNUMBEROFMONTH",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "decimal",
-                "precision": 38,
-                "scale": 10,
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "DAYNUMBEROFMONTH",
+          "targetName": "DAYNUMBEROFMONTH",
+          "sourceDataType": {
+            "type": "decimal",
+            "precision": 38,
+            "scale": 10,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 8,
-            "name": "DAYNUMBEROFYEAR",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "decimal",
-                "precision": 38,
-                "scale": 10,
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "DAYNUMBEROFYEAR",
+          "targetName": "DAYNUMBEROFYEAR",
+          "sourceDataType": {
+            "type": "decimal",
+            "precision": 38,
+            "scale": 10,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 9,
-            "name": "WEEKNUMBEROFYEAR",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "decimal",
-                "precision": 38,
-                "scale": 10,
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "WEEKNUMBEROFYEAR",
+          "targetName": "WEEKNUMBEROFYEAR",
+          "sourceDataType": {
+            "type": "decimal",
+            "precision": 38,
+            "scale": 10,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 10,
-            "name": "ENGLISHMONTHNAME",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "ENGLISHMONTHNAME",
+          "targetName": "ENGLISHMONTHNAME",
+          "sourceDataType": {
+            "type": "string",
+            "charLen": 10,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 11,
-            "name": "SPANISHMONTHNAME",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "SPANISHMONTHNAME",
+          "targetName": "SPANISHMONTHNAME",
+          "sourceDataType": {
+            "type": "string",
+            "charLen": 10,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 12,
-            "name": "FRENCHMONTHNAME",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "FRENCHMONTHNAME",
+          "targetName": "FRENCHMONTHNAME",
+          "sourceDataType": {
+            "type": "string",
+            "charLen": 10,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 13,
-            "name": "MONTHNUMBEROFYEAR",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "decimal",
-                "precision": 38,
-                "scale": 10,
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "MONTHNUMBEROFYEAR",
+          "targetName": "MONTHNUMBEROFYEAR",
+          "sourceDataType": {
+            "type": "decimal",
+            "precision": 38,
+            "scale": 10,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 14,
-            "name": "CALENDARQUARTER",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "decimal",
-                "precision": 38,
-                "scale": 10,
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "CALENDARQUARTER",
+          "targetName": "CALENDARQUARTER",
+          "sourceDataType": {
+            "type": "decimal",
+            "precision": 38,
+            "scale": 10,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 15,
-            "name": "CALENDARYEAR",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "CALENDARYEAR",
+          "targetName": "CALENDARYEAR",
+          "sourceDataType": {
+            "type": "string",
+            "charLen": 4,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 16,
-            "name": "CALENDARSEMESTER",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "decimal",
-                "precision": 38,
-                "scale": 10,
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "CALENDARSEMESTER",
+          "targetName": "CALENDARSEMESTER",
+          "sourceDataType": {
+            "type": "decimal",
+            "precision": 38,
+            "scale": 10,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 17,
-            "name": "FISCALQUARTER",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "decimal",
-                "precision": 38,
-                "scale": 10,
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "FISCALQUARTER",
+          "targetName": "FISCALQUARTER",
+          "sourceDataType": {
+            "type": "decimal",
+            "precision": 38,
+            "scale": 10,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 18,
-            "name": "FISCALYEAR",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "FISCALYEAR",
+          "targetName": "FISCALYEAR",
+          "sourceDataType": {
+            "type": "string",
+            "charLen": 4,
+            "nullable": true
+          }
         },
         {
-            "ordinalNumber": 19,
-            "name": "FISCALSEMESTER",
-            "description": "",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "decimal",
-                "precision": 38,
-                "scale": 10,
-                "nullable": true
-            },
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "FISCALSEMESTER",
+          "targetName": "FISCALSEMESTER",
+          "sourceDataType": {
+            "type": "decimal",
+            "precision": 38,
+            "scale": 10,
+            "nullable": true
+          }
         }
-    ],
-    "sources": [
-        {
-            "dataSource": "OracleDev",
-            "sourceAlias": "dimtime",
-            "sourceLocation": "DATAM8.DIMTIME",
-            "properties": [
-                {
-                    "property": "extract_mode",
-                    "value": "full"
-                }
-            ],
-            "mapping": [
-                {
-                    "targetName": "TIMEKEY",
-                    "sourceName": "TIMEKEY",
-                    "sourceDataType": {
-                        "type": "decimal",
-                        "precision": 38,
-                        "scale": 0,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "FULLDATEALTERNATEKEY",
-                    "sourceName": "FULLDATEALTERNATEKEY",
-                    "sourceDataType": {
-                        "type": "datetime",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "DAYNUMBEROFWEEK",
-                    "sourceName": "DAYNUMBEROFWEEK",
-                    "sourceDataType": {
-                        "type": "decimal",
-                        "precision": 38,
-                        "scale": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "ENGLISHDAYNAMEOFWEEK",
-                    "sourceName": "ENGLISHDAYNAMEOFWEEK",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "SPANISHDAYNAMEOFWEEK",
-                    "sourceName": "SPANISHDAYNAMEOFWEEK",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "FRENCHDAYNAMEOFWEEK",
-                    "sourceName": "FRENCHDAYNAMEOFWEEK",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "DAYNUMBEROFMONTH",
-                    "sourceName": "DAYNUMBEROFMONTH",
-                    "sourceDataType": {
-                        "type": "decimal",
-                        "precision": 38,
-                        "scale": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "DAYNUMBEROFYEAR",
-                    "sourceName": "DAYNUMBEROFYEAR",
-                    "sourceDataType": {
-                        "type": "decimal",
-                        "precision": 38,
-                        "scale": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "WEEKNUMBEROFYEAR",
-                    "sourceName": "WEEKNUMBEROFYEAR",
-                    "sourceDataType": {
-                        "type": "decimal",
-                        "precision": 38,
-                        "scale": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "ENGLISHMONTHNAME",
-                    "sourceName": "ENGLISHMONTHNAME",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "SPANISHMONTHNAME",
-                    "sourceName": "SPANISHMONTHNAME",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "FRENCHMONTHNAME",
-                    "sourceName": "FRENCHMONTHNAME",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "MONTHNUMBEROFYEAR",
-                    "sourceName": "MONTHNUMBEROFYEAR",
-                    "sourceDataType": {
-                        "type": "decimal",
-                        "precision": 38,
-                        "scale": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "CALENDARQUARTER",
-                    "sourceName": "CALENDARQUARTER",
-                    "sourceDataType": {
-                        "type": "decimal",
-                        "precision": 38,
-                        "scale": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "CALENDARYEAR",
-                    "sourceName": "CALENDARYEAR",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 4,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "CALENDARSEMESTER",
-                    "sourceName": "CALENDARSEMESTER",
-                    "sourceDataType": {
-                        "type": "decimal",
-                        "precision": 38,
-                        "scale": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "FISCALQUARTER",
-                    "sourceName": "FISCALQUARTER",
-                    "sourceDataType": {
-                        "type": "decimal",
-                        "precision": 38,
-                        "scale": 10,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "FISCALYEAR",
-                    "sourceName": "FISCALYEAR",
-                    "sourceDataType": {
-                        "type": "string",
-                        "charLen": 4,
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "FISCALSEMESTER",
-                    "sourceName": "FISCALSEMESTER",
-                    "sourceDataType": {
-                        "type": "decimal",
-                        "precision": 38,
-                        "scale": 10,
-                        "nullable": true
-                    }
-                }
-            ]
-        }
-    ],
-    "relationships": [],
-    "transformations": []
+      ]
+    }
+  ],
+  "relationships": [],
+  "transformations": []
 }
