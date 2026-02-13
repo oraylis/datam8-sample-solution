@@ -377,8 +377,6 @@ def _collect_relationships(model: Model, tables: list[TableDefinition]) -> list[
         explicit_target_ids: set[int] = set()
         for relationship in explicit_relationships:
             target_location = getattr(relationship, "targetLocation", None)
-            if target_location is None and isinstance(relationship, dict):
-                target_location = relationship.get("targetLocation")
 
             target_table = _resolve_relationship_target(target_location, table_by_id, table_by_path)
             if not target_table:
@@ -392,18 +390,12 @@ def _collect_relationships(model: Model, tables: list[TableDefinition]) -> list[
             explicit_target_ids.add(target_table.entity_id)
 
             attribute_mappings = getattr(relationship, "attributes", None)
-            if attribute_mappings is None and isinstance(relationship, dict):
-                attribute_mappings = relationship.get("attributes")
             if not attribute_mappings:
                 continue
 
             for mapping in attribute_mappings:
                 source_name = getattr(mapping, "sourceName", None)
                 target_name = getattr(mapping, "targetName", None)
-                if source_name is None and isinstance(mapping, dict):
-                    source_name = mapping.get("sourceName")
-                if target_name is None and isinstance(mapping, dict):
-                    target_name = mapping.get("targetName")
 
                 from_column = _resolve_column(table, source_name)
                 to_column = _resolve_column(target_table, target_name)

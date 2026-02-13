@@ -84,6 +84,15 @@ class ModuleGroup:
     entities: list[EntityJobInfo] = field(default_factory=list)
 
 
+@dataclass
+class LoadJobGroup:
+    """Typed container for entities sharing the same load job value."""
+
+    job_value: str
+    job_config: dict[str, Any] | None
+    entities: list[EntityJobInfo] = field(default_factory=list)
+
+
 class JobsPlanner:
     """
     Prepare job metadata (create/load) for the Databricks lake generator.
@@ -186,7 +195,7 @@ class JobsPlanner:
             ddl_notebook = self._notebook_path(zone_folder, "ddl", subfolders, f"{locator.entityName}.py")
             dml_notebook = self._notebook_path(zone_folder, "dml", subfolders, f"{locator.entityName}.py")
             raw_sources = self.resolver.raw_sources(locator, wrapper.entity)
-            dependencies = set(self.resolver.entity_dependencies(locator, wrapper.entity))
+            dependencies = set(self.resolver.entity_dependencies(wrapper.entity))
 
             entities.append(
                 EntityJobInfo(
@@ -368,27 +377,30 @@ class JobsPlanner:
     # --------------------------------------------------------------- load plan
     def _build_load_plan(self, modules: dict[tuple[str, str, tuple[str, ...]], ModuleGroup]) -> dict[str, Any]:
         """Create load jobs per job value and a chained orchestration job."""
-        job_groups: dict[str, dict[str, Any]] = {}
+        job_groups: dict[str, LoadJobGroup] = {}
 
         for module in modules.values():
             for entity in module.entities:
                 if not entity.job_value:
                     continue
-                group = job_groups.setdefault(
-                    entity.job_value,
-                    {"job_value": entity.job_value, "job_config": entity.job_config, "entities": []},
-                )
-                group["entities"].append(entity)
+                group = job_groups.get(entity.job_value)
+                if group is None:
+                    group = LoadJobGroup(
+                        job_value=entity.job_value,
+                        job_config=entity.job_config,
+                    )
+                    job_groups[entity.job_value] = group
+                group.entities.append(entity)
 
         load_jobs: list[dict[str, Any]] = []
 
         for job_value in sorted(job_groups):
             group = job_groups[job_value]
-            entities = group.get("entities", [])
+            entities = group.entities
             if not entities:
                 continue
 
-            job_config = group.get("job_config") or self.resolver.job_definition(job_value) or {}
+            job_config = group.job_config or self.resolver.job_definition(job_value) or {}
             job_display = job_config.get("display_name", job_value)
             cluster_variable = None
             cluster_data = job_config.get("cluster") if job_config else None

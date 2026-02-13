@@ -320,9 +320,8 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                         "zone": raw_zone.name,
                         "zone_display": raw_zone.display_name,
                         "data_source": getattr(source, "dataSource", ""),
-                        "data_source_display": (data_source_info or {}).get(
-                            "displayName", getattr(source, "dataSource", "")
-                        ),
+                        "data_source_display": getattr(data_source_info, "displayName", None)
+                        or getattr(source, "dataSource", ""),
                         "data_product": data_product_name,
                         "data_module": data_module_name,
                         "table_name": raw_name,
@@ -576,9 +575,9 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             data_source_name = raw_source["data_source"]
             source_alias = raw_source.get("source_alias") or raw_name
             properties = raw_source.get("properties", {})
-            data_source_entry = resolver.data_sources.get(data_source_name, {})
+            data_source_entry = resolver.data_sources.get(data_source_name)
             driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
-            if data_source_entry.get("type") == "SynapseDataSource":
+            if getattr(data_source_entry, "type", None) == "SynapseDataSource":
                 driver = "com.databricks.spark.sqldw"
 
             extract_mode = properties.get("extract_mode")
@@ -619,13 +618,13 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                             "canonicalDataType": canonical_type,
                         }
                     )
-            data_source_type = raw_source.get("source_type") or data_source_entry.get("type")
+            data_source_type = raw_source.get("source_type") or getattr(data_source_entry, "type", None)
 
             data = {
                 "zone": raw_zone.name,
                 "zone_display": raw_zone.display_name,
                 "data_source": data_source_name,
-                "data_source_display": data_source_entry.get("displayName", data_source_name),
+                "data_source_display": getattr(data_source_entry, "displayName", None) or data_source_name,
                 "data_source_type": data_source_type,
                 "source_name": source_alias,
                 "full_table_name": full_table_name,
