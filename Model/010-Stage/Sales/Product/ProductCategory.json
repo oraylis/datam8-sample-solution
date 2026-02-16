@@ -3,20 +3,6 @@
   "name": "ProductCategory",
   "displayName": "Product_Category",
   "description": "Product category hierarchy entity",
-  "properties": [
-    {
-      "property": "jobs",
-      "value": "sales_daily"
-    },
-    {
-      "property": "write_mode",
-      "value": "merge"
-    },
-    {
-      "property": "data_retention",
-      "value": "7_days"
-    }
-  ],
   "attributes": [
     {
       "ordinalNumber": 1,
@@ -71,6 +57,20 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     }
   ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "merge"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
+    }
+  ],
   "sources": [
     {
       "dataSource": "AdventureWorks",
@@ -104,8 +104,8 @@
           "targetName": "Name",
           "sourceDataType": {
             "type": "nvarchar",
-            "charLen": 50,
-            "nullable": false
+            "nullable": false,
+            "charLen": 50
           }
         },
         {
@@ -133,6 +133,6 @@
       ]
     }
   ],
-  "relationships": [],
-  "transformations": []
+  "transformations": [],
+  "relationships": []
 }

@@ -1,6 +1,7 @@
+"""Shared metadata resolution and normalization helpers for Databricks templates."""
+
 from __future__ import annotations
 
-import json
 import re
 from dataclasses import dataclass
 from functools import lru_cache
@@ -24,17 +25,17 @@ TYPE_ALIASES: dict[str, str] = {
 }
 
 
+def _value_or_default(value: Any, default: Any) -> Any:
+    """Return default when value is None, preserving other falsy values."""
+    return default if value is None else value
+
+
 def _normalize_canonical(name: str | None) -> str:
     """Normalize canonical data type names for lookups."""
     if not name:
         return "string"
     lower = name.strip().lower()
     return TYPE_ALIASES.get(lower, lower)
-
-
-def _load_json(path: Path) -> dict[str, Any]:
-    """Read a JSON file and return its content."""
-    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _convert_property_value(value: Any) -> Any:
@@ -84,6 +85,11 @@ def _attribute_property_equals(attribute: Any, property_name: str, expected_valu
         if str(value).strip().lower() == target_value:
             return True
     return False
+
+
+def attribute_property_equals(attribute: Any, property_name: str, expected_value: str) -> bool:
+    """Public helper to check an attribute property against an expected value."""
+    return _attribute_property_equals(attribute, property_name, expected_value)
 
 
 def _strip_brackets(value: str) -> str:
@@ -151,51 +157,91 @@ class MetadataResolver:
         self.model = model
         self.solution_root = config.solution_folder_path
         self.model_root = self.solution_root / model.solution.modelPath
-        self.base_root = self.solution_root / model.solution.basePath
-        self._entity_by_id: dict[int, tuple] = {}
-        for locator, wrapper in model.modelEntities.items():
-            entity_id = getattr(wrapper.entity, "id", None)
-            if entity_id is None:
-                continue
-            self._entity_by_id[entity_id] = (locator, wrapper.entity)
+
+    @lru_cache
+    def _model_entity_by_id(self, entity_id: int) -> tuple[Any, Any] | None:
+        """Resolve a model entity by id via the central model API."""
+        try:
+            wrapped = self.model.get_model_entity_by_id(entity_id)
+        except Exception:  # noqa: BLE001 - not-found and parsing errors should not break generation
+            return None
+        return wrapped.locator, wrapped.entity
+
+    @lru_cache
+    def _folder_wrapper(self, folder_tuple: tuple[str, ...]) -> Any | None:
+        """Resolve a folder via the central model API with case-insensitive fallback."""
+        if not folder_tuple:
+            return None
+
+        locator_path = "folders/" + "/".join(folder_tuple)
+        try:
+            return self.model.get_entity_by_locator(locator_path)
+        except Exception:  # noqa: BLE001 - fallback below handles mixed casing
+            pass
+
+        normalized = tuple(part.lower() for part in folder_tuple)
+        for locator, wrapper in self.model.folders.items():
+            locator_tuple = tuple([*getattr(locator, "folders", []), getattr(locator, "entityName", "")])
+            if tuple(part.lower() for part in locator_tuple) == normalized:
+                return wrapper
+        return None
 
     # ------------------------------------------------------ Property values
     @property
     @lru_cache
-    def _property_values_map(self) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
-        """Split PropertyValues.json into job, schedule, and cluster lookups."""
-        data = _load_json(self.base_root / "PropertyValues.json")
-        jobs: dict[str, dict[str, Any]] = {}
-        schedules: dict[str, dict[str, Any]] = {}
-        clusters: dict[str, dict[str, Any]] = {}
-        for entry in data.get("propertyValues", []):
-            prop = entry.get("property")
-            name = entry.get("name")
+    def _property_values_map(self) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+        """Split validated property values into job, schedule, and cluster lookups."""
+        jobs: dict[str, Any] = {}
+        schedules: dict[str, Any] = {}
+        clusters: dict[str, Any] = {}
+        for wrapper in self.model.propertyValues.values():
+            entity = wrapper.entity
+            name = getattr(entity, "name", None)
+            prop = getattr(entity, "property", None)
             if not name:
                 continue
             if prop == "jobs":
-                jobs[name] = entry
+                jobs[name] = entity
             elif prop == "schedules":
-                schedules[name] = entry
+                schedules[name] = entity
             elif prop == "cluster":
-                clusters[name] = entry
+                clusters[name] = entity
         return jobs, schedules, clusters
 
+    @lru_cache
+    def _resolved_property_map(self, locator) -> dict[str, Any]:
+        """
+        Resolve effective properties for an entity via EntityWrapper resolution.
+
+        This includes inherited folder properties resolved by the core model.
+        """
+        try:
+            wrapped = self.model.get_entity_by_locator(locator)
+        except Exception:  # noqa: BLE001 - unresolved locators should not break generation
+            return {}
+
+        try:
+            property_values = wrapped.properties.values()
+        except Exception:  # noqa: BLE001 - unresolved wrapper state
+            return {}
+
+        result: dict[str, Any] = {}
+        for property_value in property_values:
+            property_name = getattr(property_value, "property", None)
+            if not property_name:
+                continue
+            result[property_name] = _convert_property_value(getattr(property_value, "name", None))
+        return result
+
     def resolve_property(self, locator, entity, property_name: str) -> Any:
-        """Resolve an entity property using entity -> module -> product fallback."""
+        """Resolve an entity property using entity-first and wrapper-resolved fallback."""
         entity_props = self.entity_properties(entity)
         if property_name in entity_props:
             return entity_props[property_name]
 
-        if len(locator.folders) >= 3:
-            module_info = self.folder_info(tuple(locator.folders[:3]))
-            if property_name in module_info.properties:
-                return module_info.properties[property_name]
-
-        if len(locator.folders) >= 2:
-            product_info = self.folder_info(tuple(locator.folders[:2]))
-            if property_name in product_info.properties:
-                return product_info.properties[property_name]
+        resolved_props = self._resolved_property_map(locator)
+        if property_name in resolved_props:
+            return resolved_props[property_name]
 
         return None
 
@@ -204,45 +250,57 @@ class MetadataResolver:
         if not job_value:
             return None
 
-        jobs, schedules, clusters = self._property_values_map
-        job_entry = jobs.get(job_value)
-        if not job_entry:
+        try:
+            job_entry = self.model.get_property_value("jobs", job_value).entity
+        except Exception:  # noqa: BLE001 - missing/invalid property value should not break generation
             return None
 
         schedule_name = None
-        cluster_name = job_entry.get("cluster")
-        for prop in job_entry.get("properties", []) or []:
-            if prop.get("property") == "schedules":
-                schedule_name = prop.get("value")
-            elif prop.get("property") == "cluster":
-                cluster_name = prop.get("value")
+        cluster_name = getattr(job_entry, "cluster", None)
+        for prop in getattr(job_entry, "properties", []) or []:
+            prop_name = getattr(prop, "property", None)
+            prop_value = getattr(prop, "value", None)
+            if prop_name == "schedules":
+                schedule_name = prop_value
+            elif prop_name == "cluster":
+                cluster_name = prop_value
 
-        schedule_entry = schedules.get(schedule_name) if schedule_name else None
+        schedule_entry = None
+        if schedule_name:
+            try:
+                schedule_entry = self.model.get_property_value("schedules", schedule_name).entity
+            except Exception:  # noqa: BLE001 - schedule reference is optional
+                schedule_entry = None
         schedule_data = None
         if schedule_entry:
             schedule_data = {
                 "name": schedule_name,
-                "display_name": schedule_entry.get("displayName", schedule_name),
-                "cron": schedule_entry.get("cron"),
+                "display_name": _value_or_default(getattr(schedule_entry, "displayName", None), schedule_name),
+                "cron": getattr(schedule_entry, "cron", None),
             }
 
-        cluster_entry = clusters.get(cluster_name) if cluster_name else None
+        cluster_entry = None
+        if cluster_name:
+            try:
+                cluster_entry = self.model.get_property_value("cluster", cluster_name).entity
+            except Exception:  # noqa: BLE001 - cluster reference is optional
+                cluster_entry = None
         cluster_data = None
         if cluster_entry:
             cluster_data = {
                 "name": cluster_name,
-                "display_name": cluster_entry.get("displayName", cluster_name),
-                "node_type": cluster_entry.get("node_type"),
-                "num_workers": cluster_entry.get("num_workers"),
-                "workload_type": cluster_entry.get("workload_type"),
-                "spark_version": cluster_entry.get("spark_version"),
-                "autotermination_minutes": cluster_entry.get("autotermination_minutes"),
+                "display_name": _value_or_default(getattr(cluster_entry, "displayName", None), cluster_name),
+                "node_type": getattr(cluster_entry, "node_type", None),
+                "num_workers": getattr(cluster_entry, "num_workers", None),
+                "workload_type": getattr(cluster_entry, "workload_type", None),
+                "spark_version": getattr(cluster_entry, "spark_version", None),
+                "autotermination_minutes": getattr(cluster_entry, "autotermination_minutes", None),
                 "variable_name": self.cluster_variable_name(cluster_name),
             }
 
         return {
             "value": job_value,
-            "display_name": job_entry.get("displayName", job_value),
+            "display_name": _value_or_default(getattr(job_entry, "displayName", None), job_value),
             "cluster": cluster_data,
             "schedule": schedule_data,
         }
@@ -256,21 +314,23 @@ class MetadataResolver:
     @property
     @lru_cache
     def _zones_maps(self) -> tuple[dict[str, ZoneMetadata], dict[str, ZoneMetadata]]:
-        """Load zone metadata from Base/Zones.json once."""
-        data = _load_json(self.base_root / "Zones.json")
+        """Load zone metadata from the validated model once."""
         folder_map: dict[str, ZoneMetadata] = {}
         name_map: dict[str, ZoneMetadata] = {}
 
-        for entry in data.get("zones", []):
+        for wrapper in self.model.zones.values():
+            zone_entity = wrapper.entity
+            zone_name = getattr(zone_entity, "name", "")
             zone = ZoneMetadata(
-                name=entry.get("name", ""),
-                display_name=entry.get("displayName", entry.get("name", "")),
-                target_name=entry.get("targetName", entry.get("name", "")),
-                local_folder=entry.get("localFolderName"),
+                name=zone_name,
+                display_name=getattr(zone_entity, "displayName", None) or zone_name,
+                target_name=getattr(zone_entity, "targetName", None) or zone_name,
+                local_folder=getattr(zone_entity, "localFolderName", None),
             )
             if zone.local_folder:
                 folder_map[zone.local_folder.lower()] = zone
-            name_map[zone.name.lower()] = zone
+            if zone.name:
+                name_map[zone.name.lower()] = zone
 
         return folder_map, name_map
 
@@ -298,29 +358,19 @@ class MetadataResolver:
     # ------------------------------------------------------------- Folder info
     @lru_cache
     def folder_info(self, folder_tuple: tuple[str, ...]) -> FolderInfo:
-        """Return folder name/properties from the matching .properties.json file."""
+        """Return folder metadata from the validated folder entities."""
         if not folder_tuple:
             return FolderInfo(name="", display_name=None, properties={})
 
-        properties_path = self.model_root.joinpath(*folder_tuple) / ".properties.json"
-        if not properties_path.exists():
+        wrapped_folder = self._folder_wrapper(folder_tuple)
+        if wrapped_folder is None:
             return FolderInfo(name=folder_tuple[-1], display_name=None, properties={})
 
-        data = _load_json(properties_path)
-        folders = data.get("folders", [])
-        if not folders:
-            return FolderInfo(name=folder_tuple[-1], display_name=None, properties={})
-
-        entry = folders[0]
-        properties = {
-            prop["property"]: _convert_property_value(prop["value"])
-            for prop in entry.get("properties", [])
-        }
-
+        folder_entity = wrapped_folder.entity
         return FolderInfo(
-            name=entry.get("name", folder_tuple[-1]),
-            display_name=entry.get("displayName"),
-            properties=properties,
+            name=getattr(folder_entity, "name", folder_tuple[-1]) or folder_tuple[-1],
+            display_name=getattr(folder_entity, "displayName", None),
+            properties=_properties_to_dict(getattr(folder_entity, "properties", None)),
         )
 
     # ----------------------------------------------------------- Data sources
@@ -328,31 +378,41 @@ class MetadataResolver:
     @lru_cache
     def _data_source_details(
         self,
-    ) -> tuple[dict[str, dict[str, Any]], dict[str, str | None], dict[str, dict[str, str]]]:
+    ) -> tuple[dict[str, Any], dict[str, str | None], dict[str, dict[str, str]]]:
         """
-        Load Base/DataSources.json and derive:
+        Load validated data sources and derive:
         - raw entries by name
         - source type per data source (e.g. SqlDataSource)
         - source-specific type mappings (sourceType -> canonical type)
         """
-        data = _load_json(self.base_root / "DataSources.json")
-        entries = {source["name"]: source for source in data.get("dataSources", []) if source.get("name")}
-        type_by_name = {name: entry.get("type") for name, entry in entries.items()}
+        entries: dict[str, Any] = {}
+        type_by_name: dict[str, str | None] = {}
         mapping_by_name: dict[str, dict[str, str]] = {}
 
-        for name, entry in entries.items():
-            mapping_by_name[name] = {
-                m["sourceType"].lower(): _normalize_canonical(m["targetType"])
-                for m in entry.get("dataTypeMapping", [])
-                if m.get("sourceType") and m.get("targetType")
-            }
+        for wrapper in self.model.dataSources.values():
+            source_entity = wrapper.entity
+            source_name = getattr(source_entity, "name", None)
+            if not source_name:
+                continue
+
+            entries[source_name] = source_entity
+            type_by_name[source_name] = getattr(source_entity, "type", None)
+
+            source_mappings: dict[str, str] = {}
+            for mapping in getattr(source_entity, "dataTypeMapping", []) or []:
+                source_type = getattr(mapping, "sourceType", None)
+                target_type = getattr(mapping, "targetType", None)
+                if not source_type or not target_type:
+                    continue
+                source_mappings[source_type.lower()] = _normalize_canonical(target_type)
+            mapping_by_name[source_name] = source_mappings
 
         return entries, type_by_name, mapping_by_name
 
     @property
     @lru_cache
-    def data_sources(self) -> dict[str, dict[str, Any]]:
-        """Expose the raw data source entries."""
+    def data_sources(self) -> dict[str, Any]:
+        """Expose data sources by name."""
         entries, _, _ = self._data_source_details
         return entries
 
@@ -374,26 +434,25 @@ class MetadataResolver:
     @lru_cache
     def _data_source_type_mappings(self) -> dict[str, dict[str, str]]:
         """
-        Load Base/DataSourceTypes.json to provide fallback mappings for a source type.
+        Load validated data source types to provide fallback mappings for a source type.
 
         Some sources (e.g. Oracle) may not have an explicit type definition; in that case
         the resolver falls back to an empty mapping.
         """
-        path = self.base_root / "DataSourceTypes.json"
-        if not path.exists():
-            return {}
-
-        data = _load_json(path)
         type_mappings: dict[str, dict[str, str]] = {}
-        for entry in data.get("dataSourceTypes", []):
-            type_name = entry.get("name")
+        for wrapper in self.model.dataSourceTypes.values():
+            source_type_entity = wrapper.entity
+            type_name = getattr(source_type_entity, "name", None)
             if not type_name:
                 continue
-            type_mappings[type_name] = {
-                m["sourceType"].lower(): _normalize_canonical(m["targetType"])
-                for m in entry.get("dataTypeMapping", [])
-                if m.get("sourceType") and m.get("targetType")
-            }
+            mappings: dict[str, str] = {}
+            for mapping in getattr(source_type_entity, "dataTypeMapping", []) or []:
+                source_name = getattr(mapping, "sourceType", None)
+                target_name = getattr(mapping, "targetType", None)
+                if not source_name or not target_name:
+                    continue
+                mappings[source_name.lower()] = _normalize_canonical(target_name)
+            type_mappings[type_name] = mappings
         return type_mappings
 
     def map_source_type_to_canonical(self, data_source_name: str, source_type: str) -> str | None:
@@ -415,7 +474,7 @@ class MetadataResolver:
 
         return None
 
-    def iter_external_sources(self, entity) -> Iterable[tuple[Any, dict[str, Any] | None]]:
+    def iter_external_sources(self, entity) -> Iterable[tuple[Any, Any | None]]:
         """Yield external sources attached to a model entity."""
         for source in getattr(entity, "sources", []):
             data_source_name = getattr(source, "dataSource", None)
@@ -428,13 +487,13 @@ class MetadataResolver:
     @lru_cache
     def _canonical_to_target(self) -> dict[str, str]:
         """Map canonical data types to generator target-specific types."""
-        data = _load_json(self.base_root / "DataTypes.json")
         mapping: dict[str, str] = {}
-        for entry in data.get("dataTypes", []):
-            name = entry.get("name")
+        for wrapper in self.model.dataTypes.values():
+            data_type_entity = wrapper.entity
+            name = getattr(data_type_entity, "name", None)
             if not name:
                 continue
-            targets = entry.get("targets", {})
+            targets = getattr(data_type_entity, "targets", {}) or {}
             target_value = targets.get(TARGET_NAME)
             if target_value:
                 mapping[name.lower()] = target_value
@@ -824,14 +883,10 @@ class MetadataResolver:
                 kind_value = kind
             elif hasattr(kind, "value"):
                 kind_value = kind.value
-            elif isinstance(transformation, dict):
-                kind_value = transformation.get("kind")
             else:
                 kind_value = None
 
             name = getattr(transformation, "name", None)
-            if name is None and isinstance(transformation, dict):
-                name = transformation.get("name")
 
             if (
                 kind_value == "builtin"
@@ -841,29 +896,56 @@ class MetadataResolver:
                 return True
         return False
 
+    def _resolve_model_entity_reference(self, reference) -> tuple[Any, Any] | None:
+        """Resolve model entity references via core model APIs."""
+        if reference is None:
+            return None
+
+        if isinstance(reference, int):
+            return self._model_entity_by_id(reference)
+
+        if not isinstance(reference, str):
+            return None
+
+        search_target = reference.strip()
+        if not search_target:
+            return None
+
+        normalized = search_target.removeprefix("/").strip()
+        candidates: list[str] = []
+
+        if normalized.lower().startswith("modelentities/"):
+            candidates.append(normalized)
+        elif "/" in normalized:
+            candidates.append(f"modelEntities/{normalized}")
+            parts = [part for part in normalized.split("/") if part]
+            if parts:
+                zone = self.zone_by_name(parts[0])
+                if zone:
+                    zone_folder = self.zone_folder_name(zone)
+                    candidates.append(f"modelEntities/{zone_folder}/{'/'.join(parts[1:])}")
+
+        for candidate in candidates:
+            try:
+                wrapped = self.model.get_entity_by_locator(candidate)
+            except Exception:  # noqa: BLE001 - continue with next candidate/fallback
+                continue
+            return wrapped.locator, wrapped.entity
+
+        # Fallback for DM8L-style references where direct locator normalization is ambiguous.
+        for candidate_locator, candidate_wrapper in self.model.modelEntities.items():
+            if self.locator_to_dm8l(candidate_locator) == search_target:
+                return candidate_locator, candidate_wrapper.entity
+
+        return None
+
     def _relationship_target_entity(self, relationship):
         """Resolve the locator/entity referenced by a relationship's target."""
         target_location = getattr(relationship, "targetLocation", None)
-        if target_location is None and isinstance(relationship, dict):
-            target_location = relationship.get("targetLocation")
-
-        locator = None
-        target_entity = None
-
-        if isinstance(target_location, int):
-            locator_entity = self._entity_by_id.get(target_location)
-            if locator_entity:
-                locator, target_entity = locator_entity
-        elif isinstance(target_location, str):
-            search_target = target_location.strip()
-            if search_target:
-                for candidate_locator, candidate_wrapper in self.model.modelEntities.items():
-                    if self.locator_to_dm8l(candidate_locator) == search_target:
-                        locator = candidate_locator
-                        target_entity = candidate_wrapper.entity
-                        break
-
-        return locator, target_entity
+        resolved = self._resolve_model_entity_reference(target_location)
+        if resolved is None:
+            return None, None
+        return resolved
 
     def foreign_key_columns(self, entity) -> dict[str, str]:
         """Return mapping of attribute name -> foreign dimension table."""
@@ -886,16 +968,10 @@ class MetadataResolver:
             }
 
             mappings = getattr(relationship, "attributes", None)
-            if mappings is None and isinstance(relationship, dict):
-                mappings = relationship.get("attributes")
 
             for mapping in mappings or []:
                 source_name = getattr(mapping, "sourceName", None)
                 target_name = getattr(mapping, "targetName", None)
-                if source_name is None and isinstance(mapping, dict):
-                    source_name = mapping.get("sourceName")
-                if target_name is None and isinstance(mapping, dict):
-                    target_name = mapping.get("targetName")
                 if not source_name or not target_name:
                     continue
                 target_attribute = target_attributes.get(target_name)
@@ -944,16 +1020,16 @@ class MetadataResolver:
             definitions.append(
                 {
                     "name": name,
-                    "display_name": entry.get("displayName", name),
-                    "node_type": entry.get("node_type") or "Standard_D4ds_v5",
-                    "num_workers": entry.get("num_workers", 2),
-                    "workload_type": entry.get("workload_type", "job"),
-                    "spark_version": entry.get("spark_version", "16.4.x-scala2.12"),
-                    "autotermination_minutes": entry.get("autotermination_minutes", 60),
-                    "data_security_mode": entry.get("data_security_mode", "DATA_SECURITY_MODE_DEDICATED"),
-                    "runtime_engine": entry.get("runtime_engine", "STANDARD"),
+                    "display_name": _value_or_default(getattr(entry, "displayName", None), name),
+                    "node_type": _value_or_default(getattr(entry, "node_type", None), "Standard_D4ds_v5"),
+                    "num_workers": _value_or_default(getattr(entry, "num_workers", None), 2),
+                    "workload_type": _value_or_default(getattr(entry, "workload_type", None), "job"),
+                    "spark_version": _value_or_default(getattr(entry, "spark_version", None), "16.4.x-scala2.12"),
+                    "autotermination_minutes": _value_or_default(getattr(entry, "autotermination_minutes", None), 60),
+                    "data_security_mode": _value_or_default(getattr(entry, "data_security_mode", None), "DATA_SECURITY_MODE_DEDICATED"),
+                    "runtime_engine": _value_or_default(getattr(entry, "runtime_engine", None), "STANDARD"),
                     "variable_name": self.cluster_variable_name(name),
-                    "is_default": bool(entry.get("default")),
+                    "is_default": bool(getattr(entry, "default", False)),
                 }
             )
         return definitions
@@ -1023,8 +1099,6 @@ class MetadataResolver:
             ]
 
             join_mappings = getattr(relationship, "attributes", None)
-            if join_mappings is None and isinstance(relationship, dict):
-                join_mappings = relationship.get("attributes")
 
             relationship_join_columns: list[dict[str, str]] = []
             sk_fact_columns: list[str] = []
@@ -1032,10 +1106,6 @@ class MetadataResolver:
                 for mapping in join_mappings:
                     fact_column = getattr(mapping, "sourceName", None)
                     dimension_column = getattr(mapping, "targetName", None)
-                    if fact_column is None and isinstance(mapping, dict):
-                        fact_column = mapping.get("sourceName")
-                    if dimension_column is None and isinstance(mapping, dict):
-                        dimension_column = mapping.get("targetName")
                     if not fact_column or not dimension_column:
                         continue
                     relationship_join_columns.append(
@@ -1206,12 +1276,12 @@ class MetadataResolver:
             )
         return sources
 
-    def entity_dependencies(self, locator, entity) -> set[int]:
+    def entity_dependencies(self, entity) -> set[int]:
         """Return entity IDs referenced via the sources collection."""
         dependencies: set[int] = set()
         for source in getattr(entity, "sources", []) or []:
             source_location = getattr(source, "sourceLocation", None)
-            if isinstance(source_location, int) and source_location in self._entity_by_id:
+            if isinstance(source_location, int) and self._model_entity_by_id(source_location):
                 dependencies.add(source_location)
         return dependencies
 
@@ -1230,13 +1300,17 @@ class MetadataResolver:
             dm8l_path: str | None = None
 
             if isinstance(source_location, str):
-                parts = [part for part in source_location.strip("/").split("/") if part]
-                if parts:
-                    zone_meta = self.zone_from_folder(parts[0])
-                    zone_segment = zone_meta.name.capitalize() if zone_meta else parts[0]
-                    dm8l_path = "/" + "/".join([zone_segment, *parts[1:]])
+                resolved = self._resolve_model_entity_reference(source_location)
+                if resolved:
+                    dm8l_path = self.locator_to_dm8l(resolved[0])
+                else:
+                    parts = [part for part in source_location.strip("/").split("/") if part]
+                    if parts:
+                        zone_meta = self.zone_from_folder(parts[0])
+                        zone_segment = zone_meta.name.capitalize() if zone_meta else parts[0]
+                        dm8l_path = "/" + "/".join([zone_segment, *parts[1:]])
             elif isinstance(source_location, int):
-                locator_entity = self._entity_by_id.get(source_location)
+                locator_entity = self._model_entity_by_id(source_location)
                 if locator_entity:
                     locator, _ = locator_entity
                     dm8l_path = self.locator_to_dm8l(locator)
@@ -1252,8 +1326,6 @@ class MetadataResolver:
         folder_path = self.entity_folder_path(locator)
         for definition in getattr(entity, "transformations", []) or []:
             kind = getattr(definition, "kind", None)
-            if kind is None and isinstance(definition, dict):
-                kind = definition.get("kind")
             if hasattr(kind, "value"):
                 kind_value = kind.value
             else:
@@ -1261,13 +1333,9 @@ class MetadataResolver:
             if kind_value != "function":
                 continue
             function_meta = getattr(definition, "function", None)
-            if function_meta is None and isinstance(definition, dict):
-                function_meta = definition.get("function")
             source_ref = None
             if function_meta is not None:
                 source_ref = getattr(function_meta, "source", None)
-                if source_ref is None and isinstance(function_meta, dict):
-                    source_ref = function_meta.get("source")
             if not source_ref:
                 continue
 
@@ -1276,11 +1344,7 @@ class MetadataResolver:
             script_content = script_path.read_text(encoding="utf-8") if script_path.exists() else ""
             script_name = Path(script_relative).stem
             step_no = getattr(definition, "stepNo", None)
-            if step_no is None and isinstance(definition, dict):
-                step_no = definition.get("stepNo")
             display_name = getattr(definition, "name", None)
-            if display_name is None and isinstance(definition, dict):
-                display_name = definition.get("name")
 
             transformations.append(
                 {

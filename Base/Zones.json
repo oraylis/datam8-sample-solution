@@ -3,31 +3,31 @@
   "zones": [
     {
       "name": "raw",
-      "displayName": "Raw Data Layer",
-      "targetName": "raw"
+      "targetName": "raw",
+      "displayName": "Raw Data Layer"
     },
     {
       "name": "stage",
-      "displayName": "Staging Data Layer",
       "targetName": "bronze",
+      "displayName": "Staging Data Layer",
       "localFolderName": "010-Stage"
     },
     {
       "name": "core",
-      "displayName": "Core Business Layer",
       "targetName": "silver",
+      "displayName": "Core Business Layer",
       "localFolderName": "020-Core"
     },
     {
       "name": "curated",
-      "displayName": "Curated Analytics Layer",
       "targetName": "gold",
+      "displayName": "Curated Analytics Layer",
       "localFolderName": "030-Curated"
     },
     {
       "name": "consumer",
-      "displayName": "Consumer Tabular Layer",
       "targetName": "platin",
+      "displayName": "Consumer Tabular Layer",
       "localFolderName": "040-Consumer"
     }
   ]
