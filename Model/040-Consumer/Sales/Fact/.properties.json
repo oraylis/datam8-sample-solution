@@ -1,23 +1,18 @@
 {
-    "type": "folders",
-    "folders": [
+    "id": 412,
+    "name": "Fact",
+    "properties": [
         {
-            "id": 412,
-            "name": "Fact",
-            "properties": [
-                {
-                    "property": "business_area",
-                    "value": "sales"
-                },
-                {
-                    "property": "write_mode",
-                    "value": "merge"
-                },
-                {
-                    "property": "jobs",
-                    "value": "sales_daily"
-                }
-            ]
+            "property": "business_area",
+            "value": "sales"
+        },
+        {
+            "property": "write_mode",
+            "value": "merge"
+        },
+        {
+            "property": "jobs",
+            "value": "sales_daily"
         }
     ]
 }

@@ -1,27 +1,22 @@
 {
-    "type": "folders",
-    "folders": [
+    "id": 101,
+    "name": "Sales",
+    "properties": [
         {
-            "id": 101,
-            "name": "Sales",
-            "properties": [
-                {
-                    "property": "business_area",
-                    "value": "sales"
-                },
-                {
-                    "property": "jobs",
-                    "value": "sales_daily"
-                },
-                {
-                    "property": "enable_type_widening",
-                    "value": "true"
-                },
-                {
-                    "property": "column_mapping_mode",
-                    "value": "name"
-                }
-            ]
+            "property": "business_area",
+            "value": "sales"
+        },
+        {
+            "property": "jobs",
+            "value": "sales_daily"
+        },
+        {
+            "property": "enable_type_widening",
+            "value": "true"
+        },
+        {
+            "property": "column_mapping_mode",
+            "value": "name"
         }
     ]
 }

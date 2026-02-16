@@ -1,10 +1,5 @@
 {
-    "type": "folders",
-    "folders": [
-        {
-            "id": 114,
-            "name": "Product",
-            "properties": []
-        }
-    ]
+    "id": 114,
+    "name": "Product",
+    "properties": []
 }
