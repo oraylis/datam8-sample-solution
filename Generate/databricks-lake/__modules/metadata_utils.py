@@ -1,3 +1,5 @@
+"""Shared metadata resolution and normalization helpers for Databricks templates."""
+
 from __future__ import annotations
 
 import re
@@ -83,6 +85,11 @@ def _attribute_property_equals(attribute: Any, property_name: str, expected_valu
         if str(value).strip().lower() == target_value:
             return True
     return False
+
+
+def attribute_property_equals(attribute: Any, property_name: str, expected_value: str) -> bool:
+    """Public helper to check an attribute property against an expected value."""
+    return _attribute_property_equals(attribute, property_name, expected_value)
 
 
 def _strip_brackets(value: str) -> str:

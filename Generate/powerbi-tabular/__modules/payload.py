@@ -1,3 +1,9 @@
+"""Payload builders for Power BI tabular (TMDL) generation.
+
+The module collects consumer-layer entities and resolves relationships into
+stable dataclass-based payloads for deterministic template rendering.
+"""
+
 from __future__ import annotations
 
 import re
@@ -80,10 +86,12 @@ class RelationshipDefinition:
 
 
 def _normalize(value: str | None) -> str:
+    """Normalize identifiers by keeping alphanumerics only and lowercasing."""
     return "".join(ch.lower() for ch in (value or "") if ch.isalnum())
 
 
 def _slug(value: str | None) -> str:
+    """Create a slug token used in generated relationship names."""
     if not value:
         return ""
     slug = re.sub(r"[^a-z0-9]+", "_", value.lower())
@@ -91,12 +99,14 @@ def _slug(value: str | None) -> str:
 
 
 def _normalize_path(value: str | None) -> str:
+    """Normalize a path-like reference for dictionary key comparisons."""
     if not value:
         return ""
     return re.sub(r"[^a-z0-9]+", "_", value.lower()).strip("_")
 
 
 def _locator_to_path(locator: Locator) -> str:
+    """Convert a locator into a model-like absolute path string."""
     parts: list[str] = []
     if locator.folders:
         first = locator.folders[0]
@@ -117,6 +127,7 @@ def _locator_to_path(locator: Locator) -> str:
 
 
 def _map_data_type(attribute_type: str, logical_type: str) -> str:
+    """Map model data types to Power BI compatible data type names."""
     mapping: dict[str, str] = {
         "long": "int64",
         "int": "int64",
@@ -290,6 +301,7 @@ def _format_relationship_name(from_table: str, to_table: str, column: str) -> st
 
 
 def _collect_consumer_tables(model: Model) -> list[TableDefinition]:
+    """Collect consumer-zone entities and map them into table definitions."""
     tables: list[TableDefinition] = []
 
     for locator, wrapper in model.modelEntities.items():
@@ -359,6 +371,7 @@ def _collect_consumer_tables(model: Model) -> list[TableDefinition]:
 
 
 def _collect_relationships(model: Model, tables: list[TableDefinition]) -> list[RelationshipDefinition]:
+    """Resolve explicit relationships and infer fallbacks when needed."""
     relationships: list[RelationshipDefinition] = []
     table_by_id: dict[int, TableDefinition] = {table.entity_id: table for table in tables}
     table_by_path: dict[str, TableDefinition] = {}
@@ -583,6 +596,7 @@ def expressions_payload(model: Model, cache: Cache) -> Sequence[IPayload]:
 
 @register_payload("relationships.tmdl.jinja2", order=3)
 def relationships_payload(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Emit relationship payload for the model-level TMDL file."""
     tables: list[TableDefinition] = cache.get(("powerbi", "tables"))
     relationships = _collect_relationships(model, tables)
 
@@ -596,6 +610,7 @@ def relationships_payload(model: Model, cache: Cache) -> Sequence[IPayload]:
 
 @register_payload("table.tmdl.jinja2", order=4)
 def table_payloads(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Emit one payload per table TMDL file."""
     tables: list[TableDefinition] = cache.get(("powerbi", "tables"))
 
     payloads: list[IPayload] = []

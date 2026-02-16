@@ -1,3 +1,5 @@
+"""Job planning helpers for Databricks bundle job template payloads."""
+
 from __future__ import annotations
 
 import re

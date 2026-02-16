@@ -1,3 +1,10 @@
+"""Build a documentation snapshot from the DataM8 model graph.
+
+The builder denormalizes entities, sources, relationships, transformations, and
+diagram coordinates into a single `DocumentationResult` consumed by Jinja
+templates in `Generate/docs`.
+"""
+
 from __future__ import annotations
 
 import re
@@ -314,7 +321,10 @@ class DataSourceInfo:
 
 
 class DocumentationBuilder:
+    """Construct rich documentation artifacts from the validated model."""
+
     def __init__(self, model: Model):
+        """Prepare immutable lookups reused while building all entity documents."""
         self.model = model
         self.solution_root = config.solution_folder_path
         self.model_root = self.solution_root / model.solution.modelPath
@@ -323,6 +333,7 @@ class DocumentationBuilder:
         self._data_sources: dict[str, DataSourceInfo] = self._load_data_sources()
 
     def build(self) -> DocumentationResult:
+        """Build and return the complete documentation snapshot."""
         generated_at = datetime.now(timezone.utc).isoformat()
         solution_name = getattr(self.model.solution, "name", None) or config.solution_path.stem
         schema_version = getattr(self.model.solution, "schemaVersion", None)
@@ -347,6 +358,7 @@ class DocumentationBuilder:
         )
 
     def _build_entities(self) -> list[EntityDoc]:
+        """Materialize documentation entries for all model entities."""
         docs: list[EntityDoc] = []
         for locator, wrapper in sorted(self.model.modelEntities.items(), key=lambda item: (item[0].folders, item[0].entityName or "")):
             docs.append(self._build_entity(locator, wrapper.entity))
@@ -355,6 +367,7 @@ class DocumentationBuilder:
         return docs
 
     def _build_entity(self, locator: Locator, entity) -> EntityDoc:
+        """Build one `EntityDoc` including sources, relationships, and transformations."""
         folders = list(locator.folders)
         zone_folder = folders[0] if folders else None
         zone_info = self._zone_from_folder(zone_folder)
@@ -479,6 +492,7 @@ class DocumentationBuilder:
         }
 
     def _build_sources(self, locator: Locator, entity) -> list[SourceDoc]:
+        """Resolve modeled and external sources into normalized source descriptors."""
         sources: list[SourceDoc] = []
         for source in getattr(entity, "sources", []) or []:
             data_source_name = getattr(source, "dataSource", None)
@@ -576,6 +590,7 @@ class DocumentationBuilder:
         return sources
 
     def _build_relationships(self, entity) -> list[RelationshipDoc]:
+        """Resolve outgoing relationship descriptors for a single entity."""
         relationships: list[RelationshipDoc] = []
         for relation in getattr(entity, "relationships", []) or []:
             mapping = [
@@ -857,6 +872,7 @@ class DocumentationBuilder:
         return highlights[:10]
 
     def _build_diagram(self, entities: list[EntityDoc]) -> DiagramModel:
+        """Build node/edge layout metadata for draw.io rendering."""
         zone_groups: dict[str, list[dict[str, Any]]] = {}
         diagram_lookup: dict[int, str] = {}
         legend_lookup: dict[str, dict[str, Any]] = {}
@@ -1071,6 +1087,7 @@ class DocumentationBuilder:
         return "/" + "/".join([zone_segment, *locator.folders[1:], locator.entityName or ""])
 
     def _resolve_entity_reference(self, reference) -> tuple[Locator, Any] | None:
+        """Resolve string/integer source references to actual model entities."""
         if reference is None:
             return None
         if isinstance(reference, int):
