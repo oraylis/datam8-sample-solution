@@ -32,38 +32,6 @@
       "property": "extract_mode"
     },
     {
-      "name": "sales_daily",
-      "displayName": "Sales (Daily)",
-      "default": false,
-      "property": "jobs",
-      "properties": [
-        {
-          "property": "schedules",
-          "value": "daily"
-        },
-        {
-          "property": "cluster",
-          "value": "small"
-        }
-      ]
-    },
-    {
-      "name": "sales_weekly",
-      "displayName": "Sales (Weekly)",
-      "default": false,
-      "property": "jobs",
-      "properties": [
-        {
-          "property": "schedules",
-          "value": "weekly"
-        },
-        {
-          "property": "cluster",
-          "value": "extra_small"
-        }
-      ]
-    },
-    {
       "name": "daily",
       "displayName": "Daily",
       "default": true,
@@ -94,6 +62,38 @@
       "node_type": "Standard_D4ds_v5",
       "num_workers": 2,
       "workload_type": "job"
+    },
+    {
+      "name": "sales_daily",
+      "displayName": "Sales (Daily)",
+      "default": false,
+      "property": "jobs",
+      "properties": [
+        {
+          "property": "schedules",
+          "value": "daily"
+        },
+        {
+          "property": "cluster",
+          "value": "small"
+        }
+      ]
+    },
+    {
+      "name": "sales_weekly",
+      "displayName": "Sales (Weekly)",
+      "default": false,
+      "property": "jobs",
+      "properties": [
+        {
+          "property": "schedules",
+          "value": "weekly"
+        },
+        {
+          "property": "cluster",
+          "value": "extra_small"
+        }
+      ]
     },
     {
       "name": "sales",

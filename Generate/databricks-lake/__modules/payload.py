@@ -1,9 +1,16 @@
+"""Payload builders for Databricks lake templates.
+
+The module keeps Jinja payload contracts stable while shaping model metadata into
+template-friendly dictionaries. Helper functions below intentionally centralize
+reused metadata assembly so DDL/DML payloads stay consistent.
+"""
+
 from __future__ import annotations
 
-from collections.abc import Sequence, Iterable
+import re
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import Any
-import re
 
 from datam8.generate import BasePayload, IPayload, register_payload
 from datam8.model import Model
@@ -12,6 +19,7 @@ from datam8.utils.cache import Cache
 
 from metadata_utils import (
     MetadataResolver,
+    attribute_property_equals,
     build_business_key_partitions,
     build_delta_table_properties,
     collect_column_tags,
@@ -21,6 +29,15 @@ from metadata_utils import (
     merge_table_tags,
 )
 from jobs_helpers import JobsPlanner
+from payload_helpers import (
+    _build_raw_table_tag_inputs,
+    _build_scd2_tracking_columns,
+    _build_stage_sources,
+    _build_technical_columns,
+    _raw_mapping_projection,
+    _resolve_product_module_context,
+    _schema_columns,
+)
 
 logger = start_logger(__name__)
 
@@ -66,37 +83,11 @@ def _build_insert_assignments(
     return assignments
 
 
-def _attribute_property_equals(attribute: Any, property_name: str, expected_value: str) -> bool:
-    """Check if an attribute exposes a given property/value pair."""
-    properties = getattr(attribute, "properties", None) or []
-    if not properties:
-        return False
-
-    target_property = (property_name or "").strip().lower()
-    target_value = (expected_value or "").strip().lower()
-    if not target_property:
-        return False
-
-    for prop in properties:
-        name = getattr(prop, "property", None)
-        if not name:
-            continue
-        if str(name).strip().lower() != target_property:
-            continue
-        value = getattr(prop, "value", None)
-        if value is None:
-            continue
-        if str(value).strip().lower() == target_value:
-            return True
-
-    return False
-
-
 def _surrogate_key_columns(entity: Any) -> list[str]:
     """Return attribute names flagged as surrogate keys via attribute_type property."""
     columns: list[str] = []
     for attribute in getattr(entity, "attributes", []) or []:
-        if _attribute_property_equals(attribute, "attribute_type", "sk"):
+        if attribute_property_equals(attribute, "attribute_type", "sk"):
             columns.append(attribute.name)
     return columns
 
@@ -123,12 +114,10 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             logger.debug("Skipping unsupported zone '%s' for Databricks DDL: %s", zone_meta.name, locator)
             continue
 
-        # Determine product/module metadata via folder properties.
-        product_info = resolver.folder_info(tuple(locator.folders[:2])) if len(locator.folders) >= 2 else None
-        module_info = resolver.folder_info(tuple(locator.folders[:3])) if len(locator.folders) >= 3 else None
-
-        data_product_name = product_info.name if product_info else (locator.folders[1] if len(locator.folders) >= 2 else "UnknownProduct")
-        data_module_name = module_info.name if module_info else (locator.folders[2] if len(locator.folders) >= 3 else "General")
+        product_info, module_info, data_product_name, data_module_name = _resolve_product_module_context(
+            resolver,
+            locator,
+        )
 
         # Assemble shared metadata for the standard notebook.
         foreign_key_columns = resolver.foreign_key_columns(entity)
@@ -138,78 +127,15 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         )
         entity_sources = getattr(entity, "sources", []) or []
         has_external_source = any(getattr(source, "dataSource", None) for source in entity_sources)
-        technical_columns: list[dict[str, Any]] = [
-            resolver.build_column_from_canonical(
-                name="__InsertTimestampUTC",
-                canonical="datetime",
-                nullable=False,
-                comment="Load timestamp (UTC)",
-                data_type_model=None,
-            ),
-            resolver.build_column_from_canonical(
-                name="__UpdateTimestampUTC",
-                canonical="datetime",
-                nullable=False,
-                comment="Last update timestamp (UTC)",
-                data_type_model=None,
-            ),
-        ]
-        if has_external_source:
-            technical_columns.append(
-                resolver.build_column_from_canonical(
-                    name="__InsertTimestampRawUTC",
-                    canonical="datetime",
-                    nullable=False,
-                    comment="Raw load timestamp (UTC)",
-                    data_type_model=None,
-                )
-            )
-            technical_columns.append(
-                resolver.build_column_from_canonical(
-                    name="__SourceTable",
-                    canonical="string",
-                    nullable=False,
-                    comment="Origin reference for the record",
-                    data_type_model=None,
-                )
-            )
-        else:
-            technical_columns.append(
-                resolver.build_column_from_canonical(
-                    name="__BusinessFunction",
-                    canonical="string",
-                    nullable=False,
-                    comment="Business function marker",
-                    data_type_model=None,
-                )
-            )
+        technical_columns = _build_technical_columns(
+            resolver,
+            has_external_source=has_external_source,
+        )
         columns = technical_columns + modeled_columns
         history_config = resolver.history_configuration(entity)
         scd2_tracking_columns: list[dict[str, Any]] = []
         if history_config.get("scd2"):
-            scd2_tracking_columns = [
-                resolver.build_column_from_canonical(
-                    name="__ValidFrom",
-                    canonical="datetime",
-                    nullable=False,
-                    comment="SCD2 start date",
-                    data_type_model=None,
-                ),
-                resolver.build_column_from_canonical(
-                    name="__ValidTo",
-                    canonical="datetime",
-                    nullable=False,
-                    comment="SCD2 end date",
-                    data_type_model=None,
-                ),
-                resolver.build_column_from_canonical(
-                    name="__IsCurrent",
-                    canonical="boolean",
-                    nullable=False,
-                    comment="SCD2 current flag",
-                    data_type_model=None,
-                ),
-            ]
+            scd2_tracking_columns = _build_scd2_tracking_columns(resolver)
             columns.extend(scd2_tracking_columns)
         imports = collect_imports(columns)
         partitions = build_business_key_partitions(entity)
@@ -273,17 +199,9 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
 
         column_tags = collect_column_tags(entity, include_attribute_tags=False)
         refactored_columns = collect_refactored_columns(entity)
-        product_info = resolver.folder_info(tuple(locator.folders[:2])) if len(locator.folders) >= 2 else None
-        module_info = resolver.folder_info(tuple(locator.folders[:3])) if len(locator.folders) >= 3 else None
-        data_product_name = (
-            product_info.name
-            if product_info
-            else (locator.folders[1] if len(locator.folders) >= 2 else "UnknownProduct")
-        )
-        data_module_name = (
-            module_info.name
-            if module_info
-            else (locator.folders[2] if len(locator.folders) >= 3 else "General")
+        product_info, module_info, data_product_name, data_module_name = _resolve_product_module_context(
+            resolver,
+            locator,
         )
 
         for source, data_source_info in resolver.iter_external_sources(entity):
@@ -296,20 +214,12 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             source_properties = resolver.source_properties(source)
             entity_properties = resolver.entity_properties(entity)
 
-            base_table_tags: dict[str, Any] = {}
-            if product_info:
-                base_table_tags.update(product_info.properties)
-            if module_info:
-                base_table_tags.update(module_info.properties)
-
-            table_properties_input = dict(base_table_tags)
-            table_properties_input.update(entity_properties)
-            if source_properties:
-                table_properties_input.update(source_properties)
-
-            table_display_tags = dict(base_table_tags)
-            if source_properties:
-                table_display_tags.update(source_properties)
+            table_properties_input, table_display_tags = _build_raw_table_tag_inputs(
+                product_info=product_info,
+                module_info=module_info,
+                entity_properties=entity_properties,
+                source_properties=source_properties,
+            )
 
             table_properties = build_delta_table_properties(table_properties_input)
             table_tags_output = format_table_tag_values(table_display_tags)
@@ -320,9 +230,8 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                         "zone": raw_zone.name,
                         "zone_display": raw_zone.display_name,
                         "data_source": getattr(source, "dataSource", ""),
-                        "data_source_display": (data_source_info or {}).get(
-                            "displayName", getattr(source, "dataSource", "")
-                        ),
+                        "data_source_display": getattr(data_source_info, "displayName", None)
+                        or getattr(source, "dataSource", ""),
                         "data_product": data_product_name,
                         "data_module": data_module_name,
                         "table_name": raw_name,
@@ -375,11 +284,10 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             logger.debug("Skipping unsupported zone '%s' for Databricks DML: %s", zone_meta.name, locator)
             continue
 
-        product_info = resolver.folder_info(tuple(locator.folders[:2])) if len(locator.folders) >= 2 else None
-        module_info = resolver.folder_info(tuple(locator.folders[:3])) if len(locator.folders) >= 3 else None
-
-        data_product_name = product_info.name if product_info else (locator.folders[1] if len(locator.folders) >= 2 else "UnknownProduct")
-        data_module_name = module_info.name if module_info else (locator.folders[2] if len(locator.folders) >= 3 else "General")
+        product_info, module_info, data_product_name, data_module_name = _resolve_product_module_context(
+            resolver,
+            locator,
+        )
         zone_folder_name = resolver.zone_folder_name(zone_meta)
 
         history_config = resolver.history_configuration(entity)
@@ -397,19 +305,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         surrogate_key_column_set = set(surrogate_key_columns)
 
         raw_sources = resolver.raw_sources(locator, entity)
-        stage_sources = []
-        for raw_source in raw_sources:
-            select_exprs = resolver.stage_select_expressions(entity, raw_source)
-            stage_sources.append(
-                {
-                    "key": f"Raw_{raw_source['raw_full_table']}",
-                    "data_source": raw_source["data_source"],
-                    "raw_full_table": raw_source["raw_full_table"],
-                    "source_zone": "raw",
-                    "select_expressions": select_exprs,
-                    "properties": raw_source["properties"],
-                }
-            )
+        stage_sources = _build_stage_sources(resolver, entity, raw_sources)
 
         transformations = resolver.collect_transformations(locator, entity)
         cache_key = (locator_payload_key, tuple(locator.folders), locator.entityName)
@@ -436,17 +332,12 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         include_raw_timestamp = source_mode == "raw_delta"
         include_source_table = source_mode == "raw_delta"
         include_business_function = not has_external_source
-        schema_columns = [
-            "__InsertTimestampUTC",
-            "__UpdateTimestampUTC",
-        ]
-        if include_business_function:
-            schema_columns.append("__BusinessFunction")
-        if include_source_table:
-            schema_columns.append("__SourceTable")
-        if include_raw_timestamp:
-            schema_columns.append("__InsertTimestampRawUTC")
-        schema_columns.extend(attribute_names)
+        schema_columns = _schema_columns(
+            attribute_names=attribute_names,
+            include_raw_timestamp=include_raw_timestamp,
+            include_source_table=include_source_table,
+            include_business_function=include_business_function,
+        )
         write_schema_columns = [
             column for column in schema_columns if column not in surrogate_key_column_set
         ]
@@ -576,9 +467,9 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             data_source_name = raw_source["data_source"]
             source_alias = raw_source.get("source_alias") or raw_name
             properties = raw_source.get("properties", {})
-            data_source_entry = resolver.data_sources.get(data_source_name, {})
+            data_source_entry = resolver.data_sources.get(data_source_name)
             driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
-            if data_source_entry.get("type") == "SynapseDataSource":
+            if getattr(data_source_entry, "type", None) == "SynapseDataSource":
                 driver = "com.databricks.spark.sqldw"
 
             extract_mode = properties.get("extract_mode")
@@ -588,44 +479,18 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 write_mode = "append"
 
             mapping_entries = raw_source.get("mapping_entries", [])
-            select_columns = [
-                {
-                    "target": entry.get("target"),
-                    "source": entry.get("source"),
-                }
-                for entry in mapping_entries
-                if entry.get("target") and entry.get("source")
-            ]
-            column_renames: list[dict[str, str]] = []
-            target_columns: list[str] = []
-            delta_column_details: list[dict[str, Any]] = []
-            for entry in mapping_entries:
-                source_name = entry.get("source")
-                target_name = entry.get("target")
-                entry_props = entry.get("properties", {}) or {}
-                is_delta_column = str(entry_props.get("extract_column", "") or "").strip().lower() == "delta"
-                if target_name:
-                    target_columns.append(target_name)
-                if source_name and target_name and source_name != target_name:
-                    column_renames.append({"source": source_name, "target": target_name})
-                if is_delta_column and source_name:
-                    source_type = (entry.get("source_data_type") or {}).get("type")
-                    canonical_type = None
-                    if source_type:
-                        canonical_type = resolver.map_source_type_to_canonical(data_source_name, source_type) or source_type
-                    delta_column_details.append(
-                        {
-                            "sourceName": source_name,
-                            "canonicalDataType": canonical_type,
-                        }
-                    )
-            data_source_type = raw_source.get("source_type") or data_source_entry.get("type")
+            mapping_projection = _raw_mapping_projection(
+                mapping_entries,
+                resolver=resolver,
+                data_source_name=data_source_name,
+            )
+            data_source_type = raw_source.get("source_type") or getattr(data_source_entry, "type", None)
 
             data = {
                 "zone": raw_zone.name,
                 "zone_display": raw_zone.display_name,
                 "data_source": data_source_name,
-                "data_source_display": data_source_entry.get("displayName", data_source_name),
+                "data_source_display": getattr(data_source_entry, "displayName", None) or data_source_name,
                 "data_source_type": data_source_type,
                 "source_name": source_alias,
                 "full_table_name": full_table_name,
@@ -636,10 +501,10 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 "connection_secret": f"datasource-{data_source_name}-connectionstring",
                 "mapping": raw_source.get("mapping"),
                 "mapping_entries": mapping_entries,
-                "select_columns": select_columns,
-                "target_columns": target_columns,
-                "column_renames": column_renames,
-                "delta_column_details": delta_column_details or None,
+                "select_columns": mapping_projection["select_columns"],
+                "target_columns": mapping_projection["target_columns"],
+                "column_renames": mapping_projection["column_renames"],
+                "delta_column_details": mapping_projection["delta_column_details"] or None,
                 "delta_column": raw_source.get("delta_column"),
                 "source_delta_column": raw_source.get("source_delta_column"),
             }
@@ -788,6 +653,7 @@ def generate_cluster_resources(model: Model, cache: Cache) -> Sequence[IPayload]
 
 
 def _get_jobs_plan(model: Model, cache: Cache) -> dict[str, Any]:
+    """Resolve and cache the Databricks job plan built from model metadata."""
     cache_key = ("databricks_jobs_plan",)
     try:
         return cache.get(cache_key)
@@ -800,6 +666,7 @@ def _get_jobs_plan(model: Model, cache: Cache) -> dict[str, Any]:
 
 
 def _prepare_job_data(job: dict[str, Any], **extra: Any) -> dict[str, Any]:
+    """Create template payload data while stripping non-template fields."""
     data = {k: v for k, v in job.items() if k != "output_path"}
     data.update(extra)
     return data
@@ -822,6 +689,7 @@ def _assign_job_clusters(data: dict[str, Any], cluster_vars: Iterable[str]) -> N
 
 @register_payload("jobs/create_all.yml.jinja2")
 def generate_jobs_create_all(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Emit a single orchestration job that chains all create-zone jobs."""
     plan = _get_jobs_plan(model, cache)
     job = plan.get("create_all")
     if not job:
@@ -832,6 +700,7 @@ def generate_jobs_create_all(model: Model, cache: Cache) -> Sequence[IPayload]:
 
 @register_payload("jobs/create_zone.yml.jinja2")
 def generate_jobs_create_zones(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Emit one create job per zone, each chaining its module jobs."""
     plan = _get_jobs_plan(model, cache)
     payloads: list[IPayload] = []
     for job in plan.get("create_zones", []):
@@ -842,6 +711,7 @@ def generate_jobs_create_zones(model: Model, cache: Cache) -> Sequence[IPayload]
 
 @register_payload("jobs/create_module.yml.jinja2")
 def generate_jobs_create_modules(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Emit concrete create jobs with notebook tasks for every module group."""
     plan = _get_jobs_plan(model, cache)
     payloads: list[IPayload] = []
     resolver = MetadataResolver(model)
@@ -859,6 +729,7 @@ def generate_jobs_create_modules(model: Model, cache: Cache) -> Sequence[IPayloa
 
 @register_payload("jobs/load_all.yml.jinja2")
 def generate_jobs_load_all(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Emit a single orchestration job that chains all load job groups."""
     plan = _get_jobs_plan(model, cache)
     job = plan.get("load_all")
     if not job:
@@ -869,6 +740,7 @@ def generate_jobs_load_all(model: Model, cache: Cache) -> Sequence[IPayload]:
 
 @register_payload("jobs/load_job_group.yml.jinja2")
 def generate_jobs_load_groups(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Emit load jobs grouped by configured `jobs` property values."""
     plan = _get_jobs_plan(model, cache)
     payloads: list[IPayload] = []
     for job in plan.get("load_jobs", []):

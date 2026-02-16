@@ -4,6 +4,11 @@ This is a generator designed to produce the necessary files for an ELT (Extract,
 
 The generator's templates create Databricks notebooks.
 
+## Maintainer Documentation
+
+For payload contracts, template mapping, and extension guidance, see
+[`ARCHITECTURE.md`](./ARCHITECTURE.md).
+
 ## Databricks notebooks
 
 The notebooks are organized into different zones and are categorized based on whether they contain Data Definition Language (DDL) or Data Modeling Language (DML).

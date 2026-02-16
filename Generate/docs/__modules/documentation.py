@@ -1,6 +1,12 @@
+"""Build a documentation snapshot from the DataM8 model graph.
+
+The builder denormalizes entities, sources, relationships, transformations, and
+diagram coordinates into a single `DocumentationResult` consumed by Jinja
+templates in `Generate/docs`.
+"""
+
 from __future__ import annotations
 
-import json
 import re
 from collections import Counter
 from dataclasses import dataclass, field
@@ -23,16 +29,6 @@ ZONE_COLORS: dict[str, tuple[str, str]] = {
     "consumer": ("#EDE7F6", "#5E35B1"),
 }
 DEFAULT_NODE_COLORS = ("#DAE8FC", "#1F2A44")
-
-
-def _load_json(path: Path) -> dict[str, Any]:
-    if not path.exists():
-        return {}
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        logger.warning("Failed to parse JSON from %s: %s", path, exc)
-        return {}
 
 
 def _slug(value: str | None) -> str:
@@ -110,13 +106,6 @@ def _mapping_label_from_docs(mapping_docs: Iterable[MappingDoc | dict[str, str]]
         if source and target:
             parts.append(f"{source}->{target}")
     return ", ".join(parts)
-
-
-@dataclass
-class FolderContext:
-    name: str
-    display_name: str | None
-    properties: dict[str, Any]
 
 
 @dataclass
@@ -302,29 +291,49 @@ class DocumentationResult:
     diagram: DiagramModel
 
 
+@dataclass(frozen=True)
+class ZoneInfo:
+    name: str
+    display: str
+    folder: str | None
+    target: str | None
+
+
+@dataclass(frozen=True)
+class ModuleInfo:
+    name: str
+    display: str | None
+
+
+@dataclass(frozen=True)
+class ProductInfo:
+    name: str
+    display: str | None
+    modules: dict[str, ModuleInfo]
+
+
+@dataclass(frozen=True)
+class DataSourceInfo:
+    name: str
+    display_name: str | None
+    source_type: str | None
+    description: str | None
+
+
 class DocumentationBuilder:
+    """Construct rich documentation artifacts from the validated model."""
+
     def __init__(self, model: Model):
+        """Prepare immutable lookups reused while building all entity documents."""
         self.model = model
         self.solution_root = config.solution_folder_path
         self.model_root = self.solution_root / model.solution.modelPath
-        self.base_root = self.solution_root / model.solution.basePath
-        self._zone_lookup = self._load_zones()
-        self._product_lookup = self._load_data_products()
-        self._data_sources = self._load_data_sources()
-        self._folder_cache: dict[tuple[str, ...], FolderContext] = {}
-        self._entity_by_id: dict[int, tuple[Locator, Any]] = {}
-        self._entity_by_path: dict[str, tuple[Locator, Any]] = {}
-        for locator, wrapper in model.modelEntities.items():
-            entity = wrapper.entity
-            entity_id = getattr(entity, "id", None)
-            if entity_id is not None:
-                self._entity_by_id[entity_id] = (locator, entity)
-            path_key = self._entity_path_key(locator)
-            self._entity_by_path[path_key] = (locator, entity)
-            self._entity_by_path[f"/modelEntities{path_key}"] = (locator, entity)
-            self._entity_by_path[str(locator).lower()] = (locator, entity)
+        self._zone_lookup: dict[str, ZoneInfo] = self._load_zones()
+        self._product_lookup: dict[str, ProductInfo] = self._load_data_products()
+        self._data_sources: dict[str, DataSourceInfo] = self._load_data_sources()
 
     def build(self) -> DocumentationResult:
+        """Build and return the complete documentation snapshot."""
         generated_at = datetime.now(timezone.utc).isoformat()
         solution_name = getattr(self.model.solution, "name", None) or config.solution_path.stem
         schema_version = getattr(self.model.solution, "schemaVersion", None)
@@ -349,6 +358,7 @@ class DocumentationBuilder:
         )
 
     def _build_entities(self) -> list[EntityDoc]:
+        """Materialize documentation entries for all model entities."""
         docs: list[EntityDoc] = []
         for locator, wrapper in sorted(self.model.modelEntities.items(), key=lambda item: (item[0].folders, item[0].entityName or "")):
             docs.append(self._build_entity(locator, wrapper.entity))
@@ -357,6 +367,7 @@ class DocumentationBuilder:
         return docs
 
     def _build_entity(self, locator: Locator, entity) -> EntityDoc:
+        """Build one `EntityDoc` including sources, relationships, and transformations."""
         folders = list(locator.folders)
         zone_folder = folders[0] if folders else None
         zone_info = self._zone_from_folder(zone_folder)
@@ -364,26 +375,26 @@ class DocumentationBuilder:
         module_folder = folders[2] if len(folders) >= 3 else None
         product_info = self._product_lookup.get((product_folder or "").lower())
         module_info = (
-            (product_info or {}).get("modules", {}).get((module_folder or "").lower())
+            product_info.modules.get((module_folder or "").lower())
             if product_info
             else None
         )
         breadcrumbs = [
             value
             for value in [
-                zone_info["display"],
-                product_info["display"] if product_info else product_folder,
-                module_info["display"] if module_info else module_folder,
+                zone_info.display,
+                product_info.display if product_info else product_folder,
+                module_info.display if module_info else module_folder,
                 entity.displayName or entity.name,
             ]
             if value
         ]
         slug_path = [
-            _slug(zone_folder or zone_info["name"]),
-            _slug(product_folder or (product_info or {}).get("name")),
+            _slug(zone_folder or zone_info.name),
+            _slug(product_folder or (product_info.name if product_info else None)),
         ]
-        if module_folder or (module_info or {}).get("name"):
-            slug_path.append(_slug(module_folder or (module_info or {}).get("name")))
+        if module_folder or (module_info.name if module_info else None):
+            slug_path.append(_slug(module_folder or (module_info.name if module_info else None)))
         entity_slug = _slug(entity.name)
         entity_id = getattr(entity, "id", None)
         if entity_id is not None:
@@ -392,14 +403,6 @@ class DocumentationBuilder:
         slug_path.append(entity_slug)
 
         inherited_props: dict[str, dict[str, Any]] = {}
-        if zone_folder and product_folder:
-            product_context = self._folder_context((zone_folder, product_folder))
-            if product_context.properties:
-                inherited_props["data_product"] = {"name": product_context.display_name or product_context.name, "properties": product_context.properties}
-        if zone_folder and product_folder and module_folder:
-            module_context = self._folder_context((zone_folder, product_folder, module_folder))
-            if module_context.properties:
-                inherited_props["module"] = {"name": module_context.display_name or module_context.name, "properties": module_context.properties}
 
         attributes = self._build_attributes(entity)
         attribute_summary = self._summarize_attributes(attributes)
@@ -414,14 +417,14 @@ class DocumentationBuilder:
             display_name=entity.displayName or entity.name,
             description=getattr(entity, "description", None),
             locator_path="/".join([*folders, locator.entityName or entity.name]),
-            zone_name=zone_info["name"],
-            zone_display=zone_info["display"],
+            zone_name=zone_info.name,
+            zone_display=zone_info.display,
             zone_folder=zone_folder,
-            zone_target=zone_info["target"],
+            zone_target=zone_info.target,
             product_name=product_folder,
-            product_display=(product_info or {}).get("display"),
+            product_display=product_info.display if product_info else None,
             module_name=module_folder,
-            module_display=(module_info or {}).get("display"),
+            module_display=module_info.display if module_info else None,
             folder_segments=folders,
             breadcrumbs=breadcrumbs,
             slug_path=slug_path,
@@ -489,6 +492,7 @@ class DocumentationBuilder:
         }
 
     def _build_sources(self, locator: Locator, entity) -> list[SourceDoc]:
+        """Resolve modeled and external sources into normalized source descriptors."""
         sources: list[SourceDoc] = []
         for source in getattr(entity, "sources", []) or []:
             data_source_name = getattr(source, "dataSource", None)
@@ -509,25 +513,25 @@ class DocumentationBuilder:
             mapping_label = _mapping_label_from_docs(mapping_entries)
 
             if data_source_name:
-                entry = self._data_sources.get(data_source_name, {})
-                raw_zone_display = self._zone_lookup.get("raw", {}).get("display", "Raw Data Layer")
+                entry = self._data_sources.get(data_source_name)
+                raw_zone_display = self._raw_zone_info().display
                 external_key = f"{data_source_name}:{getattr(source, 'sourceAlias', None) or source_location or getattr(entity, 'name', '')}"
                 sources.append(
                     SourceDoc(
                         kind="external",
                         reference=data_source_name,
                         name=data_source_name,
-                        display_name=entry.get("displayName"),
+                        display_name=entry.display_name if entry else None,
                         zone=raw_zone_display,
                         product=None,
                         module=None,
                         path=None,
                         data_source_name=data_source_name,
-                        data_source_display=entry.get("displayName"),
-                        data_source_type=entry.get("type"),
+                        data_source_display=entry.display_name if entry else None,
+                        data_source_type=entry.source_type if entry else None,
                         source_alias=getattr(source, "sourceAlias", None),
                         location=source_location,
-                        description=entry.get("description"),
+                        description=entry.description if entry else None,
                         properties=properties,
                         mapping=mapping_entries,
                         mapping_label=mapping_label or None,
@@ -545,7 +549,7 @@ class DocumentationBuilder:
                             reference=str(source_location),
                             name=target_entity.name,
                             display_name=target_entity.displayName or target_entity.name,
-                            zone=zone_info["display"],
+                            zone=zone_info.display,
                             product=target_locator.folders[1] if len(target_locator.folders) >= 2 else None,
                             module=target_locator.folders[2] if len(target_locator.folders) >= 3 else None,
                             path="/".join([*target_locator.folders, target_locator.entityName or target_entity.name]),
@@ -586,6 +590,7 @@ class DocumentationBuilder:
         return sources
 
     def _build_relationships(self, entity) -> list[RelationshipDoc]:
+        """Resolve outgoing relationship descriptors for a single entity."""
         relationships: list[RelationshipDoc] = []
         for relation in getattr(entity, "relationships", []) or []:
             mapping = [
@@ -605,7 +610,7 @@ class DocumentationBuilder:
                         peer_id=getattr(target_entity, "id", None),
                         peer_name=target_entity.name,
                         peer_display_name=target_entity.displayName or target_entity.name,
-                        peer_zone=zone_info["display"],
+                        peer_zone=zone_info.display,
                         peer_product=locator.folders[1] if len(locator.folders) >= 2 else None,
                         peer_module=locator.folders[2] if len(locator.folders) >= 3 else None,
                         path="/".join([*locator.folders, locator.entityName or target_entity.name]),
@@ -867,6 +872,7 @@ class DocumentationBuilder:
         return highlights[:10]
 
     def _build_diagram(self, entities: list[EntityDoc]) -> DiagramModel:
+        """Build node/edge layout metadata for draw.io rendering."""
         zone_groups: dict[str, list[dict[str, Any]]] = {}
         diagram_lookup: dict[int, str] = {}
         legend_lookup: dict[str, dict[str, Any]] = {}
@@ -899,7 +905,7 @@ class DocumentationBuilder:
             if doc.id is not None:
                 diagram_lookup[doc.id] = doc.diagram_id
 
-        raw_zone_info = self._zone_lookup.get("raw", {"display": "Raw Data Layer", "name": "raw"})
+        raw_zone_info = self._raw_zone_info()
         external_nodes: dict[str, dict[str, Any]] = {}
         for doc in entities:
             for source in doc.sources:
@@ -916,7 +922,7 @@ class DocumentationBuilder:
                     external_nodes[key] = {
                         "id": node_id,
                         "label": base_label,
-                        "zone_display": raw_zone_info.get("display", "Raw Data Layer"),
+                        "zone_display": raw_zone_info.display,
                         "zone_key": "raw",
                         "product": source.data_source_display or source.data_source_name,
                         "module": source.source_alias or source.location,
@@ -928,7 +934,7 @@ class DocumentationBuilder:
                     legend_lookup.setdefault(
                         "raw",
                         {
-                            "label": raw_zone_info.get("display", "Raw Data Layer"),
+                            "label": raw_zone_info.display,
                             "fill_color": fill_color,
                             "stroke_color": stroke_color,
                         },
@@ -1054,104 +1060,129 @@ class DocumentationBuilder:
                 return True
         return False
 
-    def _folder_context(self, folder_tuple: tuple[str, ...]) -> FolderContext:
-        if folder_tuple in self._folder_cache:
-            return self._folder_cache[folder_tuple]
-        if not folder_tuple:
-            context = FolderContext(name="", display_name=None, properties={})
-            self._folder_cache[folder_tuple] = context
-            return context
-        properties_path = self.model_root.joinpath(*folder_tuple) / ".properties.json"
-        data = _load_json(properties_path)
-        folders_data = data.get("folders", [])
-        if not folders_data:
-            context = FolderContext(name=folder_tuple[-1], display_name=None, properties={})
-            self._folder_cache[folder_tuple] = context
-            return context
-        entry = folders_data[0]
-        context = FolderContext(
-            name=entry.get("name", folder_tuple[-1]),
-            display_name=entry.get("displayName"),
-            properties=_properties_to_dict(entry.get("properties", [])),
-        )
-        self._folder_cache[folder_tuple] = context
-        return context
+    def _reference_locator_candidates(self, reference: str) -> list[str]:
+        normalized = reference.strip().removeprefix("/")
+        if not normalized:
+            return []
 
-    def _entity_path_key(self, locator: Locator) -> str:
-        parts = "/".join([*locator.folders, locator.entityName or ""])
-        return f"/{parts}".lower()
+        candidates: list[str] = []
+        if normalized.lower().startswith("modelentities/"):
+            candidates.append(normalized)
+        elif "/" in normalized:
+            candidates.append(f"modelEntities/{normalized}")
+            parts = [part for part in normalized.split("/") if part]
+            if parts:
+                zone_info = self._zone_lookup.get(parts[0].lower())
+                if zone_info and zone_info.folder:
+                    candidates.append(f"modelEntities/{zone_info.folder}/{'/'.join(parts[1:])}")
+
+        # Preserve insertion order while removing duplicates.
+        return list(dict.fromkeys(candidates))
+
+    def _locator_dm8l_path(self, locator: Locator) -> str:
+        if not locator.folders:
+            return f"/{locator.entityName or ''}"
+        zone_info = self._zone_from_folder(locator.folders[0])
+        zone_segment = zone_info.name.capitalize()
+        return "/" + "/".join([zone_segment, *locator.folders[1:], locator.entityName or ""])
 
     def _resolve_entity_reference(self, reference) -> tuple[Locator, Any] | None:
+        """Resolve string/integer source references to actual model entities."""
         if reference is None:
             return None
         if isinstance(reference, int):
-            return self._entity_by_id.get(reference)
+            try:
+                wrapped = self.model.get_model_entity_by_id(reference)
+            except Exception:  # noqa: BLE001 - unresolved IDs should not fail documentation generation
+                return None
+            return wrapped.locator, wrapped.entity
         if isinstance(reference, str):
-            normalized = reference.lower()
+            search_target = reference.strip()
+            for candidate in self._reference_locator_candidates(search_target):
+                try:
+                    wrapped = self.model.get_entity_by_locator(candidate)
+                except Exception:  # noqa: BLE001 - continue with next candidate/fallback
+                    continue
+                return wrapped.locator, wrapped.entity
+
+            normalized = search_target.lower()
             if not normalized.startswith("/"):
                 normalized = f"/{normalized}"
-            result = self._entity_by_path.get(normalized)
-            if result:
-                return result
+            for locator, wrapper in self.model.modelEntities.items():
+                raw_path = f"/{'/'.join([*locator.folders, locator.entityName or ''])}".lower()
+                if raw_path == normalized or self._locator_dm8l_path(locator).lower() == normalized:
+                    return locator, wrapper.entity
         return None
 
-    def _zone_from_folder(self, folder: str | None) -> dict[str, Any]:
+    def _zone_from_folder(self, folder: str | None) -> ZoneInfo:
         if not folder:
-            return {"name": "unknown", "display": "Unknown", "target": None}
+            return ZoneInfo(name="unknown", display="Unknown", folder=None, target=None)
         lookup_key = folder.lower()
         if lookup_key in self._zone_lookup:
             return self._zone_lookup[lookup_key]
         normalized = re.sub(r"^\d+-", "", folder).lower()
         if normalized in self._zone_lookup:
             return self._zone_lookup[normalized]
-        return {"name": folder, "display": folder, "target": None}
+        return ZoneInfo(name=folder, display=folder, folder=folder, target=None)
 
-    def _load_zones(self) -> dict[str, dict[str, Any]]:
-        data = _load_json(self.base_root / "Zones.json")
-        lookup: dict[str, dict[str, Any]] = {}
-        for entry in data.get("zones", []):
-            name = entry.get("name")
+    def _raw_zone_info(self) -> ZoneInfo:
+        return self._zone_lookup.get("raw") or ZoneInfo(
+            name="raw",
+            display="Raw Data Layer",
+            folder="raw",
+            target=None,
+        )
+
+    def _load_zones(self) -> dict[str, ZoneInfo]:
+        lookup: dict[str, ZoneInfo] = {}
+        for wrapper in self.model.zones.values():
+            zone_entity = wrapper.entity
+            name = getattr(zone_entity, "name", None)
             if not name:
                 continue
-            info = {
-                "name": name,
-                "display": entry.get("displayName") or name.title(),
-                "folder": entry.get("localFolderName"),
-                "target": entry.get("targetName"),
-            }
+            info = ZoneInfo(
+                name=name,
+                display=getattr(zone_entity, "displayName", None) or name.title(),
+                folder=getattr(zone_entity, "localFolderName", None),
+                target=getattr(zone_entity, "targetName", None),
+            )
             lookup[name.lower()] = info
-            folder = entry.get("localFolderName")
-            if folder:
-                lookup[folder.lower()] = info
+            if info.folder:
+                lookup[info.folder.lower()] = info
         return lookup
 
-    def _load_data_products(self) -> dict[str, dict[str, Any]]:
-        data = _load_json(self.base_root / "DataProducts.json")
-        products: dict[str, dict[str, Any]] = {}
-        for entry in data.get("dataProducts", []):
-            name = entry.get("name")
+    def _load_data_products(self) -> dict[str, ProductInfo]:
+        products: dict[str, ProductInfo] = {}
+        for wrapper in self.model.dataProducts.values():
+            product_entity = wrapper.entity
+            name = getattr(product_entity, "name", None)
             if not name:
                 continue
             modules = {
-                module.get("name", "").lower(): {
-                    "name": module.get("name"),
-                    "display": module.get("displayName"),
-                }
-                for module in entry.get("dataModules", [])
-                if module.get("name")
+                module_name.lower(): ModuleInfo(
+                    name=module_name,
+                    display=getattr(module, "displayName", None),
+                )
+                for module in getattr(product_entity, "dataModules", []) or []
+                if (module_name := getattr(module, "name", None))
             }
-            products[name.lower()] = {
-                "name": name,
-                "display": entry.get("displayName"),
-                "modules": modules,
-            }
+            products[name.lower()] = ProductInfo(
+                name=name,
+                display=getattr(product_entity, "displayName", None),
+                modules=modules,
+            )
         return products
 
-    def _load_data_sources(self) -> dict[str, dict[str, Any]]:
-        data = _load_json(self.base_root / "DataSources.json")
-        sources: dict[str, dict[str, Any]] = {}
-        for entry in data.get("dataSources", []):
-            name = entry.get("name")
+    def _load_data_sources(self) -> dict[str, DataSourceInfo]:
+        sources: dict[str, DataSourceInfo] = {}
+        for wrapper in self.model.dataSources.values():
+            source_entity = wrapper.entity
+            name = getattr(source_entity, "name", None)
             if name:
-                sources[name] = entry
+                sources[name] = DataSourceInfo(
+                    name=name,
+                    display_name=getattr(source_entity, "displayName", None),
+                    source_type=getattr(source_entity, "type", None),
+                    description=getattr(source_entity, "description", None),
+                )
         return sources

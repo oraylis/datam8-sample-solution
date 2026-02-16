@@ -3,20 +3,6 @@
   "name": "DIMTIME",
   "displayName": "DIMTIME",
   "description": "Time dimension entity for calendar and fiscal dates",
-  "properties": [
-    {
-      "property": "jobs",
-      "value": "sales_daily"
-    },
-    {
-      "property": "write_mode",
-      "value": "merge"
-    },
-    {
-      "property": "data_retention",
-      "value": "7_days"
-    }
-  ],
   "attributes": [
     {
       "ordinalNumber": 1,
@@ -24,15 +10,15 @@
       "description": "",
       "attributeType": "ID",
       "dataType": {
-          "type": "decimal",
-          "precision": 38,
-          "scale": 0,
-          "nullable": true
+        "type": "decimal",
+        "nullable": true,
+        "precision": 38,
+        "scale": 0
       },
       "isBusinessKey": true,
       "dateModified": "2025-03-28T16:16:38Z",
       "dateAdded": "2025-01-01T01:01:01Z"
-  },
+    },
     {
       "ordinalNumber": 2,
       "name": "FULLDATEALTERNATEKEY",
@@ -49,9 +35,9 @@
       "attributeType": "ID",
       "dataType": {
         "type": "decimal",
+        "nullable": true,
         "precision": 38,
-        "scale": 10,
-        "nullable": true
+        "scale": 10
       },
       "dateAdded": "2025-01-01T01:01:01Z"
     },
@@ -91,9 +77,9 @@
       "attributeType": "ID",
       "dataType": {
         "type": "decimal",
+        "nullable": true,
         "precision": 38,
-        "scale": 10,
-        "nullable": true
+        "scale": 10
       },
       "dateAdded": "2025-01-01T01:01:01Z"
     },
@@ -103,9 +89,9 @@
       "attributeType": "ID",
       "dataType": {
         "type": "decimal",
+        "nullable": true,
         "precision": 38,
-        "scale": 10,
-        "nullable": true
+        "scale": 10
       },
       "dateAdded": "2025-01-01T01:01:01Z"
     },
@@ -115,9 +101,9 @@
       "attributeType": "ID",
       "dataType": {
         "type": "decimal",
+        "nullable": true,
         "precision": 38,
-        "scale": 10,
-        "nullable": true
+        "scale": 10
       },
       "dateAdded": "2025-01-01T01:01:01Z"
     },
@@ -157,9 +143,9 @@
       "attributeType": "ID",
       "dataType": {
         "type": "decimal",
+        "nullable": true,
         "precision": 38,
-        "scale": 10,
-        "nullable": true
+        "scale": 10
       },
       "dateAdded": "2025-01-01T01:01:01Z"
     },
@@ -169,9 +155,9 @@
       "attributeType": "ID",
       "dataType": {
         "type": "decimal",
+        "nullable": true,
         "precision": 38,
-        "scale": 10,
-        "nullable": true
+        "scale": 10
       },
       "dateAdded": "2025-01-01T01:01:01Z"
     },
@@ -191,9 +177,9 @@
       "attributeType": "ID",
       "dataType": {
         "type": "decimal",
+        "nullable": true,
         "precision": 38,
-        "scale": 10,
-        "nullable": true
+        "scale": 10
       },
       "dateAdded": "2025-01-01T01:01:01Z"
     },
@@ -203,9 +189,9 @@
       "attributeType": "ID",
       "dataType": {
         "type": "decimal",
+        "nullable": true,
         "precision": 38,
-        "scale": 10,
-        "nullable": true
+        "scale": 10
       },
       "dateAdded": "2025-01-01T01:01:01Z"
     },
@@ -225,11 +211,25 @@
       "attributeType": "ID",
       "dataType": {
         "type": "decimal",
+        "nullable": true,
         "precision": 38,
-        "scale": 10,
-        "nullable": true
+        "scale": 10
       },
       "dateAdded": "2025-01-01T01:01:01Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "merge"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
     }
   ],
   "sources": [
@@ -249,9 +249,9 @@
           "targetName": "TIMEKEY",
           "sourceDataType": {
             "type": "decimal",
+            "nullable": true,
             "precision": 38,
-            "scale": 0,
-            "nullable": true
+            "scale": 0
           }
         },
         {
@@ -267,9 +267,9 @@
           "targetName": "DAYNUMBEROFWEEK",
           "sourceDataType": {
             "type": "decimal",
+            "nullable": true,
             "precision": 38,
-            "scale": 10,
-            "nullable": true
+            "scale": 10
           }
         },
         {
@@ -277,8 +277,8 @@
           "targetName": "ENGLISHDAYNAMEOFWEEK",
           "sourceDataType": {
             "type": "string",
-            "charLen": 10,
-            "nullable": true
+            "nullable": true,
+            "charLen": 10
           }
         },
         {
@@ -286,8 +286,8 @@
           "targetName": "SPANISHDAYNAMEOFWEEK",
           "sourceDataType": {
             "type": "string",
-            "charLen": 10,
-            "nullable": true
+            "nullable": true,
+            "charLen": 10
           }
         },
         {
@@ -295,8 +295,8 @@
           "targetName": "FRENCHDAYNAMEOFWEEK",
           "sourceDataType": {
             "type": "string",
-            "charLen": 10,
-            "nullable": true
+            "nullable": true,
+            "charLen": 10
           }
         },
         {
@@ -304,9 +304,9 @@
           "targetName": "DAYNUMBEROFMONTH",
           "sourceDataType": {
             "type": "decimal",
+            "nullable": true,
             "precision": 38,
-            "scale": 10,
-            "nullable": true
+            "scale": 10
           }
         },
         {
@@ -314,9 +314,9 @@
           "targetName": "DAYNUMBEROFYEAR",
           "sourceDataType": {
             "type": "decimal",
+            "nullable": true,
             "precision": 38,
-            "scale": 10,
-            "nullable": true
+            "scale": 10
           }
         },
         {
@@ -324,9 +324,9 @@
           "targetName": "WEEKNUMBEROFYEAR",
           "sourceDataType": {
             "type": "decimal",
+            "nullable": true,
             "precision": 38,
-            "scale": 10,
-            "nullable": true
+            "scale": 10
           }
         },
         {
@@ -334,8 +334,8 @@
           "targetName": "ENGLISHMONTHNAME",
           "sourceDataType": {
             "type": "string",
-            "charLen": 10,
-            "nullable": true
+            "nullable": true,
+            "charLen": 10
           }
         },
         {
@@ -343,8 +343,8 @@
           "targetName": "SPANISHMONTHNAME",
           "sourceDataType": {
             "type": "string",
-            "charLen": 10,
-            "nullable": true
+            "nullable": true,
+            "charLen": 10
           }
         },
         {
@@ -352,8 +352,8 @@
           "targetName": "FRENCHMONTHNAME",
           "sourceDataType": {
             "type": "string",
-            "charLen": 10,
-            "nullable": true
+            "nullable": true,
+            "charLen": 10
           }
         },
         {
@@ -361,9 +361,9 @@
           "targetName": "MONTHNUMBEROFYEAR",
           "sourceDataType": {
             "type": "decimal",
+            "nullable": true,
             "precision": 38,
-            "scale": 10,
-            "nullable": true
+            "scale": 10
           }
         },
         {
@@ -371,9 +371,9 @@
           "targetName": "CALENDARQUARTER",
           "sourceDataType": {
             "type": "decimal",
+            "nullable": true,
             "precision": 38,
-            "scale": 10,
-            "nullable": true
+            "scale": 10
           }
         },
         {
@@ -381,8 +381,8 @@
           "targetName": "CALENDARYEAR",
           "sourceDataType": {
             "type": "string",
-            "charLen": 4,
-            "nullable": true
+            "nullable": true,
+            "charLen": 4
           }
         },
         {
@@ -390,9 +390,9 @@
           "targetName": "CALENDARSEMESTER",
           "sourceDataType": {
             "type": "decimal",
+            "nullable": true,
             "precision": 38,
-            "scale": 10,
-            "nullable": true
+            "scale": 10
           }
         },
         {
@@ -400,9 +400,9 @@
           "targetName": "FISCALQUARTER",
           "sourceDataType": {
             "type": "decimal",
+            "nullable": true,
             "precision": 38,
-            "scale": 10,
-            "nullable": true
+            "scale": 10
           }
         },
         {
@@ -410,8 +410,8 @@
           "targetName": "FISCALYEAR",
           "sourceDataType": {
             "type": "string",
-            "charLen": 4,
-            "nullable": true
+            "nullable": true,
+            "charLen": 4
           }
         },
         {
@@ -419,14 +419,14 @@
           "targetName": "FISCALSEMESTER",
           "sourceDataType": {
             "type": "decimal",
+            "nullable": true,
             "precision": 38,
-            "scale": 10,
-            "nullable": true
+            "scale": 10
           }
         }
       ]
     }
   ],
-  "relationships": [],
-  "transformations": []
+  "transformations": [],
+  "relationships": []
 }

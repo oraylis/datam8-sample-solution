@@ -3,20 +3,6 @@
   "name": "SalesOrderDetail",
   "displayName": "Sales_Order_Detail",
   "description": "Sales order line item details entity",
-  "properties": [
-    {
-      "property": "jobs",
-      "value": "sales_daily"
-    },
-    {
-      "property": "write_mode",
-      "value": "merge"
-    },
-    {
-      "property": "data_retention",
-      "value": "7_days"
-    }
-  ],
   "attributes": [
     {
       "ordinalNumber": 1,
@@ -88,9 +74,9 @@
       "attributeType": "ID",
       "dataType": {
         "type": "decimal",
+        "nullable": false,
         "precision": 38,
-        "scale": 6,
-        "nullable": false
+        "scale": 6
       },
       "dateAdded": "2025-01-01T01:01:01Z"
     },
@@ -113,6 +99,20 @@
         "nullable": false
       },
       "dateAdded": "2025-01-01T01:01:01Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "merge"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
     }
   ],
   "sources": [
@@ -180,9 +180,9 @@
           "targetName": "LineTotal",
           "sourceDataType": {
             "type": "decimal",
+            "nullable": false,
             "precision": 38,
-            "scale": 6,
-            "nullable": false
+            "scale": 6
           }
         },
         {
@@ -210,6 +210,6 @@
       ]
     }
   ],
-  "relationships": [],
-  "transformations": []
+  "transformations": [],
+  "relationships": []
 }

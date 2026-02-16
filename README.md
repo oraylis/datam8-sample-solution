@@ -24,6 +24,19 @@ This section provides a wealth of detailed information on the architecture, func
 2. **Quick Start Guide:** This guide covers the essentials for setting up Azure Databricks prerequisites, whether in the ORAYLIS IT-DEV environment or your own setup. Navigate through the setup process with this 📜[Quick Start Guide](./docs/quickstart.md).
 3. **Template Generation:** Discover templates for generating a sample Azure Databricks solution (databricks-lake), providing a practical starting point for your projects. Learn more with this 📜[Template Generation Guide](./Generate/databricks-lake/README.md).
 
+## Template Parity Check
+
+When refactoring generator templates, use the parity script to ensure generated output stays text-identical (with EOL and trailing EOF whitespace normalization).
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_generation_parity.ps1 `
+  -BaselineRoot .\Output\baseline `
+  -CandidateRoot .\Output\candidate `
+  -ReportPath .\Output\parity-report.json
+```
+
+The script returns exit code `1` when differences are found (unless `-AllowDifferences` is set).
+
 ## License
 
 Copyright 2025 ORAYLIS GmbH

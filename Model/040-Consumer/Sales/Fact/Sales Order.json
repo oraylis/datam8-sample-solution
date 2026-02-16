@@ -1,123 +1,123 @@
 {
-    "id": 4001,
-    "name": "Sales Order",
-    "displayName": "Sales Order",
-    "description": "Fact table with sales orders",
-    "properties": [
+  "id": 4001,
+  "name": "Sales Order",
+  "displayName": "Sales Order",
+  "description": "Fact table with sales orders",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "Customer SID",
+      "description": "Customer surrogate key",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "Ship Date ID",
+      "description": "Ship date as integer",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "Total Costs",
+      "description": "Costs of sales orders",
+      "attributeType": "Currency",
+      "dataType": {
+        "type": "double",
+        "nullable": true
+      },
+      "history": "SCD1",
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 3001,
+      "mapping": [
         {
-            "property": "jobs",
-            "value": "sales_daily"
+          "sourceName": "CustomerSID",
+          "targetName": "Customer SID",
+          "sourceDataType": {
+            "type": "int",
+            "nullable": false
+          }
         },
         {
-            "property": "write_mode",
-            "value": "overwrite"
+          "sourceName": "ShipDateID",
+          "targetName": "Ship Date ID",
+          "sourceDataType": {
+            "type": "int",
+            "nullable": true
+          }
+        },
+        {
+          "sourceName": "TotalCosts",
+          "targetName": "Total Costs",
+          "sourceDataType": {
+            "type": "double",
+            "nullable": true
+          }
         }
-    ],
-    "attributes": [
+      ]
+    },
+    {
+      "sourceLocation": 4000
+    },
+    {
+      "sourceLocation": 4003,
+      "mapping": [
         {
-            "ordinalNumber": 1,
-            "name": "Customer SID",
-            "description": "Customer surrogate key",
-            "attributeType": "SID",
-            "dataType": {
-                "type": "long",
-                "nullable": false
-            },
-            "dateModified": "2025-07-23T01:01:01Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 2,
-            "name": "Ship Date ID",
-            "description": "Ship date as integer",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "int",
-                "nullable": false
-            },
-            "dateModified": "2025-07-23T01:01:01Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 3,
-            "name": "Total Costs",
-            "description": "Costs of sales orders",
-            "attributeType": "Currency",
-            "dataType": {
-                "type": "double",
-                "nullable": true
-            },
-            "history": "SCD1",
-            "dateModified": "2025-07-23T01:01:01Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
+          "sourceName": "Date SID",
+          "targetName": "Ship Date ID",
+          "sourceDataType": {
+            "type": "long",
+            "nullable": false
+          }
         }
-    ],
-    "sources": [
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": [
+    {
+      "targetLocation": 4000,
+      "attributes": [
         {
-            "sourceLocation": 3001,
-            "mapping": [
-                {
-                    "targetName": "Customer SID",
-                    "sourceName": "CustomerSID",
-                    "sourceDataType": {
-                        "type": "int",
-                        "nullable": false
-                    }
-                },
-                {
-                    "targetName": "Ship Date ID",
-                    "sourceName": "ShipDateID",
-                    "sourceDataType": {
-                        "type": "int",
-                        "nullable": true
-                    }
-                },
-                {
-                    "targetName": "Total Costs",
-                    "sourceName": "TotalCosts",
-                    "sourceDataType": {
-                        "type": "double",
-                        "nullable": true
-                    }
-                }
-            ]
-        },
-        {
-            "sourceLocation": 4000
-        },
-        {
-            "sourceLocation": 4003,
-            "mapping": [
-                {
-                    "targetName": "Ship Date ID",
-                    "sourceName": "Date SID",
-                    "sourceDataType": {
-                        "type": "long",
-                        "nullable": false
-                    }
-                }
-            ]
+          "sourceName": "Customer SID",
+          "targetName": "Customer SID"
         }
-    ],
-    "relationships": [
+      ]
+    },
+    {
+      "targetLocation": 4003,
+      "attributes": [
         {
-            "targetLocation": 4000,
-            "attributes": [
-                {
-                    "sourceName": "Customer SID",
-                    "targetName": "Customer SID"
-                }
-            ]
-        },
-        {
-            "targetLocation": 4003,
-            "attributes": [
-                {
-                    "sourceName": "Ship Date ID",
-                    "targetName": "Date ID"
-                }
-            ]
+          "sourceName": "Ship Date ID",
+          "targetName": "Date ID"
         }
-    ],
-    "transformations": []
+      ]
+    }
+  ]
 }

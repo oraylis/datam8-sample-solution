@@ -3,20 +3,6 @@
   "name": "ProductModelProductDescription",
   "displayName": "Product_Model_Product_Description",
   "description": "Product model to description relationship entity",
-  "properties": [
-    {
-      "property": "jobs",
-      "value": "sales_daily"
-    },
-    {
-      "property": "write_mode",
-      "value": "merge"
-    },
-    {
-      "property": "data_retention",
-      "value": "7_days"
-    }
-  ],
   "attributes": [
     {
       "ordinalNumber": 1,
@@ -75,6 +61,20 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     }
   ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "merge"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
+    }
+  ],
   "sources": [
     {
       "dataSource": "AdventureWorks",
@@ -108,8 +108,8 @@
           "targetName": "Culture",
           "sourceDataType": {
             "type": "nvarchar",
-            "charLen": 6,
-            "nullable": false
+            "nullable": false,
+            "charLen": 6
           }
         },
         {
@@ -137,6 +137,6 @@
       ]
     }
   ],
-  "relationships": [],
-  "transformations": []
+  "transformations": [],
+  "relationships": []
 }

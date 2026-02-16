@@ -1,3 +1,9 @@
+"""Payload registration for documentation target templates.
+
+The module keeps a single cached `DocumentationResult` and fans it out to
+index/entity/diagram templates in deterministic order.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -15,6 +21,7 @@ DOC_CACHE_KEY = "docs.documentation"
 
 
 def _get_documentation(model: Model, cache: Cache) -> DocumentationResult:
+    """Build the documentation snapshot once and reuse it across template payloads."""
     try:
         return cache.get(DOC_CACHE_KEY)
     except KeyError:
@@ -27,6 +34,7 @@ def _get_documentation(model: Model, cache: Cache) -> DocumentationResult:
 
 @register_payload("index.md.jinja2", order=1)
 def documentation_index(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Emit the documentation overview page payload."""
     documentation = _get_documentation(model, cache)
     return [
         BasePayload(
@@ -40,6 +48,7 @@ def documentation_index(model: Model, cache: Cache) -> Sequence[IPayload]:
 
 @register_payload("entity.md.jinja2", order=2)
 def documentation_entities(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Emit one payload per entity documentation page."""
     documentation = _get_documentation(model, cache)
     payloads: list[IPayload] = []
     for entity in documentation.entities:
@@ -60,6 +69,7 @@ def documentation_entities(model: Model, cache: Cache) -> Sequence[IPayload]:
 
 @register_payload("er_diagram.drawio.jinja2", order=3)
 def documentation_diagram(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Emit the draw.io diagram payload using the shared documentation snapshot."""
     documentation = _get_documentation(model, cache)
     return [
         BasePayload(
