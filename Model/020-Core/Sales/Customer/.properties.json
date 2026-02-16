@@ -1,5 +1,10 @@
 {
-  "id": 211,
-  "name": "Customer",
-  "properties": []
+  "type": "folders",
+  "folders": [
+    {
+      "id": 211,
+      "name": "Customer",
+      "properties": []
+    }
+  ]
 }
