@@ -3,20 +3,6 @@
   "name": "Address",
   "displayName": "Address",
   "description": "Address information entity",
-  "properties": [
-    {
-      "property": "jobs",
-      "value": "sales_daily"
-    },
-    {
-      "property": "write_mode",
-      "value": "overwrite"
-    },
-    {
-      "property": "data_retention",
-      "value": "7_days"
-    }
-  ],
   "attributes": [
     {
       "ordinalNumber": 1,
@@ -111,6 +97,20 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     }
   ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
+    }
+  ],
   "sources": [
     {
       "dataSource": "AdventureWorks",
@@ -136,8 +136,8 @@
           "targetName": "AddressLine1",
           "sourceDataType": {
             "type": "nvarchar",
-            "charLen": 60,
-            "nullable": false
+            "nullable": false,
+            "charLen": 60
           }
         },
         {
@@ -145,8 +145,8 @@
           "targetName": "AddressLine2",
           "sourceDataType": {
             "type": "nvarchar",
-            "charLen": 60,
-            "nullable": true
+            "nullable": true,
+            "charLen": 60
           }
         },
         {
@@ -154,8 +154,8 @@
           "targetName": "City",
           "sourceDataType": {
             "type": "nvarchar",
-            "charLen": 30,
-            "nullable": false
+            "nullable": false,
+            "charLen": 30
           }
         },
         {
@@ -163,8 +163,8 @@
           "targetName": "StateProvince",
           "sourceDataType": {
             "type": "nvarchar",
-            "charLen": 50,
-            "nullable": false
+            "nullable": false,
+            "charLen": 50
           }
         },
         {
@@ -172,8 +172,8 @@
           "targetName": "CountryRegion",
           "sourceDataType": {
             "type": "nvarchar",
-            "charLen": 50,
-            "nullable": false
+            "nullable": false,
+            "charLen": 50
           }
         },
         {
@@ -181,8 +181,8 @@
           "targetName": "PostalCode",
           "sourceDataType": {
             "type": "nvarchar",
-            "charLen": 15,
-            "nullable": false
+            "nullable": false,
+            "charLen": 15
           }
         },
         {
@@ -210,6 +210,6 @@
       ]
     }
   ],
-  "relationships": [],
-  "transformations": []
+  "transformations": [],
+  "relationships": []
 }

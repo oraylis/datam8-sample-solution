@@ -3,67 +3,67 @@
   "name": "CustomerAddress",
   "displayName": "Customer_Address",
   "description": "Customer address relationship entity",
-  "properties": [
-      {
-          "property": "jobs",
-          "value": "sales_daily"
-      },
-      {
-          "property": "write_mode",
-          "value": "overwrite"
-      },
-      {
-          "property": "data_retention",
-          "value": "7_days"
-      }
-  ],
   "attributes": [
-      {
-          "ordinalNumber": 1,
-          "name": "CustomerID",
-          "attributeType": "ID",
-          "dataType": {
-              "type": "int",
-              "nullable": true
-          },
-          "isBusinessKey": true,
-          "properties": [
-              {
-                  "property": "data_layout",
-                  "value": "hive_partitioning"
-              }
-          ],
-          "dateModified": "2025-03-28T16:16:38Z",
-          "dateAdded": "2025-01-01T10:10:10Z"
+    {
+      "ordinalNumber": 1,
+      "name": "CustomerID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
       },
-      {
-          "ordinalNumber": 2,
-          "name": "AddressID",
-          "attributeType": "ID",
-          "dataType": {
-              "type": "int",
-              "nullable": true
-          },
-          "isBusinessKey": true,
-          "properties": [
-              {
-                  "property": "data_layout",
-                  "value": "liquid_clustering"
-              }
-          ],
-          "dateModified": "2025-03-28T16:16:38Z",
-          "dateAdded": "2025-01-01T10:10:10Z"
+      "isBusinessKey": true,
+      "dateModified": "2025-03-28T16:16:38Z",
+      "dateAdded": "2025-01-01T10:10:10Z",
+      "properties": [
+        {
+          "property": "data_layout",
+          "value": "hive_partitioning"
+        }
+      ]
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "AddressID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
       },
-      {
-          "ordinalNumber": 3,
-          "name": "AddressType",
-          "attributeType": "Description",
-          "dataType": {
-              "type": "string",
-              "nullable": false
-          },
-          "dateAdded": "2025-01-01T10:10:10Z"
-      }
+      "isBusinessKey": true,
+      "dateModified": "2025-03-28T16:16:38Z",
+      "dateAdded": "2025-01-01T10:10:10Z",
+      "properties": [
+        {
+          "property": "data_layout",
+          "value": "liquid_clustering"
+        }
+      ]
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "AddressType",
+      "attributeType": "Description",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "dateAdded": "2025-01-01T10:10:10Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
+    }
   ],
   "sources": [
     {
@@ -98,8 +98,8 @@
           "targetName": "AddressType",
           "sourceDataType": {
             "type": "nvarchar",
-            "charLen": 50,
-            "nullable": true
+            "nullable": true,
+            "charLen": 50
           }
         },
         {
@@ -121,6 +121,6 @@
       ]
     }
   ],
-  "relationships": [],
-  "transformations": []
+  "transformations": [],
+  "relationships": []
 }

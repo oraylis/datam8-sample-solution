@@ -3,20 +3,6 @@
   "name": "ProductDescription",
   "displayName": "Product_Description",
   "description": "Product description text entity",
-  "properties": [
-    {
-      "property": "jobs",
-      "value": "sales_daily"
-    },
-    {
-      "property": "write_mode",
-      "value": "merge"
-    },
-    {
-      "property": "data_retention",
-      "value": "7_days"
-    }
-  ],
   "attributes": [
     {
       "ordinalNumber": 1,
@@ -61,6 +47,20 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     }
   ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "merge"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
+    }
+  ],
   "sources": [
     {
       "dataSource": "AdventureWorks",
@@ -86,8 +86,8 @@
           "targetName": "Description",
           "sourceDataType": {
             "type": "nvarchar",
-            "charLen": 400,
-            "nullable": false
+            "nullable": false,
+            "charLen": 400
           }
         },
         {
@@ -115,6 +115,6 @@
       ]
     }
   ],
-  "relationships": [],
-  "transformations": []
+  "transformations": [],
+  "relationships": []
 }

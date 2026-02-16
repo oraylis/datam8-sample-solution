@@ -3,20 +3,6 @@
   "name": "Product",
   "displayName": "Product",
   "description": "Product catalog entity",
-  "properties": [
-    {
-      "property": "jobs",
-      "value": "sales_daily"
-    },
-    {
-      "property": "write_mode",
-      "value": "merge"
-    },
-    {
-      "property": "data_retention",
-      "value": "7_days"
-    }
-  ],
   "attributes": [
     {
       "ordinalNumber": 1,
@@ -96,9 +82,9 @@
       "attributeType": "ID",
       "dataType": {
         "type": "decimal",
+        "nullable": true,
         "precision": 8,
-        "scale": 2,
-        "nullable": true
+        "scale": 2
       },
       "dateAdded": "2025-01-01T01:01:01Z"
     },
@@ -193,6 +179,20 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     }
   ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "merge"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
+    }
+  ],
   "sources": [
     {
       "dataSource": "AdventureWorks",
@@ -218,8 +218,8 @@
           "targetName": "Name",
           "sourceDataType": {
             "type": "nvarchar",
-            "charLen": 50,
-            "nullable": false
+            "nullable": false,
+            "charLen": 50
           }
         },
         {
@@ -227,8 +227,8 @@
           "targetName": "ProductNumber",
           "sourceDataType": {
             "type": "nvarchar",
-            "charLen": 25,
-            "nullable": false
+            "nullable": false,
+            "charLen": 25
           }
         },
         {
@@ -236,8 +236,8 @@
           "targetName": "Color",
           "sourceDataType": {
             "type": "nvarchar",
-            "charLen": 15,
-            "nullable": true
+            "nullable": true,
+            "charLen": 15
           }
         },
         {
@@ -261,8 +261,8 @@
           "targetName": "Size",
           "sourceDataType": {
             "type": "nvarchar",
-            "charLen": 5,
-            "nullable": true
+            "nullable": true,
+            "charLen": 5
           }
         },
         {
@@ -270,9 +270,9 @@
           "targetName": "Weight",
           "sourceDataType": {
             "type": "decimal",
+            "nullable": true,
             "precision": 8,
-            "scale": 2,
-            "nullable": true
+            "scale": 2
           }
         },
         {
@@ -328,8 +328,8 @@
           "targetName": "ThumbnailPhotoFileName",
           "sourceDataType": {
             "type": "nvarchar",
-            "charLen": 50,
-            "nullable": true
+            "nullable": true,
+            "charLen": 50
           }
         },
         {
@@ -357,6 +357,6 @@
       ]
     }
   ],
-  "relationships": [],
-  "transformations": []
+  "transformations": [],
+  "relationships": []
 }

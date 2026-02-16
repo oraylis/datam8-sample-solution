@@ -2,20 +2,6 @@
   "id": 2000,
   "name": "Customer",
   "displayName": "Customer",
-  "properties": [
-    {
-      "property": "jobs",
-      "value": "sales_weekly"
-    },
-    {
-      "property": "write_mode",
-      "value": "overwrite"
-    },
-    {
-      "property": "data_retention",
-      "value": "7_days"
-    }
-  ],
   "attributes": [
     {
       "ordinalNumber": 1,
@@ -64,6 +50,20 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     }
   ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_weekly"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
+    }
+  ],
   "sources": [
     {
       "sourceLocation": "/010-Stage/Sales/Customer/Customer",
@@ -98,7 +98,6 @@
       "sourceLocation": 1001
     }
   ],
-  "relationships": [],
   "transformations": [
     {
       "stepNo": 1,
@@ -108,5 +107,6 @@
         "source": "CustomerNew.py"
       }
     }
-  ]
+  ],
+  "relationships": []
 }

@@ -1,186 +1,186 @@
 {
-    "id": 3000,
-    "name": "DimCustomer",
-    "displayName": "Customer",
-    "description": "Customer dimension with personal and address information",
-    "properties": [
+  "id": 3000,
+  "name": "DimCustomer",
+  "displayName": "Customer",
+  "description": "Customer dimension with personal and address information",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "CustomerSID",
+      "description": "Customer surrogate key",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "refactorNames": [
+        "_CustomerSID"
+      ],
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z",
+      "properties": [
         {
-            "property": "write_mode",
-            "value": "merge"
-        },
-        {
-            "property": "data_retention",
-            "value": "7_days"
+          "property": "attribute_type",
+          "value": "SK"
         }
-    ],
-    "attributes": [
-        {
-            "ordinalNumber": 1,
-            "name": "CustomerSID",
-            "description": "Customer surrogate key",
-            "attributeType": "SID",
-            "dataType": {
-                "type": "long",
-                "nullable": false
-            },
-            "properties": [
-                {
-                    "property": "attribute_type",
-                    "value": "SK"
-                }
-            ],
-            "refactorNames": [
-                "_CustomerSID"
-            ],
-            "dateModified": "2025-07-23T01:01:01Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 2,
-            "name": "CustomerID",
-            "description": "Original customer identifier",
-            "attributeType": "ID",
-            "dataType": {
-                "type": "int",
-                "nullable": true
-            },
-            "isBusinessKey": true,
-            "dateModified": "2025-07-23T01:01:01Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 3,
-            "name": "DisplayName",
-            "description": "Customer display name",
-            "attributeType": "Name",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "history": "SCD2",
-            "refactorNames": [
-                "CustomerName"
-            ],
-            "dateModified": "2025-07-23T01:01:01Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 4,
-            "name": "FirstName",
-            "description": "Customer first name",
-            "attributeType": "Name",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "history": "SCD2",
-            "dateModified": "2025-07-23T01:01:01Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 5,
-            "name": "LastName",
-            "description": "Customer last name",
-            "attributeType": "Name",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "history": "SCD2",
-            "dateModified": "2025-07-23T01:01:01Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 6,
-            "name": "AddressType",
-            "description": "Type of customer address (Home, Business, etc.)",
-            "attributeType": "Text",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "history": "SCD1",
-            "refactorNames": [],
-            "dateModified": "2025-07-23T01:01:01Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 7,
-            "name": "Address",
-            "description": "Full address line",
-            "attributeType": "Text",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "history": "SCD1",
-            "refactorNames": [],
-            "dateModified": "2025-07-23T01:01:01Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 8,
-            "name": "PostalCode",
-            "description": "Address postal code",
-            "attributeType": "Text",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "history": "SCD1",
-            "dateModified": "2025-07-23T01:01:01Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 9,
-            "name": "CityName",
-            "description": "Address city name",
-            "attributeType": "Name",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "history": "SCD1",
-            "dateModified": "2025-07-23T01:01:01Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        },
-        {
-            "ordinalNumber": 10,
-            "name": "CountryName",
-            "description": "Address country name",
-            "attributeType": "Name",
-            "dataType": {
-                "type": "string",
-                "nullable": true
-            },
-            "history": "SCD1",
-            "refactorNames": [
-                "CountryRegionName"
-            ],
-            "dateModified": "2025-07-23T01:01:01Z",
-            "dateAdded": "2025-01-01T01:01:01Z"
-        }
-    ],
-    "sources": [
-        {
-            "sourceLocation": 2000
-        },
-        {
-            "sourceLocation": 2001
-        },
-        {
-            "sourceLocation": 2002
-        }
-    ],
-    "relationships": [],
-    "transformations": [
-        {
-            "stepNo": 1,
-            "kind": "function",
-            "name": "transform_customer_dimension",
-            "function": {
-                "source": "DimCustomer.py"
-            }
-        }
-    ]
+      ]
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "CustomerID",
+      "description": "Original customer identifier",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "isBusinessKey": true,
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "DisplayName",
+      "description": "Customer display name",
+      "attributeType": "Name",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "history": "SCD2",
+      "refactorNames": [
+        "CustomerName"
+      ],
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "FirstName",
+      "description": "Customer first name",
+      "attributeType": "Name",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "history": "SCD2",
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "LastName",
+      "description": "Customer last name",
+      "attributeType": "Name",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "history": "SCD2",
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "AddressType",
+      "description": "Type of customer address (Home, Business, etc.)",
+      "attributeType": "Text",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "history": "SCD1",
+      "refactorNames": [],
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "Address",
+      "description": "Full address line",
+      "attributeType": "Text",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "history": "SCD1",
+      "refactorNames": [],
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "PostalCode",
+      "description": "Address postal code",
+      "attributeType": "Text",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "history": "SCD1",
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "CityName",
+      "description": "Address city name",
+      "attributeType": "Name",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "history": "SCD1",
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 10,
+      "name": "CountryName",
+      "description": "Address country name",
+      "attributeType": "Name",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "history": "SCD1",
+      "refactorNames": [
+        "CountryRegionName"
+      ],
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "write_mode",
+      "value": "merge"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 2000
+    },
+    {
+      "sourceLocation": 2001
+    },
+    {
+      "sourceLocation": 2002
+    }
+  ],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "transform_customer_dimension",
+      "function": {
+        "source": "DimCustomer.py"
+      }
+    }
+  ],
+  "relationships": []
 }

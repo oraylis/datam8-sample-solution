@@ -3,20 +3,6 @@
   "name": "CustomerAddress",
   "displayName": "CustomerAddress",
   "description": "Core customer address relationship entity",
-  "properties": [
-    {
-      "property": "jobs",
-      "value": "sales_daily"
-    },
-    {
-      "property": "write_mode",
-      "value": "overwrite"
-    },
-    {
-      "property": "data_retention",
-      "value": "7_days"
-    }
-  ],
   "attributes": [
     {
       "ordinalNumber": 1,
@@ -41,13 +27,13 @@
         "type": "long",
         "nullable": false
       },
+      "dateAdded": "2025-01-01T01:01:01Z",
       "properties": [
         {
           "property": "attribute_type",
           "value": "SK"
         }
-      ],
-      "dateAdded": "2025-01-01T01:01:01Z"
+      ]
     },
     {
       "ordinalNumber": 3,
@@ -92,12 +78,25 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     }
   ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
+    }
+  ],
   "sources": [
     {
       "sourceLocation": 1001
     }
   ],
-  "relationships": [],
   "transformations": [
     {
       "stepNo": 1,
@@ -107,5 +106,6 @@
         "source": "CustomerAddress.py"
       }
     }
-  ]
+  ],
+  "relationships": []
 }

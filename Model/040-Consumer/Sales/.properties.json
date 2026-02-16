@@ -1,18 +1,18 @@
 {
-    "id": 401,
-    "name": "Sales",
-    "properties": [
-        {
-            "property": "business_area",
-            "value": "sales"
-        },
-        {
-            "property": "write_mode",
-            "value": "merge"
-        },
-        {
-            "property": "jobs",
-            "value": "sales_daily"
-        }
-    ]
+  "id": 401,
+  "name": "Sales",
+  "properties": [
+    {
+      "property": "business_area",
+      "value": "sales"
+    },
+    {
+      "property": "write_mode",
+      "value": "merge"
+    },
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    }
+  ]
 }
