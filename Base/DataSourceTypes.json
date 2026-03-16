@@ -2,7 +2,7 @@
     "type": "dataSourceTypes",
     "dataSourceTypes": [
         {
-            "name": "SqlDataSource",
+            "name": "SQLServer",
             "displayName": "SQL Database",
             "description": "Traditional SQL database connection",
             "dataTypeMapping": [
@@ -25,7 +25,7 @@
             ]
         },
         {
-            "name": "LakeSource",
+            "name": "AzureDataLake",
             "displayName": "Data Lake Source",
             "description": "Data lake file-based source",
             "dataTypeMapping": [
