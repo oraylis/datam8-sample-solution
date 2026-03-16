@@ -1,0 +1,9 @@
+{
+    "id": "SQLServer",
+    "type": "connector",
+    "version": "0.1.0",
+    "entryPoint": "Test2:Test",
+    "capabilities": [
+        "uiSchema"
+    ]
+}

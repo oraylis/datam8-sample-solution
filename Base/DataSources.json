@@ -7,7 +7,7 @@
             },
             "name": "AdventureWorks",
             "displayName": "Adventure Works Demo Database",
-            "type": "SqlDataSource",
+            "type": "SQLServer",
             "connectionString": "Data Source=tcp:datam80sql.database.windows.net,1433;Initial Catalog=adventureworks;User ID=sqladmin;Encrypt=True;Trust Server Certificate=True",
             "dataTypeMapping": [
                 {
