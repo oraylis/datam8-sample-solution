@@ -1,0 +1,369 @@
+resources:
+  jobs:
+    Load_sales_daily:
+      name: Load Sales (Daily)
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: owner
+          default: ${var.owner}
+        - name: workspace_host
+          default: ${workspace.host}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+      permissions:
+        - service_principal_name: ${var.run_as_service_principal}
+          level: "CAN_MANAGE_RUN"
+        - group_name: ${var.permission_group_name}
+          level: "CAN_MANAGE_RUN"
+      job_clusters:
+        - job_cluster_key: cluster_small
+          new_cluster: ${var.cluster_small}
+
+      schedule:
+        quartz_cron_expression: 0 1 0 * * ?
+        timezone_id: Europe/Amsterdam
+        pause_status: ${var.unpause_schedules}
+
+      tasks:
+        - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/files/utils/Start_Load
+
+            base_parameters:
+              target_zone: sales_daily
+
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+          libraries:
+            - maven:
+                coordinates: com.oracle.database.jdbc:ojdbc10:19.29.0.0
+
+        - task_key: raw_customer_customer_de
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Customer/Customer_DE
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: raw_customer_customer_en
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Customer/Customer_EN
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: raw_customeraddress_customeraddress
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Customer/CustomerAddress
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: raw_dimtime_dimtime
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Customer/dimtime
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: raw_salesorderdetail_salesorderdetail
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Order/SalesOrderDetail
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: raw_salesorderheader_salesorderheader
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Order/SalesOrderHeader
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: raw_address_address
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Other/Address
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: raw_product_product
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Product/Product
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: raw_productcategory_productcategory
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Product/ProductCategory
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: raw_productdescription_productdescription
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Product/ProductDescription
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: raw_productmodel_productmodel
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Product/ProductModel
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: raw_productmodelproductdescription_productmodelproductdescription
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Product/ProductModelProductDescription
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+
+        - task_key: core_sales_other_address
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/dml/Sales/Other/Address
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_other_address
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_address_address
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Other/Address
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_customer_customer
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_customer_customer_de
+            - task_key: raw_customer_customer_en
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Customer/Customer
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_customer_customeraddress
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_customeraddress_customeraddress
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Customer/CustomerAddress
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: core_sales_customer_customer
+          depends_on:
+            - task_key: Start_Load
+            - task_key: stage_sales_customer_customeraddress
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/dml/Sales/Customer/Customer
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: core_sales_customer_customeraddress
+          depends_on:
+            - task_key: Start_Load
+            - task_key: stage_sales_customer_customeraddress
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/dml/Sales/Customer/CustomerAddress
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_customer_dimtime
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_dimtime_dimtime
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Customer/DIMTIME
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_product_product
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_product_product
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Product/Product
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_product_productcategory
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_productcategory_productcategory
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Product/ProductCategory
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_product_productdescription
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_productdescription_productdescription
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Product/ProductDescription
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_product_productmodel
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_productmodel_productmodel
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Product/ProductModel
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_product_productmodelproductdescription
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_productmodelproductdescription_productmodelproductdescription
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Product/ProductModelProductDescription
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_order_salesorderdetail
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_salesorderdetail_salesorderdetail
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Order/SalesOrderDetail
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_order_salesorderheader
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_salesorderheader_salesorderheader
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Order/SalesOrderHeader
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+
+        - task_key: Complete_Load
+          depends_on:
+            - task_key: core_sales_other_address
+            - task_key: stage_sales_other_address
+            - task_key: stage_sales_customer_customer
+            - task_key: stage_sales_customer_customeraddress
+            - task_key: core_sales_customer_customer
+            - task_key: core_sales_customer_customeraddress
+            - task_key: stage_sales_customer_dimtime
+            - task_key: stage_sales_product_product
+            - task_key: stage_sales_product_productcategory
+            - task_key: stage_sales_product_productdescription
+            - task_key: stage_sales_product_productmodel
+            - task_key: stage_sales_product_productmodelproductdescription
+            - task_key: stage_sales_order_salesorderdetail
+            - task_key: stage_sales_order_salesorderheader
+          run_if: ALL_DONE
+          notebook_task:
+            notebook_path: ${workspace.root_path}/files/utils/Complete_Load
+            source: WORKSPACE
+          job_cluster_key: cluster_small

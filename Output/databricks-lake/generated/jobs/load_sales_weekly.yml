@@ -1,0 +1,91 @@
+resources:
+  jobs:
+    Load_sales_weekly:
+      name: Load Sales (Weekly)
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: owner
+          default: ${var.owner}
+        - name: workspace_host
+          default: ${workspace.host}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+      permissions:
+        - service_principal_name: ${var.run_as_service_principal}
+          level: "CAN_MANAGE_RUN"
+        - group_name: ${var.permission_group_name}
+          level: "CAN_MANAGE_RUN"
+      job_clusters:
+        - job_cluster_key: cluster_extra_small
+          new_cluster: ${var.cluster_extra_small}
+
+      schedule:
+        quartz_cron_expression: 0 1 0 * * ?
+        timezone_id: Europe/Amsterdam
+        pause_status: ${var.unpause_schedules}
+
+      tasks:
+        - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/files/utils/Start_Load
+
+            base_parameters:
+              target_zone: sales_weekly
+
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+          libraries:
+            - maven:
+                coordinates: com.oracle.database.jdbc:ojdbc10:19.29.0.0
+
+
+        - task_key: curated_sales_customer_dimcustomer
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/dml/Sales/Customer/DimCustomer
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: curated_sales_date_dimdate
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/dml/Sales/Date/DimDate
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: curated_sales_customer_factsalesorder
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/dml/Sales/Customer/FactSalesOrder
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: Complete_Load
+          depends_on:
+            - task_key: curated_sales_customer_dimcustomer
+            - task_key: curated_sales_date_dimdate
+            - task_key: curated_sales_customer_factsalesorder
+          run_if: ALL_DONE
+          notebook_task:
+            notebook_path: ${workspace.root_path}/files/utils/Complete_Load
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small

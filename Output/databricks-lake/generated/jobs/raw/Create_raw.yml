@@ -1,0 +1,59 @@
+resources:
+  jobs:
+    Create_raw_tables:
+      name: Create Raw Tables
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: owner
+          default: ${var.owner}
+        - name: workspace_host
+          default: ${workspace.host}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+      permissions:
+        - service_principal_name: ${var.run_as_service_principal}
+          level: "CAN_MANAGE_RUN"
+        - group_name: ${var.permission_group_name}
+          level: "CAN_MANAGE_RUN"
+      tasks:
+
+        - task_key: Create_raw_Sales_Customer
+          run_job_task:
+            job_id: ${resources.jobs.Create_raw_Sales_Customer.id}
+
+
+        - task_key: Create_raw_Sales_Order
+          run_job_task:
+            job_id: ${resources.jobs.Create_raw_Sales_Order.id}
+
+          depends_on:
+
+            - task_key: Create_raw_Sales_Customer
+
+
+
+        - task_key: Create_raw_Sales_Other
+          run_job_task:
+            job_id: ${resources.jobs.Create_raw_Sales_Other.id}
+
+          depends_on:
+
+            - task_key: Create_raw_Sales_Order
+
+
+
+        - task_key: Create_raw_Sales_Product
+          run_job_task:
+            job_id: ${resources.jobs.Create_raw_Sales_Product.id}
+
+          depends_on:
+
+            - task_key: Create_raw_Sales_Other
+
+

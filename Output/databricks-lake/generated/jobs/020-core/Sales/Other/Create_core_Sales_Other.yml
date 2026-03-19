@@ -1,0 +1,36 @@
+resources:
+  jobs:
+    Create_core_Sales_Other:
+      name: Create Core Business Layer Other
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: owner
+          default: ${var.owner}
+        - name: workspace_host
+          default: ${workspace.host}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+      permissions:
+        - service_principal_name: ${var.run_as_service_principal}
+          level: "CAN_MANAGE_RUN"
+        - group_name: ${var.permission_group_name}
+          level: "CAN_MANAGE_RUN"
+      job_clusters:
+        - job_cluster_key: cluster_extra_small
+          new_cluster: ${var.cluster_extra_small}
+      tasks:
+
+        - task_key: core_sales_other_address
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/ddl/Sales/Other/Address
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
