@@ -3,19 +3,24 @@
   "properties": [
     {
       "name": "jobs",
-      "displayName": "jobs",
+      "displayName": "Jobs",
       "schema_": "./jobs.json",
       "scopes": [
         {
-          "type": "entity",
-          "singleUsage": false,
+          "type": "folder",
+          "singleUsage": true,
+          "mandatory": false
+        },
+        {
+          "type": "model",
+          "singleUsage": true,
           "mandatory": false
         }
       ]
     },
     {
       "name": "schedules",
-      "displayName": "schedules",
+      "displayName": "Schedules",
       "schema_": "./schedules.json",
       "scopes": [
         {
@@ -25,7 +30,7 @@
     },
     {
       "name": "cluster",
-      "displayName": "cluster",
+      "displayName": "Cluster",
       "schema_": "./cluster.json",
       "scopes": [
         {
@@ -34,29 +39,23 @@
       ]
     },
     {
-      "name": "tags",
-      "displayName": "tags",
-      "schema_": "./tags.json",
-      "scopes": []
-    },
-    {
       "name": "write_mode",
-      "displayName": "write mode",
+      "displayName": "Write Mode",
       "schema_": "./write_mode.json",
       "scopes": [
         {
-          "type": "entity",
+          "type": "model",
           "mandatory": true
         }
       ]
     },
     {
       "name": "data_retention",
-      "displayName": "data retention",
+      "displayName": "Data Retention",
       "schema_": "./data_retention.json",
       "scopes": [
         {
-          "type": "entity",
+          "type": "model",
           "mandatory": false
         }
       ]
@@ -67,6 +66,16 @@
       "scopes": [
         {
           "type": "folder"
+        }
+      ]
+    },
+    {
+      "name": "extract_mode",
+      "displayName": "Extract Mode",
+      "scopes": [
+        {
+          "type": "model",
+          "singleUsage": false
         }
       ]
     }
