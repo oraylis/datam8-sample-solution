@@ -1,289 +1,289 @@
 {
-    "type": "dataSourceTypes",
-    "dataSourceTypes": [
+  "type": "dataSourceTypes",
+  "dataSourceTypes": [
+    {
+      "name": "SqlDataSource",
+      "displayName": "SQL Database",
+      "description": "Traditional SQL database connection",
+      "dataTypeMapping": [
         {
-            "name": "SqlDataSource",
-            "displayName": "SQL Database",
-            "description": "Traditional SQL database connection",
-            "dataTypeMapping": [
-                {
-                    "sourceType": "bigint",
-                    "targetType": "long"
-                },
-                {
-                    "sourceType": "binary",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "bit",
-                    "targetType": "boolean"
-                },
-                {
-                    "sourceType": "char",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "date",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "datetime",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "datetime2",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "datetimeoffset",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "decimal",
-                    "targetType": "decimal"
-                },
-                {
-                    "sourceType": "float",
-                    "targetType": "double"
-                },
-                {
-                    "sourceType": "image",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "int",
-                    "targetType": "int"
-                },
-                {
-                    "sourceType": "money",
-                    "targetType": "decimal"
-                },
-                {
-                    "sourceType": "nchar",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "ntext",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "numeric",
-                    "targetType": "decimal"
-                },
-                {
-                    "sourceType": "nvarchar",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "real",
-                    "targetType": "double"
-                },
-                {
-                    "sourceType": "smalldatetime",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "smallint",
-                    "targetType": "int"
-                },
-                {
-                    "sourceType": "smallmoney",
-                    "targetType": "decimal"
-                },
-                {
-                    "sourceType": "text",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "time",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "timestamp",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "tinyint",
-                    "targetType": "int"
-                },
-                {
-                    "sourceType": "uniqueidentifier",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "varbinary",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "varchar",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "xml",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "sql_variant",
-                    "targetType": "string"
-                }
-            ],
-            "connectionProperties": []
+          "sourceType": "bigint",
+          "targetType": "long"
         },
         {
-            "name": "LakeSource",
-            "displayName": "Data Lake Source",
-            "description": "Data lake file-based source",
-            "dataTypeMapping": [
-                {
-                    "sourceType": "bigint",
-                    "targetType": "long"
-                },
-                {
-                    "sourceType": "binary",
-                    "targetType": "binary"
-                },
-                {
-                    "sourceType": "bit",
-                    "targetType": "bit"
-                },
-                {
-                    "sourceType": "string",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "char",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "date",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "datetime",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "datetime2",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "datetimeoffset",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "decimal",
-                    "targetType": "decimal"
-                },
-                {
-                    "sourceType": "float",
-                    "targetType": "double"
-                },
-                {
-                    "sourceType": "geography",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "geometry",
-                    "targetType": "binary"
-                },
-                {
-                    "sourceType": "hierarchyid",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "image",
-                    "targetType": "binary"
-                },
-                {
-                    "sourceType": "int",
-                    "targetType": "int"
-                },
-                {
-                    "sourceType": "money",
-                    "targetType": "money"
-                },
-                {
-                    "sourceType": "nchar",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "ntext",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "numeric",
-                    "targetType": "decimal"
-                },
-                {
-                    "sourceType": "nvarchar",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "real",
-                    "targetType": "double"
-                },
-                {
-                    "sourceType": "smalldatetime",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "short",
-                    "targetType": "short"
-                },
-                {
-                    "sourceType": "smallint",
-                    "targetType": "short"
-                },
-                {
-                    "sourceType": "smallmoney",
-                    "targetType": "money"
-                },
-                {
-                    "sourceType": "sql_variant",
-                    "targetType": "binary"
-                },
-                {
-                    "sourceType": "sysname",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "text",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "time",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "timestamp",
-                    "targetType": "binary"
-                },
-                {
-                    "sourceType": "byte",
-                    "targetType": "byte"
-                },
-                {
-                    "sourceType": "tinyint",
-                    "targetType": "byte"
-                },
-                {
-                    "sourceType": "uniqueidentifier",
-                    "targetType": "uniqueidentifier"
-                },
-                {
-                    "sourceType": "varbinary",
-                    "targetType": "binary"
-                },
-                {
-                    "sourceType": "varchar",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "xml",
-                    "targetType": "string"
-                }
-            ],
-            "connectionProperties": []
+          "sourceType": "binary",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "bit",
+          "targetType": "boolean"
+        },
+        {
+          "sourceType": "char",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "date",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "datetime",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "datetime2",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "datetimeoffset",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "decimal",
+          "targetType": "decimal"
+        },
+        {
+          "sourceType": "float",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "image",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "int",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "money",
+          "targetType": "money"
+        },
+        {
+          "sourceType": "nchar",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "ntext",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "numeric",
+          "targetType": "decimal"
+        },
+        {
+          "sourceType": "nvarchar",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "real",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "smalldatetime",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "smallint",
+          "targetType": "short"
+        },
+        {
+          "sourceType": "smallmoney",
+          "targetType": "decimal"
+        },
+        {
+          "sourceType": "text",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "time",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "timestamp",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "tinyint",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "uniqueidentifier",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "varbinary",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "varchar",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "xml",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "sql_variant",
+          "targetType": "string"
         }
-    ]
+      ],
+      "connectionProperties": []
+    },
+    {
+      "name": "LakeSource",
+      "displayName": "Data Lake Source",
+      "description": "Data lake file-based source",
+      "dataTypeMapping": [
+        {
+          "sourceType": "bigint",
+          "targetType": "long"
+        },
+        {
+          "sourceType": "binary",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "bit",
+          "targetType": "bit"
+        },
+        {
+          "sourceType": "string",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "char",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "date",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "datetime",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "datetime2",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "datetimeoffset",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "decimal",
+          "targetType": "decimal"
+        },
+        {
+          "sourceType": "float",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "geography",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "geometry",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "hierarchyid",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "image",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "int",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "money",
+          "targetType": "money"
+        },
+        {
+          "sourceType": "nchar",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "ntext",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "numeric",
+          "targetType": "decimal"
+        },
+        {
+          "sourceType": "nvarchar",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "real",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "smalldatetime",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "short",
+          "targetType": "short"
+        },
+        {
+          "sourceType": "smallint",
+          "targetType": "short"
+        },
+        {
+          "sourceType": "smallmoney",
+          "targetType": "money"
+        },
+        {
+          "sourceType": "sql_variant",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "sysname",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "text",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "time",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "timestamp",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "byte",
+          "targetType": "byte"
+        },
+        {
+          "sourceType": "tinyint",
+          "targetType": "byte"
+        },
+        {
+          "sourceType": "uniqueidentifier",
+          "targetType": "uniqueidentifier"
+        },
+        {
+          "sourceType": "varbinary",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "varchar",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "xml",
+          "targetType": "string"
+        }
+      ],
+      "connectionProperties": []
+    }
+  ]
 }

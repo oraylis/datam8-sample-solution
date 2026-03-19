@@ -78,6 +78,52 @@
           "singleUsage": false
         }
       ]
+    },
+    {
+      "name": "enable_type_widening",
+      "displayName": "Type Widening",
+      "schema_": "",
+      "scopes": [
+        {
+          "type": "model",
+          "singleUsage": true,
+          "mandatory": false
+        },
+        {
+          "type": "folder",
+          "singleUsage": true,
+          "mandatory": false
+        }
+      ]
+    },
+    {
+      "name": "column_mapping_mode",
+      "displayName": "Column Mapping Mode",
+      "schema_": "",
+      "scopes": [
+        {
+          "type": "model",
+          "singleUsage": true,
+          "mandatory": false
+        },
+        {
+          "type": "folder",
+          "singleUsage": true,
+          "mandatory": false
+        }
+      ]
+    },
+    {
+      "name": "extract_column",
+      "displayName": "Extract Column",
+      "schema_": "",
+      "scopes": [
+        {
+          "type": "model",
+          "singleUsage": false,
+          "mandatory": false
+        }
+      ]
     }
   ]
 }

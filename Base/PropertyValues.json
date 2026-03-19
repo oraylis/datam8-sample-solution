@@ -36,14 +36,14 @@
       "displayName": "Daily",
       "default": true,
       "property": "schedules",
-      "cron": "1 0"
+      "quartz_cron_expression": "49 0 1 * * ?"
     },
     {
       "name": "weekly",
       "displayName": "Weekly",
       "default": false,
       "property": "schedules",
-      "cron": "1 0"
+      "quartz_cron_expression": "55 0 2 ? * Sun"
     },
     {
       "name": "small",
@@ -102,7 +102,7 @@
     },
     {
       "name": "true",
-      "displayName": "Has TypeWidening",
+      "displayName": "Has Type Widening",
       "property": "enable_type_widening"
     },
     {

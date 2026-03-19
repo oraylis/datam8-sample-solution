@@ -42,33 +42,18 @@ stages:
                 file="$(ls -1 $(System.DefaultWorkingDirectory)/DataM8/ | grep .whl)"
                 command="pip install $(System.DefaultWorkingDirectory)/DataM8/$file"
                 eval $command
-          - task: ExtractFiles@1
-            displayName: Extract DataM8Validate
-            inputs:
-              archiveFilePatterns: "$(System.DefaultWorkingDirectory)/DataM8/DataM8Validate.linux-x64.zip"
-              destinationFolder: "$(System.DefaultWorkingDirectory)/DataM8/DataM8Validate"
-              cleanDestinationFolder: true
-              overwriteExistingFiles: false
           - task: Bash@3
-            displayName: Trigger Validator
+            displayName: Trigger dm8gen Validate
             inputs:
               targetType: "inline"
               script: |
-                chmod a+x ./Dm8Validate
-                ./Dm8Validate -f $(solutionPath)
-              workingDirectory: "$(System.DefaultWorkingDirectory)/DataM8/DataM8Validate/"
+                dm8gen validate -s "$(solutionPath)"
           - task: Bash@3
-            displayName: Trigger Dm8Data (Generator)
+            displayName: Trigger dm8gen Generate
             inputs:
               targetType: "inline"
-              script: >-
-                Dm8Data
-                -a generate_template
-                -s "$(solutionPath)"
-                -src ./Generate/databricks-lake
-                -dest ./Output
-                -m ./Generate/databricks-lake/__modules
-                -c ./Generate/databricks-lake/__collections
+              script: |
+                dm8gen generate databricks -s "$(solutionPath)" --clean-output
           - task: CopyFiles@2
             displayName: Copy Output to binaries
             inputs:

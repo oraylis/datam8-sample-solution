@@ -74,16 +74,16 @@
   ],
   "properties": [
     {
-      "property": "jobs",
-      "value": "sales_daily"
-    },
-    {
       "property": "write_mode",
       "value": "merge"
     },
     {
       "property": "data_retention",
       "value": "7_days"
+    },
+    {
+      "property": "jobs",
+      "value": "sales_daily"
     }
   ],
   "sources": [],
