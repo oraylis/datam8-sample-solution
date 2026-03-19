@@ -4,6 +4,8 @@
     {
       "id": 201,
       "name": "Sales",
+      "path": "020-Core/Sales",
+      "dataProduct": "Sales",
       "properties": [
         {
           "property": "business_area",

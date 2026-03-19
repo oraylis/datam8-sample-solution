@@ -4,6 +4,8 @@
     {
       "id": 401,
       "name": "Sales",
+      "path": "040-Consumer/Sales",
+      "dataProduct": "Sales",
       "properties": [
         {
           "property": "business_area",

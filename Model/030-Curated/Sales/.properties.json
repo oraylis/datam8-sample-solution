@@ -4,6 +4,8 @@
     {
       "id": 301,
       "name": "Sales",
+      "path": "030-Curated/Sales",
+      "dataProduct": "Sales",
       "properties": [
         {
           "property": "business_area",

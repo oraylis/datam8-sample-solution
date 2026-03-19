@@ -4,6 +4,9 @@
     {
       "id": 212,
       "name": "Other",
+      "path": "020-Core/Sales/Other",
+      "dataProduct": "Sales",
+      "dataModule": "Other",
       "properties": []
     }
   ]

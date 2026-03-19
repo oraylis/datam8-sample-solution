@@ -4,6 +4,8 @@
     {
       "id": 101,
       "name": "Sales",
+      "path": "010-Stage/Sales",
+      "dataProduct": "Sales",
       "properties": [
         {
           "property": "business_area",

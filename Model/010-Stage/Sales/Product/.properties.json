@@ -4,6 +4,9 @@
     {
       "id": 114,
       "name": "Product",
+      "path": "010-Stage/Sales/Product",
+      "dataProduct": "Sales",
+      "dataModule": "Product",
       "properties": []
     }
   ]

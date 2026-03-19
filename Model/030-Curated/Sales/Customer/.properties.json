@@ -4,6 +4,9 @@
     {
       "id": 311,
       "name": "Customer",
+      "path": "030-Curated/Sales/Customer",
+      "dataProduct": "Sales",
+      "dataModule": "Customer",
       "properties": []
     }
   ]
