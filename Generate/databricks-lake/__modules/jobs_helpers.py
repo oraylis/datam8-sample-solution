@@ -103,20 +103,20 @@ class JobsPlanner:
     that the payload layer later renders as YAML job definitions.
     """
 
-    ZONE_ORDER = ["raw", "stage", "core", "curated"]
-
-    def __init__(self, model: Model, resolver: MetadataResolver, *, modelled_zones: set[str]):
+    def __init__(self, model: Model, resolver: MetadataResolver):
         """Initialise the planner with the DM8 model and metadata resolver."""
         self.model = model
         self.resolver = resolver
-        self.modelled_zones = modelled_zones
-        raw_zone = resolver.zone_by_name("raw")
-        if raw_zone:
-            self.raw_zone_folder = resolver.zone_folder_name(raw_zone)
-            self.raw_zone_display = raw_zone.display_name or _zone_title(raw_zone.name)
+        self.zone_order = [zone.name for zone in resolver.zones()]
+        external_zone = resolver.default_external_zone()
+        if external_zone:
+            self.external_zone_name = external_zone.name
+            self.external_zone_folder = resolver.zone_folder_name(external_zone)
+            self.external_zone_display = external_zone.display_name or _zone_title(external_zone.name)
         else:
-            self.raw_zone_folder = "raw"
-            self.raw_zone_display = _zone_title("raw")
+            self.external_zone_name = "external"
+            self.external_zone_folder = "external"
+            self.external_zone_display = _zone_title("external")
 
     # ------------------------------------------------------------------ public
     def build(self) -> dict[str, Any]:
@@ -163,7 +163,7 @@ class JobsPlanner:
                 continue
 
             zone_meta = self.resolver.zone_from_folder(locator.folders[0])
-            if zone_meta is None or zone_meta.name not in self.modelled_zones:
+            if zone_meta is None or not self.resolver.is_model_backed_zone(zone_meta):
                 continue
 
             entity = wrapper.entity
@@ -222,7 +222,7 @@ class JobsPlanner:
                 )
             )
 
-            if not raw_sources or zone_meta.name == "raw":
+            if not raw_sources:
                 continue
 
             for index, raw_source in enumerate(raw_sources, start=1):
@@ -241,9 +241,9 @@ class JobsPlanner:
                         locator=locator,
                         name=raw_table_name,
                         display_name=raw_display,
-                        zone_name="raw",
-                        zone_folder=self.raw_zone_folder,
-                        zone_display=self.raw_zone_display,
+                        zone_name=self.external_zone_name,
+                        zone_folder=self.external_zone_folder,
+                        zone_display=self.external_zone_display,
                         product_dir=product_dir,
                         product_display=product_display,
                         module_dirs=module_dirs,
@@ -252,13 +252,13 @@ class JobsPlanner:
                         job_value=None,
                         job_config=None,
                         ddl_notebook=self._notebook_path(
-                            self.raw_zone_folder,
+                            self.external_zone_folder,
                             "ddl",
                             subfolders,
                             f"{raw_table_name}.py",
                         ),
                         dml_notebook=self._notebook_path(
-                            self.raw_zone_folder,
+                            self.external_zone_folder,
                             "dml",
                             subfolders,
                             f"{raw_table_name}.py",
@@ -280,7 +280,10 @@ class JobsPlanner:
         create_zones: list[dict[str, Any]] = []
         default_cluster_variable = self.resolver.default_cluster_variable_name()
 
-        for zone_name in self.ZONE_ORDER:
+        ordered_zone_names = self.zone_order + sorted(
+            [name for name in zone_map.keys() if name not in set(self.zone_order)]
+        )
+        for zone_name in ordered_zone_names:
             zone_modules = zone_map.get(zone_name, [])
             if not zone_modules:
                 continue
@@ -491,11 +494,11 @@ class JobsPlanner:
         seen_raw_keys: set[str] = set()
 
         for entity in entities:
-            if entity.zone_name != "stage":
+            if not entity.raw_sources:
                 continue
             for raw_source in sorted(entity.raw_sources, key=lambda src: (src.get("table_name") or entity.name).lower()):
                 table_name = raw_source.get("table_name") or entity.name
-                raw_key = self._task_key(["raw", entity.name, table_name])
+                raw_key = self._task_key([self.external_zone_name, entity.name, table_name])
                 if raw_key in seen_raw_keys:
                     raw_task_lookup[entity.entity_id].append(raw_key)
                     continue
@@ -559,7 +562,7 @@ class JobsPlanner:
     def _raw_notebook_path(self, entity: EntityJobInfo, table_name: str) -> str:
         """Return the relative path for a raw ingestion notebook."""
         stem = Path(table_name).stem if table_name else ""
-        parts = [self.raw_zone_folder, "dml", *entity.subfolders, stem]
+        parts = [self.external_zone_folder, "dml", *entity.subfolders, stem]
         return "/".join(part for part in parts if part)
 
     def _job_key(self, parts: list[str]) -> str:

@@ -139,7 +139,7 @@
       "dateAdded": "2025-03-28T16:16:38Z"
     },
     {
-      "ordinalNumber": 15,
+      "ordinalNumber": 12,
       "name": "GeaendertAm",
       "attributeType": "CreationDate",
       "dataType": {
@@ -150,7 +150,7 @@
       "dateAdded": "2025-03-28T16:16:38Z"
     },
     {
-      "ordinalNumber": 16,
+      "ordinalNumber": 13,
       "name": "KundenName",
       "attributeType": "Name",
       "dataType": {
@@ -182,7 +182,6 @@
       "dataSource": "AdventureWorks",
       "sourceAlias": "Customer_DE",
       "sourceLocation": "[SalesLT].[Customer_DE]",
-      "properties": [],
       "mapping": [
         {
           "sourceName": "KundenID",

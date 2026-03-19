@@ -41,9 +41,6 @@ from payload_helpers import (
 
 logger = start_logger(__name__)
 
-MODELLED_ZONES = {"stage", "core", "curated"}
-JOB_ZONES = MODELLED_ZONES | {"raw"}
-
 
 def _assignment_literal(column: str, expression: str) -> dict[str, str]:
     """Represent a merge assignment with a ready-to-use Python literal."""
@@ -110,7 +107,7 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             logger.warning("Zone metadata missing for folder '%s'. Skipping entity %s.", locator.folders[0], locator)
             continue
 
-        if zone_meta.name not in MODELLED_ZONES:
+        if not resolver.is_model_backed_zone(zone_meta):
             logger.debug("Skipping unsupported zone '%s' for Databricks DDL: %s", zone_meta.name, locator)
             continue
 
@@ -118,6 +115,7 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             resolver,
             locator,
         )
+        identifiers = resolver.modeled_table_identifiers(locator, entity.name)
 
         # Assemble shared metadata for the standard notebook.
         foreign_key_columns = resolver.foreign_key_columns(entity)
@@ -139,10 +137,10 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             columns.extend(scd2_tracking_columns)
         imports = collect_imports(columns)
         partitions = build_business_key_partitions(entity)
-        table_tags = merge_table_tags(entity, product_info, module_info)
+        table_tags = merge_table_tags(entity, product_info, module_info, resolver=resolver)
         table_properties = build_delta_table_properties(table_tags)
         table_tags_output = format_table_tag_values(table_tags)
-        column_tags = collect_column_tags(entity)
+        column_tags = collect_column_tags(entity, resolver=resolver)
         refactored_columns = collect_refactored_columns(entity)
         zone_folder_name = resolver.zone_folder_name(zone_meta)
         payloads.append(
@@ -153,7 +151,7 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                     "data_product": data_product_name,
                     "data_module": data_module_name,
                     "table_name": entity.name,
-                    "full_table_name": f"{data_product_name}_{data_module_name}_{entity.name}",
+                    "full_table_name": identifiers["full_table_name"],
                     "table_comment": entity.description or "",
                     "columns": columns,
                     "has_scd2_history": bool(history_config.get("scd2")),
@@ -183,12 +181,12 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
     resolver = MetadataResolver(model)
     payloads: list[IPayload] = []
 
-    raw_zone = resolver.zone_by_name("raw")
-    if raw_zone is None:
-        logger.warning("Raw zone metadata not found. Raw DDL notebooks will be skipped.")
+    external_zone = resolver.default_external_zone()
+    if external_zone is None:
+        logger.warning("No external zone without localFolderName found. External DDL notebooks will be skipped.")
         return payloads
 
-    raw_zone_folder = resolver.zone_folder_name(raw_zone)
+    external_zone_folder = resolver.zone_folder_name(external_zone)
 
     for locator, wrapper in model.modelEntities.items():
         entity = wrapper.entity
@@ -197,15 +195,17 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             logger.debug("Skipping entity without folder information: %s", locator)
             continue
 
-        column_tags = collect_column_tags(entity, include_attribute_tags=False)
+        column_tags = collect_column_tags(entity, resolver=resolver, include_attribute_tags=False)
         refactored_columns = collect_refactored_columns(entity)
-        product_info, module_info, data_product_name, data_module_name = _resolve_product_module_context(
+        product_info, module_info, _, _ = _resolve_product_module_context(
             resolver,
             locator,
         )
 
         for source, data_source_info in resolver.iter_external_sources(entity):
             identifiers = resolver.raw_table_identifiers(locator, source)
+            data_product_name = identifiers["data_product"]
+            data_module_name = identifiers["data_module"]
             raw_name = identifiers["table_name"]
             full_table_name = identifiers["full_table_name"]
             raw_columns = resolver.build_raw_columns(entity, source)
@@ -215,6 +215,7 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             entity_properties = resolver.entity_properties(entity)
 
             table_properties_input, table_display_tags = _build_raw_table_tag_inputs(
+                resolver=resolver,
                 product_info=product_info,
                 module_info=module_info,
                 entity_properties=entity_properties,
@@ -227,8 +228,8 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             payloads.append(
                 BasePayload(
                     data={
-                        "zone": raw_zone.name,
-                        "zone_display": raw_zone.display_name,
+                        "zone": external_zone.name,
+                        "zone_display": external_zone.display_name,
                         "data_source": getattr(source, "dataSource", ""),
                         "data_source_display": getattr(data_source_info, "displayName", None)
                         or getattr(source, "dataSource", ""),
@@ -248,7 +249,7 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                     },
                     output_path=Path(
                         "notebooks",
-                        raw_zone_folder,
+                        external_zone_folder,
                         "ddl",
                         *tuple(locator.folders[1:]),
                         f"{raw_name}.py",
@@ -261,10 +262,12 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
 
 @register_payload("dml_notebook.py.jinja2", order=2)
 def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Generate DML notebooks for modeled (non-raw) entities (stage/core/curated)."""
+    """Generate DML notebooks for zones backed by local model folders."""
     resolver = MetadataResolver(model)
     payloads: list[IPayload] = []
     locator_payload_key = "dml_transformations"
+    external_zone = resolver.default_external_zone()
+    source_zone_name = external_zone.name if external_zone else "external"
 
     for locator, wrapper in model.modelEntities.items():
         entity = wrapper.entity
@@ -277,10 +280,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             logger.warning("Zone metadata missing for folder '%s'. Skipping entity %s.", locator.folders[0], locator)
             continue
 
-        if zone_meta.name == "raw":
-            continue
-
-        if zone_meta.name not in MODELLED_ZONES:
+        if not resolver.is_model_backed_zone(zone_meta):
             logger.debug("Skipping unsupported zone '%s' for Databricks DML: %s", zone_meta.name, locator)
             continue
 
@@ -288,6 +288,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             resolver,
             locator,
         )
+        identifiers = resolver.modeled_table_identifiers(locator, entity.name)
         zone_folder_name = resolver.zone_folder_name(zone_meta)
 
         history_config = resolver.history_configuration(entity)
@@ -305,7 +306,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         surrogate_key_column_set = set(surrogate_key_columns)
 
         raw_sources = resolver.raw_sources(locator, entity)
-        stage_sources = _build_stage_sources(resolver, entity, raw_sources)
+        stage_sources = _build_stage_sources(resolver, entity, raw_sources, source_zone_name)
 
         transformations = resolver.collect_transformations(locator, entity)
         cache_key = (locator_payload_key, tuple(locator.folders), locator.entityName)
@@ -325,7 +326,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         elif stage_sources:
             source_mode = "raw_delta"
 
-        write_mode = resolver.write_mode(entity, product_info, module_info, default="overwrite")
+        write_mode = resolver.write_mode(locator, entity, default="overwrite")
         spark_write_mode = {"overwrite": "overwrite", "append": "append"}.get(write_mode, "overwrite")
         merge_conditions = [f"tgt.`{col}` <=> src.`{col}`" for col in business_keys]
         merge_condition_flat = " AND ".join(merge_conditions) if merge_conditions else ""
@@ -395,7 +396,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             "data_product": data_product_name,
             "data_module": data_module_name,
             "table_name": entity.name,
-            "full_table_name": f"{data_product_name}_{data_module_name}_{entity.name}",
+            "full_table_name": identifiers["full_table_name"],
             "history": history_config,
             "write_mode": write_mode,
             "spark_write_mode": spark_write_mode,
@@ -444,15 +445,15 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
 
 @register_payload("dml_notebook_raw.py.jinja2", order=2)
 def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Generate DML notebooks for raw entities / external sources."""
+    """Generate DML notebooks for external-source ingestion zones."""
     resolver = MetadataResolver(model)
     payloads: list[IPayload] = []
-    raw_zone = resolver.zone_by_name("raw")
-    if raw_zone is None:
-        logger.warning("Raw zone metadata not found. Raw DML notebooks will be skipped.")
+    external_zone = resolver.default_external_zone()
+    if external_zone is None:
+        logger.warning("No external zone without localFolderName found. External DML notebooks will be skipped.")
         return payloads
 
-    raw_zone_folder = resolver.zone_folder_name(raw_zone)
+    external_zone_folder = resolver.zone_folder_name(external_zone)
 
     for locator, wrapper in model.modelEntities.items():
         entity = wrapper.entity
@@ -467,7 +468,7 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             data_source_name = raw_source["data_source"]
             source_alias = raw_source.get("source_alias") or raw_name
             properties = raw_source.get("properties", {})
-            data_source_entry = resolver.data_sources.get(data_source_name)
+            data_source_entry = resolver.data_sources.get(str(data_source_name).strip().lower())
             driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
             if getattr(data_source_entry, "type", None) == "SynapseDataSource":
                 driver = "com.databricks.spark.sqldw"
@@ -487,8 +488,8 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             data_source_type = raw_source.get("source_type") or getattr(data_source_entry, "type", None)
 
             data = {
-                "zone": raw_zone.name,
-                "zone_display": raw_zone.display_name,
+                "zone": external_zone.name,
+                "zone_display": external_zone.display_name,
                 "data_source": data_source_name,
                 "data_source_display": getattr(data_source_entry, "displayName", None) or data_source_name,
                 "data_source_type": data_source_type,
@@ -514,7 +515,7 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                     data=data,
                     output_path=Path(
                         "notebooks",
-                        raw_zone_folder,
+                        external_zone_folder,
                         "dml",
                         *tuple(locator.folders[1:]),
                         f"{raw_name}.py",
@@ -537,7 +538,7 @@ def generate_dml_function_scripts(model: Model, cache: Cache) -> Sequence[IPaylo
             continue
 
         zone_meta = resolver.zone_from_folder(locator.folders[0])
-        if zone_meta is None or zone_meta.name not in MODELLED_ZONES:
+        if zone_meta is None or not resolver.is_model_backed_zone(zone_meta):
             continue
 
         cache_key = (locator_payload_key, tuple(locator.folders), locator.entityName)
@@ -576,10 +577,7 @@ def generate_schema_resources(model: Model, cache: Cache) -> Sequence[IPayload]:
     """Emit Databricks bundle schema definitions for every configured zone."""
     resolver = MetadataResolver(model)
     schemas = []
-    allowed_zone_names = JOB_ZONES
     for zone in resolver.zones():
-        if zone.name.lower() not in allowed_zone_names:
-            continue
         target_name = zone.target_name or zone.name
         resource_slug = re.sub(r"[^A-Za-z0-9]+", "_", target_name or zone.name).strip("_").lower()
         if not resource_slug:
@@ -659,7 +657,7 @@ def _get_jobs_plan(model: Model, cache: Cache) -> dict[str, Any]:
         return cache.get(cache_key)
     except KeyError:
         resolver = MetadataResolver(model)
-        planner = JobsPlanner(model, resolver, modelled_zones=JOB_ZONES)
+        planner = JobsPlanner(model, resolver)
         plan = planner.build()
         cache.set(cache_key, plan)
         return plan
