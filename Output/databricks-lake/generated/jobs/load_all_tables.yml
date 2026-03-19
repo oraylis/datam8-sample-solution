@@ -22,11 +22,6 @@ resources:
         - group_name: ${var.permission_group_name}
           level: "CAN_MANAGE_RUN"
 
-      schedule:
-        quartz_cron_expression: 0 1 0 * * ?
-        timezone_id: Europe/Amsterdam
-        pause_status: ${var.unpause_schedules}
-
       tasks:
 
         - task_key: Load_sales_daily

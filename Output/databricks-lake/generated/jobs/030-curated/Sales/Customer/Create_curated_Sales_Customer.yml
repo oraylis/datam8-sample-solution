@@ -35,6 +35,15 @@ resources:
             source: WORKSPACE
           job_cluster_key: cluster_extra_small
 
+        - task_key: curated_sales_customer_dimdate
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/ddl/Sales/Customer/DimDate
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
         - task_key: curated_sales_customer_factsalesorder
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/ddl/Sales/Customer/FactSalesOrder

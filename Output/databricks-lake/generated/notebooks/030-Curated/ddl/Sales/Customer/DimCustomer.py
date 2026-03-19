@@ -238,7 +238,7 @@ table_instance.owner = owner
 
 # DBTITLE 1,Set table & column tags
 # table attributes
-table_instance.set_table_tags({'business_area': 'sales', 'write_mode': 'merge', 'jobs': 'sales_weekly', 'data_retention': '7_days'})
+table_instance.set_table_tags({'business_area': 'sales', 'jobs': 'sales_weekly', 'write_mode': 'merge', 'data_retention': '7_days'})
 
 # column attributes
 table_instance.set_column_tags("CustomerSID", {'attribute_type': 'SK'})

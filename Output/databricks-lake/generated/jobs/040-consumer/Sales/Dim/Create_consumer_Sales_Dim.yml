@@ -1,7 +1,7 @@
 resources:
   jobs:
-    Create_curated_Sales_Date:
-      name: Create Curated Analytics Layer Date
+    Create_consumer_Sales_Dim:
+      name: Create Consumer Tabular Layer Dim
       max_concurrent_runs: 1
       parameters:
         - name: environment
@@ -26,9 +26,27 @@ resources:
           new_cluster: ${var.cluster_extra_small}
       tasks:
 
-        - task_key: curated_sales_date_dimdate
+        - task_key: consumer_sales_dim_customer
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/ddl/Sales/Date/DimDate
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/040-Consumer/ddl/Sales/Dim/Customer
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: consumer_sales_dim_date
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/040-Consumer/ddl/Sales/Dim/Date
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: consumer_sales_dim_measure
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/040-Consumer/ddl/Sales/Dim/Measure
             base_parameters:
               replication_integration_status_id: '1'
               execution_status_id: '1'

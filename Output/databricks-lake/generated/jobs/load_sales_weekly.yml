@@ -25,11 +25,6 @@ resources:
         - job_cluster_key: cluster_extra_small
           new_cluster: ${var.cluster_extra_small}
 
-      schedule:
-        quartz_cron_expression: 0 1 0 * * ?
-        timezone_id: Europe/Amsterdam
-        pause_status: ${var.unpause_schedules}
-
       tasks:
         - task_key: Start_Load
           notebook_task:
@@ -56,11 +51,11 @@ resources:
             source: WORKSPACE
           job_cluster_key: cluster_extra_small
 
-        - task_key: curated_sales_date_dimdate
+        - task_key: curated_sales_customer_dimdate
           depends_on:
             - task_key: Start_Load
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/dml/Sales/Date/DimDate
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/dml/Sales/Customer/DimDate
             base_parameters:
               replication_integration_status_id: '1'
               execution_status_id: '1'
@@ -82,7 +77,7 @@ resources:
         - task_key: Complete_Load
           depends_on:
             - task_key: curated_sales_customer_dimcustomer
-            - task_key: curated_sales_date_dimdate
+            - task_key: curated_sales_customer_dimdate
             - task_key: curated_sales_customer_factsalesorder
           run_if: ALL_DONE
           notebook_task:

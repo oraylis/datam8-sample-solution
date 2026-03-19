@@ -89,7 +89,7 @@ catalog.set_active()
 database_connectionstring = dbutils.secrets.get(scope=keyvault_name, key="datasource-OracleDev-connectionstring")
 source_location = "DATAM8.DIMTIME"
 extract_mode = ("full").lower()
-data_source_type = "OracleDataSource"
+data_source_type = ""
 column_renames = []
 delta_column_details = []
 target_columns = ["TIMEKEY", "FULLDATEALTERNATEKEY", "DAYNUMBEROFWEEK", "ENGLISHDAYNAMEOFWEEK", "SPANISHDAYNAMEOFWEEK", "FRENCHDAYNAMEOFWEEK", "DAYNUMBEROFMONTH", "DAYNUMBEROFYEAR", "WEEKNUMBEROFYEAR", "ENGLISHMONTHNAME", "SPANISHMONTHNAME", "FRENCHMONTHNAME", "MONTHNUMBEROFYEAR", "CALENDARQUARTER", "CALENDARYEAR", "CALENDARSEMESTER", "FISCALQUARTER", "FISCALYEAR", "FISCALSEMESTER"]

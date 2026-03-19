@@ -19,3 +19,8 @@ resources:
       name: gold
       catalog_name: ${var.catalog_name}
       comment: "Curated Analytics Layer"
+
+    schema_platin:
+      name: platin
+      catalog_name: ${var.catalog_name}
+      comment: "Consumer Tabular Layer"

@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DDL for raw.TestFolder_TestFolder2_dbo_BuildVersion
+# MAGIC # DDL for consumer.Sales_Dim_Measure
 
 # COMMAND ----------
 
@@ -59,11 +59,11 @@ job_run_id = dbutils.widgets.get("job_run_id")
 # sandbox = dbutils.widgets.get("sandbox")
 
 # static values
-zone = "raw"
-data_source = "AdventureWorks"
-data_source_display = "Adventure Works Demo Database"
-source_name = "dbo_BuildVersion"
-full_table_name = "TestFolder_TestFolder2_dbo_BuildVersion"
+zone = "consumer"
+data_product = "Sales"
+data_module = "Dim"
+table_name = "Measure"
+full_table_name = "Sales_Dim_Measure"
 
 # COMMAND ----------
 
@@ -72,9 +72,8 @@ print("Catalog: %s" % catalog_name)
 print("Schema: %s" % zone)
 print("Table: %s" % full_table_name)
 print("Owner: %s" % owner)
-print("Data Source: %s" % data_source)
-print("Data Source Display: %s" % data_source_display)
-print("Source Name: %s" % source_name)
+print("Data Product: %s" % data_product)
+print("Data Module: %s" % data_module)
 # print("Mode: %s" % run_mode)
 
 # COMMAND ----------
@@ -95,25 +94,16 @@ table_name = f"{catalog_name}.{zone}.{full_table_name}"
 table_comment = ""
 
 schema = StructType([
-    StructField("__Year", DataType.fromDDL("SMALLINT"), False),
-    StructField("__Month", DataType.fromDDL("SMALLINT"), False),
-    StructField("__Day", DataType.fromDDL("SMALLINT"), False),
-    StructField("__InsertTimestampUTC", DataType.fromDDL("TIMESTAMP"), False),
-    StructField("SystemInformationID", DataType.fromDDL("TINYINT"), False),
-    StructField("Database Version", DataType.fromDDL("STRING"), False),
-    StructField("VersionDate", DataType.fromDDL("TIMESTAMP"), False),
-    StructField("ModifiedDate", DataType.fromDDL("TIMESTAMP"), False),
+    StructField("__InsertTimestampUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'Load timestamp (UTC)'}),
+    StructField("__UpdateTimestampUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'Last update timestamp (UTC)'}),
+    StructField("__BusinessFunction", DataType.fromDDL("STRING"), False, metadata={'comment': 'Business function marker'}),
+    StructField("Total Costs (EUR)", DataType.fromDDL("BIGINT"), False),
 ])
 
 # COMMAND ----------
 
 # DBTITLE 1,Define partitions
-partitions = [
-    "__Year",
-    "__Month",
-    "__Day",
-    "__InsertTimestampUTC",
-]
+partitions = []
 
 # COMMAND ----------
 
@@ -214,6 +204,6 @@ table_instance.owner = owner
 
 # DBTITLE 1,Set table & column tags
 # table attributes
-table_instance.set_table_tags({})
+table_instance.set_table_tags({'business_area': 'sales', 'jobs': 'sales_daily', 'write_mode': 'merge'})
 
 # column attributes

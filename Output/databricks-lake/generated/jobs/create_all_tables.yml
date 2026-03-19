@@ -65,3 +65,15 @@ resources:
             - task_key: Create_core_tables
 
 
+
+        - task_key: Create_consumer_tables
+
+          run_job_task:
+            job_id: ${resources.jobs.Create_consumer_tables.id}
+
+
+          depends_on:
+
+            - task_key: Create_curated_tables
+
+

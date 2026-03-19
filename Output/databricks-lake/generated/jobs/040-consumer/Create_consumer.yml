@@ -1,7 +1,7 @@
 resources:
   jobs:
-    Create_curated_tables:
-      name: Create Curated Tables
+    Create_consumer_tables:
+      name: Create Consumer Tables
       max_concurrent_runs: 1
       parameters:
         - name: environment
@@ -23,7 +23,17 @@ resources:
           level: "CAN_MANAGE_RUN"
       tasks:
 
-        - task_key: Create_curated_Sales_Customer
+        - task_key: Create_consumer_Sales_Dim
           run_job_task:
-            job_id: ${resources.jobs.Create_curated_Sales_Customer.id}
+            job_id: ${resources.jobs.Create_consumer_Sales_Dim.id}
+
+
+        - task_key: Create_consumer_Sales_Fact
+          run_job_task:
+            job_id: ${resources.jobs.Create_consumer_Sales_Fact.id}
+
+          depends_on:
+
+            - task_key: Create_consumer_Sales_Dim
+
 

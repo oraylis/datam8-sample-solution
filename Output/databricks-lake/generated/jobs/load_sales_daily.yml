@@ -25,11 +25,6 @@ resources:
         - job_cluster_key: cluster_small
           new_cluster: ${var.cluster_small}
 
-      schedule:
-        quartz_cron_expression: 0 1 0 * * ?
-        timezone_id: Europe/Amsterdam
-        pause_status: ${var.unpause_schedules}
-
       tasks:
         - task_key: Start_Load
           notebook_task:
@@ -176,6 +171,52 @@ resources:
             source: WORKSPACE
           job_cluster_key: cluster_small
 
+
+        - task_key: consumer_sales_dim_customer
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/040-Consumer/dml/Sales/Dim/Customer
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: consumer_sales_dim_date
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/040-Consumer/dml/Sales/Dim/Date
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: consumer_sales_dim_measure
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/040-Consumer/dml/Sales/Dim/Measure
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: consumer_sales_fact_sales_order
+          depends_on:
+            - task_key: Start_Load
+            - task_key: consumer_sales_dim_customer
+            - task_key: consumer_sales_dim_date
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/040-Consumer/dml/Sales/Fact/Sales Order
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_small
 
         - task_key: core_sales_other_address
           depends_on:
@@ -348,6 +389,10 @@ resources:
 
         - task_key: Complete_Load
           depends_on:
+            - task_key: consumer_sales_dim_customer
+            - task_key: consumer_sales_dim_date
+            - task_key: consumer_sales_dim_measure
+            - task_key: consumer_sales_fact_sales_order
             - task_key: core_sales_other_address
             - task_key: stage_sales_other_address
             - task_key: stage_sales_customer_customer

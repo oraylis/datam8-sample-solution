@@ -112,7 +112,7 @@ schema = StructType([
     StructField("SellStartDate", DataType.fromDDL("TIMESTAMP"), False),
     StructField("SellEndDate", DataType.fromDDL("TIMESTAMP"), True),
     StructField("DiscontinuedDate", DataType.fromDDL("TIMESTAMP"), True),
-    StructField("ThumbNailPhoto", DataType.fromDDL("BINARY"), True),
+    StructField("ThumbNailPhoto", DataType.fromDDL("STRING"), True),
     StructField("ThumbnailPhotoFileName", DataType.fromDDL("STRING"), True),
     StructField("rowguid", DataType.fromDDL("STRING"), False),
     StructField("ModifiedDate", DataType.fromDDL("TIMESTAMP"), False),

@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DDL for core.Sales_Customer_CustomerAddress
+# MAGIC # DDL for consumer.Sales_Dim_Customer
 
 # COMMAND ----------
 
@@ -59,11 +59,11 @@ job_run_id = dbutils.widgets.get("job_run_id")
 # sandbox = dbutils.widgets.get("sandbox")
 
 # static values
-zone = "core"
+zone = "consumer"
 data_product = "Sales"
-data_module = "Customer"
-table_name = "CustomerAddress"
-full_table_name = "Sales_Customer_CustomerAddress"
+data_module = "Dim"
+table_name = "Customer"
+full_table_name = "Sales_Dim_Customer"
 
 # COMMAND ----------
 
@@ -91,32 +91,29 @@ catalog.set_active()
 
 # DBTITLE 1,Define schema
 table_name = f"{catalog_name}.{zone}.{full_table_name}"
-table_comment = "Core customer address relationship entity"
+table_comment = "Customer dimension with personal and address information"
 
 schema = StructType([
     StructField("__InsertTimestampUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'Load timestamp (UTC)'}),
     StructField("__UpdateTimestampUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'Last update timestamp (UTC)'}),
     StructField("__BusinessFunction", DataType.fromDDL("STRING"), False, metadata={'comment': 'Business function marker'}),
-    StructField("_CustomerAddressBK", DataType.fromDDL("STRING"), False, metadata={'business_key': True}),
-    StructField("_CustomerAddressSID", DataType.fromDDL("BIGINT"), False, metadata={'surrogate_key': True}),
-    StructField("AddressID", DataType.fromDDL("INT"), False),
-    StructField("CustomerID", DataType.fromDDL("INT"), False),
-    StructField("AddressType", DataType.fromDDL("STRING"), False),
+    StructField("CustomerSID", DataType.fromDDL("BIGINT"), False, metadata={'comment': 'Customer surrogate key', 'business_key': True}),
+    StructField("First Name", DataType.fromDDL("STRING"), True, metadata={'comment': 'First name of the customer'}),
+    StructField("Display Name", DataType.fromDDL("STRING"), True, metadata={'comment': 'Customer display name'}),
+    StructField("Last Name", DataType.fromDDL("STRING"), True, metadata={'comment': 'Customer last name'}),
 ])
 
 # COMMAND ----------
 
 # DBTITLE 1,Define partitions
 partitions = [
-    "_CustomerAddressBK",
+    "CustomerSID",
 ]
 
 # COMMAND ----------
 
 # DBTITLE 1,Define table properties
 tblproperties_parts = {
-    "delta.logRetentionDuration": "interval 7 days",
-    "delta.deletedFileRetentionDuration": "interval 7 days",
 }
 
 tblproperties_sql = ', '.join([f"'{key}'='{value}'" for key, value in tblproperties_parts.items()])
@@ -183,22 +180,15 @@ spark.sql(create_sql)
 # DBTITLE 1,Define refactored columns
 refactored_columns = [
     {
-        "name": "_CustomerAddressBK",
+        "name": "CustomerSID",
         "refactorNames": [
-            "_CustomerBK",
+            "_CustomerSID",
         ]
     },
     {
-        "name": "CustomerID",
+        "name": "Display Name",
         "refactorNames": [
-            "CustomerBK",
-        ]
-    },
-    {
-        "name": "AddressType",
-        "refactorNames": [
-            "AddressType",
-            "AddressTypeName",
+            "CustomerName",
         ]
     },
 ]
@@ -231,7 +221,6 @@ table_instance.owner = owner
 
 # DBTITLE 1,Set table & column tags
 # table attributes
-table_instance.set_table_tags({'business_area': 'sales', 'jobs': 'sales_daily', 'write_mode': 'merge', 'data_retention': '7_days'})
+table_instance.set_table_tags({'business_area': 'sales', 'jobs': 'sales_daily', 'write_mode': 'merge'})
 
 # column attributes
-table_instance.set_column_tags("_CustomerAddressSID", {'attribute_type': 'SK'})

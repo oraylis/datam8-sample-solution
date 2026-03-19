@@ -1,7 +1,7 @@
 resources:
   jobs:
-    Create_curated_tables:
-      name: Create Curated Tables
+    Create_consumer_Sales_Fact:
+      name: Create Consumer Tabular Layer Fact
       max_concurrent_runs: 1
       parameters:
         - name: environment
@@ -21,9 +21,16 @@ resources:
           level: "CAN_MANAGE_RUN"
         - group_name: ${var.permission_group_name}
           level: "CAN_MANAGE_RUN"
+      job_clusters:
+        - job_cluster_key: cluster_extra_small
+          new_cluster: ${var.cluster_extra_small}
       tasks:
 
-        - task_key: Create_curated_Sales_Customer
-          run_job_task:
-            job_id: ${resources.jobs.Create_curated_Sales_Customer.id}
-
+        - task_key: consumer_sales_fact_sales_order
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/040-Consumer/ddl/Sales/Fact/Sales Order
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small

@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DML for curated.Sales_Date_DimDate
+# MAGIC # DML for curated.Sales_Customer_DimDate
 # MAGIC History configuration of this entity
 # MAGIC - __Business Key Columns__: ['DateID']
 # MAGIC - __SCD0 columns__: []
@@ -51,7 +51,7 @@ job_run_id = dbutils.widgets.get("job_run_id")
 MAX_VALID_TO_DATE = "9999-12-31"
 zone = "curated"
 data_product = "Sales"
-data_module = "Date"
+data_module = "Customer"
 table_name = "DimDate"
 full_table_name = "%s_%s_%s" % (data_product, data_module, table_name)
 
