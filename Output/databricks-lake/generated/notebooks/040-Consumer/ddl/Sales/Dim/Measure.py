@@ -204,6 +204,6 @@ table_instance.owner = owner
 
 # DBTITLE 1,Set table & column tags
 # table attributes
-table_instance.set_table_tags({'business_area': 'sales', 'jobs': 'sales_daily', 'write_mode': 'merge'})
+table_instance.set_table_tags({'business_area': 'sales', 'jobs': 'sales_daily'})
 
 # column attributes

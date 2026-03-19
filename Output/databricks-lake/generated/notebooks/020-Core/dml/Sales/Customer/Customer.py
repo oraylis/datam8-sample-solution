@@ -129,52 +129,15 @@ final_df = final_df.withColumns({
 # MAGIC ## Write into target table
 
 # COMMAND ----------
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### Prepare merge statement
-
-# COMMAND ----------
-
-target_table = DeltaTable.forName(spark, table_name_ref)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### Execute merge
-
-# COMMAND ----------
-merge_builder = (
-    target_table.alias("tgt")
-    .merge(
-        final_df.alias("src"),
-        "tgt.`KundenNummer` <=> src.`KundenNummer`",
-    )
+final_write_df = final_df.select(
+    "__InsertTimestampUTC", 
+    "__UpdateTimestampUTC", 
+    "__BusinessFunction", 
+    "KundenNummer", 
+    "Vorname", 
+    "Nachname", 
+    "AddressType"
 )
-merge_builder = merge_builder.whenMatchedUpdate(
-    condition="""
-        NOT (tgt.`Vorname` <=> src.`Vorname`) OR NOT (tgt.`Nachname` <=> src.`Nachname`) OR NOT (tgt.`AddressType` <=> src.`AddressType`)
-    """,
-    set={
-        "Vorname": 'src.`Vorname`', 
-        "Nachname": 'src.`Nachname`', 
-        "AddressType": 'src.`AddressType`', 
-        "__UpdateTimestampUTC": 'src.__UpdateTimestampUTC'
-    },
-)
-merge_builder = merge_builder.whenNotMatchedInsert(
-    values={
-        "__InsertTimestampUTC": 'src.__InsertTimestampUTC', 
-        "__UpdateTimestampUTC": 'src.__UpdateTimestampUTC', 
-        "__BusinessFunction": 'src.__BusinessFunction', 
-        "KundenNummer": 'src.`KundenNummer`', 
-        "Vorname": 'src.`Vorname`', 
-        "Nachname": 'src.`Nachname`', 
-        "AddressType": 'src.`AddressType`'
-    },
-)
-result = merge_builder.execute()
-print(result)
+final_write_df.write.saveAsTable(table_name_ref, mode="overwrite")
 
 # COMMAND ----------

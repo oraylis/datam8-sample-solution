@@ -40,22 +40,23 @@ resources:
                 coordinates: com.oracle.database.jdbc:ojdbc10:19.29.0.0
 
 
-        - task_key: curated_sales_customer_dimcustomer
+        - task_key: core_sales_customer_customer
           depends_on:
             - task_key: Start_Load
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/dml/Sales/Customer/DimCustomer
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/dml/Sales/Customer/Customer
             base_parameters:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
           job_cluster_key: cluster_extra_small
 
-        - task_key: curated_sales_customer_dimdate
+        - task_key: curated_sales_customer_dimcustomer
           depends_on:
             - task_key: Start_Load
+            - task_key: core_sales_customer_customer
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/dml/Sales/Customer/DimDate
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/dml/Sales/Customer/DimCustomer
             base_parameters:
               replication_integration_status_id: '1'
               execution_status_id: '1'
@@ -76,8 +77,8 @@ resources:
 
         - task_key: Complete_Load
           depends_on:
+            - task_key: core_sales_customer_customer
             - task_key: curated_sales_customer_dimcustomer
-            - task_key: curated_sales_customer_dimdate
             - task_key: curated_sales_customer_factsalesorder
           run_if: ALL_DONE
           notebook_task:
