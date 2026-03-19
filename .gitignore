@@ -1,5 +1,6 @@
 # DataM8 local files
 datam8.user
+# Legacy artifact (must not be used in workflows)
 index.json
 
 # Python environment local files
