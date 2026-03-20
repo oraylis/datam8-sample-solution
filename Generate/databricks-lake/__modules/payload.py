@@ -166,7 +166,7 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                     "notebooks",
                     zone_folder_name,
                     "ddl",
-                    *tuple(locator.folders[1:]),
+                    *resolver.output_folder_segments(locator),
                     f"{locator.entityName or entity.name}.py",
                 ),
             )
@@ -251,7 +251,7 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                         "notebooks",
                         external_zone_folder,
                         "ddl",
-                        *tuple(locator.folders[1:]),
+                        *resolver.output_folder_segments(locator),
                         f"{raw_name}.py",
                     ),
                 )
@@ -434,7 +434,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                     "notebooks",
                     zone_folder_name,
                     "dml",
-                    *tuple(locator.folders[1:]),
+                    *resolver.output_folder_segments(locator),
                     f"{locator.entityName or entity.name}.py",
                 ),
             )
@@ -517,7 +517,7 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                         "notebooks",
                         external_zone_folder,
                         "dml",
-                        *tuple(locator.folders[1:]),
+                        *resolver.output_folder_segments(locator),
                         f"{raw_name}.py",
                     ),
                 )
@@ -562,7 +562,7 @@ def generate_dml_function_scripts(model: Model, cache: Cache) -> Sequence[IPaylo
                         "notebooks",
                         zone_folder_name,
                         "dml",
-                        *tuple(locator.folders[1:]),
+                        *resolver.output_folder_segments(locator),
                         f"{locator.entityName}_functions",
                         transformation["script_name"],
                     ),

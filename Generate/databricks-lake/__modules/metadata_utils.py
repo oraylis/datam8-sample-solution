@@ -808,6 +808,32 @@ class MetadataResolver:
             return ()
         return tuple(locator.folders[1:])
 
+    def output_folder_segments(self, locator) -> tuple[str, ...]:
+        """
+        Return folder segments for generated output paths.
+
+        The method prefers inherited dataProduct/dataModule attributes and falls back
+        to the existing folder hierarchy when attributes are missing.
+        """
+        segments = list(self._folders_after_zone(locator))
+        product_name, module_name = self.inherited_product_module_values(locator)
+
+        if product_name:
+            if segments:
+                segments[0] = product_name
+            else:
+                segments.append(product_name)
+
+        if module_name:
+            if len(segments) >= 2:
+                segments[1] = module_name
+            elif len(segments) == 1:
+                segments.append(module_name)
+            else:
+                segments.extend(["UnknownProduct", module_name])
+
+        return tuple(segment for segment in segments if segment)
+
     def _folder_chain(self, locator) -> list[FolderInfo]:
         """Return folder metadata for each ancestor after the zone."""
         folders = getattr(locator, "folders", None) or []
