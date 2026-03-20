@@ -13,6 +13,7 @@ include:
 sync:
   include:
     - utils/
+    - connectors/
 
 # all defaults are preset with dev values
 variables:

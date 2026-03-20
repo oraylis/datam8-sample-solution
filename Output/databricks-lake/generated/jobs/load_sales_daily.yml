@@ -48,6 +48,8 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/connectors/datam8_plugin_sqlserver-0.1.0-py3-none-any.whl
           job_cluster_key: cluster_small
 
         - task_key: raw_customer_customer_en
@@ -59,6 +61,8 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/connectors/datam8_plugin_sqlserver-0.1.0-py3-none-any.whl
           job_cluster_key: cluster_small
 
         - task_key: raw_customeraddress_customeraddress
@@ -70,6 +74,8 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/connectors/datam8_plugin_sqlserver-0.1.0-py3-none-any.whl
           job_cluster_key: cluster_small
 
         - task_key: raw_dimtime_dimtime
@@ -81,6 +87,8 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/connectors/datam8_plugin_oracle-0.1.0-py3-none-any.whl
           job_cluster_key: cluster_small
 
         - task_key: raw_salesorderdetail_salesorderdetail
@@ -92,6 +100,8 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/connectors/datam8_plugin_sqlserver-0.1.0-py3-none-any.whl
           job_cluster_key: cluster_small
 
         - task_key: raw_salesorderheader_salesorderheader
@@ -103,6 +113,8 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/connectors/datam8_plugin_sqlserver-0.1.0-py3-none-any.whl
           job_cluster_key: cluster_small
 
         - task_key: raw_address_address
@@ -114,6 +126,8 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/connectors/datam8_plugin_sqlserver-0.1.0-py3-none-any.whl
           job_cluster_key: cluster_small
 
         - task_key: raw_product_product
@@ -125,6 +139,8 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/connectors/datam8_plugin_sqlserver-0.1.0-py3-none-any.whl
           job_cluster_key: cluster_small
 
         - task_key: raw_productcategory_productcategory
@@ -136,6 +152,8 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/connectors/datam8_plugin_sqlserver-0.1.0-py3-none-any.whl
           job_cluster_key: cluster_small
 
         - task_key: raw_productdescription_productdescription
@@ -147,6 +165,8 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/connectors/datam8_plugin_sqlserver-0.1.0-py3-none-any.whl
           job_cluster_key: cluster_small
 
         - task_key: raw_productmodel_productmodel
@@ -158,6 +178,8 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/connectors/datam8_plugin_sqlserver-0.1.0-py3-none-any.whl
           job_cluster_key: cluster_small
 
         - task_key: raw_productmodelproductdescription_productmodelproductdescription
@@ -169,6 +191,8 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/connectors/datam8_plugin_sqlserver-0.1.0-py3-none-any.whl
           job_cluster_key: cluster_small
 
 
