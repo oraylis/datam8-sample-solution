@@ -511,7 +511,7 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 "is_query": is_query,
                 "extract_mode": extract_mode,
                 "driver": driver,
-                "connection_secret_key": f"datasource-{data_source_name}-connectionstring",
+                "connection_secret_key": f"datasource-{data_source_name}-password",
                 "mapping": raw_source.get("mapping"),
                 "mapping_entries": mapping_entries,
                 "select_columns": mapping_projection["select_columns"],

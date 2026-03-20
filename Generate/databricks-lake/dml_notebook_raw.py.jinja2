@@ -98,6 +98,10 @@ data_source_type = "{{ data.data_source_type or '' }}"
 column_renames = {{ data.column_renames | default([], true) | tojson }}
 delta_column_details = {{ data.delta_column_details | default([], true) | tojson }}
 target_columns = {{ data.target_columns | default([], true) | tojson }}
+{% if data.use_connector %}
+props = {{ data.data_source_extended_properties | default({}, true) | tojson }}
+props["password"] = connection_secret
+{% endif %}
 
 # COMMAND ----------
 
@@ -144,10 +148,7 @@ pushdown_query = f"""
 {% endif %}
 print(f"Query: {pushdown_query}")
 table_df = Connector.extract_data(
-    {
-        **{{ data.data_source_extended_properties | default({}, true) | tojson }},
-        "password": connection_secret,
-    },
+    props,
     {
         "query": pushdown_query,
         "options": {},
