@@ -10,10 +10,10 @@
       "attributeType": "ID",
       "dataType": {
         "type": "int",
-        "nullable": true
+        "nullable": false
       },
       "isBusinessKey": true,
-      "dateModified": "2025-03-28T16:16:38Z",
+      "dateModified": "2026-03-20T11:44:09Z",
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
@@ -143,9 +143,10 @@
       "name": "ThumbNailPhoto",
       "attributeType": "ID",
       "dataType": {
-        "type": "binary",
+        "type": "string",
         "nullable": true
       },
+      "dateModified": "2026-03-20T11:44:09Z",
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
@@ -210,7 +211,7 @@
           "targetName": "ProductID",
           "sourceDataType": {
             "type": "int",
-            "nullable": true
+            "nullable": false
           }
         },
         {
@@ -319,7 +320,7 @@
           "sourceName": "ThumbNailPhoto",
           "targetName": "ThumbNailPhoto",
           "sourceDataType": {
-            "type": "binary",
+            "type": "varbinary",
             "nullable": true
           }
         },

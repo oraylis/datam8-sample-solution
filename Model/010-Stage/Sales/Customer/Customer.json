@@ -11,10 +11,10 @@
       "attributeType": "ID",
       "dataType": {
         "type": "int",
-        "nullable": true
+        "nullable": false
       },
       "isBusinessKey": true,
-      "dateModified": "2025-03-28T16:16:38Z",
+      "dateModified": "2026-03-20T11:44:07Z",
       "dateAdded": "2025-03-28T16:16:38Z",
       "properties": [
         {
@@ -188,7 +188,7 @@
           "targetName": "KundenID",
           "sourceDataType": {
             "type": "int",
-            "nullable": true
+            "nullable": false
           }
         },
         {
@@ -284,7 +284,7 @@
           "sourceName": "PasswordHash",
           "targetName": "PasswordHash",
           "sourceDataType": {
-            "type": "nvarchar",
+            "type": "varchar",
             "nullable": false,
             "charLen": 128
           }
@@ -293,7 +293,7 @@
           "sourceName": "PasswordSalt",
           "targetName": "PasswordSalt",
           "sourceDataType": {
-            "type": "nvarchar",
+            "type": "varchar",
             "nullable": false,
             "charLen": 10
           }
@@ -332,7 +332,7 @@
           "targetName": "KundenID",
           "sourceDataType": {
             "type": "int",
-            "nullable": true
+            "nullable": false
           }
         },
         {
@@ -428,7 +428,7 @@
           "sourceName": "PasswordHash",
           "targetName": "PasswordHash",
           "sourceDataType": {
-            "type": "nvarchar",
+            "type": "varchar",
             "nullable": false,
             "charLen": 128
           }
@@ -437,7 +437,7 @@
           "sourceName": "PasswordSalt",
           "targetName": "PasswordSalt",
           "sourceDataType": {
-            "type": "nvarchar",
+            "type": "varchar",
             "nullable": false,
             "charLen": 10
           }
