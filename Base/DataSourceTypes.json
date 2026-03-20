@@ -87,6 +87,10 @@
           "targetType": "short"
         },
         {
+          "sourceType": "short",
+          "targetType": "short"
+        },
+        {
           "sourceType": "smallmoney",
           "targetType": "decimal"
         },
@@ -127,7 +131,18 @@
           "targetType": "string"
         }
       ],
-      "connectionProperties": []
+      "connectionProperties": [
+        {
+          "name": "__connector.id=sqlserver",
+          "required": true,
+          "description": "Reserved: connector binding (do not render)."
+        },
+        {
+          "name": "__connector.version=0.1.0",
+          "required": false,
+          "description": "Reserved: connector version (do not render)."
+        }
+      ]
     },
     {
       "name": "LakeSource",
@@ -135,155 +150,132 @@
       "description": "Data lake file-based source",
       "dataTypeMapping": [
         {
-          "sourceType": "bigint",
-          "targetType": "long"
-        },
-        {
-          "sourceType": "binary",
-          "targetType": "binary"
-        },
-        {
-          "sourceType": "bit",
-          "targetType": "bit"
-        },
-        {
           "sourceType": "string",
-          "targetType": "string"
-        },
-        {
-          "sourceType": "char",
-          "targetType": "string"
-        },
-        {
-          "sourceType": "date",
-          "targetType": "datetime"
-        },
-        {
-          "sourceType": "datetime",
-          "targetType": "datetime"
-        },
-        {
-          "sourceType": "datetime2",
-          "targetType": "datetime"
-        },
-        {
-          "sourceType": "datetimeoffset",
-          "targetType": "datetime"
-        },
-        {
-          "sourceType": "decimal",
-          "targetType": "decimal"
-        },
-        {
-          "sourceType": "float",
-          "targetType": "double"
-        },
-        {
-          "sourceType": "geography",
-          "targetType": "string"
-        },
-        {
-          "sourceType": "geometry",
-          "targetType": "binary"
-        },
-        {
-          "sourceType": "hierarchyid",
-          "targetType": "string"
-        },
-        {
-          "sourceType": "image",
-          "targetType": "binary"
-        },
-        {
-          "sourceType": "int",
-          "targetType": "int"
-        },
-        {
-          "sourceType": "money",
-          "targetType": "money"
-        },
-        {
-          "sourceType": "nchar",
-          "targetType": "string"
-        },
-        {
-          "sourceType": "ntext",
-          "targetType": "string"
-        },
-        {
-          "sourceType": "numeric",
-          "targetType": "decimal"
-        },
-        {
-          "sourceType": "nvarchar",
-          "targetType": "string"
-        },
-        {
-          "sourceType": "real",
-          "targetType": "double"
-        },
-        {
-          "sourceType": "smalldatetime",
-          "targetType": "datetime"
-        },
-        {
-          "sourceType": "short",
-          "targetType": "short"
-        },
-        {
-          "sourceType": "smallint",
-          "targetType": "short"
-        },
-        {
-          "sourceType": "smallmoney",
-          "targetType": "money"
-        },
-        {
-          "sourceType": "sql_variant",
-          "targetType": "binary"
-        },
-        {
-          "sourceType": "sysname",
-          "targetType": "string"
-        },
-        {
-          "sourceType": "text",
-          "targetType": "string"
-        },
-        {
-          "sourceType": "time",
-          "targetType": "datetime"
-        },
-        {
-          "sourceType": "timestamp",
-          "targetType": "binary"
-        },
-        {
-          "sourceType": "byte",
-          "targetType": "byte"
-        },
-        {
-          "sourceType": "tinyint",
-          "targetType": "byte"
-        },
-        {
-          "sourceType": "uniqueidentifier",
-          "targetType": "uniqueidentifier"
-        },
-        {
-          "sourceType": "varbinary",
-          "targetType": "binary"
-        },
-        {
-          "sourceType": "varchar",
-          "targetType": "string"
-        },
-        {
-          "sourceType": "xml",
           "targetType": "string"
         }
       ],
-      "connectionProperties": []
+      "connectionProperties": [
+        {
+          "name": "__connector.id=adls",
+          "required": true,
+          "description": "Reserved: connector binding (do not render)."
+        },
+        {
+          "name": "__connector.version=0.1.0",
+          "required": false,
+          "description": "Reserved: connector version (do not render)."
+        }
+      ]
+    },
+    {
+      "name": "OracleDataSource",
+      "displayName": "Oracle Database",
+      "dataTypeMapping": [
+        {
+          "sourceType": "VARCHAR2",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "NVARCHAR2",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "CHAR",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "NCHAR",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "CLOB",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "NCLOB",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "LONG",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "NUMBER",
+          "targetType": "decimal"
+        },
+        {
+          "sourceType": "FLOAT",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "BINARY_FLOAT",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "BINARY_DOUBLE",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "DATE",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "TIMESTAMP",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "TIMESTAMP WITH TIME ZONE",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "TIMESTAMP WITH LOCAL TIME ZONE",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "INTERVAL YEAR TO MONTH",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "INTERVAL DAY TO SECOND",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "RAW",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "LONG RAW",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "BLOB",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "XMLTYPE",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "ROWID",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "UROWID",
+          "targetType": "string"
+        }
+      ],
+      "connectionProperties": [
+        {
+          "name": "__connector.id=oracle",
+          "required": true,
+          "description": "Reserved: connector binding (do not render)."
+        },
+        {
+          "name": "__connector.version=0.1.0",
+          "required": false,
+          "description": "Reserved: connector version (do not render)."
+        }
+      ]
     }
   ]
 }

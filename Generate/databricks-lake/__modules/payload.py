@@ -486,6 +486,14 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 data_source_name=data_source_name,
             )
             data_source_type = raw_source.get("source_type") or getattr(data_source_entry, "type", None)
+            connector_id = raw_source.get("connector_id")
+            source_location = raw_source.get("source_location")
+            source_location = (
+                source_location.strip()
+                if isinstance(source_location, str) and source_location.strip()
+                else str(source_alias).strip()
+            )
+            is_query = source_location.upper().startswith("SELECT")
 
             data = {
                 "zone": external_zone.name,
@@ -493,13 +501,17 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 "data_source": data_source_name,
                 "data_source_display": getattr(data_source_entry, "displayName", None) or data_source_name,
                 "data_source_type": data_source_type,
+                "use_connector": bool(connector_id),
+                "connector_id": connector_id,
+                "data_source_extended_properties": raw_source.get("data_source_extended_properties") or {},
                 "source_name": source_alias,
                 "full_table_name": full_table_name,
                 "write_mode": write_mode,
-                "source_location": raw_source.get("source_location"),
+                "source_location": source_location,
+                "is_query": is_query,
                 "extract_mode": extract_mode,
                 "driver": driver,
-                "connection_secret": f"datasource-{data_source_name}-connectionstring",
+                "connection_secret_key": f"datasource-{data_source_name}-connectionstring",
                 "mapping": raw_source.get("mapping"),
                 "mapping_entries": mapping_entries,
                 "select_columns": mapping_projection["select_columns"],
