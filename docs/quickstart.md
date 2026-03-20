@@ -59,7 +59,7 @@ Create the following in your ORAYLIS IT resource group:
 
 ## Adding Secrets to Azure KeyVault
 For each "DataSource" in DataM8 Modeller and the target datalake:
-- Create a secret named "datasource-<datasource name>-connectionstring".
+- Create a secret named "datasource-<datasource name>-password".
 - Add the datalake account's access key as "fs-azure-account-key-<datalake account name>-dfs-core-windows-net".
 
   ![Datalake Secret](./assets/images/image7.png)

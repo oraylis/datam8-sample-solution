@@ -67,6 +67,36 @@ def _properties_to_dict(properties: Iterable[Any] | None) -> dict[str, Any]:
     return result
 
 
+def _normalize_string_map(values: Any) -> dict[str, str]:
+    """Normalize arbitrary mappings to a plain string dictionary."""
+    if not isinstance(values, dict):
+        return {}
+    normalized: dict[str, str] = {}
+    for key, value in values.items():
+        if key is None or value is None:
+            continue
+        normalized[str(key)] = str(value)
+    return normalized
+
+
+def _connector_id_from_connection_properties(connection_properties: Iterable[Any] | None) -> str | None:
+    """Read __connector.id from DataSourceType.connectionProperties entries."""
+    if not connection_properties:
+        return None
+    prefix = "__connector.id="
+    for prop in connection_properties:
+        name = getattr(prop, "name", None)
+        if not name:
+            continue
+        text = str(name).strip()
+        if not text.lower().startswith(prefix):
+            continue
+        connector_id = text[len(prefix) :].strip()
+        if connector_id:
+            return connector_id
+    return None
+
+
 def _attribute_property_equals(attribute: Any, property_name: str, expected_value: str) -> bool:
     """Check if an attribute exposes a property matching the provided value."""
     props = getattr(attribute, "properties", None) or []
@@ -520,6 +550,19 @@ class MetadataResolver:
 
     @property
     @lru_cache
+    def _data_source_type_entries(self) -> dict[str, Any]:
+        """Expose data source type entities by normalized name."""
+        entries: dict[str, Any] = {}
+        for wrapper in self.model.dataSourceTypes.values():
+            source_type_entity = wrapper.entity
+            type_name = getattr(source_type_entity, "name", None)
+            if not type_name:
+                continue
+            entries[str(type_name).strip().lower()] = source_type_entity
+        return entries
+
+    @property
+    @lru_cache
     def data_sources(self) -> dict[str, Any]:
         """Expose data sources by name."""
         entries, _, _ = self._data_source_details
@@ -531,6 +574,27 @@ class MetadataResolver:
         """Map data source name to source type (e.g. SqlDataSource)."""
         _, type_by_name, _ = self._data_source_details
         return type_by_name
+
+    def data_source_extended_properties(self, data_source_name: str) -> dict[str, str]:
+        """Return normalized extended properties for a data source."""
+        source_key = str(data_source_name).strip().lower()
+        source_entity = self.data_sources.get(source_key)
+        if source_entity is None:
+            return {}
+        return _normalize_string_map(getattr(source_entity, "extendedProperties", None))
+
+    def data_source_connector_id(self, data_source_name: str) -> str | None:
+        """Resolve connector id via bound DataSourceType.connectionProperties."""
+        source_key = str(data_source_name).strip().lower()
+        source_type_name = self._data_source_type_by_name.get(source_key)
+        if not source_type_name:
+            return None
+        source_type = self._data_source_type_entries.get(str(source_type_name).strip().lower())
+        if source_type is None:
+            return None
+        return _connector_id_from_connection_properties(
+            getattr(source_type, "connectionProperties", None)
+        )
 
     @property
     @lru_cache
@@ -1397,6 +1461,10 @@ class MetadataResolver:
                     "source_location": getattr(source, "sourceLocation", None),
                     "source_type": self._data_source_type_by_name.get(
                         str(data_source).strip().lower()
+                    ),
+                    "connector_id": self.data_source_connector_id(str(data_source)),
+                    "data_source_extended_properties": self.data_source_extended_properties(
+                        str(data_source)
                     ),
                     "delta_column": delta_entry["target"] if delta_entry else None,
                     "source_delta_column": delta_entry["source"] if delta_entry else None,

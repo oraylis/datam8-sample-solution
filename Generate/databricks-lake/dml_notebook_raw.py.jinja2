@@ -5,6 +5,10 @@
 # COMMAND ----------
 
 from pyspark.sql import functions as F  # noqa: F401
+{% if data.use_connector %}
+from datetime import datetime
+from datam8_plugins.{{ data.connector_id }}.connector import Connector
+{% endif %}
 
 # COMMAND ----------
 
@@ -22,7 +26,9 @@ from pyspark.sql import functions as F  # noqa: F401
 
 # COMMAND ----------
 
+{% if not data.use_connector %}
 # MAGIC %run ../../../../../../utils/ExtractionFramework
+{% endif %}
 
 # COMMAND ----------
 
@@ -86,9 +92,8 @@ catalog.set_active()
 # COMMAND ----------
 
 # DBTITLE 1,Get connection values
-database_connectionstring = dbutils.secrets.get(scope=keyvault_name, key="{{ data.connection_secret }}")
+connection_secret = dbutils.secrets.get(scope=keyvault_name, key="{{ data.connection_secret_key }}")
 source_location = {{ data.source_location | default("", true) | tojson }}
-extract_mode = ("{{ data.extract_mode or '' }}").lower()
 data_source_type = "{{ data.data_source_type or '' }}"
 column_renames = {{ data.column_renames | default([], true) | tojson }}
 delta_column_details = {{ data.delta_column_details | default([], true) | tojson }}
@@ -113,11 +118,43 @@ print(f"Using delta value: {max_raw}")
 
 # COMMAND ----------
 {% endif %}
-# DBTITLE 1,Initialize framework & execute function
-if not source_location:
-    source_location = source_name
-
-SourceTable = ExtractionFramework(source_location, extract_mode, delta_column_details)
+# DBTITLE 1,Execute extraction
+{% if data.use_connector %}
+{% if data.is_query %}
+pushdown_query = source_location
+{% else %}
+where_clause = ""
+{% if data.extract_mode and data.extract_mode|lower == "delta" %}
+delta_column_names = [col.get("sourceName") for col in delta_column_details if col.get("sourceName")]
+if delta_column_names:
+    if (
+        delta_column_details
+        and str(delta_column_details[0].get("canonicalDataType") or "").lower() == "timestamp"
+        and max_raw is not None
+    ):
+        max_raw_ts = datetime.strptime(max_raw, "%Y-%m-%d %H:%M:%S.%f")
+        max_raw = str(max_raw_ts.replace(microsecond=0))
+    source_delta_column = ",".join(delta_column_names)
+    where_clause = f"\n    WHERE {source_delta_column} > '{max_raw}'"
+{% endif %}
+pushdown_query = f"""
+    SELECT *
+    FROM {source_location}{where_clause}
+"""
+{% endif %}
+print(f"Query: {pushdown_query}")
+table_df = Connector.extract_data(
+    {
+        **{{ data.data_source_extended_properties | default({}, true) | tojson }},
+        "password": connection_secret,
+    },
+    {
+        "query": pushdown_query,
+        "options": {},
+    },
+)
+{% else %}
+SourceTable = ExtractionFramework(source_location, "{{ data.extract_mode or '' }}", delta_column_details)
 extractSourceTable = SourceTable
 
 if not data_source_type:
@@ -131,9 +168,10 @@ if extract_function is None:
     )
 
 table_df = extract_function(
-    database_connectionstring
+    connection_secret
     {% if data.extract_mode and data.extract_mode|lower == "delta" %}, max_raw{% endif %}
 )
+{% endif %}
 # COMMAND ----------
 
 # MAGIC %md
