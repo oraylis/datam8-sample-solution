@@ -197,11 +197,11 @@
         },
         {
           "sourceType": "LONG",
-          "targetType": "string"
+          "targetType": "long"
         },
         {
           "sourceType": "NUMBER",
-          "targetType": "decimal"
+          "targetType": "long"
         },
         {
           "sourceType": "FLOAT",

@@ -89,6 +89,35 @@ def _surrogate_key_columns(entity: Any) -> list[str]:
     return columns
 
 
+def _connector_wheel_workspace_path(connector_id: str | None) -> str | None:
+    """Resolve workspace wheel path for a connector id based on bundled utils wheels."""
+    if not connector_id:
+        return None
+    normalized = str(connector_id).strip().lower()
+    if not normalized:
+        return None
+
+    connectors_dir = Path("Output", "databricks-lake", "connectors")
+    pattern = f"datam8_plugin_{normalized}-*.whl"
+    matches = sorted(connectors_dir.glob(pattern))
+    if not matches:
+        return None
+
+    # Choose latest wheel deterministically by filename.
+    wheel_name = matches[-1].name
+    return f"${{workspace.root_path}}/files/connectors/{wheel_name}"
+
+
+def _attach_raw_task_connector_wheels(data: dict[str, Any]) -> None:
+    """Attach connector wheel libraries to raw tasks based on their data source connector."""
+    raw_tasks = data.get("raw_tasks") or []
+    for task in raw_tasks:
+        wheel_path = _connector_wheel_workspace_path(task.get("connector_id"))
+        if not wheel_path:
+            continue
+        task["libraries"] = [{"whl": wheel_path}]
+
+
 @register_payload("ddl_notebook.py.jinja2")
 def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
     """Build DDL payloads for modeled (non-raw) entities."""
@@ -755,6 +784,7 @@ def generate_jobs_load_groups(model: Model, cache: Cache) -> Sequence[IPayload]:
     payloads: list[IPayload] = []
     for job in plan.get("load_jobs", []):
         data = _prepare_job_data(job)
+        _attach_raw_task_connector_wheels(data)
         _assign_job_clusters(data, [data.get("cluster_variable")])
         payloads.append(BasePayload(data=data, output_path=job["output_path"]))
     return payloads
