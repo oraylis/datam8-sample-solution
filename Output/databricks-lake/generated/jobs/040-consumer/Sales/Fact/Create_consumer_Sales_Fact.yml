@@ -1,7 +1,7 @@
 resources:
   jobs:
     Create_consumer_Sales_Fact:
-      name: Create Consumer Tabular Layer Fact
+      name: Create Consumer Tabular Layer Sales Fact
       max_concurrent_runs: 1
       parameters:
         - name: environment

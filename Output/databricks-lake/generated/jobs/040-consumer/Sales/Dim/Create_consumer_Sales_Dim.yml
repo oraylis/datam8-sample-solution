@@ -1,7 +1,7 @@
 resources:
   jobs:
     Create_consumer_Sales_Dim:
-      name: Create Consumer Tabular Layer Dim
+      name: Create Consumer Tabular Layer Sales Dim
       max_concurrent_runs: 1
       parameters:
         - name: environment

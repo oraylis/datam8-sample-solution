@@ -1,7 +1,7 @@
 resources:
   jobs:
     Create_stage_Sales_Product:
-      name: Create Staging Data Layer Product
+      name: Create Staging Data Layer Sales Product
       max_concurrent_runs: 1
       parameters:
         - name: environment

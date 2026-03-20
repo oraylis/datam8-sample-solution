@@ -1,7 +1,7 @@
 resources:
   jobs:
     Create_core_Sales_Customer:
-      name: Create Core Business Layer Customer
+      name: Create Core Business Layer Sales Customer
       max_concurrent_runs: 1
       parameters:
         - name: environment
