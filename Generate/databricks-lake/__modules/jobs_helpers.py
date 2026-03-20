@@ -174,7 +174,7 @@ class JobsPlanner:
             zone_folder = self.resolver.zone_folder_name(zone_meta)
             zone_display = zone_meta.display_name or _zone_title(zone_meta.name)
 
-            subfolders = tuple(locator.folders[1:])
+            subfolders = self.resolver.output_folder_segments(locator)
             product_dir = subfolders[0] if subfolders else "General"
             product_info = (
                 self.resolver.folder_info(tuple(locator.folders[:2]))
@@ -189,7 +189,12 @@ class JobsPlanner:
                 if len(locator.folders) >= 3
                 else None
             )
-            module_display = module_info.name if module_info else (module_dirs[-1] if module_dirs else "General")
+            if module_info:
+                module_display = module_info.name
+            elif module_dirs:
+                module_display = " / ".join(module_dirs)
+            else:
+                module_display = "General"
 
             job_value = self.resolver.resolve_property(locator, wrapper.entity, "jobs")
             job_config = self.resolver.job_definition(job_value) if job_value else None
@@ -315,7 +320,7 @@ class JobsPlanner:
                 create_modules.append(
                     {
                         "job_key": job_key,
-                        "job_name": f"Create {module.zone_display} {module.module_display}",
+                        "job_name": f"Create {module.zone_display} {module.product_display} {module.module_display}",
                         "zone_name": module.zone_name,
                         "zone_title": _zone_title(module.zone_name),
                         "tasks": tasks,
