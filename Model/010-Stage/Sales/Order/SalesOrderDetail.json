@@ -10,10 +10,10 @@
       "attributeType": "ID",
       "dataType": {
         "type": "int",
-        "nullable": true
+        "nullable": false
       },
       "isBusinessKey": true,
-      "dateModified": "2025-03-28T16:16:38Z",
+      "dateModified": "2026-03-20T11:44:08Z",
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
@@ -22,10 +22,10 @@
       "attributeType": "ID",
       "dataType": {
         "type": "int",
-        "nullable": true
+        "nullable": false
       },
       "isBusinessKey": true,
-      "dateModified": "2025-03-28T16:16:38Z",
+      "dateModified": "2026-03-20T11:44:08Z",
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
@@ -36,6 +36,7 @@
         "type": "short",
         "nullable": false
       },
+      "dateModified": "2026-03-20T11:44:08Z",
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
@@ -44,8 +45,9 @@
       "attributeType": "ID",
       "dataType": {
         "type": "int",
-        "nullable": true
+        "nullable": false
       },
+      "dateModified": "2026-03-20T11:44:08Z",
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
@@ -78,6 +80,7 @@
         "precision": 38,
         "scale": 6
       },
+      "dateModified": "2026-03-20T11:44:08Z",
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
@@ -132,7 +135,7 @@
           "targetName": "SalesOrderID",
           "sourceDataType": {
             "type": "int",
-            "nullable": true
+            "nullable": false
           }
         },
         {
@@ -140,14 +143,14 @@
           "targetName": "SalesOrderDetailID",
           "sourceDataType": {
             "type": "int",
-            "nullable": true
+            "nullable": false
           }
         },
         {
           "sourceName": "OrderQty",
           "targetName": "OrderQty",
           "sourceDataType": {
-            "type": "short",
+            "type": "smallint",
             "nullable": false
           }
         },
@@ -156,7 +159,7 @@
           "targetName": "ProductID",
           "sourceDataType": {
             "type": "int",
-            "nullable": true
+            "nullable": false
           }
         },
         {
@@ -179,7 +182,7 @@
           "sourceName": "LineTotal",
           "targetName": "LineTotal",
           "sourceDataType": {
-            "type": "decimal",
+            "type": "numeric",
             "nullable": false,
             "precision": 38,
             "scale": 6
