@@ -98,7 +98,7 @@ schema = StructType([
     StructField("__UpdateTimestampUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'Last update timestamp (UTC)'}),
     StructField("__InsertTimestampRawUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'Raw load timestamp (UTC)'}),
     StructField("__SourceTable", DataType.fromDDL("STRING"), False, metadata={'comment': 'Origin reference for the record'}),
-    StructField("TIMEKEY", DataType.fromDDL("DECIMAL(38,0)"), True, metadata={'business_key': True}),
+    StructField("TIMEKEY", DataType.fromDDL("DECIMAL(38,0)"), False, metadata={'business_key': True}),
     StructField("FULLDATEALTERNATEKEY", DataType.fromDDL("TIMESTAMP"), True),
     StructField("DAYNUMBEROFWEEK", DataType.fromDDL("DECIMAL(38,10)"), True),
     StructField("ENGLISHDAYNAMEOFWEEK", DataType.fromDDL("STRING"), True),

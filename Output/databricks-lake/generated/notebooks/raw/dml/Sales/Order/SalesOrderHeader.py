@@ -90,12 +90,16 @@ catalog.set_active()
 # COMMAND ----------
 
 # DBTITLE 1,Get connection values
-connection_secret = dbutils.secrets.get(scope=keyvault_name, key="datasource-AdventureWorks-connectionstring")
+connection_secret = dbutils.secrets.get(scope=keyvault_name, key="datasource-AdventureWorks-password")
 source_location = "[SalesLT].[SalesOrderHeader]"
 data_source_type = "SqlDataSource"
 column_renames = []
 delta_column_details = [{"canonicalDataType": "datetime", "sourceName": "ModifiedDate"}]
 target_columns = ["SalesOrderID", "RevisionNumber", "OrderDate", "DueDate", "ShipDate", "Status", "OnlineOrderFlag", "SalesOrderNumber", "PurchaseOrderNumber", "AccountNumber", "CustomerID", "ShipToAddressID", "BillToAddressID", "ShipMethod", "CreditCardApprovalCode", "SubTotal", "TaxAmt", "Freight", "TotalDue", "Comment", "rowguid", "ModifiedDate"]
+
+props = {"auth.mode": "sql_user", "database": "adventureworks", "encrypt": "true", "host": "aut0sql0dev.database.windows.net", "password": "secretRef://runtime/AdventureWorks/password", "port": "1433", "trustServerCertificate": "true", "username": "sqladmin"}
+props["password"] = connection_secret
+
 
 # COMMAND ----------
 
@@ -140,10 +144,7 @@ pushdown_query = f"""
 
 print(f"Query: {pushdown_query}")
 table_df = Connector.extract_data(
-    {
-        **{"auth.mode": "sql_user", "encrypt": "false", "port": "1433", "trustServerCertificate": "true"},
-        "password": connection_secret,
-    },
+    props,
     {
         "query": pushdown_query,
         "options": {},

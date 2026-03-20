@@ -90,12 +90,16 @@ catalog.set_active()
 # COMMAND ----------
 
 # DBTITLE 1,Get connection values
-connection_secret = dbutils.secrets.get(scope=keyvault_name, key="datasource-OracleDev-connectionstring")
+connection_secret = dbutils.secrets.get(scope=keyvault_name, key="datasource-OracleDev-password")
 source_location = "DATAM8.DIMTIME"
 data_source_type = "OracleDataSource"
 column_renames = []
 delta_column_details = []
 target_columns = ["TIMEKEY", "FULLDATEALTERNATEKEY", "DAYNUMBEROFWEEK", "ENGLISHDAYNAMEOFWEEK", "SPANISHDAYNAMEOFWEEK", "FRENCHDAYNAMEOFWEEK", "DAYNUMBEROFMONTH", "DAYNUMBEROFYEAR", "WEEKNUMBEROFYEAR", "ENGLISHMONTHNAME", "SPANISHMONTHNAME", "FRENCHMONTHNAME", "MONTHNUMBEROFYEAR", "CALENDARQUARTER", "CALENDARYEAR", "CALENDARSEMESTER", "FISCALQUARTER", "FISCALYEAR", "FISCALSEMESTER"]
+
+props = {"auth.mode": "password", "host": "aut0ora0dev.westeurope.cloudapp.azure.com", "password": "secretRef://runtime/OracleDev/password", "port": "1521", "serviceName": "oratest2", "username": "datam8"}
+props["password"] = connection_secret
+
 
 # COMMAND ----------
 
@@ -116,10 +120,7 @@ pushdown_query = f"""
 
 print(f"Query: {pushdown_query}")
 table_df = Connector.extract_data(
-    {
-        **{"auth.mode": "password", "port": "1521"},
-        "password": connection_secret,
-    },
+    props,
     {
         "query": pushdown_query,
         "options": {},

@@ -98,7 +98,7 @@ schema = StructType([
     StructField("__UpdateTimestampUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'Last update timestamp (UTC)'}),
     StructField("__InsertTimestampRawUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'Raw load timestamp (UTC)'}),
     StructField("__SourceTable", DataType.fromDDL("STRING"), False, metadata={'comment': 'Origin reference for the record'}),
-    StructField("KundenID", DataType.fromDDL("INT"), True, metadata={'comment': 'Unique key for the customer', 'business_key': True}),
+    StructField("KundenID", DataType.fromDDL("INT"), False, metadata={'comment': 'Unique key for the customer', 'business_key': True}),
     StructField("NamensTyp", DataType.fromDDL("BOOLEAN"), False),
     StructField("Titel", DataType.fromDDL("STRING"), True),
     StructField("Vorname", DataType.fromDDL("STRING"), False),

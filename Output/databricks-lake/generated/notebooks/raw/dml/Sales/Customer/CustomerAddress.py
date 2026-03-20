@@ -90,12 +90,16 @@ catalog.set_active()
 # COMMAND ----------
 
 # DBTITLE 1,Get connection values
-connection_secret = dbutils.secrets.get(scope=keyvault_name, key="datasource-AdventureWorks-connectionstring")
+connection_secret = dbutils.secrets.get(scope=keyvault_name, key="datasource-AdventureWorks-password")
 source_location = "SELECT * FROM [SalesLT].[CustomerAddress] WHERE CustomerID \u003e 1"
 data_source_type = "SqlDataSource"
 column_renames = []
 delta_column_details = []
 target_columns = ["CustomerID", "AddressID", "AddressType", "rowguid", "ModifiedDate"]
+
+props = {"auth.mode": "sql_user", "database": "adventureworks", "encrypt": "true", "host": "aut0sql0dev.database.windows.net", "password": "secretRef://runtime/AdventureWorks/password", "port": "1433", "trustServerCertificate": "true", "username": "sqladmin"}
+props["password"] = connection_secret
+
 
 # COMMAND ----------
 
@@ -111,10 +115,7 @@ pushdown_query = source_location
 
 print(f"Query: {pushdown_query}")
 table_df = Connector.extract_data(
-    {
-        **{"auth.mode": "sql_user", "encrypt": "false", "port": "1433", "trustServerCertificate": "true"},
-        "password": connection_secret,
-    },
+    props,
     {
         "query": pushdown_query,
         "options": {},

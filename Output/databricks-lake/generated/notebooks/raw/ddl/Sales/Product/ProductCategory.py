@@ -99,7 +99,7 @@ schema = StructType([
     StructField("__Month", DataType.fromDDL("SMALLINT"), False),
     StructField("__Day", DataType.fromDDL("SMALLINT"), False),
     StructField("__InsertTimestampUTC", DataType.fromDDL("TIMESTAMP"), False),
-    StructField("ProductCategoryID", DataType.fromDDL("INT"), True),
+    StructField("ProductCategoryID", DataType.fromDDL("INT"), False),
     StructField("ParentProductCategoryID", DataType.fromDDL("INT"), True),
     StructField("Name", DataType.fromDDL("STRING"), False),
     StructField("rowguid", DataType.fromDDL("STRING"), False),

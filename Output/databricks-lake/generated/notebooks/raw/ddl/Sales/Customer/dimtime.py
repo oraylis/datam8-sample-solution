@@ -99,7 +99,7 @@ schema = StructType([
     StructField("__Month", DataType.fromDDL("SMALLINT"), False),
     StructField("__Day", DataType.fromDDL("SMALLINT"), False),
     StructField("__InsertTimestampUTC", DataType.fromDDL("TIMESTAMP"), False),
-    StructField("TIMEKEY", DataType.fromDDL("DECIMAL(38,0)"), True),
+    StructField("TIMEKEY", DataType.fromDDL("DECIMAL(38,0)"), False),
     StructField("FULLDATEALTERNATEKEY", DataType.fromDDL("TIMESTAMP"), True),
     StructField("DAYNUMBEROFWEEK", DataType.fromDDL("DECIMAL(38,10)"), True),
     StructField("ENGLISHDAYNAMEOFWEEK", DataType.fromDDL("STRING"), True),
