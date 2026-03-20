@@ -61,6 +61,12 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+{%- if task.libraries %}
+          libraries:
+{%- for library in task.libraries %}
+            - whl: {{ library.whl }}
+{%- endfor %}
+{%- endif %}
           job_cluster_key: {{ task.job_cluster_key or data.default_job_cluster_key }}
 {% endfor %}
 {% for task in data.entity_tasks %}

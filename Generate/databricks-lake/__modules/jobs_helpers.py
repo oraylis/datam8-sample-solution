@@ -514,6 +514,8 @@ class JobsPlanner:
                         "notebook_path": self._raw_notebook_path(entity, table_name),
                         "depends_on": ["Start_Load"],
                         "job_cluster_key": cluster_variable,
+                        "data_source": raw_source.get("data_source"),
+                        "connector_id": raw_source.get("connector_id"),
                     }
                 )
                 raw_task_lookup[entity.entity_id].append(raw_key)
