@@ -6,6 +6,10 @@
 
 from pyspark.sql import functions as F  # noqa: F401
 
+from datetime import datetime
+from datam8_plugins.sqlserver.connector import Connector
+
+
 # COMMAND ----------
 
 # MAGIC %md
@@ -22,7 +26,7 @@ from pyspark.sql import functions as F  # noqa: F401
 
 # COMMAND ----------
 
-# MAGIC %run ../../../../../../utils/ExtractionFramework
+
 
 # COMMAND ----------
 
@@ -86,9 +90,8 @@ catalog.set_active()
 # COMMAND ----------
 
 # DBTITLE 1,Get connection values
-database_connectionstring = dbutils.secrets.get(scope=keyvault_name, key="datasource-AdventureWorks-connectionstring")
+connection_secret = dbutils.secrets.get(scope=keyvault_name, key="datasource-AdventureWorks-connectionstring")
 source_location = "[SalesLT].[Address]"
-extract_mode = ("delta").lower()
 data_source_type = "SqlDataSource"
 column_renames = []
 delta_column_details = [{"canonicalDataType": "datetime", "sourceName": "ModifiedDate"}]
@@ -113,27 +116,40 @@ print(f"Using delta value: {max_raw}")
 
 # COMMAND ----------
 
-# DBTITLE 1,Initialize framework & execute function
-if not source_location:
-    source_location = source_name
+# DBTITLE 1,Execute extraction
 
-SourceTable = ExtractionFramework(source_location, extract_mode, delta_column_details)
-extractSourceTable = SourceTable
 
-if not data_source_type:
-    raise ValueError(f"Data source type is missing for '{data_source}'.")
+where_clause = ""
 
-extract_function = getattr(extractSourceTable, data_source_type, None)
+delta_column_names = [col.get("sourceName") for col in delta_column_details if col.get("sourceName")]
+if delta_column_names:
+    if (
+        delta_column_details
+        and str(delta_column_details[0].get("canonicalDataType") or "").lower() == "timestamp"
+        and max_raw is not None
+    ):
+        max_raw_ts = datetime.strptime(max_raw, "%Y-%m-%d %H:%M:%S.%f")
+        max_raw = str(max_raw_ts.replace(microsecond=0))
+    source_delta_column = ",".join(delta_column_names)
+    where_clause = f"\n    WHERE {source_delta_column} > '{max_raw}'"
 
-if extract_function is None:
-    raise AttributeError(
-        f"ExtractionFramework does not implement '{data_source_type}' for '{data_source}'."
-    )
+pushdown_query = f"""
+    SELECT *
+    FROM {source_location}{where_clause}
+"""
 
-table_df = extract_function(
-    database_connectionstring
-    , max_raw
+print(f"Query: {pushdown_query}")
+table_df = Connector.extract_data(
+    {
+        **{"auth.mode": "sql_user", "encrypt": "false", "port": "1433", "trustServerCertificate": "true"},
+        "password": connection_secret,
+    },
+    {
+        "query": pushdown_query,
+        "options": {},
+    },
 )
+
 # COMMAND ----------
 
 # MAGIC %md

@@ -61,7 +61,7 @@ job_run_id = dbutils.widgets.get("job_run_id")
 # static values
 zone = "raw"
 data_source = "OracleDev"
-data_source_display = "OracleDev"
+data_source_display = "Oracle Demo Database"
 source_name = "dimtime"
 full_table_name = "Sales_Customer_dimtime"
 

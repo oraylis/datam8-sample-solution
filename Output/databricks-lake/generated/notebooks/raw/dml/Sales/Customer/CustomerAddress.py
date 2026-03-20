@@ -6,6 +6,10 @@
 
 from pyspark.sql import functions as F  # noqa: F401
 
+from datetime import datetime
+from datam8_plugins.sqlserver.connector import Connector
+
+
 # COMMAND ----------
 
 # MAGIC %md
@@ -22,7 +26,7 @@ from pyspark.sql import functions as F  # noqa: F401
 
 # COMMAND ----------
 
-# MAGIC %run ../../../../../../utils/ExtractionFramework
+
 
 # COMMAND ----------
 
@@ -86,9 +90,8 @@ catalog.set_active()
 # COMMAND ----------
 
 # DBTITLE 1,Get connection values
-database_connectionstring = dbutils.secrets.get(scope=keyvault_name, key="datasource-AdventureWorks-connectionstring")
+connection_secret = dbutils.secrets.get(scope=keyvault_name, key="datasource-AdventureWorks-connectionstring")
 source_location = "SELECT * FROM [SalesLT].[CustomerAddress] WHERE CustomerID \u003e 1"
-extract_mode = ("query").lower()
 data_source_type = "SqlDataSource"
 column_renames = []
 delta_column_details = []
@@ -101,27 +104,23 @@ target_columns = ["CustomerID", "AddressID", "AddressType", "rowguid", "Modified
 
 # COMMAND ----------
 
-# DBTITLE 1,Initialize framework & execute function
-if not source_location:
-    source_location = source_name
+# DBTITLE 1,Execute extraction
 
-SourceTable = ExtractionFramework(source_location, extract_mode, delta_column_details)
-extractSourceTable = SourceTable
 
-if not data_source_type:
-    raise ValueError(f"Data source type is missing for '{data_source}'.")
+pushdown_query = source_location
 
-extract_function = getattr(extractSourceTable, data_source_type, None)
-
-if extract_function is None:
-    raise AttributeError(
-        f"ExtractionFramework does not implement '{data_source_type}' for '{data_source}'."
-    )
-
-table_df = extract_function(
-    database_connectionstring
-    
+print(f"Query: {pushdown_query}")
+table_df = Connector.extract_data(
+    {
+        **{"auth.mode": "sql_user", "encrypt": "false", "port": "1433", "trustServerCertificate": "true"},
+        "password": connection_secret,
+    },
+    {
+        "query": pushdown_query,
+        "options": {},
+    },
 )
+
 # COMMAND ----------
 
 # MAGIC %md

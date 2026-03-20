@@ -6,6 +6,10 @@
 
 from pyspark.sql import functions as F  # noqa: F401
 
+from datetime import datetime
+from datam8_plugins.oracle.connector import Connector
+
+
 # COMMAND ----------
 
 # MAGIC %md
@@ -22,7 +26,7 @@ from pyspark.sql import functions as F  # noqa: F401
 
 # COMMAND ----------
 
-# MAGIC %run ../../../../../../utils/ExtractionFramework
+
 
 # COMMAND ----------
 
@@ -56,7 +60,7 @@ keyvault_name = dbutils.widgets.get("keyvault_name")
 # static values
 zone = "raw"
 data_source = "OracleDev"
-data_source_display = "OracleDev"
+data_source_display = "Oracle Demo Database"
 source_name = "dimtime"
 full_table_name = "Sales_Customer_dimtime"
 write_mode = "append"
@@ -86,10 +90,9 @@ catalog.set_active()
 # COMMAND ----------
 
 # DBTITLE 1,Get connection values
-database_connectionstring = dbutils.secrets.get(scope=keyvault_name, key="datasource-OracleDev-connectionstring")
+connection_secret = dbutils.secrets.get(scope=keyvault_name, key="datasource-OracleDev-connectionstring")
 source_location = "DATAM8.DIMTIME"
-extract_mode = ("full").lower()
-data_source_type = ""
+data_source_type = "OracleDataSource"
 column_renames = []
 delta_column_details = []
 target_columns = ["TIMEKEY", "FULLDATEALTERNATEKEY", "DAYNUMBEROFWEEK", "ENGLISHDAYNAMEOFWEEK", "SPANISHDAYNAMEOFWEEK", "FRENCHDAYNAMEOFWEEK", "DAYNUMBEROFMONTH", "DAYNUMBEROFYEAR", "WEEKNUMBEROFYEAR", "ENGLISHMONTHNAME", "SPANISHMONTHNAME", "FRENCHMONTHNAME", "MONTHNUMBEROFYEAR", "CALENDARQUARTER", "CALENDARYEAR", "CALENDARSEMESTER", "FISCALQUARTER", "FISCALYEAR", "FISCALSEMESTER"]
@@ -101,27 +104,28 @@ target_columns = ["TIMEKEY", "FULLDATEALTERNATEKEY", "DAYNUMBEROFWEEK", "ENGLISH
 
 # COMMAND ----------
 
-# DBTITLE 1,Initialize framework & execute function
-if not source_location:
-    source_location = source_name
+# DBTITLE 1,Execute extraction
 
-SourceTable = ExtractionFramework(source_location, extract_mode, delta_column_details)
-extractSourceTable = SourceTable
 
-if not data_source_type:
-    raise ValueError(f"Data source type is missing for '{data_source}'.")
+where_clause = ""
 
-extract_function = getattr(extractSourceTable, data_source_type, None)
+pushdown_query = f"""
+    SELECT *
+    FROM {source_location}{where_clause}
+"""
 
-if extract_function is None:
-    raise AttributeError(
-        f"ExtractionFramework does not implement '{data_source_type}' for '{data_source}'."
-    )
-
-table_df = extract_function(
-    database_connectionstring
-    
+print(f"Query: {pushdown_query}")
+table_df = Connector.extract_data(
+    {
+        **{"auth.mode": "password", "port": "1521"},
+        "password": connection_secret,
+    },
+    {
+        "query": pushdown_query,
+        "options": {},
+    },
 )
+
 # COMMAND ----------
 
 # MAGIC %md
