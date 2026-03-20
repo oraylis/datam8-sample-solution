@@ -220,7 +220,7 @@
           "targetType": "datetime"
         },
         {
-          "sourceType": "TIMESTAMP",
+          "sourceType": "TIMESTAMP(6)",
           "targetType": "datetime"
         },
         {
