@@ -1,16 +1,18 @@
 [project]
 name = "datam8-sample-solution"
-version = "2.0.0"
+version = "2.0.0-beta.1"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = ["datam8-generator"]
+dependencies = [
+  "datam8",
+]
 
 [project.urls]
 Homepage = "https://github.com/oraylis/datam8-sample-solution"
 
 [tool.uv.sources]
-datam8-generator = { git = "https://github.com/oraylis/datam8-generator", branch = "feature/v2-FK" }
+datam8 = { git = "https://github.com/oraylis/datam8-generator", tag = "v2.0.0-beta.1" }
 
 [tool.ruff]
 line-length = 100

@@ -2,25 +2,251 @@
     "type": "dataSourceTypes",
     "dataSourceTypes": [
         {
+            "name": "CsvFile",
+            "displayName": "testfile",
+            "connectionProperties": [
+                {
+                    "name": "protocol",
+                    "required": false,
+                    "default": "file",
+                    "type": "string"
+                },
+                {
+                    "name": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "authModes": [
+                {
+                    "name": "no_auth",
+                    "displayName": "No Auth / Anonymous",
+                    "required": [
+                        "protocol",
+                        "path"
+                    ]
+                }
+            ],
+            "dataTypeMapping": [
+                {
+                    "sourceType": "number",
+                    "targetType": "decimal"
+                },
+                {
+                    "sourceType": "string",
+                    "targetType": "string"
+                }
+            ]
+        },
+        {
             "name": "SQLServer",
             "displayName": "SQL Database",
             "description": "Traditional SQL database connection",
+            "connectionProperties": [
+                {
+                    "name": "authMode",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "name": "host",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "name": "database",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "name": "port",
+                    "required": true,
+                    "default": 1433,
+                    "type": "number"
+                },
+                {
+                    "name": "username",
+                    "required": false,
+                    "type": "string"
+                },
+                {
+                    "name": "password",
+                    "required": false,
+                    "type": "secret"
+                },
+                {
+                    "name": "trust_server_certificate",
+                    "description": "Trust unverifyable certificates, e.g. self-signed",
+                    "required": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "trust_server_certificate_ca",
+                    "description": "Path to a root cat to verifiy the server certificate against",
+                    "required": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "encrypt",
+                    "description": "Activates SSL encryption",
+                    "required": false,
+                    "default": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "trusted_connection",
+                    "description": "Enables Windows Authentication",
+                    "required": false,
+                    "type": "boolean"
+                }
+            ],
+            "authModes": [
+                {
+                    "name": "sql_user",
+                    "displayName": "Username / Password",
+                    "required": [
+                        "username",
+                        "password"
+                    ],
+                    "optional": [
+                        "trust_server_certificate",
+                        "trust_server_certificate_ca",
+                        "encrypt"
+                    ]
+                },
+                {
+                    "name": "windows",
+                    "displayName": "Windows Authentication",
+                    "required": [
+                        "trusted_connection"
+                    ],
+                    "optional": [
+                        "trust_server_certificate",
+                        "trust_server_certificate_ca",
+                        "encrypt"
+                    ]
+                }
+            ],
             "dataTypeMapping": [
+                {
+                    "sourceType": "bigint",
+                    "targetType": "long"
+                },
+                {
+                    "sourceType": "binary",
+                    "targetType": "string"
+                },
+                {
+                    "sourceType": "bit",
+                    "targetType": "boolean"
+                },
+                {
+                    "sourceType": "char",
+                    "targetType": "string"
+                },
+                {
+                    "sourceType": "date",
+                    "targetType": "datetime"
+                },
+                {
+                    "sourceType": "datetime",
+                    "targetType": "datetime"
+                },
+                {
+                    "sourceType": "datetime2",
+                    "targetType": "datetime"
+                },
+                {
+                    "sourceType": "datetimeoffset",
+                    "targetType": "datetime"
+                },
+                {
+                    "sourceType": "decimal",
+                    "targetType": "decimal"
+                },
+                {
+                    "sourceType": "float",
+                    "targetType": "double"
+                },
+                {
+                    "sourceType": "image",
+                    "targetType": "string"
+                },
+                {
+                    "sourceType": "int",
+                    "targetType": "int"
+                },
+                {
+                    "sourceType": "money",
+                    "targetType": "decimal"
+                },
+                {
+                    "sourceType": "nchar",
+                    "targetType": "string"
+                },
+                {
+                    "sourceType": "ntext",
+                    "targetType": "string"
+                },
+                {
+                    "sourceType": "numeric",
+                    "targetType": "decimal"
+                },
+                {
+                    "sourceType": "nvarchar",
+                    "targetType": "string"
+                },
+                {
+                    "sourceType": "real",
+                    "targetType": "double"
+                },
+                {
+                    "sourceType": "smalldatetime",
+                    "targetType": "datetime"
+                },
+                {
+                    "sourceType": "smallint",
+                    "targetType": "int"
+                },
+                {
+                    "sourceType": "smallmoney",
+                    "targetType": "decimal"
+                },
+                {
+                    "sourceType": "text",
+                    "targetType": "string"
+                },
+                {
+                    "sourceType": "time",
+                    "targetType": "datetime"
+                },
+                {
+                    "sourceType": "timestamp",
+                    "targetType": "string"
+                },
+                {
+                    "sourceType": "tinyint",
+                    "targetType": "int"
+                },
+                {
+                    "sourceType": "uniqueidentifier",
+                    "targetType": "string"
+                },
+                {
+                    "sourceType": "varbinary",
+                    "targetType": "string"
+                },
                 {
                     "sourceType": "varchar",
                     "targetType": "string"
                 },
                 {
-                    "sourceType": "int",
-                    "targetType": "integer"
+                    "sourceType": "xml",
+                    "targetType": "string"
                 },
                 {
-                    "sourceType": "smallint",
-                    "targetType": "integer"
-                },
-                {
-                    "sourceType": "datetime",
-                    "targetType": "timestamp"
+                    "sourceType": "sql_variant",
+                    "targetType": "string"
                 }
             ]
         },
@@ -28,6 +254,14 @@
             "name": "AzureDataLake",
             "displayName": "Data Lake Source",
             "description": "Data lake file-based source",
+            "connectionProperties": [
+                {
+                    "name": "storageAccount",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "authModes": [],
             "dataTypeMapping": [
                 {
                     "sourceType": "string",
