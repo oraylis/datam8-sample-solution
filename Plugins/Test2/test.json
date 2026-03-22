@@ -1,6 +1,5 @@
 {
-    "id": "SQLServer",
-    "type": "connector",
+    "id": "CustSQLServer",
     "version": "0.1.0",
     "entryPoint": "Test2:Test",
     "capabilities": [

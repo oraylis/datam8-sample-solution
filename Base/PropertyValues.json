@@ -114,6 +114,10 @@
       "name": "7_days",
       "displayName": "7 Days Data Retention",
       "property": "data_retention"
+    },
+    {
+      "name": "power-bi",
+      "property": "target"
     }
   ]
 }

@@ -69,6 +69,15 @@
           "type": "folder"
         }
       ]
+    },
+    {
+      "name": "target",
+      "displayName": "Target",
+      "scopes": [
+        {
+          "type": "zone"
+        }
+      ]
     }
   ]
 }
