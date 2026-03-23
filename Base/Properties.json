@@ -124,6 +124,18 @@
           "mandatory": false
         }
       ]
+    },
+    {
+      "name": "data_layout",
+      "displayName": "Data Layout",
+      "schema_": "",
+      "scopes": []
+    },
+    {
+      "name": "sensitive",
+      "displayName": "Sensitivity",
+      "schema_": "",
+      "scopes": []
     }
   ]
 }
