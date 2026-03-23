@@ -3,8 +3,8 @@
   "dataTypes": [
     {
       "name": "string",
-      "displayName": "Unicode String (UTF-8) with char length",
-      "description": "#",
+      "displayName": "String",
+      "description": "Unicode String (UTF-8) with char length",
       "hasCharLen": true,
       "hasPrecision": false,
       "hasScale": false,
@@ -59,8 +59,8 @@
     },
     {
       "name": "double",
-      "displayName": "Floating point with double precision",
-      "description": "Test 2",
+      "displayName": "Double",
+      "description": "Floating point with double precision",
       "hasCharLen": false,
       "hasPrecision": false,
       "hasScale": false,
@@ -82,7 +82,8 @@
     },
     {
       "name": "date",
-      "displayName": "Date storage yyyy-mm-dd",
+      "displayName": "Date",
+      "description": "Date storage yyyy-mm-dd",
       "hasCharLen": false,
       "hasPrecision": false,
       "hasScale": false,
@@ -93,7 +94,8 @@
     },
     {
       "name": "datetime",
-      "displayName": "Date time storage yyyy-mm-dd HH:mm:ss",
+      "displayName": "Date time",
+      "description": "Date time storage yyyy-mm-dd HH:mm:ss",
       "hasCharLen": false,
       "hasPrecision": false,
       "hasScale": false,
@@ -148,7 +150,8 @@
     },
     {
       "name": "dynstring",
-      "displayName": "string without character lenght",
+      "displayName": "Dynstring",
+      "description": "string without character length",
       "hasCharLen": false,
       "hasPrecision": false,
       "hasScale": false,
@@ -159,7 +162,8 @@
     },
     {
       "name": "dyndecimal",
-      "displayName": "decimal with precision and scale",
+      "displayName": "Dyndecimal",
+      "description": "decimal with precision and scale",
       "hasCharLen": false,
       "hasPrecision": false,
       "hasScale": false,

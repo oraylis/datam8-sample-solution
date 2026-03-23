@@ -114,6 +114,24 @@
       "name": "7_days",
       "displayName": "7 Days Data Retention",
       "property": "data_retention"
+    },
+    {
+      "name": "liquid_clustering",
+      "displayName": "Liquid Clustering",
+      "default": false,
+      "property": "data_layout"
+    },
+    {
+      "name": "hive_partitioning",
+      "displayName": "Hive Partitioning",
+      "default": false,
+      "property": "data_layout"
+    },
+    {
+      "name": "true",
+      "displayName": "Is Sensitive",
+      "default": false,
+      "property": "sensitive"
     }
   ]
 }
