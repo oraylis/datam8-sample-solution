@@ -10,10 +10,10 @@
       "attributeType": "ID",
       "dataType": {
         "type": "int",
-        "nullable": true
+        "nullable": false
       },
       "isBusinessKey": true,
-      "dateModified": "2025-03-28T16:16:38Z",
+      "dateModified": "2026-03-20T11:44:09Z",
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
@@ -128,7 +128,7 @@
           "targetName": "AddressID",
           "sourceDataType": {
             "type": "int",
-            "nullable": true
+            "nullable": false
           }
         },
         {

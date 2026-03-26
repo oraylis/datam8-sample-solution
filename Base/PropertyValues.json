@@ -36,14 +36,14 @@
       "displayName": "Daily",
       "default": true,
       "property": "schedules",
-      "cron": "1 0"
+      "quartz_cron_expression": "49 0 1 * * ?"
     },
     {
       "name": "weekly",
       "displayName": "Weekly",
       "default": false,
       "property": "schedules",
-      "cron": "1 0"
+      "quartz_cron_expression": "55 0 2 ? * Sun"
     },
     {
       "name": "small",
@@ -102,7 +102,7 @@
     },
     {
       "name": "true",
-      "displayName": "Has TypeWidening",
+      "displayName": "Has Type Widening",
       "property": "enable_type_widening"
     },
     {
@@ -116,8 +116,26 @@
       "property": "data_retention"
     },
     {
-      "name": "power-bi",
+      "name": "powerbi",
       "property": "target"
+    },
+    {
+      "name": "liquid_clustering",
+      "displayName": "Liquid Clustering",
+      "default": false,
+      "property": "data_layout"
+    },
+    {
+      "name": "hive_partitioning",
+      "displayName": "Hive Partitioning",
+      "default": false,
+      "property": "data_layout"
+    },
+    {
+      "name": "true",
+      "displayName": "Is Sensitive",
+      "default": false,
+      "property": "sensitive"
     }
   ]
 }

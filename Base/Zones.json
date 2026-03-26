@@ -32,7 +32,7 @@
       "properties": [
           {
               "property": "target",
-              "value": "power-bi"
+              "value": "powerbi"
           }
       ]
     }

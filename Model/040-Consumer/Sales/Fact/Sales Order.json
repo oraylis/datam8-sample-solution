@@ -50,10 +50,6 @@
     {
       "property": "write_mode",
       "value": "overwrite"
-    },
-    {
-        "property": "target",
-        "value": "power-bi"
     }
   ],
   "sources": [

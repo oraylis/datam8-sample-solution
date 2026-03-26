@@ -3,20 +3,18 @@
   "properties": [
     {
       "name": "jobs",
-      "displayName": "jobs",
-      "schema_": "./jobs.json",
+      "displayName": "Jobs",
       "scopes": [
         {
           "type": "entity",
-          "singleUsage": false,
+          "singleUsage": true,
           "mandatory": false
         }
       ]
     },
     {
       "name": "schedules",
-      "displayName": "schedules",
-      "schema_": "./schedules.json",
+      "displayName": "Schedules",
       "scopes": [
         {
           "type": "none"
@@ -25,8 +23,7 @@
     },
     {
       "name": "cluster",
-      "displayName": "cluster",
-      "schema_": "./cluster.json",
+      "displayName": "Cluster",
       "scopes": [
         {
           "type": "none"
@@ -36,13 +33,11 @@
     {
       "name": "tags",
       "displayName": "tags",
-      "schema_": "./tags.json",
       "scopes": []
     },
     {
       "name": "write_mode",
-      "displayName": "write mode",
-      "schema_": "./write_mode.json",
+      "displayName": "Write Mode",
       "scopes": [
         {
           "type": "entity",
@@ -52,8 +47,7 @@
     },
     {
       "name": "data_retention",
-      "displayName": "data retention",
-      "schema_": "./data_retention.json",
+      "displayName": "Data Retention",
       "scopes": [
         {
           "type": "entity",
@@ -78,6 +72,73 @@
           "type": "zone"
         }
       ]
+    },
+    {
+      "name": "extract_mode",
+      "displayName": "Extract Mode",
+      "scopes": [
+        {
+          "type": "entity",
+          "singleUsage": false
+        }
+      ]
+    },
+    {
+      "name": "enable_type_widening",
+      "displayName": "Type Widening",
+      "scopes": [
+        {
+          "type": "entity",
+          "singleUsage": true,
+          "mandatory": false
+        },
+        {
+          "type": "folder",
+          "singleUsage": true,
+          "mandatory": false
+        }
+      ]
+    },
+    {
+      "name": "column_mapping_mode",
+      "displayName": "Column Mapping Mode",
+      "schema_": "",
+      "scopes": [
+        {
+          "type": "entity",
+          "singleUsage": true,
+          "mandatory": false
+        },
+        {
+          "type": "folder",
+          "singleUsage": true,
+          "mandatory": false
+        }
+      ]
+    },
+    {
+      "name": "extract_column",
+      "displayName": "Extract Column",
+      "schema_": "",
+      "scopes": [
+        {
+          "type": "entity",
+          "singleUsage": false,
+          "mandatory": false
+        }
+      ]
+    },
+    {
+      "name": "data_layout",
+      "displayName": "Data Layout",
+      "schema_": "",
+      "scopes": []
+    },
+    {
+      "name": "sensitive",
+      "displayName": "Sensitivity",
+      "schema_": "",
+      "scopes": []
     }
   ]
 }
