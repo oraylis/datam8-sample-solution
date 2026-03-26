@@ -16,15 +16,7 @@ def _resolve_product_module_context(
     locator: Any,
 ) -> tuple[Any | None, Any | None, str, str]:
     """Resolve product/module folder metadata and derive fallback-safe names."""
-    product_info = resolver.folder_info(tuple(locator.folders[:2])) if len(locator.folders) >= 2 else None
-    module_info = resolver.folder_info(tuple(locator.folders[:3])) if len(locator.folders) >= 3 else None
-    data_product_name = (
-        product_info.name if product_info else (locator.folders[1] if len(locator.folders) >= 2 else "UnknownProduct")
-    )
-    data_module_name = (
-        module_info.name if module_info else (locator.folders[2] if len(locator.folders) >= 3 else "General")
-    )
-    return product_info, module_info, data_product_name, data_module_name
+    return resolver.product_module_context(locator)
 
 
 def _build_technical_columns(
@@ -110,6 +102,7 @@ def _build_scd2_tracking_columns(resolver: MetadataResolver) -> list[dict[str, A
 
 def _build_raw_table_tag_inputs(
     *,
+    resolver: MetadataResolver,
     product_info: Any | None,
     module_info: Any | None,
     entity_properties: dict[str, Any],
@@ -118,9 +111,21 @@ def _build_raw_table_tag_inputs(
     """Build two tag maps: one for Delta properties and one for rendered table tags."""
     base_table_tags: dict[str, Any] = {}
     if product_info:
-        base_table_tags.update(product_info.properties)
+        base_table_tags.update(
+            {
+                key: value
+                for key, value in product_info.properties.items()
+                if resolver.property_supports_folder_scope(key)
+            }
+        )
     if module_info:
-        base_table_tags.update(module_info.properties)
+        base_table_tags.update(
+            {
+                key: value
+                for key, value in module_info.properties.items()
+                if resolver.property_supports_folder_scope(key)
+            }
+        )
 
     table_properties_input = dict(base_table_tags)
     table_properties_input.update(entity_properties)
@@ -135,6 +140,7 @@ def _build_stage_sources(
     resolver: MetadataResolver,
     entity: Any,
     raw_sources: list[dict[str, Any]],
+    source_zone: str,
 ) -> list[dict[str, Any]]:
     """Create stage-source descriptors consumed by modeled DML template rendering."""
     stage_sources: list[dict[str, Any]] = []
@@ -144,7 +150,7 @@ def _build_stage_sources(
                 "key": f"Raw_{raw_source['raw_full_table']}",
                 "data_source": raw_source["data_source"],
                 "raw_full_table": raw_source["raw_full_table"],
-                "source_zone": "raw",
+                "source_zone": source_zone,
                 "select_expressions": resolver.stage_select_expressions(entity, raw_source),
                 "properties": raw_source["properties"],
             }

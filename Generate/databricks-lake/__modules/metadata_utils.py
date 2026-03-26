@@ -60,8 +60,41 @@ def _properties_to_dict(properties: Iterable[Any] | None) -> dict[str, Any]:
         name = getattr(prop, "property", None)
         if not name:
             continue
-        result[name] = _convert_property_value(getattr(prop, "value", None))
+        key = str(name).strip().lower()
+        if key in result:
+            continue
+        result[key] = _convert_property_value(getattr(prop, "value", None))
     return result
+
+
+def _normalize_string_map(values: Any) -> dict[str, str]:
+    """Normalize arbitrary mappings to a plain string dictionary."""
+    if not isinstance(values, dict):
+        return {}
+    normalized: dict[str, str] = {}
+    for key, value in values.items():
+        if key is None or value is None:
+            continue
+        normalized[str(key)] = str(value)
+    return normalized
+
+
+def _connector_id_from_connection_properties(connection_properties: Iterable[Any] | None) -> str | None:
+    """Read __connector.id from DataSourceType.connectionProperties entries."""
+    if not connection_properties:
+        return None
+    prefix = "__connector.id="
+    for prop in connection_properties:
+        name = getattr(prop, "name", None)
+        if not name:
+            continue
+        text = str(name).strip()
+        if not text.lower().startswith(prefix):
+            continue
+        connector_id = text[len(prefix) :].strip()
+        if connector_id:
+            return connector_id
+    return None
 
 
 def _attribute_property_equals(attribute: Any, property_name: str, expected_value: str) -> bool:
@@ -141,7 +174,18 @@ class FolderInfo:
 
     name: str
     display_name: str | None
+    data_product: str | None
+    data_module: str | None
     properties: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class PropertyScope:
+    """Scope metadata loaded from Base/Properties.json for one property."""
+
+    type_name: str
+    single_usage: bool | None
+    mandatory: bool | None
 
 
 class MetadataResolver:
@@ -208,6 +252,61 @@ class MetadataResolver:
                 clusters[name] = entity
         return jobs, schedules, clusters
 
+    @property
+    @lru_cache
+    def _property_scope_map(self) -> dict[str, list[PropertyScope]]:
+        """Load property scope definitions from validated model properties."""
+        definitions: dict[str, list[PropertyScope]] = {}
+        for wrapper in self.model.properties.values():
+            entry = wrapper.entity
+            name = getattr(entry, "name", None)
+            if not name:
+                continue
+            scopes: list[PropertyScope] = []
+            for scope in getattr(entry, "scopes", []) or []:
+                type_name = str(getattr(scope, "type", "")).strip().lower()
+                if not type_name:
+                    continue
+                scopes.append(
+                    PropertyScope(
+                        type_name=type_name,
+                        single_usage=getattr(scope, "singleUsage", None),
+                        mandatory=getattr(scope, "mandatory", None),
+                    )
+                )
+            definitions[str(name).strip().lower()] = scopes
+        return definitions
+
+    def _property_scopes(self, property_name: str) -> list[PropertyScope]:
+        """Return configured scopes for a property."""
+        if not property_name:
+            return []
+        return self._property_scope_map.get(property_name.strip().lower(), [])
+
+    def property_supports_folder_scope(self, property_name: str) -> bool:
+        """Return True when the property is allowed on folders."""
+        scopes = self._property_scopes(property_name)
+        if not scopes:
+            return True
+        return any(scope.type_name == "folder" for scope in scopes)
+
+    def property_supports_model_scope(self, property_name: str) -> bool:
+        """Return True when the property is allowed on model entities."""
+        scopes = self._property_scopes(property_name)
+        if not scopes:
+            return True
+        return any(scope.type_name == "model" for scope in scopes)
+
+    def property_supports_column_usage(self, property_name: str) -> bool:
+        """Return True when the property may be used repeatedly at column level."""
+        scopes = self._property_scopes(property_name)
+        if not scopes:
+            return True
+        return any(
+            scope.type_name == "model" and scope.single_usage is False
+            for scope in scopes
+        )
+
     @lru_cache
     def _resolved_property_map(self, locator) -> dict[str, Any]:
         """
@@ -230,18 +329,32 @@ class MetadataResolver:
             property_name = getattr(property_value, "property", None)
             if not property_name:
                 continue
-            result[property_name] = _convert_property_value(getattr(property_value, "name", None))
+            key = str(property_name).strip().lower()
+            if key in result:
+                continue
+            result[key] = _convert_property_value(getattr(property_value, "name", None))
         return result
 
     def resolve_property(self, locator, entity, property_name: str) -> Any:
-        """Resolve an entity property using entity-first and wrapper-resolved fallback."""
+        """Resolve a property following scope rules defined in Base/Properties.json."""
+        if not property_name:
+            return None
+        property_key = property_name.strip().lower()
         entity_props = self.entity_properties(entity)
-        if property_name in entity_props:
-            return entity_props[property_name]
+        supports_model = self.property_supports_model_scope(property_key)
+        supports_folder = self.property_supports_folder_scope(property_key)
 
-        resolved_props = self._resolved_property_map(locator)
-        if property_name in resolved_props:
-            return resolved_props[property_name]
+        if supports_model and property_key in entity_props:
+            return entity_props[property_key]
+
+        if supports_folder:
+            resolved_props = self._resolved_property_map(locator)
+            if property_key in resolved_props:
+                return resolved_props[property_key]
+
+        # Backward-compatible fallback for properties without explicit scope metadata.
+        if property_key in entity_props:
+            return entity_props[property_key]
 
         return None
 
@@ -251,7 +364,7 @@ class MetadataResolver:
             return None
 
         try:
-            job_entry = self.model.get_property_value("jobs", job_value).entity
+            job_entry = self.model.get_property_value(job_value, "jobs").entity
         except Exception:  # noqa: BLE001 - missing/invalid property value should not break generation
             return None
 
@@ -268,7 +381,7 @@ class MetadataResolver:
         schedule_entry = None
         if schedule_name:
             try:
-                schedule_entry = self.model.get_property_value("schedules", schedule_name).entity
+                schedule_entry = self.model.get_property_value(schedule_name, "schedules").entity
             except Exception:  # noqa: BLE001 - schedule reference is optional
                 schedule_entry = None
         schedule_data = None
@@ -282,7 +395,7 @@ class MetadataResolver:
         cluster_entry = None
         if cluster_name:
             try:
-                cluster_entry = self.model.get_property_value("cluster", cluster_name).entity
+                cluster_entry = self.model.get_property_value(cluster_name, "cluster").entity
             except Exception:  # noqa: BLE001 - cluster reference is optional
                 cluster_entry = None
         cluster_data = None
@@ -355,21 +468,46 @@ class MetadataResolver:
         # Preserve insertion order from the JSON file by relying on dict value order.
         return list(name_map.values())
 
+    def is_model_backed_zone(self, zone: ZoneMetadata | None) -> bool:
+        """Return True when the zone has a local folder and therefore model entities."""
+        return bool(zone and zone.local_folder)
+
+    def model_backed_zones(self) -> list[ZoneMetadata]:
+        """Return zones that should be processed through model entities."""
+        return [zone for zone in self.zones() if self.is_model_backed_zone(zone)]
+
+    def external_zones(self) -> list[ZoneMetadata]:
+        """Return zones without local folders (raw-like external ingestion zones)."""
+        return [zone for zone in self.zones() if not self.is_model_backed_zone(zone)]
+
+    def default_external_zone(self) -> ZoneMetadata | None:
+        """Return the first external zone in definition order."""
+        zones = self.external_zones()
+        return zones[0] if zones else None
+
     # ------------------------------------------------------------- Folder info
     @lru_cache
     def folder_info(self, folder_tuple: tuple[str, ...]) -> FolderInfo:
         """Return folder metadata from the validated folder entities."""
         if not folder_tuple:
-            return FolderInfo(name="", display_name=None, properties={})
+            return FolderInfo(name="", display_name=None, data_product=None, data_module=None, properties={})
 
         wrapped_folder = self._folder_wrapper(folder_tuple)
         if wrapped_folder is None:
-            return FolderInfo(name=folder_tuple[-1], display_name=None, properties={})
+            return FolderInfo(
+                name=folder_tuple[-1],
+                display_name=None,
+                data_product=None,
+                data_module=None,
+                properties={},
+            )
 
         folder_entity = wrapped_folder.entity
         return FolderInfo(
             name=getattr(folder_entity, "name", folder_tuple[-1]) or folder_tuple[-1],
             display_name=getattr(folder_entity, "displayName", None),
+            data_product=getattr(folder_entity, "dataProduct", None),
+            data_module=getattr(folder_entity, "dataModule", None),
             properties=_properties_to_dict(getattr(folder_entity, "properties", None)),
         )
 
@@ -395,8 +533,9 @@ class MetadataResolver:
             if not source_name:
                 continue
 
-            entries[source_name] = source_entity
-            type_by_name[source_name] = getattr(source_entity, "type", None)
+            source_key = str(source_name).strip().lower()
+            entries[source_key] = source_entity
+            type_by_name[source_key] = getattr(source_entity, "type", None)
 
             source_mappings: dict[str, str] = {}
             for mapping in getattr(source_entity, "dataTypeMapping", []) or []:
@@ -405,9 +544,22 @@ class MetadataResolver:
                 if not source_type or not target_type:
                     continue
                 source_mappings[source_type.lower()] = _normalize_canonical(target_type)
-            mapping_by_name[source_name] = source_mappings
+            mapping_by_name[source_key] = source_mappings
 
         return entries, type_by_name, mapping_by_name
+
+    @property
+    @lru_cache
+    def _data_source_type_entries(self) -> dict[str, Any]:
+        """Expose data source type entities by normalized name."""
+        entries: dict[str, Any] = {}
+        for wrapper in self.model.dataSourceTypes.values():
+            source_type_entity = wrapper.entity
+            type_name = getattr(source_type_entity, "name", None)
+            if not type_name:
+                continue
+            entries[str(type_name).strip().lower()] = source_type_entity
+        return entries
 
     @property
     @lru_cache
@@ -422,6 +574,27 @@ class MetadataResolver:
         """Map data source name to source type (e.g. SqlDataSource)."""
         _, type_by_name, _ = self._data_source_details
         return type_by_name
+
+    def data_source_extended_properties(self, data_source_name: str) -> dict[str, str]:
+        """Return normalized extended properties for a data source."""
+        source_key = str(data_source_name).strip().lower()
+        source_entity = self.data_sources.get(source_key)
+        if source_entity is None:
+            return {}
+        return _normalize_string_map(getattr(source_entity, "extendedProperties", None))
+
+    def data_source_connector_id(self, data_source_name: str) -> str | None:
+        """Resolve connector id via bound DataSourceType.connectionProperties."""
+        source_key = str(data_source_name).strip().lower()
+        source_type_name = self._data_source_type_by_name.get(source_key)
+        if not source_type_name:
+            return None
+        source_type = self._data_source_type_entries.get(str(source_type_name).strip().lower())
+        if source_type is None:
+            return None
+        return _connector_id_from_connection_properties(
+            getattr(source_type, "connectionProperties", None)
+        )
 
     @property
     @lru_cache
@@ -460,13 +633,14 @@ class MetadataResolver:
         Map a raw source data type to its canonical representation using the data source
         specific mapping, falling back to the data source type mapping when necessary.
         """
+        source_key = str(data_source_name).strip().lower()
         source_type_lower = source_type.lower()
 
-        canonical = self._data_source_mapping_by_name.get(data_source_name, {}).get(source_type_lower)
+        canonical = self._data_source_mapping_by_name.get(source_key, {}).get(source_type_lower)
         if canonical:
             return canonical
 
-        data_source_type = self._data_source_type_by_name.get(data_source_name)
+        data_source_type = self._data_source_type_by_name.get(source_key)
         if data_source_type:
             canonical = self._data_source_type_mappings.get(data_source_type, {}).get(source_type_lower)
             if canonical:
@@ -480,7 +654,7 @@ class MetadataResolver:
             data_source_name = getattr(source, "dataSource", None)
             if not data_source_name:
                 continue
-            yield source, self.data_sources.get(data_source_name)
+            yield source, self.data_sources.get(str(data_source_name).strip().lower())
 
     # ----------------------------------------------------------- Canonical map
     @property
@@ -692,43 +866,132 @@ class MetadataResolver:
             for name, canonical in defs
         ]
 
+    def _folders_after_zone(self, locator) -> tuple[str, ...]:
+        """Return folder segments below the zone segment."""
+        if not locator or not getattr(locator, "folders", None):
+            return ()
+        return tuple(locator.folders[1:])
+
+    def output_folder_segments(self, locator) -> tuple[str, ...]:
+        """
+        Return folder segments for generated output paths.
+
+        The method prefers inherited dataProduct/dataModule attributes and falls back
+        to the existing folder hierarchy when attributes are missing.
+        """
+        segments = list(self._folders_after_zone(locator))
+        product_name, module_name = self.inherited_product_module_values(locator)
+
+        if product_name:
+            if segments:
+                segments[0] = product_name
+            else:
+                segments.append(product_name)
+
+        if module_name:
+            if len(segments) >= 2:
+                segments[1] = module_name
+            elif len(segments) == 1:
+                segments.append(module_name)
+            else:
+                segments.extend(["UnknownProduct", module_name])
+
+        return tuple(segment for segment in segments if segment)
+
+    def _folder_chain(self, locator) -> list[FolderInfo]:
+        """Return folder metadata for each ancestor after the zone."""
+        folders = getattr(locator, "folders", None) or []
+        chain: list[FolderInfo] = []
+        for depth in range(2, len(folders) + 1):
+            chain.append(self.folder_info(tuple(folders[:depth])))
+        return chain
+
+    def inherited_product_module_values(self, locator) -> tuple[str | None, str | None]:
+        """Return inherited dataProduct/dataModule values without folder-name fallback."""
+        data_product_name: str | None = None
+        data_module_name: str | None = None
+        for folder in reversed(self._folder_chain(locator)):
+            if data_product_name is None and folder.data_product:
+                data_product_name = folder.data_product
+            if data_module_name is None and folder.data_module:
+                data_module_name = folder.data_module
+            if data_product_name and data_module_name:
+                break
+        return data_product_name, data_module_name
+
+    def product_module_context(self, locator) -> tuple[FolderInfo | None, FolderInfo | None, str, str]:
+        """Resolve effective data product/module names using folder attributes first."""
+        folders_after_zone = self._folders_after_zone(locator)
+        product_info = self.folder_info(tuple(locator.folders[:2])) if len(locator.folders) >= 2 else None
+        module_info = self.folder_info(tuple(locator.folders[:3])) if len(locator.folders) >= 3 else None
+
+        data_product_name, data_module_name = self.inherited_product_module_values(locator)
+
+        if not data_product_name:
+            data_product_name = folders_after_zone[0] if folders_after_zone else "UnknownProduct"
+        if not data_module_name:
+            data_module_name = folders_after_zone[1] if len(folders_after_zone) > 1 else "General"
+
+        return product_info, module_info, data_product_name, data_module_name
+
+    def full_table_name(
+        self,
+        locator,
+        table_name: str,
+        *,
+        data_product_name: str | None = None,
+        data_module_name: str | None = None,
+    ) -> str:
+        """Build a table name from dataProduct/dataModule, or full folder fallback."""
+        if data_product_name and data_module_name:
+            parts = [data_product_name, data_module_name, table_name]
+        else:
+            parts = [*self._folders_after_zone(locator), table_name]
+        return "_".join(part for part in parts if part)
+
+    def modeled_table_identifiers(self, locator, entity_name: str) -> dict[str, str]:
+        """Derive naming components for modeled tables."""
+        _, _, data_product_name, data_module_name = self.product_module_context(locator)
+        inherited_product, inherited_module = self.inherited_product_module_values(locator)
+        return {
+            "data_product": data_product_name,
+            "data_module": data_module_name,
+            "table_name": entity_name,
+            "full_table_name": self.full_table_name(
+                locator,
+                entity_name,
+                data_product_name=inherited_product,
+                data_module_name=inherited_module,
+            ),
+        }
+
     def raw_table_identifiers(self, locator, source) -> dict[str, str]:
         """Derive naming components for a raw table based on entity folders and source alias."""
-        if locator and getattr(locator, "folders", None):
-            folders = locator.folders
-        else:
-            folders = ()
-
-        product_info = self.folder_info(tuple(folders[:2])) if len(folders) >= 2 else None
-        module_info = self.folder_info(tuple(folders[:3])) if len(folders) >= 3 else None
-
-        data_product_name = (
-            product_info.name
-            if product_info
-            else (folders[1] if len(folders) >= 2 else "UnknownProduct")
-        )
-        data_module_name = (
-            module_info.name
-            if module_info
-            else (folders[2] if len(folders) >= 3 else "General")
-        )
-
         table_name = build_raw_source_name(source) or "raw_entity"
-        full_table_name = "_".join(
-            part for part in (data_product_name, data_module_name, table_name) if part
-        )
-
+        _, _, data_product_name, data_module_name = self.product_module_context(locator)
+        inherited_product, inherited_module = self.inherited_product_module_values(locator)
         return {
             "data_product": data_product_name,
             "data_module": data_module_name,
             "table_name": table_name,
-            "full_table_name": full_table_name,
+            "full_table_name": self.full_table_name(
+                locator,
+                table_name,
+                data_product_name=inherited_product,
+                data_module_name=inherited_module,
+            ),
         }
 
     # ----------------------------------------------------------- Entity extras
     def entity_folder_path(self, locator) -> Path:
-        """Return the filesystem path to the entity folder."""
+        """Return the filesystem path to the module folder that contains entities."""
         return self.model_root.joinpath(*locator.folders)
+
+    def entity_script_folder_path(self, locator) -> Path:
+        """Return the filesystem path to the entity-specific script folder."""
+        base = self.entity_folder_path(locator)
+        entity_name = getattr(locator, "entityName", None) or ""
+        return base / entity_name if entity_name else base
 
     def locator_to_dm8l(self, locator) -> str:
         """Convert a locator into a DM8L style path (e.g. /Core/Sales/.../Entity)."""
@@ -747,28 +1010,11 @@ class MetadataResolver:
         """Expose properties defined on a source configuration."""
         return _properties_to_dict(getattr(source, "properties", None))
 
-    def write_mode(
-        self,
-        entity,
-        product_info: FolderInfo | None,
-        module_info: FolderInfo | None,
-        default: str = "overwrite",
-    ) -> str:
-        """Resolve write mode using entity -> module -> product fallback."""
-        entity_props = self.entity_properties(entity)
-        if "write_mode" in entity_props and entity_props["write_mode"]:
-            return str(entity_props["write_mode"]).lower()
-
-        if module_info:
-            module_props = module_info.properties
-            if "write_mode" in module_props and module_props["write_mode"]:
-                return str(module_props["write_mode"]).lower()
-
-        if product_info:
-            product_props = product_info.properties
-            if "write_mode" in product_props and product_props["write_mode"]:
-                return str(product_props["write_mode"]).lower()
-
+    def write_mode(self, locator, entity, default: str = "overwrite") -> str:
+        """Resolve write mode via scope-aware property lookup."""
+        value = self.resolve_property(locator, entity, "write_mode")
+        if value:
+            return str(value).lower()
         return default
 
     def history_configuration(self, entity) -> dict[str, list[str]]:
@@ -834,28 +1080,10 @@ class MetadataResolver:
             if not bk_attributes:
                 continue
 
-            product_info = (
-                self.folder_info(tuple(locator.folders[:2]))
-                if len(locator.folders) >= 2
-                else None
-            )
-            module_info = (
-                self.folder_info(tuple(locator.folders[:3]))
-                if len(locator.folders) >= 3
-                else None
-            )
-            data_product_name = (
-                product_info.name
-                if product_info
-                else (locator.folders[1] if len(locator.folders) >= 2 else "UnknownProduct")
-            )
-            data_module_name = (
-                module_info.name
-                if module_info
-                else (locator.folders[2] if len(locator.folders) >= 3 else "General")
-            )
-
-            full_table_name = f"{data_product_name}_{data_module_name}_{entity.name}"
+            identifiers = self.modeled_table_identifiers(locator, entity.name)
+            data_product_name = identifiers["data_product"]
+            data_module_name = identifiers["data_module"]
+            full_table_name = identifiers["full_table_name"]
 
             dimensions.append(
                 {
@@ -980,27 +1208,8 @@ class MetadataResolver:
                 if not _attribute_property_equals(target_attribute, "attribute_type", "sk"):
                     continue
 
-                dimension_product_info = (
-                    self.folder_info(tuple(target_locator.folders[:2]))
-                    if len(target_locator.folders) >= 2
-                    else None
-                )
-                dimension_module_info = (
-                    self.folder_info(tuple(target_locator.folders[:3]))
-                    if len(target_locator.folders) >= 3
-                    else None
-                )
-                data_product_name = (
-                    dimension_product_info.name
-                    if dimension_product_info
-                    else (target_locator.folders[1] if len(target_locator.folders) >= 2 else "UnknownProduct")
-                )
-                data_module_name = (
-                    dimension_module_info.name
-                    if dimension_module_info
-                    else (target_locator.folders[2] if len(target_locator.folders) >= 3 else "General")
-                )
-                dimension_full_table_name = f"{data_product_name}_{data_module_name}_{target_entity.name}"
+                dimension_identifiers = self.modeled_table_identifiers(target_locator, target_entity.name)
+                dimension_full_table_name = dimension_identifiers["full_table_name"]
                 referenced_table = f"{dimension_zone_meta.name}.{dimension_full_table_name}"
                 fk_columns[source_name] = referenced_table
 
@@ -1064,27 +1273,8 @@ class MetadataResolver:
             if dimension_zone_meta is None:
                 continue
 
-            dimension_product_info = (
-                self.folder_info(tuple(target_locator.folders[:2]))
-                if len(target_locator.folders) >= 2
-                else None
-            )
-            dimension_module_info = (
-                self.folder_info(tuple(target_locator.folders[:3]))
-                if len(target_locator.folders) >= 3
-                else None
-            )
-            data_product_name = (
-                dimension_product_info.name
-                if dimension_product_info
-                else (target_locator.folders[1] if len(target_locator.folders) >= 2 else "UnknownProduct")
-            )
-            data_module_name = (
-                dimension_module_info.name
-                if dimension_module_info
-                else (target_locator.folders[2] if len(target_locator.folders) >= 3 else "General")
-            )
-            dimension_full_table_name = f"{data_product_name}_{data_module_name}_{target_entity.name}"
+            dimension_identifiers = self.modeled_table_identifiers(target_locator, target_entity.name)
+            dimension_full_table_name = dimension_identifiers["full_table_name"]
 
             dimension_attributes = {
                 attribute.name: attribute for attribute in getattr(target_entity, "attributes", [])
@@ -1269,7 +1459,13 @@ class MetadataResolver:
                     "mapping": mapping_dict,
                     "mapping_entries": mapping_entries,
                     "source_location": getattr(source, "sourceLocation", None),
-                    "source_type": self._data_source_type_by_name.get(data_source),
+                    "source_type": self._data_source_type_by_name.get(
+                        str(data_source).strip().lower()
+                    ),
+                    "connector_id": self.data_source_connector_id(str(data_source)),
+                    "data_source_extended_properties": self.data_source_extended_properties(
+                        str(data_source)
+                    ),
                     "delta_column": delta_entry["target"] if delta_entry else None,
                     "source_delta_column": delta_entry["source"] if delta_entry else None,
                 }
@@ -1323,7 +1519,7 @@ class MetadataResolver:
     def collect_transformations(self, locator, entity) -> list[dict[str, Any]]:
         """Return function-based transformation metadata for the entity."""
         transformations: list[dict[str, Any]] = []
-        folder_path = self.entity_folder_path(locator)
+        folder_path = self.entity_script_folder_path(locator)
         for definition in getattr(entity, "transformations", []) or []:
             kind = getattr(definition, "kind", None)
             if hasattr(kind, "value"):
@@ -1341,7 +1537,15 @@ class MetadataResolver:
 
             script_relative = source_ref.lstrip("./")
             script_path = folder_path / script_relative
-            script_content = script_path.read_text(encoding="utf-8") if script_path.exists() else ""
+            if not script_path.exists():
+                logger.warning(
+                    "Transformation script not found for entity '%s': %s",
+                    getattr(locator, "entityName", "<unknown>"),
+                    script_path,
+                )
+                script_content = ""
+            else:
+                script_content = script_path.read_text(encoding="utf-8")
             script_name = Path(script_relative).stem
             step_no = getattr(definition, "stepNo", None)
             display_name = getattr(definition, "name", None)
@@ -1427,6 +1631,7 @@ def collect_imports(columns: Iterable[dict[str, Any]]) -> list[str]:
 def collect_column_tags(
     entity,
     *,
+    resolver: MetadataResolver | None = None,
     include_attribute_tags: bool = True,
     include_mapping_tags: bool = True,
 ) -> list[dict[str, Any]]:
@@ -1437,10 +1642,14 @@ def collect_column_tags(
         for attribute in getattr(entity, "attributes", []) or []:
             if not getattr(attribute, "properties", None):
                 continue
-            tags = {
-                prop.property: _convert_property_value(prop.value)
-                for prop in attribute.properties
-            }
+            tags: dict[str, Any] = {}
+            for prop in attribute.properties:
+                name = getattr(prop, "property", None)
+                if not name:
+                    continue
+                if resolver and not resolver.property_supports_column_usage(name):
+                    continue
+                tags[name] = _convert_property_value(prop.value)
             if tags:
                 tag_map[attribute.name] = tags
 
@@ -1456,6 +1665,8 @@ def collect_column_tags(
                 for prop in mapping.properties:
                     name = getattr(prop, "property", None)
                     if not name:
+                        continue
+                    if resolver and not resolver.property_supports_column_usage(name):
                         continue
                     tags[name] = _convert_property_value(getattr(prop, "value", None))
 
@@ -1481,20 +1692,29 @@ def merge_table_tags(
     entity,
     product_info: FolderInfo | None,
     module_info: FolderInfo | None,
+    *,
+    resolver: MetadataResolver | None = None,
 ) -> dict[str, Any]:
     """Combine table-level properties from product, module, and entity definitions."""
     tags: dict[str, Any] = {}
     if product_info:
-        tags.update(product_info.properties)
+        for key, value in product_info.properties.items():
+            if resolver and not resolver.property_supports_folder_scope(key):
+                continue
+            tags[key] = value
     if module_info:
-        tags.update(module_info.properties)
+        for key, value in module_info.properties.items():
+            if resolver and not resolver.property_supports_folder_scope(key):
+                continue
+            tags[key] = value
     if entity.properties:
-        tags.update(
-            {
-                prop.property: _convert_property_value(prop.value)
-                for prop in entity.properties
-            }
-        )
+        for prop in entity.properties:
+            key = getattr(prop, "property", None)
+            if not key:
+                continue
+            if resolver and not resolver.property_supports_model_scope(key):
+                continue
+            tags[key] = _convert_property_value(prop.value)
     return tags
 
 
