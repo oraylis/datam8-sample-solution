@@ -1,46 +1,26 @@
 {
-    "type": "dataSources",
-    "dataSources": [
+  "type": "dataSources",
+  "dataSources": [
+    {
+      "name": "AdventureWorks",
+      "displayName": "Adventure Works Demo Database",
+      "properties": [
         {
-            "extendedProperties": {
-                "path": "."
-            },
-            "name": "TestCsvFile",
-            "type": "CsvFile"
-        },
-        {
-            "extendedProperties": {
-                "authMode": "sql_user",
-                "host": "localhost",
-                "database": "AdventureWorks",
-                "username": "sa",
-                "password": "ref://sources/SQLServer/AdventureWorks",
-                "trust_server_certificate": true
-            },
-            "name": "AdventureWorks",
-            "displayName": "Adventure Works Demo Database",
-            "type": "SQLServer"
-        },
-        {
-            "extendedProperties": {
-                "storageAccount": "datam80adl",
-                "storagePath": "drop",
-                "authenticationMethod": "AccountKey"
-            },
-            "name": "ExternalStorage",
-            "displayName": "datam80adl",
-            "type": "LakeSource"
-        },
-        {
-            "extendedProperties": {
-                "host": "datam80ora.westeurope.cloudapp.azure.com",
-                "port": 1521,
-                "connectionType": "Service",
-                "connection": "datam8test",
-                "user": "datam8"
-            },
-            "name": "OracleDev",
-            "type": "OracleDataSource"
+          "property": "cluster",
+          "value": "extra_small"
         }
-    ]
+      ],
+      "type": "SQLServer",
+      "extendedProperties": {
+        "authMode": "sql_user",
+        "host": "datam80sql0dev.database.windows.net",
+        "database": "AdventureWorks",
+        "username": "sqladmin",
+        "password": "ref://datasources/AdventureWorks/password",
+        "trust_server_certificate": true,
+        "port": 1433,
+        "encrypt": true
+      }
+    }
+  ]
 }

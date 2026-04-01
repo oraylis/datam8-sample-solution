@@ -4,25 +4,49 @@
     {
       "name": "raw",
       "targetName": "raw",
-      "displayName": "Raw Data Layer"
+      "displayName": "Raw Data Layer",
+      "properties": [
+        {
+          "property": "target",
+          "value": "databricks"
+        }
+      ]
     },
     {
       "name": "stage",
       "targetName": "bronze",
       "displayName": "Staging Data Layer",
-      "localFolderName": "010-Stage"
+      "localFolderName": "010-Stage",
+      "properties": [
+        {
+          "property": "target",
+          "value": "databricks"
+        }
+      ]
     },
     {
       "name": "core",
       "targetName": "silver",
       "displayName": "Core Business Layer",
-      "localFolderName": "020-Core"
+      "localFolderName": "020-Core",
+      "properties": [
+        {
+          "property": "target",
+          "value": "databricks"
+        }
+      ]
     },
     {
       "name": "curated",
       "targetName": "gold",
       "displayName": "Curated Analytics Layer",
-      "localFolderName": "030-Curated"
+      "localFolderName": "030-Curated",
+      "properties": [
+        {
+          "property": "target",
+          "value": "databricks"
+        }
+      ]
     },
     {
       "name": "consumer",
@@ -30,10 +54,10 @@
       "displayName": "Consumer Tabular Layer",
       "localFolderName": "040-Consumer",
       "properties": [
-          {
-              "property": "target",
-              "value": "powerbi"
-          }
+        {
+          "property": "target",
+          "value": "powerbi"
+        }
       ]
     }
   ]

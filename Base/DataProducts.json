@@ -1,41 +1,41 @@
 {
-    "type": "dataProducts",
-    "dataProducts": [
+  "type": "dataProducts",
+  "dataProducts": [
+    {
+      "name": "Sales",
+      "displayName": "All Entities for Sales",
+      "dataModules": [
         {
-            "name": "Sales",
-            "displayName": "All Entities for Sales",
-            "dataModules": [
-                {
-                    "name": "Customer",
-                    "displayName": "Customer module"
-                },
-                {
-                    "name": "Product",
-                    "displayName": "Product module"
-                },
-                {
-                    "name": "Other",
-                    "displayName": "Other module"
-                },
-                {
-                    "name": "Order",
-                    "displayName": "Order module"
-                }
-            ]
+          "name": "Customer",
+          "displayName": "Customer module"
         },
         {
-            "name": "HR",
-            "displayName": "All Entities for Human Resources",
-            "dataModules": [
-                {
-                    "name": "Employee",
-                    "displayName": "Employee module"
-                },
-                {
-                    "name": "Payroll",
-                    "displayName": "Payroll module"
-                }
-            ]
+          "name": "Product",
+          "displayName": "Product module"
+        },
+        {
+          "name": "Other",
+          "displayName": "Other module"
+        },
+        {
+          "name": "Order",
+          "displayName": "Order module"
         }
-    ]
+      ]
+    },
+    {
+      "name": "HR",
+      "displayName": "All Entities for Human Resources",
+      "dataModules": [
+        {
+          "name": "Employee",
+          "displayName": "Employee module"
+        },
+        {
+          "name": "Payroll",
+          "displayName": "Payroll module"
+        }
+      ]
+    }
+  ]
 }

@@ -6,9 +6,7 @@
       "displayName": "Jobs",
       "scopes": [
         {
-          "type": "entity",
-          "singleUsage": true,
-          "mandatory": false
+          "type": "entity"
         }
       ]
     },
@@ -50,8 +48,7 @@
       "displayName": "Data Retention",
       "scopes": [
         {
-          "type": "entity",
-          "mandatory": false
+          "type": "entity"
         }
       ]
     },
@@ -88,14 +85,10 @@
       "displayName": "Type Widening",
       "scopes": [
         {
-          "type": "entity",
-          "singleUsage": true,
-          "mandatory": false
+          "type": "entity"
         },
         {
-          "type": "folder",
-          "singleUsage": true,
-          "mandatory": false
+          "type": "folder"
         }
       ]
     },
@@ -105,14 +98,10 @@
       "schema_": "",
       "scopes": [
         {
-          "type": "entity",
-          "singleUsage": true,
-          "mandatory": false
+          "type": "entity"
         },
         {
-          "type": "folder",
-          "singleUsage": true,
-          "mandatory": false
+          "type": "folder"
         }
       ]
     },
@@ -123,8 +112,7 @@
       "scopes": [
         {
           "type": "entity",
-          "singleUsage": false,
-          "mandatory": false
+          "singleUsage": false
         }
       ]
     },
