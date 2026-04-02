@@ -2,43 +2,6 @@
   "type": "dataSourceTypes",
   "dataSourceTypes": [
     {
-      "name": "CsvFile",
-      "displayName": "testfile",
-      "dataTypeMapping": [
-        {
-          "sourceType": "number",
-          "targetType": "decimal"
-        },
-        {
-          "sourceType": "string",
-          "targetType": "string"
-        }
-      ],
-      "connectionProperties": [
-        {
-          "name": "protocol",
-          "required": false,
-          "type": "string",
-          "default": "file"
-        },
-        {
-          "name": "path",
-          "required": true,
-          "type": "string"
-        }
-      ],
-      "authModes": [
-        {
-          "name": "no_auth",
-          "displayName": "No Auth / Anonymous",
-          "required": [
-            "protocol",
-            "path"
-          ]
-        }
-      ]
-    },
-    {
       "name": "SQLServer",
       "displayName": "SQL Database",
       "description": "Traditional SQL database connection",
