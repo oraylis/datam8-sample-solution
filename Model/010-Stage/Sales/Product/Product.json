@@ -51,8 +51,10 @@
       "name": "StandardCost",
       "attributeType": "ID",
       "dataType": {
-        "type": "money",
-        "nullable": false
+        "type": "decimal",
+        "nullable": false,
+        "precision": 19,
+        "scale": 4
       },
       "dateAdded": "2025-01-01T01:01:01Z"
     },
@@ -61,8 +63,10 @@
       "name": "ListPrice",
       "attributeType": "ID",
       "dataType": {
-        "type": "money",
-        "nullable": false
+        "type": "decimal",
+        "nullable": false,
+        "precision": 19,
+        "scale": 4
       },
       "dateAdded": "2025-01-01T01:01:01Z"
     },

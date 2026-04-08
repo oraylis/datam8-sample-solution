@@ -93,7 +93,7 @@ def _connector_wheel_workspace_path(connector_id: str | None) -> str | None:
     """Resolve workspace wheel path for a connector id based on bundled utils wheels."""
     if not connector_id:
         return None
-    normalized = str(connector_id).strip().lower()
+    normalized = re.sub(r"[^a-z0-9_]+", "_", str(connector_id).strip().lower()).strip("_")
     if not normalized:
         return None
 

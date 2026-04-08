@@ -79,22 +79,22 @@ def _normalize_string_map(values: Any) -> dict[str, str]:
     return normalized
 
 
-def _connector_id_from_connection_properties(connection_properties: Iterable[Any] | None) -> str | None:
-    """Read __connector.id from DataSourceType.connectionProperties entries."""
-    if not connection_properties:
+def _connector_id_from_plugin_id(plugin_id: Any) -> str | None:
+    """Normalize DataSourceType.pluginId to the connector token used in code/templates."""
+    if plugin_id is None:
         return None
-    prefix = "__connector.id="
-    for prop in connection_properties:
-        name = getattr(prop, "name", None)
-        if not name:
-            continue
-        text = str(name).strip()
-        if not text.lower().startswith(prefix):
-            continue
-        connector_id = text[len(prefix) :].strip()
-        if connector_id:
-            return connector_id
-    return None
+    text = str(plugin_id).strip()
+    if not text:
+        return None
+
+    # Support namespaced plugin IDs such as `builtin:SQLServer`.
+    if ":" in text:
+        text = text.split(":")[-1].strip()
+    if not text:
+        return None
+
+    token = re.sub(r"[^A-Za-z0-9_]+", "_", text).strip("_").lower()
+    return token or None
 
 
 def _attribute_property_equals(attribute: Any, property_name: str, expected_value: str) -> bool:
@@ -584,7 +584,7 @@ class MetadataResolver:
         return _normalize_string_map(getattr(source_entity, "extendedProperties", None))
 
     def data_source_connector_id(self, data_source_name: str) -> str | None:
-        """Resolve connector id via bound DataSourceType.connectionProperties."""
+        """Resolve connector id via bound DataSourceType.pluginId."""
         source_key = str(data_source_name).strip().lower()
         source_type_name = self._data_source_type_by_name.get(source_key)
         if not source_type_name:
@@ -592,8 +592,8 @@ class MetadataResolver:
         source_type = self._data_source_type_entries.get(str(source_type_name).strip().lower())
         if source_type is None:
             return None
-        return _connector_id_from_connection_properties(
-            getattr(source_type, "connectionProperties", None)
+        return _connector_id_from_plugin_id(
+            getattr(source_type, "pluginId", None) or getattr(source_type, "plugin_id", None)
         )
 
     @property
