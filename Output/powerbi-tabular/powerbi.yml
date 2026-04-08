@@ -1,0 +1,17 @@
+# Manual deployment configuration for Power BI/Fabric artifacts in this repo.
+deployment:
+  name: automation_sample_solution_powerbi
+  repository_directory: "./generated/powerbi-tabular"
+  item_types_in_scope:
+    - SemanticModel
+    - Report
+  delete_orphans: false
+
+targets:
+  dev:
+    environment: dev
+    workspace_name: "<fabric-workspace-dev>"
+
+  prod:
+    environment: prod
+    workspace_name: "<fabric-workspace-prod>"

@@ -1,0 +1,56 @@
+trigger: none
+pr: none
+
+parameters:
+  - name: target_env
+    displayName: Target environment
+    type: string
+    default: dev
+    values:
+      - dev
+      - prod
+
+  - name: item_types_in_scope
+    displayName: Override item types (optional)
+    type: string
+    default: ""
+
+variables:
+  - group: fabric_cicd_group_sensitive
+  - group: fabric_cicd_group_non_sensitive
+
+stages:
+  - stage: deploy_${{ parameters.target_env }}
+    displayName: Deploy to ${{ parameters.target_env }}
+    jobs:
+      - deployment: deploy_fabric_${{ parameters.target_env }}
+        displayName: Fabric deploy (${{ parameters.target_env }})
+        environment: ${{ parameters.target_env }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - task: UsePythonVersion@0
+                  inputs:
+                    versionSpec: "3.12"
+                  displayName: "Use Python 3.12"
+
+                - script: |
+                    python -m pip install --upgrade pip
+                    pip install fabric-cicd azure-identity requests pyyaml
+                  displayName: "Install deployment dependencies"
+
+                - task: PythonScript@0
+                  displayName: "Deploy Fabric artifacts"
+                  inputs:
+                    scriptSource: filePath
+                    scriptPath: "$(Build.SourcesDirectory)/Output/powerbi-tabular/.deploy/deploy-to-fabric.py"
+                    arguments: >-
+                      --config "$(Build.SourcesDirectory)/Output/powerbi-tabular/powerbi.yml"
+                      --target-env "${{ parameters.target_env }}"
+                      --tenant-id "$(aztenantid)"
+                      --client-id "$(azclientid)"
+                      --client-secret "$(azspnsecret)"
+                      --item-types "${{ parameters.item_types_in_scope }}"
