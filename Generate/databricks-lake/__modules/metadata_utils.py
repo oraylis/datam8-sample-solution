@@ -14,6 +14,7 @@ from datam8.utils import start_logger
 logger = start_logger(__name__)
 
 TARGET_NAME = "databricks"
+TARGET_PROPERTY_NAME = "target"
 
 # Common aliases so source / canonical names converge to those defined in DataTypes.json.
 TYPE_ALIASES: dict[str, str] = {
@@ -166,6 +167,7 @@ class ZoneMetadata:
     display_name: str
     target_name: str
     local_folder: str | None
+    properties: dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -439,6 +441,7 @@ class MetadataResolver:
                 display_name=getattr(zone_entity, "displayName", None) or zone_name,
                 target_name=getattr(zone_entity, "targetName", None) or zone_name,
                 local_folder=getattr(zone_entity, "localFolderName", None),
+                properties=_properties_to_dict(getattr(zone_entity, "properties", None)),
             )
             if zone.local_folder:
                 folder_map[zone.local_folder.lower()] = zone
@@ -468,17 +471,26 @@ class MetadataResolver:
         # Preserve insertion order from the JSON file by relying on dict value order.
         return list(name_map.values())
 
+    def is_target_zone(self, zone: ZoneMetadata | None) -> bool:
+        """Return True when zone property `target` resolves to this generator target."""
+        if zone is None:
+            return False
+        target = zone.properties.get(TARGET_PROPERTY_NAME)
+        if target is None:
+            return False
+        return str(target).strip().lower() == TARGET_NAME
+
     def is_model_backed_zone(self, zone: ZoneMetadata | None) -> bool:
-        """Return True when the zone has a local folder and therefore model entities."""
-        return bool(zone and zone.local_folder)
+        """Return True when the zone targets this generator and has a local folder."""
+        return bool(zone and zone.local_folder and self.is_target_zone(zone))
 
     def model_backed_zones(self) -> list[ZoneMetadata]:
         """Return zones that should be processed through model entities."""
         return [zone for zone in self.zones() if self.is_model_backed_zone(zone)]
 
     def external_zones(self) -> list[ZoneMetadata]:
-        """Return zones without local folders used for external ingestion."""
-        return [zone for zone in self.zones() if not self.is_model_backed_zone(zone)]
+        """Return target zones without local folders used for external ingestion."""
+        return [zone for zone in self.zones() if self.is_target_zone(zone) and not zone.local_folder]
 
     def default_external_zone(self) -> ZoneMetadata | None:
         """Return the first external zone in definition order."""

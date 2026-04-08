@@ -21,7 +21,7 @@ This target generates TMDL artifacts for consumer entities:
 - `table_payloads` -> `table.tmdl.jinja2`
 
 ## Important Internal Contracts
-- Consumer entities are filtered by `CONSUMER_FOLDER`.
+- Entities are filtered by zone property `target=powerbi`.
 - `_ensure_tables_cached` stores tables under cache key `("powerbi", "tables")`.
 - Relationship resolution uses both:
   - explicit relationship metadata

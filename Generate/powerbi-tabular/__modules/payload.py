@@ -18,7 +18,8 @@ from datam8.utils.cache import Cache
 
 logger = start_logger(__name__)
 
-CONSUMER_FOLDER = "040-Consumer"
+TARGET_NAME = "powerbi"
+TARGET_PROPERTY_NAME = "target"
 DEFAULT_DATABASE_NAME = "_Datam8 Sample Dataset"
 DEFAULT_MODEL_NAME = "Model"
 
@@ -173,6 +174,37 @@ def _collect_mapping_lookup(sources: Sequence[Any]) -> dict[str, tuple[str, str]
     return lookup
 
 
+def _properties_to_dict(properties: Iterable[Any] | None) -> dict[str, Any]:
+    """Convert iterable of property objects into a lower-cased dictionary."""
+    result: dict[str, Any] = {}
+    if not properties:
+        return result
+    for prop in properties:
+        name = getattr(prop, "property", None)
+        if not name:
+            continue
+        key = str(name).strip().lower()
+        if key in result:
+            continue
+        result[key] = getattr(prop, "value", None)
+    return result
+
+
+def _target_zone_folders(model: Model) -> set[str]:
+    """Return local folder names for zones that target this generator."""
+    folders: set[str] = set()
+    for wrapper in model.zones.values():
+        zone_entity = wrapper.entity
+        props = _properties_to_dict(getattr(zone_entity, "properties", None))
+        target_value = props.get(TARGET_PROPERTY_NAME)
+        if str(target_value or "").strip().lower() != TARGET_NAME:
+            continue
+        local_folder = getattr(zone_entity, "localFolderName", None)
+        if local_folder:
+            folders.add(str(local_folder))
+    return folders
+
+
 def _resolve_column(table: TableDefinition, column_name: str | None) -> ColumnDefinition | None:
     if not column_name:
         return None
@@ -237,7 +269,12 @@ def _append_relationship(
     )
 
 
-def _build_partition_lines(model: Model, table: TableDefinition, entity: Any) -> list[str]:
+def _build_partition_lines(
+    model: Model,
+    table: TableDefinition,
+    entity: Any,
+    target_zone_folders: set[str],
+) -> list[str]:
     for source in entity.sources:
         source_location = getattr(source, "sourceLocation", None)
         if not isinstance(source_location, int):
@@ -249,8 +286,8 @@ def _build_partition_lines(model: Model, table: TableDefinition, entity: Any) ->
             continue
 
         target_locator = referenced.locator
-        # Skip relationships to other consumer entities – they are handled separately.
-        if target_locator.folders and target_locator.folders[0] == CONSUMER_FOLDER:
+        # Skip relationships to entities in the same target scope; handled as model relationships.
+        if target_locator.folders and target_locator.folders[0] in target_zone_folders:
             continue
 
         schema_name = _extract_schema_name(target_locator)
@@ -300,12 +337,13 @@ def _format_relationship_name(from_table: str, to_table: str, column: str) -> st
     return f"{_slug(from_table)}_{_slug(to_table)}_{_slug(column)}"
 
 
-def _collect_consumer_tables(model: Model) -> list[TableDefinition]:
-    """Collect consumer-zone entities and map them into table definitions."""
+def _collect_target_tables(model: Model) -> list[TableDefinition]:
+    """Collect target-zone entities and map them into table definitions."""
     tables: list[TableDefinition] = []
+    target_zone_folders = _target_zone_folders(model)
 
     for locator, wrapper in model.modelEntities.items():
-        if not locator.folders or locator.folders[0] != CONSUMER_FOLDER:
+        if not locator.folders or locator.folders[0] not in target_zone_folders:
             continue
 
         entity = wrapper.entity
@@ -363,7 +401,7 @@ def _collect_consumer_tables(model: Model) -> list[TableDefinition]:
 
             table.register_column(column)
 
-        partition_lines = _build_partition_lines(model, table, entity)
+        partition_lines = _build_partition_lines(model, table, entity, target_zone_folders)
         table.partition = PartitionDefinition(name=table.name, source_lines=partition_lines)
         tables.append(table)
 
@@ -492,7 +530,7 @@ def _ensure_tables_cached(model: Model, cache: Cache) -> list[TableDefinition]:
     try:
         tables: list[TableDefinition] = cache.get(cache_key)
     except KeyError:
-        tables = _collect_consumer_tables(model)
+        tables = _collect_target_tables(model)
         cache.set(cache_key, tables)
     return tables
 
@@ -510,7 +548,7 @@ def _detect_database_name(tables: Sequence[TableDefinition]) -> str:
 
     if len(names) > 1:
         logger.warning(
-            "Multiple consumer data products detected (%s); using '%s' for Power BI database name.",
+            "Multiple target data products detected (%s); using '%s' for Power BI database name.",
             ", ".join(names),
             names[0],
         )

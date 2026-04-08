@@ -108,7 +108,7 @@
       "property": "data_retention"
     },
     {
-      "name": "databricks-lake",
+      "name": "databricks",
       "property": "target"
     },
     {

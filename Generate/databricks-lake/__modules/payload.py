@@ -223,6 +223,9 @@ def generate_external_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPay
         if not locator.folders:
             logger.debug("Skipping entity without folder information: %s", locator)
             continue
+        zone_meta = resolver.zone_from_folder(locator.folders[0])
+        if zone_meta is None or not resolver.is_target_zone(zone_meta):
+            continue
 
         column_tags = collect_column_tags(entity, resolver=resolver, include_attribute_tags=False)
         refactored_columns = collect_refactored_columns(entity)
@@ -488,6 +491,9 @@ def generate_external_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPay
         entity = wrapper.entity
         if not locator.folders:
             continue
+        zone_meta = resolver.zone_from_folder(locator.folders[0])
+        if zone_meta is None or not resolver.is_target_zone(zone_meta):
+            continue
 
         write_mode = "append"
 
@@ -619,6 +625,8 @@ def generate_schema_resources(model: Model, cache: Cache) -> Sequence[IPayload]:
     resolver = MetadataResolver(model)
     schemas = []
     for zone in resolver.zones():
+        if not resolver.is_target_zone(zone):
+            continue
         target_name = zone.target_name or zone.name
         resource_slug = re.sub(r"[^A-Za-z0-9]+", "_", target_name or zone.name).strip("_").lower()
         if not resource_slug:
