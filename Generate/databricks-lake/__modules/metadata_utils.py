@@ -295,7 +295,7 @@ class MetadataResolver:
         scopes = self._property_scopes(property_name)
         if not scopes:
             return True
-        return any(scope.type_name == "model" for scope in scopes)
+        return any(scope.type_name == "entity" for scope in scopes)
 
     def property_supports_column_usage(self, property_name: str) -> bool:
         """Return True when the property may be used repeatedly at column level."""
@@ -303,7 +303,7 @@ class MetadataResolver:
         if not scopes:
             return True
         return any(
-            scope.type_name == "model" and scope.single_usage is False
+            scope.type_name == "entity" and scope.single_usage is False
             for scope in scopes
         )
 
