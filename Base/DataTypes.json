@@ -14,7 +14,6 @@
     {
       "name": "short",
       "displayName": "Integer (16 bit)",
-      "hasCharLen": false,
       "targets": {
         "databricks": "smallint",
         "powerbi": "int64"
@@ -23,7 +22,6 @@
     {
       "name": "int",
       "displayName": "Integer (32 bit)",
-      "hasCharLen": false,
       "targets": {
         "databricks": "int",
         "powerbi": "int64"
@@ -32,7 +30,6 @@
     {
       "name": "long",
       "displayName": "Integer (64 bit)",
-      "hasCharLen": false,
       "targets": {
         "databricks": "bigint",
         "powerbi": "int64"
@@ -41,7 +38,6 @@
     {
       "name": "byte",
       "displayName": "Integer (8 bit)",
-      "hasCharLen": false,
       "targets": {
         "databricks": "tinyint",
         "powerbi": "int64"
@@ -51,7 +47,6 @@
       "name": "double",
       "displayName": "Double",
       "description": "Floating point with double precision",
-      "hasCharLen": false,
       "targets": {
         "databricks": "double",
         "powerbi": "double"
@@ -60,7 +55,6 @@
     {
       "name": "bit",
       "displayName": "Bit (1 bit)",
-      "hasCharLen": false,
       "targets": {
         "databricks": "boolean",
         "powerbi": "boolean"
@@ -70,7 +64,6 @@
       "name": "date",
       "displayName": "Date",
       "description": "Date storage yyyy-mm-dd",
-      "hasCharLen": false,
       "targets": {
         "databricks": "date",
         "powerbi": "date"
@@ -80,7 +73,6 @@
       "name": "datetime",
       "displayName": "Date time",
       "description": "Date time storage yyyy-mm-dd HH:mm:ss",
-      "hasCharLen": false,
       "targets": {
         "databricks": "timestamp",
         "powerbi": "timestamp"
@@ -98,7 +90,6 @@
     {
       "name": "uniqueidentifier",
       "displayName": "Unique Identifier",
-      "hasCharLen": false,
       "targets": {
         "databricks": "string",
         "powerbi": "string"
@@ -107,7 +98,6 @@
     {
       "name": "decimal",
       "displayName": "Decimal",
-      "hasCharLen": false,
       "hasPrecision": true,
       "hasScale": true,
       "targets": {
@@ -118,7 +108,6 @@
     {
       "name": "money",
       "displayName": "Money",
-      "hasCharLen": false,
       "targets": {
         "databricks": "decimal(19,4)",
         "powerbi": "decimal"
@@ -128,7 +117,6 @@
       "name": "dynstring",
       "displayName": "Dynstring",
       "description": "string without character length",
-      "hasCharLen": false,
       "targets": {
         "databricks": "string",
         "powerbi": "string"
@@ -138,10 +126,16 @@
       "name": "dyndecimal",
       "displayName": "Dyndecimal",
       "description": "decimal with precision and scale",
-      "hasCharLen": false,
       "targets": {
         "databricks": "decimal(19,3)",
         "powerbi": "decimal"
+      }
+    },
+    {
+      "name": "DataType1",
+      "description": "hjvj",
+      "targets": {
+        "databricks": "DataType1"
       }
     }
   ]
