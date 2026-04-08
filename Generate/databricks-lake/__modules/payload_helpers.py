@@ -147,7 +147,7 @@ def _build_external_sources(
     for external_source in external_sources:
         stage_sources.append(
             {
-                "key": f"External_{external_source['external_full_table']}",
+                "key": f"{source_zone}_{external_source['external_full_table']}",
                 "data_source": external_source["data_source"],
                 "external_full_table": external_source["external_full_table"],
                 "source_zone": source_zone,
