@@ -477,7 +477,7 @@ class MetadataResolver:
         return [zone for zone in self.zones() if self.is_model_backed_zone(zone)]
 
     def external_zones(self) -> list[ZoneMetadata]:
-        """Return zones without local folders (raw-like external ingestion zones)."""
+        """Return zones without local folders used for external ingestion."""
         return [zone for zone in self.zones() if not self.is_model_backed_zone(zone)]
 
     def default_external_zone(self) -> ZoneMetadata | None:
@@ -519,7 +519,7 @@ class MetadataResolver:
     ) -> tuple[dict[str, Any], dict[str, str | None], dict[str, dict[str, str]]]:
         """
         Load validated data sources and derive:
-        - raw entries by name
+        - source entries by name
         - source type per data source (e.g. SqlDataSource)
         - source-specific type mappings (sourceType -> canonical type)
         """
@@ -630,7 +630,7 @@ class MetadataResolver:
 
     def map_source_type_to_canonical(self, data_source_name: str, source_type: str) -> str | None:
         """
-        Map a raw source data type to its canonical representation using the data source
+        Map an external-source data type to its canonical representation using the data source
         specific mapping, falling back to the data source type mapping when necessary.
         """
         source_key = str(data_source_name).strip().lower()
@@ -739,7 +739,7 @@ class MetadataResolver:
         return metadata
 
     def build_standard_columns(self, entity, *, foreign_key_columns: dict[str, str] | None = None) -> list[dict[str, Any]]:
-        """Create column descriptors for a modeled entity (non-raw)."""
+        """Create column descriptors for a modeled entity (non-external)."""
         columns: list[dict[str, Any]] = []
         fk_columns = foreign_key_columns or {}
         for attribute in entity.attributes:
@@ -761,15 +761,15 @@ class MetadataResolver:
             )
         return columns
 
-    def build_raw_columns(self, entity, source) -> list[dict[str, Any]]:
+    def build_external_columns(self, entity, source) -> list[dict[str, Any]]:
         """
-        Create column descriptors for a raw notebook.
+        Create column descriptors for an external-ingestion notebook.
 
         The method reads the source mapping to determine the target column names
         and source data types. When no explicit mapping is present, it falls
         back to the modeled attributes (old behaviour).
         """
-        columns = self.build_raw_base_columns()
+        columns = self.build_external_base_columns()
 
         mapping_entries = getattr(source, "mapping", None) or []
         data_source_name = getattr(source, "dataSource", "") or ""
@@ -847,8 +847,8 @@ class MetadataResolver:
 
         return columns
 
-    def build_raw_base_columns(self) -> list[dict[str, Any]]:
-        """Default ingestion columns for raw notebooks."""
+    def build_external_base_columns(self) -> list[dict[str, Any]]:
+        """Default ingestion columns for external-ingestion notebooks."""
         defs = (
             ("__Year", "short"),
             ("__Month", "short"),
@@ -965,9 +965,9 @@ class MetadataResolver:
             ),
         }
 
-    def raw_table_identifiers(self, locator, source) -> dict[str, str]:
-        """Derive naming components for a raw table based on entity folders and source alias."""
-        table_name = build_raw_source_name(source) or "raw_entity"
+    def external_table_identifiers(self, locator, source) -> dict[str, str]:
+        """Derive naming components for an external-ingestion table based on folders and source alias."""
+        table_name = build_external_source_name(source) or "external_entity"
         _, _, data_product_name, data_module_name = self.product_module_context(locator)
         inherited_product, inherited_module = self.inherited_product_module_values(locator)
         return {
@@ -1403,15 +1403,15 @@ class MetadataResolver:
 
         return lookups
 
-    def raw_sources(self, locator, entity) -> list[dict[str, Any]]:
-        """Collect metadata about external/raw sources feeding the entity."""
+    def external_sources(self, locator, entity) -> list[dict[str, Any]]:
+        """Collect metadata about external sources feeding the entity."""
         sources: list[dict[str, Any]] = []
         for source in getattr(entity, "sources", []):
             data_source = getattr(source, "dataSource", None)
             if not data_source:
                 continue
 
-            identifiers = self.raw_table_identifiers(locator, source)
+            identifiers = self.external_table_identifiers(locator, source)
             properties = _properties_to_dict(getattr(source, "properties", None))
             mapping_dict: dict[str, str] = {}
             mapping_entries: list[dict[str, Any]] = []
@@ -1452,8 +1452,8 @@ class MetadataResolver:
                     "data_module": identifiers["data_module"],
                     "source_alias": getattr(source, "sourceAlias", None),
                     "table_name": identifiers["table_name"],
-                    "raw_name": identifiers["table_name"],
-                    "raw_full_table": identifiers["full_table_name"],
+                    "external_name": identifiers["table_name"],
+                    "external_full_table": identifiers["full_table_name"],
                     "full_table_name": identifiers["full_table_name"],
                     "properties": properties,
                     "mapping": mapping_dict,
@@ -1566,21 +1566,21 @@ class MetadataResolver:
             )
         return transformations
 
-    def stage_select_expressions(self, entity, raw_source: dict[str, Any]) -> list[str]:
-        """Build selectExpr expressions for stage entities fed from raw sources."""
+    def stage_select_expressions(self, entity, external_source: dict[str, Any]) -> list[str]:
+        """Build selectExpr expressions for stage entities fed from external sources."""
         expressions: list[str] = []
         for attribute in getattr(entity, "attributes", []):
             # Calculated columns (with expressions) are materialized later in the notebook.
             if getattr(attribute, "expression", None):
                 continue
-            # Raw tables already use the modeled/target column names, so select them directly.
+            # External-source tables already use modeled/target column names, so select them directly.
             expressions.append(f"`{attribute.name}`")
 
         source_label = (
-            raw_source.get("source_alias")
-            or raw_source.get("raw_full_table")
-            or raw_source.get("table_name")
-            or raw_source.get("data_source")
+            external_source.get("source_alias")
+            or external_source.get("external_full_table")
+            or external_source.get("table_name")
+            or external_source.get("data_source")
             or "_unknown_source"
         )
         expressions.append(f"{repr(source_label)} AS __SourceTable")
@@ -1765,7 +1765,7 @@ def build_delta_table_properties(table_tags: dict[str, Any]) -> dict[str, str]:
 
 
 def build_business_key_partitions(entity) -> list[str]:
-    """Use business-key attributes as partition columns for non-raw tables."""
+    """Use business-key attributes as partition columns for non-external tables."""
     return [
         attribute.name
         for attribute in entity.attributes
@@ -1785,8 +1785,8 @@ def _parse_source_location(location: str | None) -> tuple[str | None, str | None
     return None, None
 
 
-def build_raw_source_name(source) -> str:
-    """Derive a raw table/filename from source alias/location."""
+def build_external_source_name(source) -> str:
+    """Derive an external-ingestion table/filename from source alias/location."""
     alias = _sanitize_identifier(getattr(source, "sourceAlias", None))
     if alias:
         return alias
@@ -1794,4 +1794,4 @@ def build_raw_source_name(source) -> str:
     schema, table = _parse_source_location(getattr(source, "sourceLocation", None))
     fallback_parts = [_sanitize_identifier(schema), _sanitize_identifier(table)]
     fallback = "_".join(part for part in fallback_parts if part)
-    return fallback or "raw_entity"
+    return fallback or "external_entity"

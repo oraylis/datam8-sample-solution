@@ -100,7 +100,7 @@ def _build_scd2_tracking_columns(resolver: MetadataResolver) -> list[dict[str, A
     ]
 
 
-def _build_raw_table_tag_inputs(
+def _build_external_table_tag_inputs(
     *,
     resolver: MetadataResolver,
     product_info: Any | None,
@@ -136,23 +136,23 @@ def _build_raw_table_tag_inputs(
     return table_properties_input, table_display_tags
 
 
-def _build_stage_sources(
+def _build_external_sources(
     resolver: MetadataResolver,
     entity: Any,
-    raw_sources: list[dict[str, Any]],
+    external_sources: list[dict[str, Any]],
     source_zone: str,
 ) -> list[dict[str, Any]]:
-    """Create stage-source descriptors consumed by modeled DML template rendering."""
+    """Create external-source descriptors consumed by modeled DML template rendering."""
     stage_sources: list[dict[str, Any]] = []
-    for raw_source in raw_sources:
+    for external_source in external_sources:
         stage_sources.append(
             {
-                "key": f"Raw_{raw_source['raw_full_table']}",
-                "data_source": raw_source["data_source"],
-                "raw_full_table": raw_source["raw_full_table"],
+                "key": f"External_{external_source['external_full_table']}",
+                "data_source": external_source["data_source"],
+                "external_full_table": external_source["external_full_table"],
                 "source_zone": source_zone,
-                "select_expressions": resolver.stage_select_expressions(entity, raw_source),
-                "properties": raw_source["properties"],
+                "select_expressions": resolver.stage_select_expressions(entity, external_source),
+                "properties": external_source["properties"],
             }
         )
     return stage_sources
@@ -161,7 +161,7 @@ def _build_stage_sources(
 def _schema_columns(
     *,
     attribute_names: list[str],
-    include_raw_timestamp: bool,
+    include_external_timestamp: bool,
     include_source_table: bool,
     include_business_function: bool,
 ) -> list[str]:
@@ -174,19 +174,19 @@ def _schema_columns(
         schema_columns.append("__BusinessFunction")
     if include_source_table:
         schema_columns.append("__SourceTable")
-    if include_raw_timestamp:
+    if include_external_timestamp:
         schema_columns.append("__InsertTimestampRawUTC")
     schema_columns.extend(attribute_names)
     return schema_columns
 
 
-def _raw_mapping_projection(
+def _external_mapping_projection(
     mapping_entries: list[dict[str, Any]],
     *,
     resolver: MetadataResolver,
     data_source_name: str,
 ) -> dict[str, Any]:
-    """Derive mapping-derived lists used by raw extraction templates."""
+    """Derive mapping-derived lists used by external extraction templates."""
     select_columns = [
         {
             "target": entry.get("target"),

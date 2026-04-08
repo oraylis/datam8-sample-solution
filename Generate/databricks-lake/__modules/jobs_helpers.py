@@ -64,7 +64,7 @@ class EntityJobInfo:
     job_config: dict[str, Any] | None
     ddl_notebook: str
     dml_notebook: str
-    raw_sources: list[dict[str, Any]]
+    external_sources: list[dict[str, Any]]
     dependencies: set[int]
 
 
@@ -99,7 +99,7 @@ class JobsPlanner:
     """
     Prepare job metadata (create/load) for the Databricks lake generator.
 
-    The planner shapes raw model metadata into hierarchical structures (module, zone, global)
+    The planner shapes external-source model metadata into hierarchical structures (module, zone, global)
     that the payload layer later renders as YAML job definitions.
     """
 
@@ -154,10 +154,10 @@ class JobsPlanner:
         return modules
 
     def _collect_entities(self) -> list[EntityJobInfo]:
-        """Expand model entities and their raw sources into job-friendly descriptors."""
+        """Expand model entities and their external sources into job-friendly descriptors."""
         entities: list[EntityJobInfo] = []
-        seen_raw_tables: set[tuple[str, tuple[str, ...], str]] = set()
-        raw_entity_counter = 10_000_000
+        seen_external_tables: set[tuple[str, tuple[str, ...], str]] = set()
+        external_entity_counter = 10_000_000
         for locator, wrapper in self.model.modelEntities.items():
             if not locator.folders:
                 continue
@@ -201,7 +201,7 @@ class JobsPlanner:
 
             ddl_notebook = self._notebook_path(zone_folder, "ddl", subfolders, f"{locator.entityName}.py")
             dml_notebook = self._notebook_path(zone_folder, "dml", subfolders, f"{locator.entityName}.py")
-            raw_sources = self.resolver.raw_sources(locator, wrapper.entity)
+            external_sources = self.resolver.external_sources(locator, wrapper.entity)
             dependencies = set(self.resolver.entity_dependencies(wrapper.entity))
 
             entities.append(
@@ -222,30 +222,30 @@ class JobsPlanner:
                     job_config=job_config,
                     ddl_notebook=ddl_notebook,
                     dml_notebook=dml_notebook,
-                    raw_sources=raw_sources,
+                    external_sources=external_sources,
                     dependencies=dependencies,
                 )
             )
 
-            if not raw_sources:
+            if not external_sources:
                 continue
 
-            for index, raw_source in enumerate(raw_sources, start=1):
-                raw_table_name = raw_source.get("table_name")
-                if not raw_table_name:
+            for index, external_source in enumerate(external_sources, start=1):
+                external_table_name = external_source.get("table_name")
+                if not external_table_name:
                     continue
-                raw_key = (product_dir, module_dirs, raw_table_name)
-                if raw_key in seen_raw_tables:
+                external_key = (product_dir, module_dirs, external_table_name)
+                if external_key in seen_external_tables:
                     continue
-                seen_raw_tables.add(raw_key)
-                raw_entity_counter += 1
-                raw_display = raw_source.get("display_name") or raw_table_name
+                seen_external_tables.add(external_key)
+                external_entity_counter += 1
+                external_display = external_source.get("display_name") or external_table_name
                 entities.append(
                     EntityJobInfo(
-                        entity_id=raw_entity_counter,
+                        entity_id=external_entity_counter,
                         locator=locator,
-                        name=raw_table_name,
-                        display_name=raw_display,
+                        name=external_table_name,
+                        display_name=external_display,
                         zone_name=self.external_zone_name,
                         zone_folder=self.external_zone_folder,
                         zone_display=self.external_zone_display,
@@ -260,15 +260,15 @@ class JobsPlanner:
                             self.external_zone_folder,
                             "ddl",
                             subfolders,
-                            f"{raw_table_name}.py",
+                            f"{external_table_name}.py",
                         ),
                         dml_notebook=self._notebook_path(
                             self.external_zone_folder,
                             "dml",
                             subfolders,
-                            f"{raw_table_name}.py",
+                            f"{external_table_name}.py",
                         ),
-                        raw_sources=[],
+                        external_sources=[],
                         dependencies=set(),
                     )
                 )
@@ -483,7 +483,7 @@ class JobsPlanner:
         entities: list[EntityJobInfo],
         cluster_variable: str | None,
     ) -> dict[str, Any] | None:
-        """Build the task graph for a specific job value, including raw prerequisites."""
+        """Build the task graph for a specific job value, including external-source prerequisites."""
         entity_task_keys: dict[int, str] = {}
         for entity in entities:
             key_parts = [
@@ -494,31 +494,31 @@ class JobsPlanner:
             ]
             entity_task_keys[entity.entity_id] = self._task_key(key_parts)
 
-        raw_tasks: list[dict[str, Any]] = []
-        raw_task_lookup: dict[int, list[str]] = defaultdict(list)
-        seen_raw_keys: set[str] = set()
+        external_tasks: list[dict[str, Any]] = []
+        external_task_lookup: dict[int, list[str]] = defaultdict(list)
+        seen_external_keys: set[str] = set()
 
         for entity in entities:
-            if not entity.raw_sources:
+            if not entity.external_sources:
                 continue
-            for raw_source in sorted(entity.raw_sources, key=lambda src: (src.get("table_name") or entity.name).lower()):
-                table_name = raw_source.get("table_name") or entity.name
-                raw_key = self._task_key([self.external_zone_name, entity.name, table_name])
-                if raw_key in seen_raw_keys:
-                    raw_task_lookup[entity.entity_id].append(raw_key)
+            for external_source in sorted(entity.external_sources, key=lambda src: (src.get("table_name") or entity.name).lower()):
+                table_name = external_source.get("table_name") or entity.name
+                external_key = self._task_key([self.external_zone_name, entity.name, table_name])
+                if external_key in seen_external_keys:
+                    external_task_lookup[entity.entity_id].append(external_key)
                     continue
-                seen_raw_keys.add(raw_key)
-                raw_tasks.append(
+                seen_external_keys.add(external_key)
+                external_tasks.append(
                     {
-                        "task_key": raw_key,
-                        "notebook_path": self._raw_notebook_path(entity, table_name),
+                        "task_key": external_key,
+                        "notebook_path": self._external_notebook_path(entity, table_name),
                         "depends_on": ["Start_Load"],
                         "job_cluster_key": cluster_variable,
-                        "data_source": raw_source.get("data_source"),
-                        "connector_id": raw_source.get("connector_id"),
+                        "data_source": external_source.get("data_source"),
+                        "connector_id": external_source.get("connector_id"),
                     }
                 )
-                raw_task_lookup[entity.entity_id].append(raw_key)
+                external_task_lookup[entity.entity_id].append(external_key)
 
         ordered_entities = self._topological_sort(entities)
 
@@ -533,7 +533,7 @@ class JobsPlanner:
                 if dep in entity_task_keys
             ]
             depends_on = self._unique(
-                ["Start_Load", *raw_task_lookup.get(entity.entity_id, []), *dependency_keys]
+                ["Start_Load", *external_task_lookup.get(entity.entity_id, []), *dependency_keys]
             )
 
             entity_tasks.append(
@@ -546,7 +546,7 @@ class JobsPlanner:
             )
             complete_dependencies.append(task_key)
 
-        if not (entity_tasks or raw_tasks):
+        if not (entity_tasks or external_tasks):
             return None
 
         return {
@@ -554,7 +554,7 @@ class JobsPlanner:
             "job_name": f"Load {job_display}",
             "job_value": job_value,
             "cluster_variable": cluster_variable,
-            "raw_tasks": raw_tasks,
+            "external_tasks": external_tasks,
             "entity_tasks": entity_tasks,
             "complete_dependencies": complete_dependencies,
         }
@@ -566,8 +566,8 @@ class JobsPlanner:
         parts = [zone_folder, category, *subfolders, stem]
         return "/".join(part for part in parts if part)
 
-    def _raw_notebook_path(self, entity: EntityJobInfo, table_name: str) -> str:
-        """Return the relative path for a raw ingestion notebook."""
+    def _external_notebook_path(self, entity: EntityJobInfo, table_name: str) -> str:
+        """Return the relative path for an external ingestion notebook."""
         stem = Path(table_name).stem if table_name else ""
         parts = [self.external_zone_folder, "dml", *entity.subfolders, stem]
         return "/".join(part for part in parts if part)

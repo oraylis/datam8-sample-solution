@@ -112,13 +112,13 @@ props["password"] = connection_secret
 {% if data.extract_mode and data.extract_mode|lower == "delta" %}
 # DBTITLE 1,Determine delta value
 delta_column = "{{ data.delta_column or '' }}"
-max_raw = spark.sql(f"""
+max_external = spark.sql(f"""
 SELECT
   CAST(COALESCE(MAX(`{delta_column}`), '1970-01-01') AS STRING) AS MaxDelta
 FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
 """).first()[0]
 
-print(f"Using delta value: {max_raw}")
+print(f"Using delta value: {max_external}")
 
 # COMMAND ----------
 {% endif %}
@@ -134,12 +134,12 @@ if delta_column_names:
     if (
         delta_column_details
         and str(delta_column_details[0].get("canonicalDataType") or "").lower() == "timestamp"
-        and max_raw is not None
+        and max_external is not None
     ):
-        max_raw_ts = datetime.strptime(max_raw, "%Y-%m-%d %H:%M:%S.%f")
-        max_raw = str(max_raw_ts.replace(microsecond=0))
+        max_external_ts = datetime.strptime(max_external, "%Y-%m-%d %H:%M:%S.%f")
+        max_external = str(max_external_ts.replace(microsecond=0))
     source_delta_column = ",".join(delta_column_names)
-    where_clause = f"\n    WHERE {source_delta_column} > '{max_raw}'"
+    where_clause = f"\n    WHERE {source_delta_column} > '{max_external}'"
 {% endif %}
 pushdown_query = f"""
     SELECT *
@@ -170,7 +170,7 @@ if extract_function is None:
 
 table_df = extract_function(
     connection_secret
-    {% if data.extract_mode and data.extract_mode|lower == "delta" %}, max_raw{% endif %}
+    {% if data.extract_mode and data.extract_mode|lower == "delta" %}, max_external{% endif %}
 )
 {% endif %}
 # COMMAND ----------
@@ -202,7 +202,7 @@ if target_columns:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Write to RAW zone
+# MAGIC ## Write to external zone
 
 # COMMAND ----------
 

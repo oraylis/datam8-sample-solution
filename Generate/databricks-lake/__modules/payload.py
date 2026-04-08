@@ -30,11 +30,11 @@ from metadata_utils import (
 )
 from jobs_helpers import JobsPlanner
 from payload_helpers import (
-    _build_raw_table_tag_inputs,
+    _build_external_table_tag_inputs,
+    _build_external_sources,
     _build_scd2_tracking_columns,
-    _build_stage_sources,
     _build_technical_columns,
-    _raw_mapping_projection,
+    _external_mapping_projection,
     _resolve_product_module_context,
     _schema_columns,
 )
@@ -57,7 +57,7 @@ def _scd0_helper_name(column: str) -> str:
 
 def _build_insert_assignments(
     attribute_names: Sequence[str],
-    include_raw_timestamp: bool,
+    include_external_timestamp: bool,
     include_source_table: bool,
     include_business_function: bool = False,
 ) -> list[dict[str, str]]:
@@ -68,7 +68,7 @@ def _build_insert_assignments(
         technical_columns.append("__BusinessFunction")
     if include_source_table:
         technical_columns.append("__SourceTable")
-    if include_raw_timestamp:
+    if include_external_timestamp:
         technical_columns.append("__InsertTimestampRawUTC")
 
     for column in technical_columns:
@@ -108,10 +108,10 @@ def _connector_wheel_workspace_path(connector_id: str | None) -> str | None:
     return f"${{workspace.root_path}}/files/connectors/{wheel_name}"
 
 
-def _attach_raw_task_connector_wheels(data: dict[str, Any]) -> None:
-    """Attach connector wheel libraries to raw tasks based on their data source connector."""
-    raw_tasks = data.get("raw_tasks") or []
-    for task in raw_tasks:
+def _attach_external_task_connector_wheels(data: dict[str, Any]) -> None:
+    """Attach connector wheel libraries to external-source tasks based on their data source connector."""
+    external_tasks = data.get("external_tasks") or []
+    for task in external_tasks:
         wheel_path = _connector_wheel_workspace_path(task.get("connector_id"))
         if not wheel_path:
             continue
@@ -120,7 +120,7 @@ def _attach_raw_task_connector_wheels(data: dict[str, Any]) -> None:
 
 @register_payload("ddl_notebook.py.jinja2")
 def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Build DDL payloads for modeled (non-raw) entities."""
+    """Build DDL payloads for modeled (non-external) entities."""
     resolver = MetadataResolver(model)
     payloads: list[IPayload] = []
 
@@ -204,9 +204,9 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
     return payloads
 
 
-@register_payload("ddl_notebook_raw.py.jinja2")
-def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Emit raw DDL notebooks for every external source discovered on entities."""
+@register_payload("ddl_notebook_external.py.jinja2")
+def generate_external_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
+    """Emit external-source DDL notebooks for every discovered external source."""
     resolver = MetadataResolver(model)
     payloads: list[IPayload] = []
 
@@ -232,18 +232,18 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
         )
 
         for source, data_source_info in resolver.iter_external_sources(entity):
-            identifiers = resolver.raw_table_identifiers(locator, source)
+            identifiers = resolver.external_table_identifiers(locator, source)
             data_product_name = identifiers["data_product"]
             data_module_name = identifiers["data_module"]
-            raw_name = identifiers["table_name"]
+            external_name = identifiers["table_name"]
             full_table_name = identifiers["full_table_name"]
-            raw_columns = resolver.build_raw_columns(entity, source)
-            raw_imports = collect_imports(raw_columns)
-            source_alias = getattr(source, "sourceAlias", None) or raw_name
+            external_columns = resolver.build_external_columns(entity, source)
+            external_imports = collect_imports(external_columns)
+            source_alias = getattr(source, "sourceAlias", None) or external_name
             source_properties = resolver.source_properties(source)
             entity_properties = resolver.entity_properties(entity)
 
-            table_properties_input, table_display_tags = _build_raw_table_tag_inputs(
+            table_properties_input, table_display_tags = _build_external_table_tag_inputs(
                 resolver=resolver,
                 product_info=product_info,
                 module_info=module_info,
@@ -264,12 +264,12 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                         or getattr(source, "dataSource", ""),
                         "data_product": data_product_name,
                         "data_module": data_module_name,
-                        "table_name": raw_name,
+                        "table_name": external_name,
                         "source_name": source_alias,
                         "table_comment": entity.description or "",
                         "full_table_name": full_table_name,
-                        "columns": raw_columns,
-                        "imports": raw_imports,
+                        "columns": external_columns,
+                        "imports": external_imports,
                         "partitions": ["__Year", "__Month", "__Day", "__InsertTimestampUTC"],
                         "table_tags_repr": repr(table_tags_output),
                         "table_properties": table_properties,
@@ -281,7 +281,7 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                         external_zone_folder,
                         "ddl",
                         *resolver.output_folder_segments(locator),
-                        f"{raw_name}.py",
+                        f"{external_name}.py",
                     ),
                 )
             )
@@ -334,8 +334,8 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         surrogate_key_columns = _surrogate_key_columns(entity)
         surrogate_key_column_set = set(surrogate_key_columns)
 
-        raw_sources = resolver.raw_sources(locator, entity)
-        stage_sources = _build_stage_sources(resolver, entity, raw_sources, source_zone_name)
+        external_sources = resolver.external_sources(locator, entity)
+        stage_sources = _build_external_sources(resolver, entity, external_sources, source_zone_name)
 
         transformations = resolver.collect_transformations(locator, entity)
         cache_key = (locator_payload_key, tuple(locator.folders), locator.entityName)
@@ -353,18 +353,18 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         if transformations:
             source_mode = "transformation"
         elif stage_sources:
-            source_mode = "raw_delta"
+            source_mode = "external_delta"
 
         write_mode = resolver.write_mode(locator, entity, default="overwrite")
         spark_write_mode = {"overwrite": "overwrite", "append": "append"}.get(write_mode, "overwrite")
         merge_conditions = [f"tgt.`{col}` <=> src.`{col}`" for col in business_keys]
         merge_condition_flat = " AND ".join(merge_conditions) if merge_conditions else ""
-        include_raw_timestamp = source_mode == "raw_delta"
-        include_source_table = source_mode == "raw_delta"
+        include_external_timestamp = source_mode == "external_delta"
+        include_source_table = source_mode == "external_delta"
         include_business_function = not has_external_source
         schema_columns = _schema_columns(
             attribute_names=attribute_names,
-            include_raw_timestamp=include_raw_timestamp,
+            include_external_timestamp=include_external_timestamp,
             include_source_table=include_source_table,
             include_business_function=include_business_function,
         )
@@ -386,7 +386,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             ]
         insert_assignments = _build_insert_assignments(
             assignment_attribute_names,
-            include_raw_timestamp,
+            include_external_timestamp,
             include_source_table,
             include_business_function=include_business_function,
         )
@@ -416,7 +416,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             "insert_assignments": insert_assignments,
             "merge_condition": merge_condition_flat,
         }
-        raw_merge_config = merge_config if merge_enabled and stage_sources else None
+        external_merge_config = merge_config if merge_enabled and stage_sources else None
         final_merge_config = merge_config if merge_enabled and transformations else None
 
         data = {
@@ -430,7 +430,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             "write_mode": write_mode,
             "spark_write_mode": spark_write_mode,
             "source_mode": source_mode,
-            "raw_sources": stage_sources,
+            "external_sources": stage_sources,
             "transformations": transformations,
             "final_function_key": transformations[-1]["key"] if transformations else None,
             "business_keys": business_keys,
@@ -451,7 +451,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             "scd2_columns": scd2_columns,
             "scd2_non_business_columns": scd2_non_business,
             "has_scd2_history": bool(scd2_columns),
-            "raw_merge_config": raw_merge_config,
+            "external_merge_config": external_merge_config,
             "final_merge_config": final_merge_config,
             "calculated_columns": calculated_columns,
         }
@@ -472,8 +472,8 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
     return payloads
 
 
-@register_payload("dml_notebook_raw.py.jinja2", order=2)
-def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
+@register_payload("dml_notebook_external.py.jinja2", order=2)
+def generate_external_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
     """Generate DML notebooks for external-source ingestion zones."""
     resolver = MetadataResolver(model)
     payloads: list[IPayload] = []
@@ -491,12 +491,12 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
 
         write_mode = "append"
 
-        for raw_source in resolver.raw_sources(locator, entity):
-            raw_name = raw_source["table_name"]
-            full_table_name = raw_source["full_table_name"]
-            data_source_name = raw_source["data_source"]
-            source_alias = raw_source.get("source_alias") or raw_name
-            properties = raw_source.get("properties", {})
+        for external_source in resolver.external_sources(locator, entity):
+            external_name = external_source["table_name"]
+            full_table_name = external_source["full_table_name"]
+            data_source_name = external_source["data_source"]
+            source_alias = external_source.get("source_alias") or external_name
+            properties = external_source.get("properties", {})
             data_source_entry = resolver.data_sources.get(str(data_source_name).strip().lower())
             driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
             if getattr(data_source_entry, "type", None) == "SynapseDataSource":
@@ -508,15 +508,15 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             else:
                 write_mode = "append"
 
-            mapping_entries = raw_source.get("mapping_entries", [])
-            mapping_projection = _raw_mapping_projection(
+            mapping_entries = external_source.get("mapping_entries", [])
+            mapping_projection = _external_mapping_projection(
                 mapping_entries,
                 resolver=resolver,
                 data_source_name=data_source_name,
             )
-            data_source_type = raw_source.get("source_type") or getattr(data_source_entry, "type", None)
-            connector_id = raw_source.get("connector_id")
-            source_location = raw_source.get("source_location")
+            data_source_type = external_source.get("source_type") or getattr(data_source_entry, "type", None)
+            connector_id = external_source.get("connector_id")
+            source_location = external_source.get("source_location")
             source_location = (
                 source_location.strip()
                 if isinstance(source_location, str) and source_location.strip()
@@ -532,7 +532,7 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 "data_source_type": data_source_type,
                 "use_connector": bool(connector_id),
                 "connector_id": connector_id,
-                "data_source_extended_properties": raw_source.get("data_source_extended_properties") or {},
+                "data_source_extended_properties": external_source.get("data_source_extended_properties") or {},
                 "source_name": source_alias,
                 "full_table_name": full_table_name,
                 "write_mode": write_mode,
@@ -541,14 +541,14 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 "extract_mode": extract_mode,
                 "driver": driver,
                 "connection_secret_key": f"datasource-{data_source_name}-password",
-                "mapping": raw_source.get("mapping"),
+                "mapping": external_source.get("mapping"),
                 "mapping_entries": mapping_entries,
                 "select_columns": mapping_projection["select_columns"],
                 "target_columns": mapping_projection["target_columns"],
                 "column_renames": mapping_projection["column_renames"],
                 "delta_column_details": mapping_projection["delta_column_details"] or None,
-                "delta_column": raw_source.get("delta_column"),
-                "source_delta_column": raw_source.get("source_delta_column"),
+                "delta_column": external_source.get("delta_column"),
+                "source_delta_column": external_source.get("source_delta_column"),
             }
 
             payloads.append(
@@ -559,7 +559,7 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                         external_zone_folder,
                         "dml",
                         *resolver.output_folder_segments(locator),
-                        f"{raw_name}.py",
+                        f"{external_name}.py",
                     ),
                 )
             )
@@ -784,7 +784,7 @@ def generate_jobs_load_groups(model: Model, cache: Cache) -> Sequence[IPayload]:
     payloads: list[IPayload] = []
     for job in plan.get("load_jobs", []):
         data = _prepare_job_data(job)
-        _attach_raw_task_connector_wheels(data)
+        _attach_external_task_connector_wheels(data)
         _assign_job_clusters(data, [data.get("cluster_variable")])
         payloads.append(BasePayload(data=data, output_path=job["output_path"]))
     return payloads

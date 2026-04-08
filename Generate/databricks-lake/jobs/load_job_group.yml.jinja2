@@ -47,7 +47,7 @@ resources:
           libraries:
             - maven:
                 coordinates: com.oracle.database.jdbc:ojdbc10:19.29.0.0
-{% for task in data.raw_tasks %}
+{% for task in data.external_tasks %}
         - task_key: {{ task.task_key }}
 {%- if task.depends_on %}
           depends_on:

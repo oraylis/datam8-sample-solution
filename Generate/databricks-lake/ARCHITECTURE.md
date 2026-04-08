@@ -15,9 +15,9 @@ This target generates Databricks notebooks and bundle resources for:
 
 ## Payload to Template Mapping
 - `generate_ddl_notebooks` -> `ddl_notebook.py.jinja2`
-- `generate_raw_ddl_notebooks` -> `ddl_notebook_raw.py.jinja2`
+- `generate_external_ddl_notebooks` -> `ddl_notebook_external.py.jinja2`
 - `generate_dml_notebooks` -> `dml_notebook.py.jinja2`
-- `generate_raw_dml_notebooks` -> `dml_notebook_raw.py.jinja2`
+- `generate_external_dml_notebooks` -> `dml_notebook_external.py.jinja2`
 - `generate_dml_function_scripts` -> `dml_function.py.jinja2`
 - `generate_schema_resources` -> `schema.yml.jinja2`
 - `generate_cluster_resources` -> `clusters/clusters.yml.jinja2`
@@ -30,7 +30,7 @@ This target generates Databricks notebooks and bundle resources for:
 ## Important Internal Contracts
 - Product/module name fallback logic is centralized in `_resolve_product_module_context`.
 - Merge assignment and schema-column shaping must keep key names consumed by `dml_notebook.py.jinja2`.
-- Raw extraction mapping projection is centralized in `_raw_mapping_projection`.
+- External extraction mapping projection is centralized in `_external_mapping_projection`.
 - Job planning shape comes from `JobsPlanner.build()` and is cached under `("databricks_jobs_plan",)`.
 
 ## Template Style

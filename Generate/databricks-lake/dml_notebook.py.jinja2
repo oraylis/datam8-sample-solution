@@ -55,8 +55,8 @@ data_module = "{{ data.data_module }}"
 table_name = "{{ data.table_name }}"
 full_table_name = "%s_%s_%s" % (data_product, data_module, table_name)
 
-{%- if data.source_mode == "raw_delta" and data.raw_sources %}
-source_zone = "{{ data.raw_sources[0].source_zone }}"
+{%- if data.source_mode == "external_delta" and data.external_sources %}
+source_zone = "{{ data.external_sources[0].source_zone }}"
 {%- endif %}
 
 # COMMAND ----------
@@ -83,7 +83,7 @@ table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
 
 # COMMAND ----------
 
-{%- if data.source_mode == "raw_delta" and data.raw_sources %}
+{%- if data.source_mode == "external_delta" and data.external_sources %}
 
 # MAGIC %md
 # MAGIC ## Process captured snapshots
@@ -95,18 +95,18 @@ table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
 
 # COMMAND ----------
 
-max_raw: dict = {}
+max_external: dict = {}
 
-{%- for raw_source in data.raw_sources %}
+{%- for external_source in data.external_sources %}
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### '{{ raw_source.raw_full_table }}'
+# MAGIC #### '{{ external_source.external_full_table }}'
 
 # COMMAND ----------
 
-max_raw["{{ raw_source.key }}"] = spark.sql(f"""
+max_external["{{ external_source.key }}"] = spark.sql(f"""
 SELECT
   COALESCE(MAX(__InsertTimestampRawUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxRaw
 FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
@@ -122,20 +122,20 @@ source_delta_df_list = []
 # MAGIC %md
 # MAGIC ### Extraction from source tables
 
-{%- for raw_source in data.raw_sources %}
+{%- for external_source in data.external_sources %}
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### '{{ raw_source.raw_full_table }}'
+# MAGIC #### '{{ external_source.external_full_table }}'
 
 # COMMAND ----------
 
 source_delta_{{ loop.index }}_df = (
-    spark.table(f"{catalog.name}.{{ raw_source.source_zone }}.{{ raw_source.raw_full_table }}")
-    .filter(F.col("__InsertTimestampUTC") > max_raw["{{ raw_source.key }}"])
+    spark.table(f"{catalog.name}.{{ external_source.source_zone }}.{{ external_source.external_full_table }}")
+    .filter(F.col("__InsertTimestampUTC") > max_external["{{ external_source.key }}"])
     .selectExpr(
-        {%- for expr in raw_source.select_expressions %}
+        {%- for expr in external_source.select_expressions %}
         "{{ expr }}"{% if not loop.last %},{% endif %}
         {%- endfor %}
     )
@@ -192,7 +192,7 @@ union_df.createOrReplaceTempView("union_df")
 # MAGIC %md
 # MAGIC ## Write changes to {{ data.zone | upper }}
 
-{%- set merge_cfg = data.raw_merge_config %}
+{%- set merge_cfg = data.external_merge_config %}
 {%- if merge_cfg and merge_cfg.enabled %}
 
 # COMMAND ----------
