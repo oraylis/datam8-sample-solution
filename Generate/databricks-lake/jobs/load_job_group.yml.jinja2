@@ -42,9 +42,6 @@ resources:
 {%- if data.default_job_cluster_key %}
           job_cluster_key: {{ data.default_job_cluster_key }}
 {%- endif %}
-          libraries:
-            - maven:
-                coordinates: com.oracle.database.jdbc:ojdbc10:19.29.0.0
 {% for task in data.external_tasks %}
         - task_key: {{ task.task_key }}
 {%- if task.depends_on %}

@@ -90,22 +90,23 @@ def _surrogate_key_columns(entity: Any) -> list[str]:
 
 
 def _connector_wheel_workspace_path(connector_id: str | None) -> str | None:
-    """Resolve workspace wheel path for a connector id based on bundled utils wheels."""
+    """Resolve workspace wheel path for a connector id based on bundled libraries wheels."""
     if not connector_id:
         return None
     normalized = re.sub(r"[^a-z0-9_]+", "_", str(connector_id).strip().lower()).strip("_")
     if not normalized:
         return None
 
-    connectors_dir = Path("Output", "databricks-lake", "connectors")
     pattern = f"datam8_{normalized}-*.whl"
-    matches = sorted(connectors_dir.glob(pattern))
+    project_root = Path(__file__).resolve().parents[3]
+    libraries_dir = project_root / "Output" / "databricks-lake" / "libraries"
+    matches = sorted(libraries_dir.glob(pattern))
     if not matches:
         return None
 
     # Choose latest wheel deterministically by filename.
     wheel_name = matches[-1].name
-    return f"${{workspace.root_path}}/files/connectors/{wheel_name}"
+    return f"${{workspace.root_path}}/files/libraries/{wheel_name}"
 
 
 def _attach_external_task_connector_wheels(data: dict[str, Any]) -> None:
