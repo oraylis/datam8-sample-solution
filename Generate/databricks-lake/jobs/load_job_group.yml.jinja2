@@ -8,6 +8,8 @@ resources:
           default: ${var.environment}
         - name: catalog_name
           default: ${var.catalog_name}
+        - name: schema_prefix
+          default: ${var.schema_prefix}
         - name: owner
           default: ${var.owner}
         - name: workspace_host
@@ -36,10 +38,6 @@ resources:
         - task_key: Start_Load
           notebook_task:
             notebook_path: ${workspace.root_path}/files/utils/Start_Load
-{% if data.job_value %}
-            base_parameters:
-              target_zone: {{ data.job_value }}
-{% endif %}
             source: WORKSPACE
 {%- if data.default_job_cluster_key %}
           job_cluster_key: {{ data.default_job_cluster_key }}
@@ -57,9 +55,6 @@ resources:
 {%- endif %}
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/{{ task.notebook_path }}
-            base_parameters:
-              replication_integration_status_id: '1'
-              execution_status_id: '1'
             source: WORKSPACE
 {%- if task.libraries %}
           libraries:
@@ -82,9 +77,6 @@ resources:
 {%- endif %}
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/{{ task.notebook_path }}
-            base_parameters:
-              replication_integration_status_id: '1'
-              execution_status_id: '1'
             source: WORKSPACE
 {%- set resolved_job_cluster_key = task.job_cluster_key or data.default_job_cluster_key %}
 {%- if resolved_job_cluster_key %}

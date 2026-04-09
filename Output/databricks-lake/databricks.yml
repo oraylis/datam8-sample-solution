@@ -22,6 +22,9 @@ variables:
   catalog_name:
     description: The name of the unity catalog
     default: datam8_campus_dev_fka
+  schema_prefix:
+    description: Prefix applied to schema names in notebooks
+    default: ""
   environment:
     description: The logical environment
     default: dev
@@ -44,6 +47,8 @@ targets:
     # - The 'development' mode is used for Delta Live Tables pipelines
     mode: development
     default: true
+    variables:
+      schema_prefix: "dev_${workspace.current_user.short_name}_"
     workspace:
       host: https://adb-1451794858897186.6.azuredatabricks.net
       root_path: ~/.bundle/${bundle.name}/${bundle.target}
