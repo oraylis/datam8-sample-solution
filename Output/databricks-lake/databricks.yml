@@ -28,20 +28,11 @@ variables:
   owner:
     description: The default owner of all created databricks objects
     default: teilnehmer
-  run_as_service_principal:
-    description: The service principal id used to run all jobs
-    default: 43af8bb2-e1f1-4e63-98eb-23dfb12d5189
-  datalake_name:
-    description: The storage account name
-    default: aut0adl0dev
-  datalake_container_name:
-    description: The storage account container name
-    default: campus
   unpause_schedules:
     description: Override the default schedule status
     default: PAUSED
   permission_group_name:
-      description: Group name for generell permissions on cluster and jobs
+      description: Group name for general permissions on cluster and jobs
       default: teilnehmer
 
 targets:
@@ -68,8 +59,6 @@ targets:
     workspace:
       host: https://adb-1451794858897186.6.azuredatabricks.net
       root_path: /etl/${bundle.name}/${bundle.target}
-    run_as:
-      service_principal_name: ${var.run_as_service_principal}
 
   # INFO: add more targets if necessary
 
@@ -80,15 +69,10 @@ targets:
     mode: production
     variables:
       environment: prod
-      catalog_name: datam8_campus_prod
-      datalake_name: aut0adl0dev
-      datalake_container_name: campus
-      run_as_service_principal: 43af8bb2-e1f1-4e63-98eb-23dfb12d5189
+      catalog_name: datam8_campus_${bundle.target}
       unpause_schedules: UNPAUSED
       permission_group_name: trainer
     workspace:
       host: https://adb-1451794858897186.6.azuredatabricks.net
       root_path: /etl/${bundle.name}/${bundle.target}
-    run_as:
-      service_principal_name: ${var.run_as_service_principal}
 

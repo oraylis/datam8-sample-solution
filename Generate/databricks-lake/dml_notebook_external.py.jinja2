@@ -7,7 +7,7 @@
 from pyspark.sql import functions as F  # noqa: F401
 {% if data.use_connector %}
 from datetime import datetime
-from datam8_plugins.{{ data.connector_id }}.connector import Connector
+from datam8_{{ data.connector_id }} import extract_data
 {% endif %}
 
 # COMMAND ----------
@@ -98,10 +98,8 @@ data_source_type = "{{ data.data_source_type or '' }}"
 column_renames = {{ data.column_renames | default([], true) | tojson }}
 delta_column_details = {{ data.delta_column_details | default([], true) | tojson }}
 target_columns = {{ data.target_columns | default([], true) | tojson }}
-{% if data.use_connector %}
 props = {{ data.data_source_extended_properties | default({}, true) | tojson }}
 props["password"] = connection_secret
-{% endif %}
 
 # COMMAND ----------
 
@@ -147,12 +145,9 @@ pushdown_query = f"""
 """
 {% endif %}
 print(f"Query: {pushdown_query}")
-table_df = Connector.extract_data(
+table_df = extract_data(
     props,
-    {
-        "query": pushdown_query,
-        "options": {},
-    },
+    query=pushdown_query,
 )
 {% else %}
 SourceTable = ExtractionFramework(source_location, "{{ data.extract_mode or '' }}", delta_column_details)
@@ -169,7 +164,7 @@ if extract_function is None:
     )
 
 table_df = extract_function(
-    connection_secret
+    props
     {% if data.extract_mode and data.extract_mode|lower == "delta" %}, max_external{% endif %}
 )
 {% endif %}

@@ -17,8 +17,6 @@ resources:
         - name: job_run_id
           default: "{{ '{{job.run_id}}' }}"
       permissions:
-        - service_principal_name: ${var.run_as_service_principal}
-          level: "CAN_MANAGE_RUN"
         - group_name: ${var.permission_group_name}
           level: "CAN_MANAGE_RUN"
 {% if data.schedule %}

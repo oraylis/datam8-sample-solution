@@ -98,7 +98,7 @@ def _connector_wheel_workspace_path(connector_id: str | None) -> str | None:
         return None
 
     connectors_dir = Path("Output", "databricks-lake", "connectors")
-    pattern = f"datam8_plugin_{normalized}-*.whl"
+    pattern = f"datam8_{normalized}-*.whl"
     matches = sorted(connectors_dir.glob(pattern))
     if not matches:
         return None
