@@ -175,7 +175,7 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         payloads.append(
             BasePayload(
                 data={
-                    "zone": zone_meta.name,
+                    "zone": zone_meta.target_name or zone_meta.name,
                     "zone_display": zone_meta.display_name,
                     "data_product": data_product_name,
                     "data_module": data_module_name,
@@ -261,7 +261,7 @@ def generate_external_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPay
             payloads.append(
                 BasePayload(
                     data={
-                        "zone": external_zone.name,
+                        "zone": external_zone.target_name or external_zone.name,
                         "zone_display": external_zone.display_name,
                         "data_source": getattr(source, "dataSource", ""),
                         "data_source_display": getattr(data_source_info, "displayName", None)
@@ -301,7 +301,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
     payloads: list[IPayload] = []
     locator_payload_key = "dml_transformations"
     external_zone = resolver.default_external_zone()
-    source_zone_name = external_zone.name if external_zone else "external"
+    source_zone_name = (external_zone.target_name or external_zone.name) if external_zone else "external"
 
     for locator, wrapper in model.modelEntities.items():
         entity = wrapper.entity
@@ -425,7 +425,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         final_merge_config = merge_config if merge_enabled and transformations else None
 
         data = {
-            "zone": zone_meta.name,
+            "zone": zone_meta.target_name or zone_meta.name,
             "zone_display": zone_meta.display_name,
             "data_product": data_product_name,
             "data_module": data_module_name,
@@ -533,7 +533,7 @@ def generate_external_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPay
             is_query = source_location.upper().startswith("SELECT")
 
             data = {
-                "zone": external_zone.name,
+                "zone": external_zone.target_name or external_zone.name,
                 "zone_display": external_zone.display_name,
                 "data_source": data_source_name,
                 "data_source_display": getattr(data_source_entry, "displayName", None) or data_source_name,

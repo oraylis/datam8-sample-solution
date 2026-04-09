@@ -3,6 +3,11 @@
 bundle:
   name: automation_sample_solution
 
+resources:
+  catalogs:
+    main_catalog:
+      name: ${var.catalog_name}
+
 include:
   - generated/schemas/*.yml
   - generated/clusters/*.yml
@@ -21,7 +26,7 @@ variables:
     default: 'files/generated/notebooks'
   catalog_name:
     description: The name of the unity catalog
-    default: datam8_campus_dev_fka
+    default: datam8_campus_dev_fk
   schema_prefix:
     description: Prefix applied to schema names in notebooks
     default: ""
