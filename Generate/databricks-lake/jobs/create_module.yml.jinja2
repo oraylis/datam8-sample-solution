@@ -37,5 +37,7 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+{%- if data.default_job_cluster_key %}
           job_cluster_key: {{ data.default_job_cluster_key }}
+{%- endif %}
 {% endfor %}

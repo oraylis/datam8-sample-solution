@@ -224,7 +224,9 @@ table_instance.owner = owner
 
 # DBTITLE 1,Set table & column tags
 # table attributes
+{%- if data.has_table_tags %}
 table_instance.set_table_tags({{ data.table_tags_repr }})
+{%- endif %}
 
 # column attributes
 {%- for column in data.column_tags %}

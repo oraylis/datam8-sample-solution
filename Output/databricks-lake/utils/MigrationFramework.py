@@ -663,7 +663,7 @@ class Table(object):
 
         existing_data_layout = list({
             val
-            for c in self.spark.catalog.listColumns(f"{self.catalog.name}.stage.{self.full_table_name}")
+            for c in self.spark.catalog.listColumns(f"{self.catalog.name}.{self.full_table_name}")
             for val in [
                 "liquid_clustering" if c.isCluster else None,
                 "hive_partitioning" if c.isPartition else None

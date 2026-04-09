@@ -7,6 +7,9 @@
       "scopes": [
         {
           "type": "entity"
+        },
+        {
+          "type": "folder"
         }
       ]
     },
@@ -15,7 +18,7 @@
       "displayName": "Schedules",
       "scopes": [
         {
-          "type": "none"
+          "type": "properties"
         }
       ]
     },
@@ -24,14 +27,21 @@
       "displayName": "Cluster",
       "scopes": [
         {
-          "type": "none"
+          "type": "properties"
         }
       ]
     },
     {
       "name": "tags",
       "displayName": "tags",
-      "scopes": []
+      "scopes": [
+        {
+          "type": "entity"
+        },
+        {
+          "type": "folder"
+        }
+      ]
     },
     {
       "name": "write_mode",
@@ -56,6 +66,9 @@
       "name": "business_area",
       "displayName": "Business Area",
       "scopes": [
+        {
+          "type": "entity"
+        },
         {
           "type": "folder"
         }

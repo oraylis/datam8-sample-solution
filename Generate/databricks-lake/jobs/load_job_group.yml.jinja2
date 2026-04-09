@@ -43,7 +43,9 @@ resources:
               target_zone: {{ data.job_value }}
 {% endif %}
             source: WORKSPACE
+{%- if data.default_job_cluster_key %}
           job_cluster_key: {{ data.default_job_cluster_key }}
+{%- endif %}
           libraries:
             - maven:
                 coordinates: com.oracle.database.jdbc:ojdbc10:19.29.0.0
@@ -67,7 +69,10 @@ resources:
             - whl: {{ library.whl }}
 {%- endfor %}
 {%- endif %}
-          job_cluster_key: {{ task.job_cluster_key or data.default_job_cluster_key }}
+{%- set resolved_job_cluster_key = task.job_cluster_key or data.default_job_cluster_key %}
+{%- if resolved_job_cluster_key %}
+          job_cluster_key: {{ resolved_job_cluster_key }}
+{%- endif %}
 {% endfor %}
 {% for task in data.entity_tasks %}
         - task_key: {{ task.task_key }}
@@ -83,7 +88,10 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
-          job_cluster_key: {{ task.job_cluster_key or data.default_job_cluster_key }}
+{%- set resolved_job_cluster_key = task.job_cluster_key or data.default_job_cluster_key %}
+{%- if resolved_job_cluster_key %}
+          job_cluster_key: {{ resolved_job_cluster_key }}
+{%- endif %}
 {% endfor %}
 {% if data.complete_dependencies %}
         - task_key: Complete_Load
@@ -95,5 +103,7 @@ resources:
           notebook_task:
             notebook_path: ${workspace.root_path}/files/utils/Complete_Load
             source: WORKSPACE
+{%- if data.default_job_cluster_key %}
           job_cluster_key: {{ data.default_job_cluster_key }}
+{%- endif %}
 {% endif %}
