@@ -746,7 +746,10 @@ class Table(object):
         has_changed_columns_datatype = len(columns_datatype_to_change) > 0
         has_changed_partition_key = sorted(
             new_partitions) != sorted(existing_partition_fields)
-        has_changed_data_layout = set(existing_data_layout) != set(target_data_layout)
+        has_changed_data_layout = (
+            len(target_data_layout) > 0
+            and set(existing_data_layout) != set(target_data_layout)
+        )
 
         if any([
             has_deleted_columns,
@@ -814,14 +817,19 @@ class Table(object):
                         }
                     )
                 else:
-                    (
-                        df_archive
-                        .select(*schema.fieldNames())
-                        .write
-                        .format("delta")
-                        .mode("overwrite")
-                        .insertInto("%s.%s" % (self.catalog.name, self.full_table_name))
+                    insert_columns = [
+                        c.name
+                        for c in schema
+                        if not (c.metadata or {}).get("surrogate_key")
+                    ]
+                    temp_view_name = f"tmp_migration_{self.schema_name}_{self.table_name}_{archive_time}"
+                    select_sql = ", ".join(f"`{c}`" for c in insert_columns)
+                    df_archive.select(*insert_columns).createOrReplaceTempView(temp_view_name)
+                    self.spark.sql(
+                        f"INSERT INTO `{self.catalog.name}`.`{self.schema_name}`.`{self.table_name}` ({select_sql}) "
+                        f"SELECT {select_sql} FROM `{temp_view_name}`"
                     )
+                    self.spark.catalog.dropTempView(temp_view_name)
             except Exception as e:
                 raise ValueError(
                     f"Tried automatic Migration, but failed. Please migrate manually! "
