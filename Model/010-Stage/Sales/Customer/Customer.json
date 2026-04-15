@@ -14,6 +14,7 @@
         "nullable": false
       },
       "isBusinessKey": true,
+      "expressionLanguage": "sql",
       "dateModified": "2026-03-20T11:44:07Z",
       "dateAdded": "2025-03-28T16:16:38Z",
       "properties": [
@@ -31,6 +32,7 @@
         "type": "bit",
         "nullable": false
       },
+      "expressionLanguage": "sql",
       "dateAdded": "2025-03-28T16:16:38Z"
     },
     {
@@ -41,6 +43,7 @@
         "type": "string",
         "nullable": true
       },
+      "expressionLanguage": "sql",
       "dateAdded": "2025-03-28T16:16:38Z"
     },
     {
@@ -51,6 +54,7 @@
         "type": "string",
         "nullable": false
       },
+      "expressionLanguage": "sql",
       "dateModified": "2025-03-28T16:16:38Z",
       "dateAdded": "2025-03-28T16:16:38Z",
       "properties": [
@@ -68,6 +72,7 @@
         "type": "string",
         "nullable": true
       },
+      "expressionLanguage": "sql",
       "dateModified": "2025-03-28T16:16:38Z",
       "dateAdded": "2025-03-28T16:16:38Z"
     },
@@ -80,6 +85,7 @@
         "nullable": false
       },
       "history": "SCD2",
+      "expressionLanguage": "sql",
       "dateModified": "2025-03-28T16:16:38Z",
       "dateAdded": "2025-03-28T16:16:38Z"
     },
@@ -91,6 +97,7 @@
         "type": "string",
         "nullable": true
       },
+      "expressionLanguage": "sql",
       "dateModified": "2025-03-28T16:16:38Z",
       "dateAdded": "2025-03-28T16:16:38Z"
     },
@@ -102,6 +109,7 @@
         "type": "string",
         "nullable": true
       },
+      "expressionLanguage": "sql",
       "dateModified": "2025-03-28T16:16:38Z",
       "dateAdded": "2025-03-28T16:16:38Z"
     },
@@ -113,6 +121,7 @@
         "type": "string",
         "nullable": true
       },
+      "expressionLanguage": "sql",
       "dateModified": "2025-03-28T16:16:38Z",
       "dateAdded": "2025-03-28T16:16:38Z"
     },
@@ -124,6 +133,7 @@
         "type": "string",
         "nullable": true
       },
+      "expressionLanguage": "sql",
       "dateModified": "2025-03-28T16:16:38Z",
       "dateAdded": "2025-03-28T16:16:38Z"
     },
@@ -135,6 +145,7 @@
         "type": "string",
         "nullable": true
       },
+      "expressionLanguage": "sql",
       "dateModified": "2025-03-28T16:16:38Z",
       "dateAdded": "2025-03-28T16:16:38Z"
     },
@@ -146,6 +157,7 @@
         "type": "datetime",
         "nullable": false
       },
+      "expressionLanguage": "sql",
       "dateModified": "2025-03-28T16:16:38Z",
       "dateAdded": "2025-03-28T16:16:38Z"
     },
