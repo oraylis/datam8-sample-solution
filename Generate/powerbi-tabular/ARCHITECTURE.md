@@ -20,6 +20,18 @@ This target generates TMDL artifacts for consumer entities:
 - `relationships_payload` -> `relationships.tmdl.jinja2`
 - `table_payloads` -> `table.tmdl.jinja2`
 
+## Property-Driven Behavior
+
+This target intentionally uses a narrow property surface.
+
+| Property | Scope | Output impact |
+|---|---|---|
+| `target` | zone (`Base/Zones.json`) | Includes only zones where `target=powerbi`. This determines which entities become generated TMDL tables and relationships. |
+
+Notes:
+- No entity/folder properties are currently interpreted by this target.
+- Surrogate/key behavior in this target is based on attribute metadata (for example `attributeType` values such as `SID`/`ID`), not on custom property values.
+
 ## Important Internal Contracts
 - Entities are filtered by zone property `target=powerbi`.
 - `_ensure_tables_cached` stores tables under cache key `("powerbi", "tables")`.

@@ -27,6 +27,29 @@ This target generates Databricks notebooks and bundle resources for:
 - `generate_jobs_load_all` -> `jobs/load_all.yml.jinja2`
 - `generate_jobs_load_groups` -> `jobs/load_job_group.yml.jinja2`
 
+## Property-Driven Behavior
+
+The Databricks target actively interprets the following properties.
+
+| Property | Scope | Output impact |
+|---|---|---|
+| `target` | zone (`Base/Zones.json`) | Selects zones for this target (`target=databricks`). Controls which zones produce notebooks and schema resources. |
+| `jobs` | entity + folder (inherited) | Groups entities into load jobs (`jobs/load_<group>.yml`) and controls which entities are chained together. |
+| `schedules` (via `jobs` value) | property value | Sets Quartz cron schedule in generated load jobs (and `load_all` fallback schedule). |
+| `cluster` (via `jobs` value) | property value | Selects cluster variable/definition used for generated Databricks load jobs. |
+| `write_mode` | entity | Drives modeled DML write logic (`merge` vs write modes like `overwrite`/`append`) and generated merge behavior. |
+| `extract_mode` | external source properties | Drives external ingestion write behavior in external DML notebooks (`append` vs `overwrite`). |
+| `extract_column` | mapping/column properties | Marks source delta column(s) and influences incremental extraction metadata in external DML notebooks. |
+| `column_mapping_mode` | entity + folder (inherited) | Emits Delta table property `delta.columnMapping.mode` in DDL notebooks. |
+| `enable_type_widening` | entity + folder (inherited) | Emits Delta table property `delta.enableTypeWidening` in DDL notebooks. |
+| `data_retention` | entity | Emits Delta table properties `delta.logRetentionDuration` and `delta.deletedFileRetentionDuration`. |
+| `attribute_type=sk` | attribute properties | Marks surrogate keys and affects merge assignment behavior / dimension lookup handling. |
+
+Property precedence follows resolver logic:
+1. entity value (if allowed by scope)
+2. inherited folder value (if allowed by scope)
+3. backward-compatible entity fallback
+
 ## Important Internal Contracts
 - Product/module name fallback logic is centralized in `_resolve_product_module_context`.
 - Merge assignment and schema-column shaping must keep key names consumed by `dml_notebook.py.jinja2`.
