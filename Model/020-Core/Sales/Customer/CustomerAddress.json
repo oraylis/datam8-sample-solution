@@ -43,7 +43,6 @@
         "type": "int",
         "nullable": false
       },
-      "history": "SCD1",
       "dateModified": "2025-03-28T16:16:38Z",
       "dateAdded": "2025-01-01T01:01:01Z"
     },
@@ -69,7 +68,6 @@
         "type": "string",
         "nullable": false
       },
-      "history": "SCD1",
       "refactorNames": [
         "AddressType",
         "AddressTypeName"
@@ -81,7 +79,7 @@
   "properties": [
     {
       "property": "jobs",
-      "value": "sales_daily"
+      "value": "daily"
     },
     {
       "property": "write_mode",

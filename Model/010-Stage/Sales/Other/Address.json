@@ -100,7 +100,7 @@
   "properties": [
     {
       "property": "jobs",
-      "value": "sales_daily"
+      "value": "daily"
     },
     {
       "property": "write_mode",
@@ -213,4 +213,3 @@
   "transformations": [],
   "relationships": []
 }
-

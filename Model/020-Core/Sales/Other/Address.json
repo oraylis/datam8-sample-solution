@@ -42,7 +42,6 @@
         "type": "int",
         "nullable": false
       },
-      "history": "SCD1",
       "refactorNames": [],
       "dateModified": "2025-03-28T16:16:38Z",
       "dateAdded": "2025-01-01T01:01:01Z"
@@ -55,7 +54,6 @@
         "type": "string",
         "nullable": false
       },
-      "history": "SCD1",
       "refactorNames": [
         "AddressLine1",
         "AddressLine1Name"
@@ -83,7 +81,6 @@
         "type": "string",
         "nullable": false
       },
-      "history": "SCD1",
       "refactorNames": [
         "City"
       ],
@@ -97,7 +94,6 @@
         "type": "string",
         "nullable": false
       },
-      "history": "SCD1",
       "refactorNames": [
         "CountryRegion"
       ],
@@ -111,7 +107,6 @@
         "type": "string",
         "nullable": false
       },
-      "history": "SCD1",
       "refactorNames": [],
       "dateAdded": "2025-01-01T01:01:01Z"
     },
@@ -123,7 +118,6 @@
         "type": "string",
         "nullable": false
       },
-      "history": "SCD1",
       "refactorNames": [
         "StateProvince"
       ],
@@ -133,7 +127,7 @@
   "properties": [
     {
       "property": "jobs",
-      "value": "sales_daily"
+      "value": "daily"
     },
     {
       "property": "write_mode",

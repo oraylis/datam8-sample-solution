@@ -53,7 +53,7 @@
   "properties": [
     {
       "property": "jobs",
-      "value": "sales_weekly"
+      "value": "weekly"
     },
     {
       "property": "write_mode",

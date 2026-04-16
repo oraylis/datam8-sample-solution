@@ -37,7 +37,6 @@
         "type": "double",
         "nullable": true
       },
-      "history": "SCD1",
       "dateModified": "2025-07-23T01:01:01Z",
       "dateAdded": "2025-01-01T01:01:01Z"
     }
@@ -45,7 +44,7 @@
   "properties": [
     {
       "property": "jobs",
-      "value": "sales_daily"
+      "value": "daily"
     },
     {
       "property": "write_mode",

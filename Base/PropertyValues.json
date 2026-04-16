@@ -58,36 +58,6 @@
       "workload_type": "job"
     },
     {
-      "name": "sales_daily",
-      "displayName": "Sales (Daily)",
-      "property": "jobs",
-      "properties": [
-        {
-          "property": "schedules",
-          "value": "daily"
-        },
-        {
-          "property": "cluster",
-          "value": "small"
-        }
-      ]
-    },
-    {
-      "name": "sales_weekly",
-      "displayName": "Sales (Weekly)",
-      "property": "jobs",
-      "properties": [
-        {
-          "property": "schedules",
-          "value": "weekly"
-        },
-        {
-          "property": "cluster",
-          "value": "extra_small"
-        }
-      ]
-    },
-    {
       "name": "sales",
       "displayName": "Sales",
       "property": "business_area"
@@ -124,6 +94,36 @@
       "name": "hive_partitioning",
       "displayName": "Hive Partitioning",
       "property": "data_layout"
+    },
+    {
+      "name": "daily",
+      "displayName": "Daily",
+      "property": "jobs",
+      "properties": [
+        {
+          "property": "schedules",
+          "value": "daily"
+        },
+        {
+          "property": "cluster",
+          "value": "small"
+        }
+      ]
+    },
+    {
+      "name": "weekly",
+      "displayName": "Weekly",
+      "property": "jobs",
+      "properties": [
+        {
+          "property": "schedules",
+          "value": "weekly"
+        },
+        {
+          "property": "cluster",
+          "value": "extra_small"
+        }
+      ]
     }
   ]
 }
