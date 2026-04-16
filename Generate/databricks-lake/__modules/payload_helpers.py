@@ -219,7 +219,7 @@ def _external_mapping_projection(
         source_name = entry.get("source")
         target_name = entry.get("target")
         entry_props = entry.get("properties", {}) or {}
-        is_delta_column = str(entry_props.get("extract_column", "") or "").strip().lower() == "delta"
+        is_delta_column = str(entry_props.get("extract_mode", "") or "").strip().lower() == "delta"
         if target_name:
             target_columns.append(target_name)
         if source_name and target_name and source_name != target_name:

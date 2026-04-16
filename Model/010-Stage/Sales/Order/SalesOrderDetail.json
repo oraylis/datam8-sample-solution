@@ -209,7 +209,7 @@
           },
           "properties": [
             {
-              "property": "extract_column",
+              "property": "extract_mode",
               "value": "delta"
             }
           ]
@@ -220,3 +220,4 @@
   "transformations": [],
   "relationships": []
 }
+

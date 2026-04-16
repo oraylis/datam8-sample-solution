@@ -1464,7 +1464,7 @@ class MetadataResolver:
                 (
                     entry
                     for entry in mapping_entries
-                    if entry["properties"].get("extract_column") == "delta"
+                    if entry["properties"].get("extract_mode") == "delta"
                 ),
                 None,
             )

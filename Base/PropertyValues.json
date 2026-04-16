@@ -20,11 +20,6 @@
     {
       "name": "delta",
       "displayName": "Delta",
-      "property": "extract_column"
-    },
-    {
-      "name": "delta",
-      "displayName": "Delta",
       "property": "extract_mode"
     },
     {
