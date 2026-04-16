@@ -48,17 +48,3 @@ individuals:
 [Databricks]: ./Generate/databricks-lake/ARCHITECTURE.md
 [Power BI]: ./Generate/powerbi-tabular/ARCHITECTURE.md
 [Docs]: ./Generate/docs/ARCHITECTURE.md
-
-## Template Parity Check
-
-When refactoring generator templates, use the parity script to ensure generated output stays
-text-identical (with EOL and trailing EOF whitespace normalization).
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_generation_parity.ps1 `
-  -BaselineRoot .\Output\baseline `
-  -CandidateRoot .\Output\candidate `
-  -ReportPath .\Output\parity-report.json
-```
-
-The script returns exit code `1` when differences are found (unless `-AllowDifferences` is set).
