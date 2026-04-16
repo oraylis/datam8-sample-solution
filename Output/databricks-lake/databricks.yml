@@ -3,11 +3,6 @@
 bundle:
   name: automation_sample_solution
 
-resources:
-  catalogs:
-    main_catalog:
-      name: ${var.catalog_name}
-
 include:
   - generated/schemas/*.yml
   - generated/clusters/*.yml
@@ -18,6 +13,7 @@ include:
 sync:
   include:
     - utils/
+    - libraries/
 
 # all defaults are preset with dev values
 variables:
@@ -42,6 +38,9 @@ variables:
   permission_group_name:
       description: Group name for general permissions on cluster and jobs
       default: teilnehmer
+  job_name_prefix:
+    description: Prefix added only to Databricks job display names
+    default: ""
 
 targets:
   # The 'dev' target, used for development. This is the default.
@@ -50,10 +49,10 @@ targets:
     # - Deployed resources get prefixed with '[dev my_user_name]'
     # - Any job schedules and triggers are paused by default
     # - The 'development' mode is used for Delta Live Tables pipelines
-    mode: development
     default: true
     variables:
-      schema_prefix: "dev_${workspace.current_user.short_name}_"
+      schema_prefix: ""
+      job_name_prefix: "[dev ${workspace.current_user.short_name}] "
     workspace:
       host: https://adb-1451794858897186.6.azuredatabricks.net
       root_path: ~/.bundle/${bundle.name}/${bundle.target}

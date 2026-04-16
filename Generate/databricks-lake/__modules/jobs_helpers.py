@@ -361,15 +361,13 @@ class JobsPlanner:
         create_all = None
         if create_zones:
             tasks = []
-            previous = None
             for zone_job in create_zones:
                 task = {
                     "task_key": zone_job["job_key"],
                     "job_ref": zone_job["job_key"],
-                    "depends_on": [previous] if previous else [],
+                    "depends_on": [],
                 }
                 tasks.append(task)
-                previous = zone_job["job_key"]
 
             create_all = {
                 "job_key": "Create_All_Tables",

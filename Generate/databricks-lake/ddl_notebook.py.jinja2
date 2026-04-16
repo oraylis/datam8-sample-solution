@@ -148,7 +148,8 @@ for f in schema.fields:
     if md.get("foreign_key"):
         ref_table = md.get("foreign_key_table")
         if ref_table:
-            constraint_name = f"fk_{table_base}"
+            ref_table_base = ref_table.replace(".", "_")
+            constraint_name = f"fk_{catalog.name}_{ref_table_base}"
             fk_constraints.append(
                 f"CONSTRAINT `{constraint_name}` "
                 f"FOREIGN KEY (`{f.name}`) REFERENCES {catalog.name}.{ref_table} RELY"

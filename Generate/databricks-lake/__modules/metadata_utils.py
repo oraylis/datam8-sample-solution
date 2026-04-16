@@ -1582,8 +1582,9 @@ class MetadataResolver:
         """Build selectExpr expressions for stage entities fed from external sources."""
         expressions: list[str] = []
         for attribute in getattr(entity, "attributes", []):
-            # Calculated columns (with expressions) are materialized later in the notebook.
-            if getattr(attribute, "expression", None):
+            expression = getattr(attribute, "expression", None)
+            if expression:
+                expressions.append(f"{expression} AS `{attribute.name}`")
                 continue
             # External-source tables already use modeled/target column names, so select them directly.
             expressions.append(f"`{attribute.name}`")

@@ -167,32 +167,14 @@ if latest_snapshot_key_cols:
         .drop("__dm8_latest_snapshot_rank")
     )
 
-{%- if data.calculated_columns %}
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Apply calculated columns
-
-# COMMAND ----------
-
-union_df = union_df.withColumns({
-    {%- for column in data.calculated_columns %}
-    "{{ column.name }}": F.expr({{ column.expression_literal }}){% if not loop.last %},
-    {% endif %}
-    {%- endfor %}
-})
-
-# COMMAND ----------
-
-{%- endif %}
-
 union_df.createOrReplaceTempView("union_df")
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC ## Write changes to {{ data.zone | upper }}
+
+# COMMAND ----------
 
 {%- set merge_cfg = data.external_merge_config %}
 {%- if merge_cfg and merge_cfg.enabled %}
