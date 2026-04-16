@@ -38,7 +38,7 @@ The Databricks target actively interprets the following properties.
 | `schedules` (via `jobs` value) | property value | Sets Quartz cron schedule in generated load jobs (and `load_all` fallback schedule). |
 | `cluster` (via `jobs` value) | property value | Selects cluster variable/definition used for generated Databricks load jobs. |
 | `write_mode` | entity | Drives modeled DML write logic (`merge` vs write modes like `overwrite`/`append`) and generated merge behavior. |
-| `extract_mode` | external source properties | Drives external ingestion write behavior in external DML notebooks (`append` vs `overwrite`). |
+| `extract_mode` | external source properties | Controls external extraction strategy. `delta` enables incremental filter logic; `query` treats `sourceLocation` as full SQL query text; otherwise `sourceLocation` is treated as table/object name. |
 | `extract_column` | mapping/column properties | Marks source delta column(s) and influences incremental extraction metadata in external DML notebooks. |
 | `column_mapping_mode` | entity + folder (inherited) | Emits Delta table property `delta.columnMapping.mode` in DDL notebooks. |
 | `enable_type_widening` | entity + folder (inherited) | Emits Delta table property `delta.enableTypeWidening` in DDL notebooks. |

@@ -531,7 +531,7 @@ def generate_external_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPay
                 if isinstance(source_location, str) and source_location.strip()
                 else str(source_alias).strip()
             )
-            is_query = source_location.upper().startswith("SELECT")
+            is_query = str(extract_mode or "").strip().lower() == "query"
 
             data = {
                 "zone": external_zone.target_name or external_zone.name,

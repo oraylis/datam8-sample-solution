@@ -44,7 +44,7 @@ class ExtractionFramework:
             if source_delta_column:
                 where_clause = f"\n    WHERE {source_delta_column} > '{max_raw}'"
 
-        if source_location.strip().upper().startswith("SELECT"):
+        if self.extract_mode == "query":
             pushdown_query = source_location
         else:
             pushdown_query = f"""
@@ -117,7 +117,7 @@ class ExtractionFramework:
             if source_delta_column:
                 where_clause = f"\n    WHERE {source_delta_column} > '{max_raw}'"
 
-        if source_location.strip().upper().startswith("SELECT"):
+        if self.extract_mode == "query":
             pushdown_query = source_location
         else:
             pushdown_query = f"""
