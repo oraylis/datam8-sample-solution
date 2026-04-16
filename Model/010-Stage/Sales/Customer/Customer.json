@@ -56,13 +56,7 @@
       },
       "expressionLanguage": "sql",
       "dateModified": "2025-03-28T16:16:38Z",
-      "dateAdded": "2025-03-28T16:16:38Z",
-      "properties": [
-        {
-          "property": "sensitive",
-          "value": "true"
-        }
-      ]
+      "dateAdded": "2025-03-28T16:16:38Z"
     },
     {
       "ordinalNumber": 5,

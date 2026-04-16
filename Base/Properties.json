@@ -33,7 +33,7 @@
     },
     {
       "name": "tags",
-      "displayName": "tags",
+      "displayName": "Tags",
       "scopes": [
         {
           "type": "entity"
@@ -94,27 +94,16 @@
       ]
     },
     {
-      "name": "enable_type_widening",
-      "displayName": "Type Widening",
+      "name": "table_properties",
+      "displayName": "Table Properties",
       "scopes": [
         {
-          "type": "entity"
+          "type": "entity",
+          "singleUsage": false
         },
         {
-          "type": "folder"
-        }
-      ]
-    },
-    {
-      "name": "column_mapping_mode",
-      "displayName": "Column Mapping Mode",
-      "schema_": "",
-      "scopes": [
-        {
-          "type": "entity"
-        },
-        {
-          "type": "folder"
+          "type": "folder",
+          "singleUsage": false
         }
       ]
     },
@@ -132,12 +121,6 @@
     {
       "name": "data_layout",
       "displayName": "Data Layout",
-      "schema_": "",
-      "scopes": []
-    },
-    {
-      "name": "sensitive",
-      "displayName": "Sensitivity",
       "schema_": "",
       "scopes": []
     }

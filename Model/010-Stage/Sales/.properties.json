@@ -16,12 +16,12 @@
           "value": "sales_daily"
         },
         {
-          "property": "enable_type_widening",
-          "value": "true"
+          "property": "table_properties",
+          "value": "type_widening"
         },
         {
-          "property": "column_mapping_mode",
-          "value": "name"
+          "property": "table_properties",
+          "value": "column_mapping"
         }
       ]
     }

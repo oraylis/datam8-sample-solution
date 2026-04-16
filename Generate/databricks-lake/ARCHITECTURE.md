@@ -40,8 +40,7 @@ The Databricks target actively interprets the following properties.
 | `write_mode` | entity | Drives modeled DML write logic (`merge` vs write modes like `overwrite`/`append`) and generated merge behavior. |
 | `extract_mode` | external source properties | Controls external extraction strategy. `delta` enables incremental filter logic; `query` treats `sourceLocation` as full SQL query text; otherwise `sourceLocation` is treated as table/object name. |
 | `extract_column` | mapping/column properties | Marks source delta column(s) and influences incremental extraction metadata in external DML notebooks. |
-| `column_mapping_mode` | entity + folder (inherited) | Emits Delta table property `delta.columnMapping.mode` in DDL notebooks. |
-| `enable_type_widening` | entity + folder (inherited) | Emits Delta table property `delta.enableTypeWidening` in DDL notebooks. |
+| `table_properties` (`column_mapping`, `type_widening`) | entity + folder (inherited, multi-value) | `column_mapping` emits `delta.columnMapping.mode=name`; `type_widening` emits `delta.enableTypeWidening=true` in DDL notebooks. |
 | `data_retention` | entity | Emits Delta table properties `delta.logRetentionDuration` and `delta.deletedFileRetentionDuration`. |
 | `attribute_type=sk` | attribute properties | Marks surrogate keys and affects merge assignment behavior / dimension lookup handling. |
 

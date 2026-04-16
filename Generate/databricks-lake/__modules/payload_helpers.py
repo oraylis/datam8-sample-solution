@@ -10,6 +10,27 @@ from typing import Any
 
 from metadata_utils import MetadataResolver
 
+TABLE_PROPERTIES_KEY = "table_properties"
+
+
+def _merge_tag_value(target: dict[str, Any], key: str, value: Any) -> None:
+    """Merge tag values, preserving multi-value table_properties entries."""
+    key = str(key).strip().lower()
+    if key == TABLE_PROPERTIES_KEY:
+        values = value if isinstance(value, list) else [value]
+        existing = target.get(key)
+        if existing is None:
+            target[key] = []
+            existing = target[key]
+        elif not isinstance(existing, list):
+            target[key] = [existing]
+            existing = target[key]
+        for item in values:
+            if item not in existing:
+                existing.append(item)
+        return
+    target[key] = value
+
 
 def _resolve_product_module_context(
     resolver: MetadataResolver,
@@ -111,28 +132,23 @@ def _build_external_table_tag_inputs(
     """Build two tag maps: one for Delta properties and one for rendered table tags."""
     base_table_tags: dict[str, Any] = {}
     if product_info:
-        base_table_tags.update(
-            {
-                key: value
-                for key, value in product_info.properties.items()
-                if resolver.property_supports_folder_scope(key)
-            }
-        )
+        for key, value in product_info.properties.items():
+            if resolver.property_supports_folder_scope(key):
+                _merge_tag_value(base_table_tags, key, value)
     if module_info:
-        base_table_tags.update(
-            {
-                key: value
-                for key, value in module_info.properties.items()
-                if resolver.property_supports_folder_scope(key)
-            }
-        )
+        for key, value in module_info.properties.items():
+            if resolver.property_supports_folder_scope(key):
+                _merge_tag_value(base_table_tags, key, value)
 
     table_properties_input = dict(base_table_tags)
-    table_properties_input.update(entity_properties)
-    table_properties_input.update(source_properties)
+    for key, value in entity_properties.items():
+        _merge_tag_value(table_properties_input, key, value)
+    for key, value in source_properties.items():
+        _merge_tag_value(table_properties_input, key, value)
 
     table_display_tags = dict(base_table_tags)
-    table_display_tags.update(source_properties)
+    for key, value in source_properties.items():
+        _merge_tag_value(table_display_tags, key, value)
     return table_properties_input, table_display_tags
 
 

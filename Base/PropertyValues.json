@@ -13,6 +13,11 @@
       "property": "write_mode"
     },
     {
+      "name": "append",
+      "displayName": "append",
+      "property": "write_mode"
+    },
+    {
       "name": "delta",
       "displayName": "Delta",
       "property": "extract_column"
@@ -93,14 +98,14 @@
       "property": "business_area"
     },
     {
-      "name": "true",
-      "displayName": "Has Type Widening",
-      "property": "enable_type_widening"
+      "name": "type_widening",
+      "displayName": "Type Widening",
+      "property": "table_properties"
     },
     {
-      "name": "name",
-      "displayName": "Name Column Mapping",
-      "property": "column_mapping_mode"
+      "name": "column_mapping",
+      "displayName": "Column Mapping",
+      "property": "table_properties"
     },
     {
       "name": "7_days",
@@ -124,11 +129,6 @@
       "name": "hive_partitioning",
       "displayName": "Hive Partitioning",
       "property": "data_layout"
-    },
-    {
-      "name": "true",
-      "displayName": "Is Sensitive",
-      "property": "sensitive"
     }
   ]
 }

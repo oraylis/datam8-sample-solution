@@ -15,6 +15,7 @@ logger = start_logger(__name__)
 
 TARGET_NAME = "databricks"
 TARGET_PROPERTY_NAME = "target"
+TABLE_PROPERTIES_KEY = "table_properties"
 
 # Common aliases so source / canonical names converge to those defined in DataTypes.json.
 TYPE_ALIASES: dict[str, str] = {
@@ -62,9 +63,20 @@ def _properties_to_dict(properties: Iterable[Any] | None) -> dict[str, Any]:
         if not name:
             continue
         key = str(name).strip().lower()
+        value = _convert_property_value(getattr(prop, "value", None))
+        if key == TABLE_PROPERTIES_KEY:
+            existing = result.get(key)
+            if existing is None:
+                result[key] = [value]
+            elif isinstance(existing, list):
+                if value not in existing:
+                    existing.append(value)
+            elif existing != value:
+                result[key] = [existing, value]
+            continue
         if key in result:
             continue
-        result[key] = _convert_property_value(getattr(prop, "value", None))
+        result[key] = value
     return result
 
 
@@ -1709,17 +1721,34 @@ def merge_table_tags(
     resolver: MetadataResolver | None = None,
 ) -> dict[str, Any]:
     """Combine table-level properties from product, module, and entity definitions."""
+    def _merge_value(target: dict[str, Any], key: str, value: Any) -> None:
+        key = str(key).strip().lower()
+        if key == TABLE_PROPERTIES_KEY:
+            values = value if isinstance(value, list) else [value]
+            existing = target.get(key)
+            if existing is None:
+                target[key] = []
+                existing = target[key]
+            elif not isinstance(existing, list):
+                target[key] = [existing]
+                existing = target[key]
+            for item in values:
+                if item not in existing:
+                    existing.append(item)
+            return
+        target[key] = value
+
     tags: dict[str, Any] = {}
     if product_info:
         for key, value in product_info.properties.items():
             if resolver and not resolver.property_supports_folder_scope(key):
                 continue
-            tags[key] = value
+            _merge_value(tags, key, value)
     if module_info:
         for key, value in module_info.properties.items():
             if resolver and not resolver.property_supports_folder_scope(key):
                 continue
-            tags[key] = value
+            _merge_value(tags, key, value)
     if entity.properties:
         for prop in entity.properties:
             key = getattr(prop, "property", None)
@@ -1727,7 +1756,7 @@ def merge_table_tags(
                 continue
             if resolver and not resolver.property_supports_model_scope(key):
                 continue
-            tags[key] = _convert_property_value(prop.value)
+            _merge_value(tags, key, _convert_property_value(prop.value))
     return tags
 
 
@@ -1758,6 +1787,20 @@ def build_delta_table_properties(table_tags: dict[str, Any]) -> dict[str, str]:
     """Translate table tags into Delta table properties used in SQL DDL."""
     properties: dict[str, str] = {}
 
+    table_properties = table_tags.get(TABLE_PROPERTIES_KEY)
+    table_properties_values: set[str] = set()
+    if isinstance(table_properties, list):
+        table_properties_values = {str(item).strip().lower() for item in table_properties if item is not None}
+    elif table_properties is not None:
+        table_properties_values = {str(table_properties).strip().lower()}
+
+    if "column_mapping" in table_properties_values:
+        properties["delta.columnMapping.mode"] = "name"
+
+    if "type_widening" in table_properties_values:
+        properties["delta.enableTypeWidening"] = "true"
+
+    # Backward compatibility for existing metadata still using deprecated properties.
     column_mapping_mode = table_tags.get("column_mapping_mode")
     if column_mapping_mode:
         properties["delta.columnMapping.mode"] = str(column_mapping_mode)
