@@ -1,0 +1,135 @@
+
+
+# Address (Address)
+
+
+<table>
+  <tr>
+    <td style="padding:12px; border:1px solid #ddd;">
+      <div style="font-size:24px; font-weight:bold;">9</div>
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Attributes</div>
+    </td>
+    <td style="padding:12px; border:1px solid #ddd;">
+      <div style="font-size:24px; font-weight:bold;">1</div>
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Business Keys</div>
+    </td>
+    <td style="padding:12px; border:1px solid #ddd;">
+      <div style="font-size:24px; font-weight:bold;">1</div>
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Sources</div>
+    </td>
+  </tr><tr>
+    <td style="padding:12px; border:1px solid #ddd;">
+      <div style="font-size:24px; font-weight:bold;">0</div>
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Relationships</div>
+    </td>
+  </tr>
+</table>
+
+| Field | Value |
+| --- | --- |
+| Zone | Core Business Layer |
+| Product | All Entities for Sales |
+| Module | Other module |
+| Entity ID | 2002 |
+| Kind | Entity |
+| Path | `020-Core/Sales/Other/Address` |
+
+Generated 2026-04-14T10:38:04.235275+00:00 from schema 2.0.0.
+
+## Description
+
+Core address dimension with location data
+
+## Entity Properties
+
+
+<dl>
+<dt>jobs</dt>
+  <dd>sales_daily</dd>
+<dt>write_mode</dt>
+  <dd>merge</dd>
+<dt>data_retention</dt>
+  <dd>7_days</dd>
+
+</dl>
+
+
+
+
+## Attribute Catalogue
+
+
+| # | Attribute | Type | Nullable | BK | SK | History | Description | Properties |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | `_AddressBK` | int (ID) | no | yes | no | HistoryType.SCD1 | N/A | N/A |
+| 2 | `_AddressSID` | long (SID) | no | no | yes | HistoryType.SCD1 | N/A | `attribute_type`=SK |
+| 3 | `AddressID` | int (ID) | no | no | no | HistoryType.SCD1 | N/A | N/A |
+| 4 | `AddressLine1` | string (Text) | no | no | no | HistoryType.SCD1 | N/A | N/A |
+| 5 | `AddressLine2` | string (Text) | yes | no | no | HistoryType.SCD0 | N/A | N/A |
+| 6 | `CityName` | string (Name) | no | no | no | HistoryType.SCD1 | N/A | N/A |
+| 7 | `CountryRegionName` | string (Name) | no | no | no | HistoryType.SCD1 | N/A | N/A |
+| 8 | `PostalCode` | string (Text) | no | no | no | HistoryType.SCD1 | N/A | N/A |
+| 9 | `StateProvinceName` | string (Name) | no | no | no | HistoryType.SCD1 | N/A | N/A |
+
+
+
+## Sources
+
+
+<div class="source-list">
+<details>
+  <summary>1000 (reference)</summary>
+  <p><strong>Reference:</strong> 1000 | <strong>Zone:</strong> - | <strong>Alias:</strong> -</p>
+  <p><strong>Product/Module:</strong> - / - | <strong>Location:</strong> 1000</p>
+  
+  
+  <p>No column mapping defined.</p>
+  
+</details>
+
+</div>
+
+
+## Relationships
+
+<details open>
+  <summary>Downstream Relationships (0)</summary>
+  
+  <p>No outgoing relationships declared.</p>
+  
+</details>
+
+<details>
+  <summary>Upstream Relationships (0)</summary>
+  
+  <p>No upstream relationships declared.</p>
+  
+</details>
+
+## Transformations
+
+
+<table>
+  <thead><tr><th>Step</th><th>Kind</th><th>Name</th><th>Details</th></tr></thead>
+  <tbody>
+  <tr>
+    <td>1</td>
+    <td>TransformationKind.FUNCTION</td>
+    <td>transform_first_step</td>
+    <td>
+      
+        `source`=Address.py
+      
+    </td>
+  </tr>
+  
+  </tbody>
+</table>
+
+
+
+
+---
+
+
+[Return to the documentation overview](../../../../index.md) or open the lineage diagram at `../../../../diagrams/entity-relationships.drawio`.

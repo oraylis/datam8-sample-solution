@@ -1,0 +1,35 @@
+table Customer
+
+	column 'Customer SID'
+		dataType: int64
+		isKey
+		summarizeBy: none
+		formatString: 0
+		sourceColumn: CustomerSID
+
+
+	column 'First Name'
+		dataType: string
+		sourceColumn: FirstName
+
+
+	column 'Display Name'
+		dataType: string
+		sourceColumn: DisplayName
+
+
+	column 'Last Name'
+		dataType: string
+		sourceColumn: LastName
+
+
+	partition Customer = m
+		mode: import
+		source =
+			let
+			    Source = Databricks.Catalogs(DBW_Hostname, DBW_HTTP_Path, [Catalog=null, Database=null, EnableAutomaticProxyDiscovery=null]),
+			    Database = Source{[Name=DBW_Catalog,Kind="Database"]}[Data],
+			    Schema = Database{[Name="curated",Kind="Schema"]}[Data],
+			    View = Schema{[Name="dimcustomer",Kind="Table"]}[Data]
+			in
+			    View

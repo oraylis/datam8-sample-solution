@@ -1,0 +1,36 @@
+table 'Sales Order'
+	isHidden
+
+	column 'Customer SID'
+		dataType: int64
+		isHidden
+		summarizeBy: none
+		sourceColumn: CustomerSID
+		isAvailableInMdx: false
+
+
+	column 'Ship Date ID'
+		dataType: int64
+		isHidden
+		summarizeBy: none
+		sourceColumn: Date SID
+		isAvailableInMdx: false
+
+
+	column 'Total Costs'
+		dataType: double
+		isHidden
+		sourceColumn: TotalCosts
+		isAvailableInMdx: false
+
+
+	partition 'Sales Order' = m
+		mode: import
+		source =
+			let
+			    Source = Databricks.Catalogs(DBW_Hostname, DBW_HTTP_Path, [Catalog=null, Database=null, EnableAutomaticProxyDiscovery=null]),
+			    Database = Source{[Name=DBW_Catalog,Kind="Database"]}[Data],
+			    Schema = Database{[Name="curated",Kind="Schema"]}[Data],
+			    View = Schema{[Name="factsalesorder",Kind="Table"]}[Data]
+			in
+			    View

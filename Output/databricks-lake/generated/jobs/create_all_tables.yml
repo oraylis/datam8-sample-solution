@@ -1,0 +1,52 @@
+resources:
+  jobs:
+    Create_All_Tables:
+      name: ${var.job_name_prefix}Create All Tables
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: schema_prefix
+          default: ${var.schema_prefix}
+        - name: owner
+          default: ${var.owner}
+        - name: workspace_host
+          default: ${workspace.host}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+      permissions:
+        - group_name: ${var.permission_group_name}
+          level: "CAN_MANAGE_RUN"
+      tasks:
+
+        - task_key: Create_raw_tables
+
+          run_job_task:
+            job_id: ${resources.jobs.Create_raw_tables.id}
+
+
+
+        - task_key: Create_stage_tables
+
+          run_job_task:
+            job_id: ${resources.jobs.Create_stage_tables.id}
+
+
+
+        - task_key: Create_core_tables
+
+          run_job_task:
+            job_id: ${resources.jobs.Create_core_tables.id}
+
+
+
+        - task_key: Create_curated_tables
+
+          run_job_task:
+            job_id: ${resources.jobs.Create_curated_tables.id}
+
+

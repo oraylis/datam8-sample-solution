@@ -1,0 +1,35 @@
+table Date
+
+	column 'Date SID'
+		dataType: int64
+		isKey
+		summarizeBy: none
+		formatString: 0
+		sourceColumn: DateSID
+
+
+	column Date
+		dataType: datetime
+		sourceColumn: Date
+
+
+	column 'Calendar Year'
+		dataType: string
+		sourceColumn: CalendarYear
+
+
+	column 'Month Name'
+		dataType: string
+		sourceColumn: MonthName
+
+
+	partition Date = m
+		mode: import
+		source =
+			let
+			    Source = Databricks.Catalogs(DBW_Hostname, DBW_HTTP_Path, [Catalog=null, Database=null, EnableAutomaticProxyDiscovery=null]),
+			    Database = Source{[Name=DBW_Catalog,Kind="Database"]}[Data],
+			    Schema = Database{[Name="curated",Kind="Schema"]}[Data],
+			    View = Schema{[Name="dimdate",Kind="Table"]}[Data]
+			in
+			    View

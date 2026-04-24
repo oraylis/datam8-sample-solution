@@ -1,9 +1,9 @@
 .databricks
 
 # remove all files
-databricks-lake/generated
-powerbi-tabular/generated
-docs/
+#databricks-lake/generated
+#powerbi-tabular/generated
+#docs/
 
 # allow the gitignore file
 !.gitignore

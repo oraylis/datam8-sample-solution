@@ -1,0 +1,303 @@
+
+
+<mxfile host="app.diagrams.net" modified="2026-04-14T10:38:04.235275+00:00" agent="datam8-docs" etag="ORAYLISDatabricksSample">
+  <diagram name="Model Overview" id="diagram-ORAYLISDatabricksSample">
+    <mxGraphModel dx="1920" dy="1080" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <mxCell id="external-adventureworks-address" value="AdventureWorks - Address" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#CC8B00;fillColor=#FFF4E0;" parent="1" vertex="1">
+          <mxGeometry x="120" y="120" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="external-adventureworks-customeraddress" value="AdventureWorks - CustomerAddress" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#CC8B00;fillColor=#FFF4E0;" parent="1" vertex="1">
+          <mxGeometry x="340" y="120" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="external-adventureworks-customer-de" value="AdventureWorks - Customer_DE" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#CC8B00;fillColor=#FFF4E0;" parent="1" vertex="1">
+          <mxGeometry x="560" y="120" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="external-adventureworks-customer-en" value="AdventureWorks - Customer_EN" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#CC8B00;fillColor=#FFF4E0;" parent="1" vertex="1">
+          <mxGeometry x="780" y="120" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="external-adventureworks-product" value="AdventureWorks - Product" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#CC8B00;fillColor=#FFF4E0;" parent="1" vertex="1">
+          <mxGeometry x="1000" y="120" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="external-adventureworks-productcategory" value="AdventureWorks - ProductCategory" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#CC8B00;fillColor=#FFF4E0;" parent="1" vertex="1">
+          <mxGeometry x="1220" y="120" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="external-adventureworks-productdescription" value="AdventureWorks - ProductDescription" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#CC8B00;fillColor=#FFF4E0;" parent="1" vertex="1">
+          <mxGeometry x="1440" y="120" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="external-adventureworks-productmodel" value="AdventureWorks - ProductModel" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#CC8B00;fillColor=#FFF4E0;" parent="1" vertex="1">
+          <mxGeometry x="1660" y="120" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="external-adventureworks-productmodelproductdescription" value="AdventureWorks - ProductModelProductDescription" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#CC8B00;fillColor=#FFF4E0;" parent="1" vertex="1">
+          <mxGeometry x="1880" y="120" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="external-adventureworks-salesorderdetail" value="AdventureWorks - SalesOrderDetail" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#CC8B00;fillColor=#FFF4E0;" parent="1" vertex="1">
+          <mxGeometry x="2100" y="120" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="external-adventureworks-salesorderheader" value="AdventureWorks - SalesOrderHeader" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#CC8B00;fillColor=#FFF4E0;" parent="1" vertex="1">
+          <mxGeometry x="2320" y="120" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-1012" value="Customer" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0077B6;fillColor=#E0F2FF;" parent="1" vertex="1">
+          <mxGeometry x="120" y="320" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-1001" value="Customer_Address" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0077B6;fillColor=#E0F2FF;" parent="1" vertex="1">
+          <mxGeometry x="340" y="320" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-1009" value="Sales_Order_Detail" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0077B6;fillColor=#E0F2FF;" parent="1" vertex="1">
+          <mxGeometry x="560" y="320" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-1008" value="Sales_Order_Header" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0077B6;fillColor=#E0F2FF;" parent="1" vertex="1">
+          <mxGeometry x="780" y="320" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-1002" value="Address" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0077B6;fillColor=#E0F2FF;" parent="1" vertex="1">
+          <mxGeometry x="1000" y="320" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-1003" value="Product" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0077B6;fillColor=#E0F2FF;" parent="1" vertex="1">
+          <mxGeometry x="1220" y="320" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-1004" value="Product_Category" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0077B6;fillColor=#E0F2FF;" parent="1" vertex="1">
+          <mxGeometry x="1440" y="320" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-1005" value="Product_Description" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0077B6;fillColor=#E0F2FF;" parent="1" vertex="1">
+          <mxGeometry x="1660" y="320" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-1006" value="Product_Model" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0077B6;fillColor=#E0F2FF;" parent="1" vertex="1">
+          <mxGeometry x="1880" y="320" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-1007" value="Product_Model_Product_Description" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0077B6;fillColor=#E0F2FF;" parent="1" vertex="1">
+          <mxGeometry x="2100" y="320" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-2000" value="Customer" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#2E7D32;fillColor=#E8F5E9;" parent="1" vertex="1">
+          <mxGeometry x="120" y="520" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-2001" value="CustomerAddress" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#2E7D32;fillColor=#E8F5E9;" parent="1" vertex="1">
+          <mxGeometry x="340" y="520" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-2002" value="Address" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#2E7D32;fillColor=#E8F5E9;" parent="1" vertex="1">
+          <mxGeometry x="560" y="520" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-3000" value="Customer" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#AD1457;fillColor=#FCE4EC;" parent="1" vertex="1">
+          <mxGeometry x="120" y="720" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-3002" value="Date" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#AD1457;fillColor=#FCE4EC;" parent="1" vertex="1">
+          <mxGeometry x="340" y="720" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-3001" value="Sales Order" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#AD1457;fillColor=#FCE4EC;" parent="1" vertex="1">
+          <mxGeometry x="560" y="720" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-3002" value="Date" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#AD1457;fillColor=#FCE4EC;" parent="1" vertex="1">
+          <mxGeometry x="780" y="720" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-4000" value="Customer" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#5E35B1;fillColor=#EDE7F6;" parent="1" vertex="1">
+          <mxGeometry x="120" y="920" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-4003" value="Date" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#5E35B1;fillColor=#EDE7F6;" parent="1" vertex="1">
+          <mxGeometry x="340" y="920" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-4002" value="Measure" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#5E35B1;fillColor=#EDE7F6;" parent="1" vertex="1">
+          <mxGeometry x="560" y="920" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="entity-4001" value="Sales Order" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#5E35B1;fillColor=#EDE7F6;" parent="1" vertex="1">
+          <mxGeometry x="780" y="920" width="180" height="80" as="geometry"/>
+        </mxCell>
+        
+        
+        
+        <mxCell id="edge-0" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#FF7043;fontSize=10;dashed=1;" edge="1" parent="1" source="external-adventureworks-customer-de" target="entity-1012">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-1" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#FF7043;fontSize=10;dashed=1;" edge="1" parent="1" source="external-adventureworks-customer-en" target="entity-1012">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-2" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#FF7043;fontSize=10;dashed=1;" edge="1" parent="1" source="external-adventureworks-customeraddress" target="entity-1001">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-3" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#FF7043;fontSize=10;dashed=1;" edge="1" parent="1" source="external-adventureworks-salesorderdetail" target="entity-1009">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-4" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#FF7043;fontSize=10;dashed=1;" edge="1" parent="1" source="external-adventureworks-salesorderheader" target="entity-1008">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-5" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#FF7043;fontSize=10;dashed=1;" edge="1" parent="1" source="external-adventureworks-address" target="entity-1002">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-6" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#FF7043;fontSize=10;dashed=1;" edge="1" parent="1" source="external-adventureworks-product" target="entity-1003">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-7" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#FF7043;fontSize=10;dashed=1;" edge="1" parent="1" source="external-adventureworks-productcategory" target="entity-1004">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-8" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#FF7043;fontSize=10;dashed=1;" edge="1" parent="1" source="external-adventureworks-productdescription" target="entity-1005">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-9" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#FF7043;fontSize=10;dashed=1;" edge="1" parent="1" source="external-adventureworks-productmodel" target="entity-1006">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-10" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#FF7043;fontSize=10;dashed=1;" edge="1" parent="1" source="external-adventureworks-productmodelproductdescription" target="entity-1007">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-11" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#26A69A;fontSize=10;dashed=1;" edge="1" parent="1" source="entity-1012" target="entity-2000">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-12" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#26A69A;fontSize=10;dashed=1;" edge="1" parent="1" source="entity-1001" target="entity-2000">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-13" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#26A69A;fontSize=10;dashed=1;" edge="1" parent="1" source="entity-1001" target="entity-2001">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-14" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#26A69A;fontSize=10;dashed=1;" edge="1" parent="1" source="entity-2000" target="entity-3000">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-15" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#26A69A;fontSize=10;dashed=1;" edge="1" parent="1" source="entity-2001" target="entity-3000">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-16" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#26A69A;fontSize=10;dashed=1;" edge="1" parent="1" source="entity-2002" target="entity-3000">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-17" value="CustomerSID-&gt;CustomerSID" style="endArrow=block;html=1;rounded=0;strokeColor=#0B4F6C;fontSize=10;" edge="1" parent="1" source="entity-3001" target="entity-3000">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-18" value="ShipDateID-&gt;DateID" style="endArrow=block;html=1;rounded=0;strokeColor=#0B4F6C;fontSize=10;" edge="1" parent="1" source="entity-3001" target="entity-3002">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-19" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#26A69A;fontSize=10;dashed=1;" edge="1" parent="1" source="entity-1008" target="entity-3001">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-20" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#26A69A;fontSize=10;dashed=1;" edge="1" parent="1" source="entity-1009" target="entity-3001">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-21" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#26A69A;fontSize=10;dashed=1;" edge="1" parent="1" source="entity-3000" target="entity-4000">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-22" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#26A69A;fontSize=10;dashed=1;" edge="1" parent="1" source="entity-3002" target="entity-4003">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-23" value="Customer SID-&gt;Customer SID" style="endArrow=block;html=1;rounded=0;strokeColor=#0B4F6C;fontSize=10;" edge="1" parent="1" source="entity-4001" target="entity-4000">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-24" value="Ship Date ID-&gt;Date ID" style="endArrow=block;html=1;rounded=0;strokeColor=#0B4F6C;fontSize=10;" edge="1" parent="1" source="entity-4001" target="entity-4003">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-25" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#26A69A;fontSize=10;dashed=1;" edge="1" parent="1" source="entity-3001" target="entity-4001">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-26" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#26A69A;fontSize=10;dashed=1;" edge="1" parent="1" source="entity-4000" target="entity-4001">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="edge-27" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#26A69A;fontSize=10;dashed=1;" edge="1" parent="1" source="entity-4003" target="entity-4001">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        
+        <mxCell id="legend-1" value="Raw Data Layer" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#CC8B00;fillColor=#FFF4E0;" parent="1" vertex="1">
+          <mxGeometry x="120" y="20" width="160" height="24" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="legend-2" value="Staging Data Layer" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0077B6;fillColor=#E0F2FF;" parent="1" vertex="1">
+          <mxGeometry x="296" y="20" width="160" height="24" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="legend-3" value="Core Business Layer" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#2E7D32;fillColor=#E8F5E9;" parent="1" vertex="1">
+          <mxGeometry x="472" y="20" width="160" height="24" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="legend-4" value="Curated Analytics Layer" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#AD1457;fillColor=#FCE4EC;" parent="1" vertex="1">
+          <mxGeometry x="648" y="20" width="160" height="24" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="legend-5" value="Consumer Tabular Layer" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#5E35B1;fillColor=#EDE7F6;" parent="1" vertex="1">
+          <mxGeometry x="824" y="20" width="160" height="24" as="geometry"/>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

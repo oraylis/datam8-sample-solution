@@ -1,0 +1,7 @@
+relationship sales_order_customer_customer_sid
+	fromColumn: 'Sales Order'.'Customer SID'
+	toColumn: Customer.'Customer SID'
+
+relationship sales_order_date_ship_date_id
+	fromColumn: 'Sales Order'.'Ship Date ID'
+	toColumn: Date.'Date ID'

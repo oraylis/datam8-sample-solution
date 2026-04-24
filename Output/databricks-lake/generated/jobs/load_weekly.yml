@@ -1,0 +1,71 @@
+resources:
+  jobs:
+    Load_weekly:
+      name: ${var.job_name_prefix}Load Weekly
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: schema_prefix
+          default: ${var.schema_prefix}
+        - name: owner
+          default: ${var.owner}
+        - name: workspace_host
+          default: ${workspace.host}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+      permissions:
+        - group_name: ${var.permission_group_name}
+          level: "CAN_MANAGE_RUN"
+      job_clusters:
+        - job_cluster_key: cluster_extra_small
+          new_cluster: ${var.cluster_extra_small}
+
+      tasks:
+        - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/files/utils/Start_Load
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: core_sales_customer_customer
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/dml/Sales/Customer/Customer
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: curated_sales_customer_dimcustomer
+          depends_on:
+            - task_key: Start_Load
+            - task_key: core_sales_customer_customer
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/dml/Sales/Customer/DimCustomer
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: curated_sales_customer_factsalesorder
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/dml/Sales/Customer/FactSalesOrder
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: Complete_Load
+          depends_on:
+            - task_key: core_sales_customer_customer
+            - task_key: curated_sales_customer_dimcustomer
+            - task_key: curated_sales_customer_factsalesorder
+          run_if: ALL_DONE
+          notebook_task:
+            notebook_path: ${workspace.root_path}/files/utils/Complete_Load
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small

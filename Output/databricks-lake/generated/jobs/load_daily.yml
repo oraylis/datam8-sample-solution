@@ -1,0 +1,291 @@
+resources:
+  jobs:
+    Load_daily:
+      name: ${var.job_name_prefix}Load Daily
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: schema_prefix
+          default: ${var.schema_prefix}
+        - name: owner
+          default: ${var.owner}
+        - name: workspace_host
+          default: ${workspace.host}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+      permissions:
+        - group_name: ${var.permission_group_name}
+          level: "CAN_MANAGE_RUN"
+      job_clusters:
+        - job_cluster_key: cluster_small
+          new_cluster: ${var.cluster_small}
+
+      tasks:
+        - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/files/utils/Start_Load
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: raw_customer_customer_de
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Customer/Customer_DE
+            source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/libraries/datam8_sqlserver-1.0.0-py3-none-any.whl
+          job_cluster_key: cluster_small
+
+        - task_key: raw_customer_customer_en
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Customer/Customer_EN
+            source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/libraries/datam8_sqlserver-1.0.0-py3-none-any.whl
+          job_cluster_key: cluster_small
+
+        - task_key: raw_customeraddress_customeraddress
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Customer/CustomerAddress
+            source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/libraries/datam8_sqlserver-1.0.0-py3-none-any.whl
+          job_cluster_key: cluster_small
+
+        - task_key: raw_salesorderdetail_salesorderdetail
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Order/SalesOrderDetail
+            source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/libraries/datam8_sqlserver-1.0.0-py3-none-any.whl
+          job_cluster_key: cluster_small
+
+        - task_key: raw_salesorderheader_salesorderheader
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Order/SalesOrderHeader
+            source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/libraries/datam8_sqlserver-1.0.0-py3-none-any.whl
+          job_cluster_key: cluster_small
+
+        - task_key: raw_address_address
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Other/Address
+            source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/libraries/datam8_sqlserver-1.0.0-py3-none-any.whl
+          job_cluster_key: cluster_small
+
+        - task_key: raw_product_product
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Product/Product
+            source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/libraries/datam8_sqlserver-1.0.0-py3-none-any.whl
+          job_cluster_key: cluster_small
+
+        - task_key: raw_productcategory_productcategory
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Product/ProductCategory
+            source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/libraries/datam8_sqlserver-1.0.0-py3-none-any.whl
+          job_cluster_key: cluster_small
+
+        - task_key: raw_productdescription_productdescription
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Product/ProductDescription
+            source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/libraries/datam8_sqlserver-1.0.0-py3-none-any.whl
+          job_cluster_key: cluster_small
+
+        - task_key: raw_productmodel_productmodel
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Product/ProductModel
+            source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/libraries/datam8_sqlserver-1.0.0-py3-none-any.whl
+          job_cluster_key: cluster_small
+
+        - task_key: raw_productmodelproductdescription_productmodelproductdescription
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Product/ProductModelProductDescription
+            source: WORKSPACE
+          libraries:
+            - whl: ${workspace.root_path}/files/libraries/datam8_sqlserver-1.0.0-py3-none-any.whl
+          job_cluster_key: cluster_small
+
+
+        - task_key: core_sales_other_address
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/dml/Sales/Other/Address
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: core_sales_customer_customeraddress
+          depends_on:
+            - task_key: Start_Load
+            - task_key: stage_sales_customer_customeraddress
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/dml/Sales/Customer/CustomerAddress
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: curated_sales_date_dimdate
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/dml/Sales/Customer/DimDate
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: curated_sales_date_dimdate
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/dml/Sales/Date/DimDate
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_other_address
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_address_address
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Other/Address
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_customer_customer
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_customer_customer_de
+            - task_key: raw_customer_customer_en
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Customer/Customer
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_customer_customeraddress
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_customeraddress_customeraddress
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Customer/CustomerAddress
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_product_product
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_product_product
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Product/Product
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_product_productcategory
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_productcategory_productcategory
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Product/ProductCategory
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_product_productdescription
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_productdescription_productdescription
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Product/ProductDescription
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_product_productmodel
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_productmodel_productmodel
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Product/ProductModel
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_product_productmodelproductdescription
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_productmodelproductdescription_productmodelproductdescription
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Product/ProductModelProductDescription
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_order_salesorderdetail
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_salesorderdetail_salesorderdetail
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Order/SalesOrderDetail
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+        - task_key: stage_sales_order_salesorderheader
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_salesorderheader_salesorderheader
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Order/SalesOrderHeader
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
+
+        - task_key: Complete_Load
+          depends_on:
+            - task_key: core_sales_other_address
+            - task_key: core_sales_customer_customeraddress
+            - task_key: curated_sales_date_dimdate
+            - task_key: curated_sales_date_dimdate
+            - task_key: stage_sales_other_address
+            - task_key: stage_sales_customer_customer
+            - task_key: stage_sales_customer_customeraddress
+            - task_key: stage_sales_product_product
+            - task_key: stage_sales_product_productcategory
+            - task_key: stage_sales_product_productdescription
+            - task_key: stage_sales_product_productmodel
+            - task_key: stage_sales_product_productmodelproductdescription
+            - task_key: stage_sales_order_salesorderdetail
+            - task_key: stage_sales_order_salesorderheader
+          run_if: ALL_DONE
+          notebook_task:
+            notebook_path: ${workspace.root_path}/files/utils/Complete_Load
+            source: WORKSPACE
+          job_cluster_key: cluster_small

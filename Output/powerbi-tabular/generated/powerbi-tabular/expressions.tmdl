@@ -1,0 +1,5 @@
+expression DBW_Catalog = "datam8_catalog" meta [IsParameterQuery=true, Type=Text, IsParameterQueryRequired=true]
+
+expression DBW_Hostname = "adb-0000000000000000.12.azuredatabricks.net" meta [IsParameterQuery=true, Type=Text, IsParameterQueryRequired=true]
+
+expression DBW_HTTP_Path = "/sql/1.0/warehouses/0000000000000000" meta [IsParameterQuery=true, Type=Text, IsParameterQueryRequired=true]
