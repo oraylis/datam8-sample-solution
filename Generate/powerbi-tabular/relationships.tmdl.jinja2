@@ -1,5 +1,5 @@
 {%- for relationship in data.relationships %}
 {{- "\n\n" if not loop.first else "" -}}relationship {{ relationship.name }}
-	fromColumn: {% if " " in relationship.from_table %}'{{ relationship.from_table }}'{% else %}{{ relationship.from_table }}{% endif %}.{% if " " in relationship.from_column %}'{{ relationship.from_column }}'{% else %}{{ relationship.from_column }}{% endif %}
-	toColumn: {% if " " in relationship.to_table %}'{{ relationship.to_table }}'{% else %}{{ relationship.to_table }}{% endif %}.{% if " " in relationship.to_column %}'{{ relationship.to_column }}'{% else %}{{ relationship.to_column }}{% endif %}
+	fromColumn: {{ relationship.from_column_ref }}
+	toColumn: {{ relationship.to_column_ref }}
 {%- endfor %}

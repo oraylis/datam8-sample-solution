@@ -24,15 +24,14 @@ resources:
       tasks:
 {% for task in data.tasks %}
         - task_key: {{ task.task_key }}
-{% if task.type == "notebook" %}
+{% if task.is_notebook_task %}
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/{{ task.notebook_path }}
             source: WORKSPACE
-{%- set task_cluster_ref = task.cluster_ref or data.cluster_ref %}
-{%- if task_cluster_ref %}
-          existing_cluster_id: ${resources.clusters.{{ task_cluster_ref }}.id}
+{%- if task.resolved_cluster_ref %}
+          existing_cluster_id: ${resources.clusters.{{ task.resolved_cluster_ref }}.id}
 {%- else %}
-          existing_cluster_id: ${var.{{ task.cluster_var | default(data.cluster_var) }}}
+          existing_cluster_id: ${var.{{ task.resolved_cluster_var }}}
 {%- endif %}
 {% else %}
           run_job_task:

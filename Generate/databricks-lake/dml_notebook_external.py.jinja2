@@ -5,8 +5,10 @@
 # COMMAND ----------
 
 from pyspark.sql import functions as F  # noqa: F401
-{% if data.use_connector %}
+{% if data.use_connector and data.query_plan.timestamp_delta %}
 from datetime import datetime
+{% endif %}
+{% if data.use_connector %}
 from datam8_{{ data.connector_id }} import extract_data
 {% endif %}
 
@@ -33,19 +35,10 @@ from datam8_{{ data.connector_id }} import extract_data
 # COMMAND ----------
 
 dbutils.widgets.text("env", "dev", "Environment")
-dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka", "Catalog Name")
+dbutils.widgets.text("catalog_name", "", "Catalog Name")
 dbutils.widgets.text("schema_prefix", "", "Schema Prefix")
 dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
 dbutils.widgets.text("job_run_id", "", "Job Run ID")
-
-# dbutils.widgets.dropdown(
-#     "run_mode",
-#     "INFO",
-#     ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-#     "Run Mode",
-# )
-#dbutils.widgets.text("sandbox", "_", "Sandbox")
-
 dbutils.widgets.text("keyvault_name", "aut0kvt0dev0campus", "Key Vault Name")
 
 # COMMAND ----------
@@ -56,9 +49,6 @@ catalog_name = dbutils.widgets.get("catalog_name")
 schema_prefix = dbutils.widgets.get("schema_prefix")
 owner = dbutils.widgets.get("owner")
 job_run_id = dbutils.widgets.get("job_run_id")
-# run_mode = dbutils.widgets.get("run_mode")
-# sandbox = dbutils.widgets.get("sandbox")
-
 keyvault_name = dbutils.widgets.get("keyvault_name")
 
 # static values
@@ -124,27 +114,26 @@ print(f"Using delta value: {max_external}")
 {% endif %}
 # DBTITLE 1,Execute extraction
 {% if data.use_connector %}
-{% if data.is_query %}
+{% if data.query_plan.is_query %}
 pushdown_query = source_location
 {% else %}
-where_clause = ""
-{% if data.extract_mode and data.extract_mode|lower == "delta" %}
-delta_column_names = [col.get("sourceName") for col in delta_column_details if col.get("sourceName")]
-if delta_column_names:
-    if (
-        delta_column_details
-        and str(delta_column_details[0].get("canonicalDataType") or "").lower() == "timestamp"
-        and max_external is not None
-    ):
-        max_external_ts = datetime.strptime(max_external, "%Y-%m-%d %H:%M:%S.%f")
-        max_external = str(max_external_ts.replace(microsecond=0))
-    source_delta_column = ",".join(delta_column_names)
-    where_clause = f"\n    WHERE {source_delta_column} > '{max_external}'"
+{% if data.query_plan.has_delta_filter %}
+{% if data.query_plan.timestamp_delta %}
+if max_external is not None:
+    max_external_ts = datetime.strptime(max_external, "%Y-%m-%d %H:%M:%S.%f")
+    max_external = str(max_external_ts.replace(microsecond=0))
 {% endif %}
 pushdown_query = f"""
     SELECT *
-    FROM {source_location}{where_clause}
+    FROM {source_location}
+    WHERE {{ data.query_plan.delta_columns_csv }} > '{max_external}'
 """
+{% else %}
+pushdown_query = f"""
+    SELECT *
+    FROM {source_location}
+"""
+{% endif %}
 {% endif %}
 print(f"Query: {pushdown_query}")
 table_df = extract_data(

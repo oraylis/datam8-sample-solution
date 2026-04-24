@@ -30,6 +30,8 @@ from metadata_utils import (
 )
 from jobs_helpers import JobsPlanner
 from payload_helpers import (
+    _build_create_table_sql,
+    _build_external_connector_query_plan,
     _build_external_table_tag_inputs,
     _build_external_sources,
     _build_scd2_tracking_columns,
@@ -172,6 +174,13 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         table_tags_output = format_table_tag_values(table_tags)
         column_tags = collect_column_tags(entity, resolver=resolver)
         refactored_columns = collect_refactored_columns(entity)
+        create_table_sql = _build_create_table_sql(
+            full_table_name=identifiers["full_table_name"],
+            table_comment=entity.description or "",
+            columns=columns,
+            partitions=partitions,
+            table_properties=table_properties,
+        )
         zone_folder_name = resolver.zone_folder_name(zone_meta)
         payloads.append(
             BasePayload(
@@ -190,6 +199,7 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                     "table_tags_repr": repr(table_tags_output),
                     "has_table_tags": bool(table_tags_output),
                     "table_properties": table_properties,
+                    "create_table_sql": create_table_sql,
                     "column_tags": column_tags,
                     "refactored_columns": refactored_columns,
                 },
@@ -258,6 +268,14 @@ def generate_external_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPay
 
             table_properties = build_delta_table_properties(table_properties_input)
             table_tags_output = format_table_tag_values(table_display_tags)
+            partitions = ["__Year", "__Month", "__Day", "__InsertTimestampUTC"]
+            create_table_sql = _build_create_table_sql(
+                full_table_name=full_table_name,
+                table_comment=entity.description or "",
+                columns=external_columns,
+                partitions=partitions,
+                table_properties=table_properties,
+            )
 
             payloads.append(
                 BasePayload(
@@ -275,10 +293,11 @@ def generate_external_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPay
                         "full_table_name": full_table_name,
                         "columns": external_columns,
                         "imports": external_imports,
-                        "partitions": ["__Year", "__Month", "__Day", "__InsertTimestampUTC"],
+                        "partitions": partitions,
                         "table_tags_repr": repr(table_tags_output),
                         "has_table_tags": bool(table_tags_output),
                         "table_properties": table_properties,
+                        "create_table_sql": create_table_sql,
                         "column_tags": column_tags,
                         "refactored_columns": refactored_columns,
                     },
@@ -532,6 +551,12 @@ def generate_external_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPay
                 else str(source_alias).strip()
             )
             is_query = str(extract_mode or "").strip().lower() == "query"
+            query_plan = _build_external_connector_query_plan(
+                source_location=source_location,
+                is_query=is_query,
+                delta_enabled=str(extract_mode or "").strip().lower() == "delta",
+                delta_column_details=mapping_projection["delta_column_details"],
+            )
 
             data = {
                 "zone": external_zone.target_name or external_zone.name,
@@ -547,6 +572,7 @@ def generate_external_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPay
                 "write_mode": write_mode,
                 "source_location": source_location,
                 "is_query": is_query,
+                "query_plan": query_plan,
                 "extract_mode": extract_mode,
                 "driver": driver,
                 "connection_secret_key": f"datasource-{data_source_name}-password",
@@ -722,6 +748,25 @@ def _prepare_job_data(job: dict[str, Any], **extra: Any) -> dict[str, Any]:
     return data
 
 
+def _resolve_create_all_task_rendering(data: dict[str, Any]) -> None:
+    """Precompute task rendering details used by the create-all job template."""
+    for task in data.get("tasks") or []:
+        task_type = task.get("type")
+        if task_type == "notebook":
+            task["is_notebook_task"] = True
+            task["resolved_cluster_ref"] = task.get("cluster_ref") or data.get("cluster_ref")
+            task["resolved_cluster_var"] = task.get("cluster_var") or data.get("cluster_var")
+        else:
+            task["is_notebook_task"] = False
+
+
+def _resolve_load_job_task_rendering(data: dict[str, Any]) -> None:
+    """Precompute cluster references used by the load-job template."""
+    default_cluster_key = data.get("default_job_cluster_key")
+    for task in (data.get("external_tasks") or []) + (data.get("entity_tasks") or []):
+        task["resolved_job_cluster_key"] = task.get("job_cluster_key") or default_cluster_key
+
+
 def _assign_job_clusters(data: dict[str, Any], cluster_vars: Iterable[str]) -> None:
     """Populate job cluster descriptors based on the requested variable names."""
     unique_keys: list[str] = []
@@ -745,6 +790,7 @@ def generate_jobs_create_all(model: Model, cache: Cache) -> Sequence[IPayload]:
     if not job:
         return []
     data = _prepare_job_data(job)
+    _resolve_create_all_task_rendering(data)
     return [BasePayload(data=data, output_path=job["output_path"])]
 
 
@@ -797,5 +843,6 @@ def generate_jobs_load_groups(model: Model, cache: Cache) -> Sequence[IPayload]:
         data = _prepare_job_data(job)
         _attach_external_task_connector_wheels(data)
         _assign_job_clusters(data, [data.get("cluster_variable")])
+        _resolve_load_job_task_rendering(data)
         payloads.append(BasePayload(data=data, output_path=job["output_path"]))
     return payloads

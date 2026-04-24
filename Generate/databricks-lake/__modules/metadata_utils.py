@@ -747,6 +747,9 @@ class MetadataResolver:
             "delta_type": ddl_type,
             "delta_nullable": nullable,
             "delta_comment": comment,
+            "surrogate_key": bool(metadata.get("surrogate_key")),
+            "foreign_key": bool(metadata.get("foreign_key")),
+            "foreign_key_table": metadata.get("foreign_key_table"),
         }
 
     # ----------------------------------------------------------- Column builds

@@ -6,5 +6,5 @@ model {{ data.model_name }}
 		legacyRedirects
 		returnErrorValuesAsNull
 {% for name in data.table_names -%}
-ref table {% if " " in name %}'{{ name }}'{% else %}{{ name }}{% endif %}
+ref table {{ name }}
 {% endfor -%}

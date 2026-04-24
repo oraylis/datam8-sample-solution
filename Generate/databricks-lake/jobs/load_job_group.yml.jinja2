@@ -59,9 +59,8 @@ resources:
             - whl: {{ library.whl }}
 {%- endfor %}
 {%- endif %}
-{%- set resolved_job_cluster_key = task.job_cluster_key or data.default_job_cluster_key %}
-{%- if resolved_job_cluster_key %}
-          job_cluster_key: {{ resolved_job_cluster_key }}
+{%- if task.resolved_job_cluster_key %}
+          job_cluster_key: {{ task.resolved_job_cluster_key }}
 {%- endif %}
 {% endfor %}
 {% for task in data.entity_tasks %}
@@ -75,9 +74,8 @@ resources:
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/{{ task.notebook_path }}
             source: WORKSPACE
-{%- set resolved_job_cluster_key = task.job_cluster_key or data.default_job_cluster_key %}
-{%- if resolved_job_cluster_key %}
-          job_cluster_key: {{ resolved_job_cluster_key }}
+{%- if task.resolved_job_cluster_key %}
+          job_cluster_key: {{ task.resolved_job_cluster_key }}
 {%- endif %}
 {% endfor %}
 {% if data.complete_dependencies %}

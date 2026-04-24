@@ -39,6 +39,10 @@ class ColumnDefinition:
         reference = self.source_column or self.name
         return _normalize(reference)
 
+    @property
+    def tmdl_name(self) -> str:
+        return _quote_tmdl_identifier(self.name)
+
 
 @dataclass
 class MeasureDefinition:
@@ -46,12 +50,20 @@ class MeasureDefinition:
     expression: str
     format_string: str | None = None
 
+    @property
+    def tmdl_name(self) -> str:
+        return _quote_tmdl_identifier(self.name)
+
 
 @dataclass
 class PartitionDefinition:
     name: str
     source_lines: list[str]
     mode: str = "import"
+
+    @property
+    def tmdl_name(self) -> str:
+        return _quote_tmdl_identifier(self.name)
 
 
 @dataclass
@@ -76,6 +88,10 @@ class TableDefinition:
             if key:
                 self.column_lookup.setdefault(key, column)
 
+    @property
+    def tmdl_name(self) -> str:
+        return _quote_tmdl_identifier(self.name)
+
 
 @dataclass
 class RelationshipDefinition:
@@ -84,6 +100,20 @@ class RelationshipDefinition:
     from_column: str
     to_table: str
     to_column: str
+
+    @property
+    def from_column_ref(self) -> str:
+        return f"{_quote_tmdl_identifier(self.from_table)}.{_quote_tmdl_identifier(self.from_column)}"
+
+    @property
+    def to_column_ref(self) -> str:
+        return f"{_quote_tmdl_identifier(self.to_table)}.{_quote_tmdl_identifier(self.to_column)}"
+
+
+def _quote_tmdl_identifier(value: str) -> str:
+    """Quote TMDL identifiers that cannot be emitted bare."""
+    escaped = value.replace("'", "''")
+    return f"'{escaped}'" if " " in value or "'" in value else escaped
 
 
 def _normalize(value: str | None) -> str:
@@ -581,7 +611,7 @@ def model_payload(model: Model, cache: Cache) -> Sequence[IPayload]:
         "culture": "en-US",
         "default_data_source_version": "powerBI_V3",
         "source_query_culture": "de-DE",
-        "table_names": [table.name for table in tables],
+        "table_names": [table.tmdl_name for table in tables],
     }
 
     return [

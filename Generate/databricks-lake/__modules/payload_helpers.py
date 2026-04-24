@@ -13,6 +13,101 @@ from metadata_utils import MetadataResolver
 TABLE_PROPERTIES_KEY = "table_properties"
 
 
+def _sql_string(value: Any) -> str:
+    """Quote a value for SQL string literals."""
+    return str(value).replace("'", "''").replace("{", "{{").replace("}", "}}")
+
+
+def _build_create_table_sql(
+    *,
+    full_table_name: str,
+    table_comment: str | None,
+    columns: list[dict[str, Any]],
+    partitions: list[str],
+    table_properties: dict[str, Any],
+) -> str:
+    """Build the CREATE TABLE statement rendered into DDL notebooks."""
+    col_lines: list[str] = []
+    pk_cols: list[str] = []
+    fk_constraints: list[str] = []
+
+    for column in columns:
+        name = column["name"]
+        col = f"`{name}` {column['delta_type']}"
+        if column.get("surrogate_key"):
+            col += " GENERATED ALWAYS AS IDENTITY"
+            pk_cols.append(f"`{name}`")
+        if not column.get("delta_nullable", True):
+            col += " NOT NULL"
+        if column.get("delta_comment"):
+            col += f" COMMENT '{_sql_string(column['delta_comment'])}'"
+        if column.get("foreign_key") and column.get("foreign_key_table"):
+            ref_table = column["foreign_key_table"]
+            ref_table_base = str(ref_table).replace(".", "_")
+            fk_constraints.append(
+                "CONSTRAINT "
+                f"`fk_{{catalog_name}}_{ref_table_base}` "
+                f"FOREIGN KEY (`{name}`) REFERENCES {{catalog_name}}.{ref_table} RELY"
+            )
+        col_lines.append(col)
+
+    if pk_cols:
+        col_lines.append(
+            "CONSTRAINT "
+            f"`pk_{{catalog_name}}_{{zone}}_{full_table_name}` "
+            f"PRIMARY KEY ({', '.join(pk_cols)}) RELY"
+        )
+
+    col_lines.extend(fk_constraints)
+    statement_parts = [
+        f"CREATE TABLE IF NOT EXISTS {{catalog_name}}.{{zone}}.{full_table_name} (",
+        "  " + ",\n  ".join(col_lines),
+        ")",
+        "USING DELTA",
+    ]
+
+    if table_comment:
+        statement_parts.append(f"COMMENT '{_sql_string(table_comment)}'")
+    if partitions:
+        statement_parts.append(f"CLUSTER BY ({', '.join(f'`{partition}`' for partition in partitions)})")
+    if table_properties:
+        properties = ", ".join(
+            f"'{_sql_string(key)}'='{_sql_string(value)}'"
+            for key, value in table_properties.items()
+        )
+        statement_parts.append(f"TBLPROPERTIES ({properties})")
+
+    return "\n".join(statement_parts) + ";"
+
+
+def _build_external_connector_query_plan(
+    *,
+    source_location: str,
+    is_query: bool,
+    delta_enabled: bool,
+    delta_column_details: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Precompute connector query rendering hints for external DML notebooks."""
+    delta_column_names = [
+        column.get("sourceName")
+        for column in delta_column_details
+        if delta_enabled and column.get("sourceName")
+    ]
+    timestamp_delta = bool(
+        delta_column_details
+        and str(delta_column_details[0].get("canonicalDataType") or "").lower() == "timestamp"
+    )
+    return {
+        "is_query": is_query,
+        "base_query": source_location if is_query else None,
+        "source_location": source_location,
+        "delta_column_names": delta_column_names,
+        "delta_columns_csv": ",".join(delta_column_names),
+        "timestamp_delta": timestamp_delta,
+        "has_delta_filter": bool(delta_column_names),
+    }
+
+
 def _merge_tag_value(target: dict[str, Any], key: str, value: Any) -> None:
     """Merge tag values, preserving multi-value table_properties entries."""
     key = str(key).strip().lower()
