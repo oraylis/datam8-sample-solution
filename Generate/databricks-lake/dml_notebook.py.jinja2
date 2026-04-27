@@ -159,8 +159,8 @@ union_df.createOrReplaceTempView("union_df")
 
 # COMMAND ----------
 
-{%- set merge_cfg = data.external_merge_config %}
-{%- if merge_cfg and merge_cfg.enabled %}
+{%- set merge_cfg = data.external_merge_config -%}
+{%- if merge_cfg and merge_cfg.enabled -%}
 
 # COMMAND ----------
 

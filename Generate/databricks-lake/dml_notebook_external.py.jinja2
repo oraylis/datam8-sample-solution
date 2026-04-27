@@ -5,12 +5,12 @@
 # COMMAND ----------
 
 from pyspark.sql import functions as F  # noqa: F401
-{% if data.use_connector and data.query_plan.timestamp_delta %}
+{%- if data.use_connector and data.query_plan.timestamp_delta %}
 from datetime import datetime
-{% endif %}
-{% if data.use_connector %}
+{%- endif %}
+{%- if data.use_connector %}
 from datam8_{{ data.connector_id }} import extract_data
-{% endif %}
+{%- endif %}
 
 # COMMAND ----------
 
@@ -21,6 +21,7 @@ from datam8_{{ data.connector_id }} import extract_data
 
 # MAGIC %run ../../../../../../utils/MigrationFramework
 
+{% if not data.use_connector -%}
 # COMMAND ----------
 
 # MAGIC %md
@@ -28,9 +29,9 @@ from datam8_{{ data.connector_id }} import extract_data
 
 # COMMAND ----------
 
-{% if not data.use_connector %}
 # MAGIC %run ../../../../../../utils/ExtractionFramework
-{% endif %}
+
+{% endif -%}
 
 # COMMAND ----------
 
@@ -109,34 +110,35 @@ print(f"Using delta value: {max_external}")
 # COMMAND ----------
 {% endif %}
 # DBTITLE 1,Execute extraction
-{% if data.use_connector %}
-{% if data.query_plan.is_query %}
+{%- if data.use_connector %}
+{%- if data.query_plan.is_query %}
 pushdown_query = source_location
-{% else %}
-{% if data.query_plan.has_delta_filter %}
-{% if data.query_plan.timestamp_delta %}
+{%- else %}
+{%- if data.query_plan.has_delta_filter %}
+{%- if data.query_plan.timestamp_delta %}
 if max_external is not None:
     max_external_ts = datetime.strptime(max_external, "%Y-%m-%d %H:%M:%S.%f")
     max_external = str(max_external_ts.replace(microsecond=0))
-{% endif %}
+{%- endif %}
 pushdown_query = f"""
     SELECT *
     FROM {source_location}
     WHERE {{ data.query_plan.delta_columns_csv }} > '{max_external}'
 """
-{% else %}
+{%- else %}
 pushdown_query = f"""
     SELECT *
     FROM {source_location}
 """
-{% endif %}
-{% endif %}
+{%- endif %}
+{%- endif %}
 print(f"Query: {pushdown_query}")
+
 table_df = extract_data(
     props,
     query=pushdown_query,
 )
-{% else %}
+{%- else %}
 SourceTable = ExtractionFramework(source_location, "{{ data.extract_mode or '' }}", delta_column_details)
 extractSourceTable = SourceTable
 
@@ -154,7 +156,7 @@ table_df = extract_function(
     props
     {% if data.extract_mode and data.extract_mode|lower == "delta" %}, max_external{% endif %}
 )
-{% endif %}
+{%- endif %}
 # COMMAND ----------
 
 # MAGIC %md
