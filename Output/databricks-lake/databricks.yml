@@ -22,7 +22,7 @@ variables:
     default: 'files/generated/notebooks'
   catalog_name:
     description: The name of the unity catalog
-    default: datam8_campus_dev_fk
+    default: datam8_sample_catalog
   schema_prefix:
     description: Prefix applied to schema names in notebooks
     default: ""
@@ -35,9 +35,6 @@ variables:
   unpause_schedules:
     description: Override the default schedule status
     default: PAUSED
-  permission_group_name:
-      description: Group name for general permissions on cluster and jobs
-      default: teilnehmer
   job_name_prefix:
     description: Prefix added only to Databricks job display names
     default: ""
@@ -54,22 +51,8 @@ targets:
       schema_prefix: ""
       job_name_prefix: "[dev ${workspace.current_user.short_name}] "
     workspace:
-      host: https://adb-1451794858897186.6.azuredatabricks.net
+      host: https://adb-xxxxxxxxxxxxxx.8.azuredatabricks.net
       root_path: ~/.bundle/${bundle.name}/${bundle.target}
-
-  dev:
-    presets:
-      name_prefix: "[${bundle.target}] "      # prefix all resource names with testing_
-      pipelines_development: true  # set development to true for pipelines
-      trigger_pause_status: PAUSED # set pause_status to PAUSED for all triggers and schedules
-      jobs_max_concurrent_runs: 10 # set max_concurrent runs to 10 for all jobs
-      tags:
-        dev: ${bundle.target}
-    workspace:
-      host: https://adb-1451794858897186.6.azuredatabricks.net
-      root_path: /etl/${bundle.name}/${bundle.target}
-
-  # INFO: add more targets if necessary
 
   # The 'prod' target, used for production deployments.
   prod:
@@ -80,8 +63,7 @@ targets:
       environment: prod
       catalog_name: datam8_campus_${bundle.target}
       unpause_schedules: UNPAUSED
-      permission_group_name: trainer
     workspace:
-      host: https://adb-1451794858897186.6.azuredatabricks.net
+      host: https://adb-xxxxxxxxxxxxxx.8.azuredatabricks.net
       root_path: /etl/${bundle.name}/${bundle.target}
 

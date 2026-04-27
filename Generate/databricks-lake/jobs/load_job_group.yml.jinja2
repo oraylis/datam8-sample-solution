@@ -10,17 +10,10 @@ resources:
           default: ${var.catalog_name}
         - name: schema_prefix
           default: ${var.schema_prefix}
-        - name: owner
-          default: ${var.owner}
-        - name: workspace_host
-          default: ${workspace.host}
         - name: job_name
           default: "{{ '{{job.name}}' }}"
         - name: job_run_id
           default: "{{ '{{job.run_id}}' }}"
-      permissions:
-        - group_name: ${var.permission_group_name}
-          level: "CAN_MANAGE_RUN"
 {%- if data.job_clusters %}
       job_clusters:
 {%- for cluster in data.job_clusters %}
