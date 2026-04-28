@@ -1,6 +1,7 @@
 .databricks
 
 # remove all files
+#databricks
 databricks-lake/generated
 powerbi-tabular/generated
 docs/

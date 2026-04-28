@@ -1,18 +1,16 @@
 [project]
 name = "datam8-sample-solution"
 version = "2.0.0-beta.1"
-description = "Add your description here"
+description = "DataM8 Sample Solution"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.14"
 dependencies = [
-  "datam8",
+  "databricks-connect ~=17.3.0",
+  "datam8[sql,api]",
 ]
 
 [project.urls]
 Homepage = "https://github.com/oraylis/datam8-sample-solution"
-
-[tool.uv.sources]
-datam8 = { git = "https://github.com/oraylis/datam8-generator", tag = "v2.0.0-beta.1" }
 
 [tool.ruff]
 line-length = 100
@@ -23,6 +21,11 @@ select = ["I", "E4", "E7", "E9", "W", "F", "Q", "UP"]
 [tool.ruff.format]
 quote-style = "double"
 
-[tool.pyright]
-venvPath = ".venv"
-venv = "."
+[tool.uv.sources]
+[[tool.uv.sources.datam8]]
+git = "https://github.com/oraylis/datam8-generator"
+branch = "main"
+# tag = "v2.0.0-beta.1"
+
+[language-server.jinja-lsp.config]
+lang = "python"

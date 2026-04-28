@@ -7,14 +7,14 @@
     {
       "name": "databricks",
       "isDefault": true,
-      "sourcePath": "Generate/databricks-lake",
-      "outputPath": "Output/databricks-lake/generated"
+      "sourcePath": "Generate/databricks",
+      "outputPath": "Output/databricks"
     },
     {
       "name": "powerbi",
       "isDefault": false,
       "sourcePath": "Generate/powerbi-tabular",
-      "outputPath": "Output/powerbi-tabular/generated"
+      "outputPath": "Output/powerbi-tabular"
     },
     {
       "name": "docs",

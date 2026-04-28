@@ -1,0 +1,28 @@
+resources:
+  jobs:
+    Load_All_Tables:
+      name: ${var.job_name_prefix}Load All Tables
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: schema_prefix
+          default: ${var.schema_prefix}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+
+      tasks:
+
+        - task_key: Load_daily
+          run_job_task:
+            job_id: ${resources.jobs.Load_daily.id}
+
+
+        - task_key: Load_weekly
+          run_job_task:
+            job_id: ${resources.jobs.Load_weekly.id}
+

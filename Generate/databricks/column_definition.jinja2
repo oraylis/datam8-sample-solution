@@ -1,0 +1,23 @@
+{%- macro spark_data_type(column) -%}
+DataType.fromDDL("{{column.spark_data_type_expression}}")
+{%- endmacro %}
+
+{%- macro struct_field(column) -%}
+StructField("{{column.attribute.name}}", {{spark_data_type(column)}}, {{column.attribute.dataType.nullable}}),
+{%- endmacro %}
+
+{%- macro sql_field(column) -%}
+`{{column.attribute.name}}` {{column.spark_data_type_expression}}{{column.spark_nullable}}{{column.spark_identity}}{{column.spark_comment|safe}}
+{%- endmacro %}
+
+{%- macro constraint_foreign_key(fk) -%}
+CONSTRAINT `FK_{{fk.table}}__{{fk.remote_table}}` FOREIGN KEY (
+        `{{fk.columns | join("`, `")}}`
+    ) REFERENCES `{{fk.remote_zone}}`.`{{fk.remote_table}}` (
+        `{{fk.remote_columns | join("`, `")}}`
+    )
+{%- endmacro %}
+
+{%- macro constraint_primary_key(table, attributes) -%}
+CONSTRAINT `PK_{{table}}` PRIMARY KEY (`{{attributes | map(attribute="name") | join("`, `") }}`) RELY
+{%- endmacro %}

@@ -1,0 +1,34 @@
+resources:
+  jobs:
+    Create_stage_Sales_Order:
+      name: ${var.job_name_prefix}Create Staging Data Layer Sales Order
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: schema_prefix
+          default: ${var.schema_prefix}
+        - name: owner
+          default: ${var.owner}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+      job_clusters:
+        - job_cluster_key: cluster_extra_small
+          new_cluster: ${var.cluster_extra_small}
+      tasks:
+
+        - task_key: stage_sales_order_salesorderdetail
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Order/SalesOrderDetail
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: stage_sales_order_salesorderheader
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Order/SalesOrderHeader
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small

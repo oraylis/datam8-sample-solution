@@ -1,0 +1,69 @@
+# This is a Databricks asset bundle definition for automation_smaple_solution.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: automation_sample_solution
+
+include:
+  - Output/databricks/schemas/*.yml
+  - Output/databricks/clusters/*.yml
+  - Output/databricks/jobs/*.yml  # top-level
+  - Output/databricks/jobs/*/*.yml  # layer-level
+  - Output/databricks/jobs/*/*/*/*.yml  # product/module-level
+
+sync:
+  include:
+    - utils/
+    - libraries/
+
+# all defaults are preset with dev values
+variables:
+  notebook_path:
+    description: Location of the notebooks within the bundle
+    default: 'files/notebooks'
+  catalog_name:
+    description: The name of the unity catalog
+    default: datam8_sample_catalog
+  schema_prefix:
+    description: Prefix applied to schema names in notebooks
+    default: ""
+  environment:
+    description: The logical environment
+    default: dev
+  owner:
+    description: The default owner of all created databricks objects
+    default: teilnehmer
+  unpause_schedules:
+    description: Override the default schedule status
+    default: PAUSED
+  job_name_prefix:
+    description: Prefix added only to Databricks job display names
+    default: ""
+
+targets:
+  # The 'dev' target, used for development. This is the default.
+  dev-personal:
+    # We use 'mode: development' to indicate this is a personal development copy:
+    # - Deployed resources get prefixed with '[dev my_user_name]'
+    # - Any job schedules and triggers are paused by default
+    # - The 'development' mode is used for Delta Live Tables pipelines
+    default: true
+    variables:
+      schema_prefix: ""
+      job_name_prefix: "[dev ${workspace.current_user.short_name}] "
+    workspace:
+      host: https://adb-xxxxxxxxxxxxxx.8.azuredatabricks.net
+      root_path: ~/.bundle/${bundle.name}/${bundle.target}
+
+  # The 'prod' target, used for production deployments.
+  prod:
+    # We use 'mode: production' to indicate this is a production deployment.
+    # Doing so enables strict verification of the settings below.
+    mode: production
+    variables:
+      environment: prod
+      catalog_name: datam8_campus_${bundle.target}
+      unpause_schedules: UNPAUSED
+    workspace:
+      host: https://adb-xxxxxxxxxxxxxx.8.azuredatabricks.net
+      root_path: /etl/${bundle.name}/${bundle.target}
+
