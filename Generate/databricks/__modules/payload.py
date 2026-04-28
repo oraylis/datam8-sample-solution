@@ -136,10 +136,6 @@ def entity_module(wrapper: EntityWrapper[ModelEntity]) -> str:
     return "default"
 
 
-def output_folders(wrapper: EntityWrapper[ModelEntity]) -> tuple[str, ...]:
-    return tuple(wrapper.locator.folders[1:])
-
-
 def property_values_by_name(
     refs: Iterable[PropertyReference] | None, property_name: str
 ) -> list[str]:
@@ -155,13 +151,8 @@ def property_dict(refs: Iterable[Any] | None) -> dict[str, Any]:
     return values
 
 
-def wrapper_property_values(wrapper: EntityWrapper[Any], property_name: str) -> list[str]:
-    return [pv.name for pv in wrapper.properties.values() if pv.property == property_name]
-
-
 def first_wrapper_property(wrapper: EntityWrapper[Any], property_name: str) -> str | None:
-    values = wrapper_property_values(wrapper, property_name)
-    return values[0] if values else None
+    return next((pv.name for pv in wrapper.properties.values() if pv.property == property_name), None)
 
 
 def attribute_property_equals(attribute: Attribute, property_name: str, value: str) -> bool:
@@ -282,18 +273,6 @@ def collect_transformations(wrapper: EntityWrapper[ModelEntity]) -> list[dict[st
     return transformations
 
 
-def get_data_source(model: Model, name: str) -> Any:
-    return model.dataSources.get(name).entity
-
-
-def get_data_source_type(model: Model, name: str) -> Any:
-    return model.dataSourceTypes.get(name).entity
-
-
-def source_properties(source: ExternalModelSource) -> dict[str, str]:
-    return {ref.property: ref.value for ref in source.properties or []}
-
-
 def external_table_name(wrapper: EntityWrapper[ModelEntity], source: ExternalModelSource) -> str:
     return source.sourceAlias or wrapper.entity.name
 
@@ -303,8 +282,8 @@ def external_full_table_name(wrapper: EntityWrapper[ModelEntity], source: Extern
 
 
 def data_type_mappings(model: Model, data_source_name: str) -> dict[str, str]:
-    data_source = get_data_source(model, data_source_name)
-    data_source_type = get_data_source_type(model, data_source.type)
+    data_source = model.dataSources.get(data_source_name).entity
+    data_source_type = model.dataSourceTypes.get(data_source.type).entity
     mappings = {m.sourceType: m.targetType for m in data_source_type.dataTypeMapping or []}
     mappings.update({m.sourceType: m.targetType for m in data_source.dataTypeMapping or []})
     return mappings
@@ -372,7 +351,8 @@ def external_sources(model: Model, wrapper: EntityWrapper[ModelEntity]) -> list[
             "current_timestamp() AS __UpdateTimestampUTC",
             "__InsertTimestampUTC AS __InsertTimestampRawUTC",
         ]
-        data_source = get_data_source(model, source.dataSource)
+        data_source = model.dataSources.get(source.dataSource).entity
+        properties = {ref.property: ref.value for ref in source.properties or []}
         sources.append(
             {
                 "key": create_task_key(source_zone, full_table_name),
@@ -390,8 +370,8 @@ def external_sources(model: Model, wrapper: EntityWrapper[ModelEntity]) -> list[
                 "source_alias": source.sourceAlias or table_name,
                 "source_name": source.sourceAlias or table_name,
                 "source_location": source.sourceLocation or table_name,
-                "properties": source_properties(source),
-                "extract_mode": source_properties(source).get("extract_mode"),
+                "properties": properties,
+                "extract_mode": properties.get("extract_mode"),
                 "mapping": source.mapping,
                 "mapping_entries": source.mapping or [],
                 "select_expressions": select_expressions,
@@ -408,30 +388,6 @@ def calculated_columns(entity: ModelEntity) -> list[dict[str, str]]:
         if expr:
             columns.append({"name": attr.name, "expression_literal": repr(expr)})
     return columns
-
-
-def dimension_lookups(model: Model, wrapper: EntityWrapper[ModelEntity]) -> list[dict[str, Any]]:
-    lookups: list[dict[str, Any]] = []
-    for rel in wrapper.entity.relationships or []:
-        remote = model.modelEntities.get_by_id(rel.targetLocation)
-        sid_columns = surrogate_key_columns(remote.entity)
-        lookups.append(
-            {
-                "dimension_zone": zone_target_name(model.get_zone_for_entity(remote)),
-                "dimension_full_table_name": create_full_table_name(remote),
-                "dimension_alias": create_task_key(remote.entity.name).lower(),
-                "dimension_sid_column": sid_columns[0] if sid_columns else remote.entity.attributes[0].name,
-                "sid_column": rel.attributes[0].sourceName if rel.attributes else "",
-                "join_columns": [
-                    {
-                        "fact_column": attr.sourceName,
-                        "dimension_column": attr.targetName,
-                    }
-                    for attr in rel.attributes
-                ],
-            }
-        )
-    return lookups
 
 
 def build_merge_config(
@@ -675,7 +631,7 @@ def dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                     "notebooks",
                     zone_folder_name(zone),
                     "dml",
-                    *output_folders(wrapper),
+                    *wrapper.locator.folders[1:],
                     f"{wrapper.locator.entityName or entity.name}.py",
                 ),
             )
@@ -697,7 +653,7 @@ def dml_external_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                 item for item in external if item["table_name"] == external_table_name(wrapper, source)
             )
             props = current["properties"]
-            data_source_entry = get_data_source(model, current["data_source"])
+            data_source_entry = model.dataSources.get(current["data_source"]).entity
             extract_mode = props.get("extract_mode")
             current.update(
                 {
@@ -737,7 +693,7 @@ def dml_external_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                         "notebooks",
                         zone_folder_name(zone),
                         "dml",
-                        *output_folders(wrapper),
+                        *wrapper.locator.folders[1:],
                         f"{current['table_name']}.py",
                     ),
                 )
@@ -762,7 +718,7 @@ def dml_function_scripts(model: Model, cache: Cache) -> Sequence[IPayload]:
                         "notebooks",
                         zone_folder_name(zone),
                         "dml",
-                        *output_folders(wrapper),
+                        *wrapper.locator.folders[1:],
                         f"{wrapper.locator.entityName}_functions",
                         transform["script_name"],
                     ),
@@ -987,17 +943,17 @@ class DdlPayload(BasePayload):
             "notebooks",
             zone_folder_name(self.zone_wrapper),
             "ddl",
-            *output_folders(self.wrapper),
+            *self.wrapper.locator.folders[1:],
             f"{self.entity.name or self.locator.entityName}.py",
         )
 
     @property
     def data_product(self) -> str:
-        return entity_product(self.wrapper)
+        return self.wrapper.locator.folders[1] if len(self.wrapper.locator.folders) > 1 else "default"
 
     @property
     def data_module(self) -> str:
-        return entity_module(self.wrapper)
+        return self.wrapper.locator.folders[2] if len(self.wrapper.locator.folders) > 2 else "default"
 
     @property
     def full_table_name(self) -> str:
@@ -1168,7 +1124,7 @@ class DdlExternalPayload(DdlPayload):
             "notebooks",
             zone_folder_name(self.zone_wrapper),
             "ddl",
-            *output_folders(self.wrapper),
+            *self.wrapper.locator.folders[1:],
             f"{external_table_name(self.wrapper, self.source)}.py",
         )
 
@@ -1182,7 +1138,7 @@ class DdlExternalPayload(DdlPayload):
 
     @property
     def data_source_display(self) -> str:
-        data_source = get_data_source(self.model, self.data_source)
+        data_source = self.model.dataSources.get(self.data_source).entity
         return data_source.displayName or self.data_source
 
     @property
@@ -1311,7 +1267,7 @@ def notebook_job_path(
     name: str | None = None,
 ) -> str:
     notebook_name = name or wrapper.locator.entityName or wrapper.entity.name
-    return Path(zone_folder_name(zone), kind, *output_folders(wrapper), notebook_name).as_posix()
+    return Path(zone_folder_name(zone), kind, *wrapper.locator.folders[1:], notebook_name).as_posix()
 
 
 def job_clusters(cluster_variable: str) -> list[dict[str, str]]:
