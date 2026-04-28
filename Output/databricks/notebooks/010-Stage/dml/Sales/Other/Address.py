@@ -86,7 +86,7 @@ max_external: dict = {}
 
 max_external["raw_Sales_Other_Address"] = spark.sql(f"""
 SELECT
-  COALESCE(MAX(__InsertTimestampRawUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxRaw
+  COALESCE(MAX(__InsertTimestampRawUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxExternal
 FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
 """).first()[0]
 

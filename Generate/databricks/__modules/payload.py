@@ -58,7 +58,6 @@ from datam8_model.zone import Zone
 logger = logging.getLogger(__name__)
 
 TARGET = "databricks"
-MODEL_ZONE_FOLDERS = ("010-Stage", "020-Core", "030-Curated")
 EXTERNAL_PARTITIONS = ["__Year", "__Month", "__Day", "__InsertTimestampUTC"]
 DATA_TYPE_ALIASES = {
     "integer": "int",
@@ -112,7 +111,9 @@ def external_zone(model: Model) -> EntityWrapper[Zone]:
     for zone in model.zones.values():
         if zone_targets_databricks(zone) and not zone.entity.localFolderName:
             return zone
-    return model.zones.get("raw")
+    raise ValueError(
+        "No external Databricks zone found. Configure a Databricks zone without localFolderName."
+    )
 
 
 def zone_for_folder(model: Model, folder: str) -> EntityWrapper[Zone] | None:
@@ -124,8 +125,8 @@ def zone_for_folder(model: Model, folder: str) -> EntityWrapper[Zone] | None:
 
 def model_entity_wrappers(model: Model) -> list[EntityWrapper[ModelEntity]]:
     wrappers: list[EntityWrapper[ModelEntity]] = []
-    for folder in MODEL_ZONE_FOLDERS:
-        wrappers.extend(model.modelEntities.get_many(f"{folder}/"))
+    for zone in model_backed_zones(model):
+        wrappers.extend(model.modelEntities.get_many(f"{zone.entity.localFolderName}/"))
     return wrappers
 
 
@@ -523,11 +524,13 @@ def ddl_notebooks(model: Model, cache: Cache) -> Sequence[DdlPayload]:
 
 
 @register_payload("ddl_notebook.jinja2")
-def ddl_raw_notebooks(model: Model, cache: Cache) -> Sequence[DdlPayload]:
-    wrappers = model.modelEntities.get_many("010-Stage/")
+def ddl_external_notebooks(model: Model, cache: Cache) -> Sequence[DdlPayload]:
+    external_source_zone = model_backed_zones(model)[0]
     return [
-        DdlRawPayload(wrapper, model, source)
-        for wrapper in wrappers
+        DdlExternalPayload(wrapper, model, source)
+        for wrapper in model.modelEntities.get_many(
+            f"{external_source_zone.entity.localFolderName}/"
+        )
         for source in wrapper.entity.sources or []
         if getattr(source, "dataSource", None)
     ]
@@ -684,11 +687,12 @@ def dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
     return payloads
 
 
-@register_payload("dml_raw_notebook.jinja2", order=2)
-def dml_raw_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
+@register_payload("dml_external_notebook.jinja2", order=2)
+def dml_external_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
     payloads: list[IPayload] = []
     zone = external_zone(model)
-    for wrapper in model.modelEntities.get_many("010-Stage/"):
+    external_source_zone = model_backed_zones(model)[0]
+    for wrapper in model.modelEntities.get_many(f"{external_source_zone.entity.localFolderName}/"):
         for source in wrapper.entity.sources or []:
             if not getattr(source, "dataSource", None):
                 continue
@@ -892,7 +896,11 @@ def technical_columns_for_entity(entity: ModelEntity) -> list[RenderedDdlColumn]
     if has_transformation and not has_external_source:
         columns.append(RenderedDdlColumn("__BusinessFunction", "STRING", False, "Business function identifier"))
     if has_external_source:
-        columns.append(RenderedDdlColumn("__InsertTimestampRawUTC", "TIMESTAMP", False, "Raw load timestamp (UTC)"))
+        columns.append(
+            RenderedDdlColumn(
+                "__InsertTimestampRawUTC", "TIMESTAMP", False, "External load timestamp (UTC)"
+            )
+        )
         columns.append(RenderedDdlColumn("__SourceTable", "STRING", False, "Origin reference for the record"))
     return columns
 
@@ -936,7 +944,7 @@ def create_table_sql(
     return "\n".join(lines)
 
 
-class DdlRawColumn(DdlColumn):
+class DdlExternalColumn(DdlColumn):
     @property
     def type_definition(self) -> DataTypeDefinition:
         return DataTypeDefinition(
@@ -953,7 +961,7 @@ class DdlRawColumn(DdlColumn):
 
 class DdlPayload(BasePayload):
     imports: list[str] = ["StructType", "StructField", "DataType"]
-    is_raw = False
+    is_external = False
 
     def __init__(self, wrapper: EntityWrapper[ModelEntity], model: Model) -> None:
         self.model = model
@@ -1128,9 +1136,9 @@ class DdlPayload(BasePayload):
         return [attr for attr in self.entity.attributes if attr.isBusinessKey]
 
 
-class DdlRawPayload(DdlPayload):
+class DdlExternalPayload(DdlPayload):
     partitions = EXTERNAL_PARTITIONS
-    is_raw = True
+    is_external = True
 
     def __init__(
         self, wrapper: EntityWrapper[ModelEntity], model: Model, source: ExternalModelSource
@@ -1139,7 +1147,7 @@ class DdlRawPayload(DdlPayload):
         self.source = source
         self.zone_wrapper = external_zone(model)
         self.base_columns = [
-            DdlRawColumn(
+            DdlExternalColumn(
                 Attribute(
                     ordinalNumber=1000,
                     name=col,
@@ -1199,7 +1207,7 @@ class DdlRawPayload(DdlPayload):
         tags_by_column: dict[str, dict[str, str]] = {}
         source_alias = self.source.sourceAlias
         source_location = self.source.sourceLocation
-        raw_entity = {}
+        entity_json = {}
         candidate_files = [
             self.wrapper.source_file,
             Path(__file__).resolve().parents[3]
@@ -1209,11 +1217,11 @@ class DdlRawPayload(DdlPayload):
         ]
         for candidate_file in candidate_files:
             try:
-                raw_entity = json.loads(candidate_file.read_text(encoding="utf-8"))
+                entity_json = json.loads(candidate_file.read_text(encoding="utf-8"))
                 break
             except OSError:
                 continue
-        for source in raw_entity.get("sources", []):
+        for source in entity_json.get("sources", []):
             if source.get("sourceAlias") != source_alias and source.get("sourceLocation") != source_location:
                 continue
             for mapping in source.get("mapping", []):
@@ -1233,7 +1241,7 @@ class DdlRawPayload(DdlPayload):
         ]
 
     @property
-    def columns(self) -> list[DdlRawColumn]:
+    def columns(self) -> list[DdlExternalColumn]:
         assert self.source.mapping, "External source should have source mappings"
         type_mappings = data_type_mappings(self.model, self.source.dataSource)
         column_types: dict[str, DataType] = {}
@@ -1246,7 +1254,7 @@ class DdlRawPayload(DdlPayload):
                     source_column.sourceDataType.type
                 ]
         return self.base_columns + [
-            DdlRawColumn(
+            DdlExternalColumn(
                 Attribute(
                     ordinalNumber=1,
                     attributeType="",
@@ -1344,34 +1352,44 @@ def jobs_create_modules(model: Model, cache: Cache) -> Sequence[IPayload]:
             )
         )
 
-    raw_zone = external_zone(model)
-    raw_groups: dict[tuple[str, str], list[tuple[EntityWrapper[ModelEntity], dict[str, Any]]]] = defaultdict(list)
-    for wrapper in model.modelEntities.get_many("010-Stage/"):
+    external_zone_wrapper = external_zone(model)
+    external_source_zone = model_backed_zones(model)[0]
+    external_groups: dict[
+        tuple[str, str], list[tuple[EntityWrapper[ModelEntity], dict[str, Any]]]
+    ] = defaultdict(list)
+    for wrapper in model.modelEntities.get_many(f"{external_source_zone.entity.localFolderName}/"):
         for source in external_sources(model, wrapper):
-            raw_groups[(entity_product(wrapper), entity_module(wrapper))].append((wrapper, source))
-    for (product, module), entries in raw_groups.items():
-        job_key = create_job_key(raw_zone, product, module)
+            external_groups[(entity_product(wrapper), entity_module(wrapper))].append(
+                (wrapper, source)
+            )
+    for (product, module), entries in external_groups.items():
+        job_key = create_job_key(external_zone_wrapper, product, module)
         payloads.append(
             BasePayload(
                 data={
                     "job_key": job_key,
-                    "job_name": create_job_name(raw_zone, product, module),
+                    "job_name": create_job_name(external_zone_wrapper, product, module),
                     "cluster_variable": default_cluster,
                     "job_clusters": job_clusters(default_cluster),
                     "default_job_cluster_key": default_cluster,
                     "tasks": [
                         {
                             "task_key": create_task_key(
-                                raw_zone.entity.name, product, module, source["table_name"]
+                                external_zone_wrapper.entity.name,
+                                product,
+                                module,
+                                source["table_name"],
                             ).lower(),
                             "notebook_path": notebook_job_path(
-                                raw_zone, "ddl", wrapper, name=source["table_name"]
+                                external_zone_wrapper, "ddl", wrapper, name=source["table_name"]
                             ),
                         }
                         for wrapper, source in entries
                     ],
                 },
-                output_path=Path("jobs", job_zone_slug(raw_zone), product, module, f"{job_key}.yml"),
+                output_path=Path(
+                    "jobs", job_zone_slug(external_zone_wrapper), product, module, f"{job_key}.yml"
+                ),
             )
         )
     return payloads
@@ -1388,10 +1406,13 @@ def jobs_create_zones(model: Model, cache: Cache) -> Sequence[IPayload]:
             if folder == zone_folder
         ]
         if not zone.entity.localFolderName:
+            external_source_zone = model_backed_zones(model)[0]
             module_jobs = sorted(
                 {
                     create_job_key(zone, entity_product(wrapper), entity_module(wrapper))
-                    for wrapper in model.modelEntities.get_many("010-Stage/")
+                    for wrapper in model.modelEntities.get_many(
+                        f"{external_source_zone.entity.localFolderName}/"
+                    )
                     if external_sources(model, wrapper)
                 }
             )
@@ -1450,19 +1471,22 @@ def jobs_load_groups(model: Model, cache: Cache) -> Sequence[IPayload]:
     payloads: list[IPayload] = []
     for job_name, wrappers in grouped.items():
         cluster_variable = cluster_for_job(model, job_name)
+        external_zone_wrapper = external_zone(model)
         external_tasks: list[dict[str, Any]] = []
         entity_tasks: list[dict[str, Any]] = []
         complete_dependencies: list[str] = []
         for wrapper in wrappers:
             previous_tasks: list[str] = ["Start_Load"]
             for source in external_sources(model, wrapper):
-                task_key = create_task_key("raw", source["table_name"], source["table_name"]).lower()
+                task_key = create_task_key(
+                    external_zone_wrapper.entity.name, source["table_name"], source["table_name"]
+                ).lower()
                 external_tasks.append(
                     {
                         "task_key": task_key,
                         "depends_on": previous_tasks,
                         "notebook_path": notebook_job_path(
-                            external_zone(model), "dml", wrapper, name=source["table_name"]
+                            external_zone_wrapper, "dml", wrapper, name=source["table_name"]
                         ),
                         "libraries": [],
                         "resolved_job_cluster_key": cluster_variable,

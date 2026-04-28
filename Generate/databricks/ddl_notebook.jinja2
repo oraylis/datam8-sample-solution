@@ -52,7 +52,7 @@ job_run_id = dbutils.widgets.get("job_run_id")
 
 # static values
 zone = f"{schema_prefix}{{ data.zone }}" if schema_prefix else "{{ data.zone }}"
-{%- if data.is_raw %}
+{%- if data.is_external %}
 data_source = "{{ data.data_source }}"
 data_source_display = "{{ data.data_source_display }}"
 source_name = "{{ data.source_name }}"
@@ -70,7 +70,7 @@ print("Catalog: %s" % catalog_name)
 print("Schema: %s" % zone)
 print("Table: %s" % full_table_name)
 print("Owner: %s" % owner)
-{%- if data.is_raw %}
+{%- if data.is_external %}
 print("Data Source: %s" % data_source)
 print("Data Source Display: %s" % data_source_display)
 print("Source Name: %s" % source_name)
