@@ -67,15 +67,15 @@ def create_resource_slug_from_name(name: str) -> str:
     return resource_slug
 
 
-def create_task_key(*parts: str) -> str:
-    value = "_".join(part for part in parts if part)
-    value = re.sub(r"[^A-Za-z0-9_]+", "_", value).strip("_")
-    return value or "task"
-
-
 class DatabricksModel:
     def __init__(self, model: Model) -> None:
         self.model = model
+
+    @staticmethod
+    def task_key(*parts: str) -> str:
+        value = "_".join(part for part in parts if part)
+        value = re.sub(r"[^A-Za-z0-9_]+", "_", value).strip("_")
+        return value or "task"
 
     @staticmethod
     def zone_target_name(zone: EntityWrapper[Zone]) -> str:
@@ -215,7 +215,7 @@ class ExternalSourcePayload:
 
     @property
     def key(self) -> str:
-        return create_task_key(self.source_zone, self.full_table_name)
+        return DatabricksModel.task_key(self.source_zone, self.full_table_name)
 
     @property
     def external_table(self) -> str:
@@ -1500,7 +1500,7 @@ def jobs_create_modules(model: Model, cache: Cache) -> Sequence[IPayload]:
             continue
         tasks = [
             {
-                "task_key": create_task_key(
+                "task_key": DatabricksModel.task_key(
                     DatabricksModel.zone_target_name(zone),
                     product,
                     module,
@@ -1551,7 +1551,7 @@ def jobs_create_modules(model: Model, cache: Cache) -> Sequence[IPayload]:
                     "default_job_cluster_key": default_cluster,
                     "tasks": [
                         {
-                            "task_key": create_task_key(
+                            "task_key": DatabricksModel.task_key(
                                 DatabricksModel.zone_target_name(external_zone_wrapper),
                                 product,
                                 module,
@@ -1673,7 +1673,7 @@ def jobs_load_groups(model: Model, cache: Cache) -> Sequence[IPayload]:
                 for item in wrapper.entity.sources or []
                 if getattr(item, "dataSource", None)
             ]:
-                task_key = create_task_key(
+                task_key = DatabricksModel.task_key(
                     DatabricksModel.zone_target_name(external_zone_wrapper),
                     source.table_name,
                     source.table_name,
@@ -1690,7 +1690,7 @@ def jobs_load_groups(model: Model, cache: Cache) -> Sequence[IPayload]:
                     }
                 )
                 previous_tasks = [task_key]
-            entity_task_key = create_task_key("load", *wrapper.locator.folders, wrapper.entity.name).lower()
+            entity_task_key = DatabricksModel.task_key("load", *wrapper.locator.folders, wrapper.entity.name).lower()
             entity_tasks.append(
                 {
                     "task_key": entity_task_key,
