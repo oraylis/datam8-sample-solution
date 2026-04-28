@@ -88,7 +88,7 @@ table_comment = "Product category hierarchy entity"
 schema = StructType([
     StructField("__InsertTimestampUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'Load timestamp (UTC)'}),
     StructField("__UpdateTimestampUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'Last update timestamp (UTC)'}),
-    StructField("__InsertTimestampRawUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'External load timestamp (UTC)'}),
+    StructField("__InsertTimestampExternalUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'External load timestamp (UTC)'}),
     StructField("__SourceTable", DataType.fromDDL("STRING"), False, metadata={'comment': 'Origin reference for the record'}),
     StructField("ProductCategoryID", DataType.fromDDL("INT"), False, metadata={'business_key': True}),
     StructField("ParentProductCategoryID", DataType.fromDDL("INT"), True),
@@ -115,7 +115,7 @@ partitions = [
 create_sql = f"""CREATE TABLE IF NOT EXISTS {catalog_name}.{zone}.Sales_Product_ProductCategory (
   `__InsertTimestampUTC` TIMESTAMP NOT NULL COMMENT 'Load timestamp (UTC)',
   `__UpdateTimestampUTC` TIMESTAMP NOT NULL COMMENT 'Last update timestamp (UTC)',
-  `__InsertTimestampRawUTC` TIMESTAMP NOT NULL COMMENT 'External load timestamp (UTC)',
+  `__InsertTimestampExternalUTC` TIMESTAMP NOT NULL COMMENT 'External load timestamp (UTC)',
   `__SourceTable` STRING NOT NULL COMMENT 'Origin reference for the record',
   `ProductCategoryID` INT NOT NULL,
   `ParentProductCategoryID` INT,

@@ -1,7 +1,7 @@
 resources:
   jobs:
-    Create_curated_tables:
-      name: ${var.job_name_prefix}Create Curated Analytics Layer
+    Create_gold_tables:
+      name: ${var.job_name_prefix}Create gold
       max_concurrent_runs: 1
       parameters:
         - name: environment
@@ -18,7 +18,7 @@ resources:
           default: "{{job.run_id}}"
       tasks:
 
-        - task_key: Create_curated_Sales_Customer
+        - task_key: Create_gold_Sales_Customer
           run_job_task:
-            job_id: ${resources.jobs.Create_curated_Sales_Customer.id}
+            job_id: ${resources.jobs.Create_gold_Sales_Customer.id}
 

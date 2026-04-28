@@ -25,23 +25,23 @@ resources:
 
 
 
-        - task_key: Create_stage_tables
+        - task_key: Create_bronze_tables
 
           run_job_task:
-            job_id: ${resources.jobs.Create_stage_tables.id}
+            job_id: ${resources.jobs.Create_bronze_tables.id}
 
 
 
-        - task_key: Create_core_tables
-
-          run_job_task:
-            job_id: ${resources.jobs.Create_core_tables.id}
-
-
-
-        - task_key: Create_curated_tables
+        - task_key: Create_silver_tables
 
           run_job_task:
-            job_id: ${resources.jobs.Create_curated_tables.id}
+            job_id: ${resources.jobs.Create_silver_tables.id}
+
+
+
+        - task_key: Create_gold_tables
+
+          run_job_task:
+            job_id: ${resources.jobs.Create_gold_tables.id}
 
 

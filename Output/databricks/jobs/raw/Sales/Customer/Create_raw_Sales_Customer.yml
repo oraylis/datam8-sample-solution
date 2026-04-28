@@ -1,7 +1,7 @@
 resources:
   jobs:
     Create_raw_Sales_Customer:
-      name: ${var.job_name_prefix}Create Raw Data Layer Sales Customer
+      name: ${var.job_name_prefix}Create raw Sales Customer
       max_concurrent_runs: 1
       parameters:
         - name: environment

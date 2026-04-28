@@ -86,7 +86,7 @@ max_external: dict = {}
 
 max_external["raw_Sales_Product_ProductCategory"] = spark.sql(f"""
 SELECT
-  COALESCE(MAX(__InsertTimestampRawUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxExternal
+  COALESCE(MAX(__InsertTimestampExternalUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxExternal
 FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
 """).first()[0]
 
@@ -118,7 +118,7 @@ source_delta_1_df = (
         "'ProductCategory' AS __SourceTable",
         "current_timestamp() AS __InsertTimestampUTC",
         "current_timestamp() AS __UpdateTimestampUTC",
-        "__InsertTimestampUTC AS __InsertTimestampRawUTC"
+        "__InsertTimestampUTC AS __InsertTimestampExternalUTC"
     )
 )
 source_delta_df_list.append(source_delta_1_df)
@@ -136,7 +136,7 @@ latest_snapshot_key_cols = ["ProductCategoryID"]
 if latest_snapshot_key_cols:
     # Keep only the latest snapshot per business key to avoid duplicate records from external feeds.
     latest_snapshot_window = Window.partitionBy(*latest_snapshot_key_cols).orderBy(
-        F.col("__InsertTimestampRawUTC").desc(),
+        F.col("__InsertTimestampExternalUTC").desc(),
     )
     union_df = (
         union_df
@@ -191,7 +191,7 @@ merge_builder = merge_builder.whenNotMatchedInsert(
         "__InsertTimestampUTC": 'src.__InsertTimestampUTC', 
         "__UpdateTimestampUTC": 'src.__UpdateTimestampUTC', 
         "__SourceTable": 'src.__SourceTable', 
-        "__InsertTimestampRawUTC": 'src.__InsertTimestampRawUTC', 
+        "__InsertTimestampExternalUTC": 'src.__InsertTimestampExternalUTC', 
         "ProductCategoryID": 'src.`ProductCategoryID`', 
         "ParentProductCategoryID": 'src.`ParentProductCategoryID`', 
         "Name": 'src.`Name`', 

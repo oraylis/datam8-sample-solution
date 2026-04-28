@@ -1,7 +1,7 @@
 resources:
   jobs:
     Create_raw_Sales_Order:
-      name: ${var.job_name_prefix}Create Raw Data Layer Sales Order
+      name: ${var.job_name_prefix}Create raw Sales Order
       max_concurrent_runs: 1
       parameters:
         - name: environment

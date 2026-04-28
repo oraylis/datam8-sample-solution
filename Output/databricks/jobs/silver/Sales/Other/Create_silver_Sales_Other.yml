@@ -1,7 +1,7 @@
 resources:
   jobs:
-    Create_core_Sales_Customer:
-      name: ${var.job_name_prefix}Create Core Business Layer Sales Customer
+    Create_silver_Sales_Other:
+      name: ${var.job_name_prefix}Create silver Sales Other
       max_concurrent_runs: 1
       parameters:
         - name: environment
@@ -21,14 +21,8 @@ resources:
           new_cluster: ${var.cluster_extra_small}
       tasks:
 
-        - task_key: core_sales_customer_customer
+        - task_key: silver_sales_other_address
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/ddl/Sales/Customer/Customer
-            source: WORKSPACE
-          job_cluster_key: cluster_extra_small
-
-        - task_key: core_sales_customer_customeraddress
-          notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/ddl/Sales/Customer/CustomerAddress
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/ddl/Sales/Other/Address
             source: WORKSPACE
           job_cluster_key: cluster_extra_small

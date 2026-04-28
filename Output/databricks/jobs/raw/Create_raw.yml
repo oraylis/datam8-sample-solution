@@ -1,7 +1,7 @@
 resources:
   jobs:
     Create_raw_tables:
-      name: ${var.job_name_prefix}Create Raw Data Layer
+      name: ${var.job_name_prefix}Create raw
       max_concurrent_runs: 1
       parameters:
         - name: environment
