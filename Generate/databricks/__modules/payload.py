@@ -63,7 +63,7 @@ from payload_common import (
 )
 
 
-@register_payload("ddl_notebook.jinja2")
+@register_payload("notebooks/ddl_notebook.jinja2")
 def ddl_notebooks(model: Model, cache: Cache) -> Sequence[DdlPayload]:
     """Create DDL notebook payloads for all modeled Databricks entities."""
     payloads: list[DdlPayload] = []
@@ -74,7 +74,7 @@ def ddl_notebooks(model: Model, cache: Cache) -> Sequence[DdlPayload]:
     return payloads
 
 
-@register_payload("ddl_notebook.jinja2")
+@register_payload("notebooks/ddl_notebook.jinja2")
 def ddl_external_notebooks(model: Model, cache: Cache) -> Sequence[DdlPayload]:
     """Create DDL notebook payloads for external source tables."""
     payloads: list[DdlPayload] = []
@@ -139,7 +139,7 @@ def dab_cluster(model: Model, cache: Cache) -> Sequence[IPayload]:
     ]
 
 
-@register_payload("dml_notebook.jinja2", order=2)
+@register_payload("notebooks/dml_notebook.jinja2", order=2)
 def dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
     """Create DML notebook payloads and cache transformation script metadata."""
     payloads: list[IPayload] = []
@@ -152,7 +152,7 @@ def dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
     return payloads
 
 
-@register_payload("dml_external_notebook.jinja2", order=2)
+@register_payload("notebooks/dml_external_notebook.jinja2", order=2)
 def dml_external_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
     """Create DML extraction notebook payloads for external sources."""
     payloads: list[IPayload] = []
@@ -166,7 +166,7 @@ def dml_external_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
     return payloads
 
 
-@register_payload("dml_function.jinja2", order=2)
+@register_payload("notebooks/dml_function.jinja2", order=2)
 def dml_function_scripts(model: Model, cache: Cache) -> Sequence[IPayload]:
     """Create payloads for Python transformation function files."""
     payloads: list[IPayload] = []
