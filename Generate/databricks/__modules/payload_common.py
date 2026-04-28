@@ -7,7 +7,7 @@ from typing import Any
 
 from datam8.generate import BasePayload
 from datam8.model import EntityWrapper, Model
-from datam8_model.model import ModelEntity
+from datam8_model.model import ExternalModelSource, ModelEntity
 from datam8_model.property import PropertyReference
 from datam8_model.zone import Zone
 
@@ -144,8 +144,10 @@ def get_model_entity_wrappers(model: Model) -> list[EntityWrapper[ModelEntity]]:
     return wrappers
 
 
-def get_external_source_zone(model: Model) -> EntityWrapper[Zone]:
-    """Return the model-backed zone used to discover external sources."""
+def get_first_model_backed_zone_for_external_sources(model: Model) -> EntityWrapper[Zone]:
+    """Return the first model-backed zone used to discover external sources."""
+    # External source extraction is currently discovered from the first Databricks model-backed
+    # zone. If multiple source zones become valid later, replace this with explicit filtering.
     zones = get_model_backed_zones(model)
     if not zones:
         raise ValueError("No model-backed Databricks zone found for external source discovery.")
@@ -154,8 +156,7 @@ def get_external_source_zone(model: Model) -> EntityWrapper[Zone]:
 
 def get_external_source_wrappers(model: Model) -> list[EntityWrapper[ModelEntity]]:
     """Return wrappers that may contain external source definitions."""
-    # External extraction notebooks are generated from the first model-backed source zone.
-    source_zone = get_external_source_zone(model)
+    source_zone = get_first_model_backed_zone_for_external_sources(model)
     return get_many(model.modelEntities, f"{source_zone.entity.localFolderName}/")
 
 
@@ -167,10 +168,17 @@ def property_values_by_name(refs: Iterable[PropertyReference] | None, property_n
 def collect_transformations(wrapper: EntityWrapper[ModelEntity]) -> list[dict[str, Any]]:
     """Read transformation script metadata and file content for one entity."""
     transformations: list[dict[str, Any]] = []
-    frequency = next(
-        (ref.value for ref in wrapper.entity.properties or [] if ref.property == "frequency"),
-        "no_restriction",
-    )
+    # Keep wrapper-level property resolution for frequency to preserve previous behavior.
+    try:
+        frequency = next(
+            (pv.name for pv in wrapper.properties.values() if pv.property == "frequency"),
+            "no_restriction",
+        )
+    except Exception:
+        frequency = next(
+            (ref.value for ref in wrapper.entity.properties or [] if ref.property == "frequency"),
+            "no_restriction",
+        )
     for transform in wrapper.entity.transformations or []:
         function = getattr(transform, "function", None)
         script_name = getattr(function, "source", None) if function is not None else None
@@ -292,4 +300,160 @@ class ModelEntityPayload(BasePayload):
                 ref.property.lower() == "attribute_type" and ref.value.lower() == "sk"
                 for ref in attr.properties or []
             )
+        ]
+
+
+class ExternalSource:
+    """Template-facing view of one external source definition."""
+
+    def __init__(
+        self,
+        model: Model,
+        wrapper: EntityWrapper[ModelEntity],
+        source: ExternalModelSource,
+    ) -> None:
+        self.model = model
+        self.wrapper = wrapper
+        self.source = source
+        self.source_zone = zone_target_name(get_external_zone(model))
+        self.data_source_entry = get_one(model.dataSources, source.dataSource).entity
+
+    @property
+    def table_name(self) -> str:
+        return self.source.sourceAlias or self.wrapper.entity.name
+
+    @property
+    def full_table_name(self) -> str:
+        return "_".join([self.data_product, self.data_module, self.table_name])
+
+    @property
+    def key(self) -> str:
+        return task_key(self.source_zone, self.full_table_name)
+
+    @property
+    def external_table(self) -> str:
+        return self.table_name
+
+    @property
+    def external_full_table(self) -> str:
+        return self.full_table_name
+
+    @property
+    def data_product(self) -> str:
+        return self.wrapper.locator.folders[1] if len(self.wrapper.locator.folders) > 1 else "default"
+
+    @property
+    def data_module(self) -> str:
+        return self.wrapper.locator.folders[2] if len(self.wrapper.locator.folders) > 2 else "default"
+
+    @property
+    def data_source(self) -> str:
+        return self.source.dataSource
+
+    @property
+    def data_source_display(self) -> str:
+        return self.data_source_entry.displayName or self.data_source
+
+    @property
+    def data_source_type(self) -> str:
+        return self.data_source_entry.type
+
+    @property
+    def data_source_extended_properties(self) -> dict[str, Any]:
+        return self.data_source_entry.extendedProperties or {}
+
+    @property
+    def source_alias(self) -> str:
+        return self.source.sourceAlias or self.table_name
+
+    @property
+    def source_name(self) -> str:
+        return self.source.sourceAlias or self.table_name
+
+    @property
+    def source_location(self) -> str:
+        return self.source.sourceLocation or self.table_name
+
+    @property
+    def properties(self) -> dict[str, str]:
+        return {ref.property: ref.value for ref in self.source.properties or []}
+
+    @property
+    def extract_mode(self) -> str | None:
+        return self.properties.get("extract_mode")
+
+    @property
+    def mapping(self) -> list[Any] | None:
+        return self.source.mapping
+
+    @property
+    def mapping_entries(self) -> list[Any]:
+        return list(self.source.mapping or [])
+
+    @property
+    def type_mappings(self) -> dict[str, str]:
+        data_source_type = get_one(self.model.dataSourceTypes, self.data_source_entry.type).entity
+        mappings = {m.sourceType: m.targetType for m in data_source_type.dataTypeMapping or []}
+        mappings.update({m.sourceType: m.targetType for m in self.data_source_entry.dataTypeMapping or []})
+        return mappings
+
+    @property
+    def select_columns(self) -> list[str]:
+        columns: list[str] = []
+        mappings_by_target = {mapping.targetName: mapping for mapping in self.mapping_entries}
+        for attr in self.wrapper.entity.attributes:
+            if expr := (getattr(attr, "calculation", None) or getattr(attr, "expression", None)):
+                columns.append(f"{expr} AS `{attr.name}`")
+                continue
+            mapping = mappings_by_target.get(attr.name)
+            if mapping is not None:
+                columns.append(f"`{mapping.targetName}`")
+        return columns
+
+    @property
+    def target_columns(self) -> list[str]:
+        columns: list[str] = []
+        mappings_by_target = {mapping.targetName: mapping for mapping in self.mapping_entries}
+        for attr in self.wrapper.entity.attributes:
+            if getattr(attr, "calculation", None) or getattr(attr, "expression", None):
+                columns.append(attr.name)
+                continue
+            mapping = mappings_by_target.get(attr.name)
+            if mapping is not None:
+                columns.append(mapping.targetName)
+        return columns
+
+    @property
+    def column_renames(self) -> list[dict[str, str]]:
+        return [
+            {"source": mapping.sourceName, "target": mapping.targetName}
+            for mapping in self.mapping_entries
+            if mapping.sourceName != mapping.targetName
+        ]
+
+    @property
+    def delta_column_details(self) -> list[dict[str, str]]:
+        details: list[dict[str, str]] = []
+        for mapping in self.mapping_entries:
+            props = {ref.property: ref.value for ref in mapping.properties or []}
+            if props.get("extract_mode") != "delta":
+                continue
+            data_type = mapping.sourceDataType.type if mapping.sourceDataType else ""
+            details.append(
+                {
+                    "source": mapping.sourceName,
+                    "target": mapping.targetName,
+                    "type": self.type_mappings.get(data_type, data_type),
+                }
+            )
+        return details
+
+    @property
+    def select_expressions(self) -> list[str]:
+        return [
+            *self.select_columns,
+            f"'{self.table_name}' AS __SourceTable",
+            "current_timestamp() AS __InsertTimestampUTC",
+            "current_timestamp() AS __UpdateTimestampUTC",
+            "__InsertTimestampUTC AS __InsertTimestampExternalUTC",
         ]

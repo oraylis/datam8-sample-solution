@@ -14,8 +14,8 @@ from datam8_model.data_type import DataType, DataTypeDefinition
 from datam8_model.folder import Folder
 from datam8_model.model import ExternalModelSource, ModelEntity
 
-from dml_payloads import ExternalSource
 from payload_common import (
+    ExternalSource,
     TARGET,
     ModelEntityPayload,
     get_external_zone,
@@ -322,11 +322,12 @@ class DdlPayload(ModelEntityPayload):
 
     @property
     def create_table_sql(self) -> str:
+        columns = self.columns
         lines = [
             f"CREATE TABLE IF NOT EXISTS {{catalog_name}}.{{zone}}.{self.full_table_name} (",
         ]
-        for index, column in enumerate(self.columns):
-            comma = "," if index < len(self.columns) - 1 else ""
+        for index, column in enumerate(columns):
+            comma = "," if index < len(columns) - 1 else ""
             lines.append(f"  {column.sql_definition}{comma}")
         lines.append(")")
         lines.append("USING DELTA")

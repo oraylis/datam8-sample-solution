@@ -9,8 +9,8 @@ from datam8.model import EntityWrapper, Model
 from datam8_model.model import ModelEntity
 from datam8_model.zone import Zone
 
-from dml_payloads import ExternalSource
 from payload_common import (
+    ExternalSource,
     cluster_for_job,
     default_cluster_variable,
     get_external_source_wrappers,

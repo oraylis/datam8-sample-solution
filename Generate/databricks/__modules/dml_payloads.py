@@ -10,170 +10,12 @@ from datam8_model.model import ExternalModelSource, ModelEntity
 from datam8_model.zone import Zone
 
 from payload_common import (
+    ExternalSource,
     ModelEntityPayload,
     get_external_zone,
     get_one,
-    task_key,
-    zone_display_name,
     zone_folder_name,
-    zone_target_name,
 )
-
-
-class ExternalSource:
-    """Template-facing view of one external source definition."""
-
-    def __init__(
-        self,
-        model: Model,
-        wrapper: EntityWrapper[ModelEntity],
-        source: ExternalModelSource,
-    ) -> None:
-        self.model = model
-        self.wrapper = wrapper
-        self.source = source
-        self.source_zone = zone_target_name(get_external_zone(model))
-        self.data_source_entry = get_one(model.dataSources, source.dataSource).entity
-
-    @property
-    def table_name(self) -> str:
-        return self.source.sourceAlias or self.wrapper.entity.name
-
-    @property
-    def full_table_name(self) -> str:
-        return "_".join([self.data_product, self.data_module, self.table_name])
-
-    @property
-    def key(self) -> str:
-        return task_key(self.source_zone, self.full_table_name)
-
-    @property
-    def external_table(self) -> str:
-        return self.table_name
-
-    @property
-    def external_full_table(self) -> str:
-        return self.full_table_name
-
-    @property
-    def data_product(self) -> str:
-        return self.wrapper.locator.folders[1] if len(self.wrapper.locator.folders) > 1 else "default"
-
-    @property
-    def data_module(self) -> str:
-        return self.wrapper.locator.folders[2] if len(self.wrapper.locator.folders) > 2 else "default"
-
-    @property
-    def data_source(self) -> str:
-        return self.source.dataSource
-
-    @property
-    def data_source_display(self) -> str:
-        return self.data_source_entry.displayName or self.data_source
-
-    @property
-    def data_source_type(self) -> str:
-        return self.data_source_entry.type
-
-    @property
-    def data_source_extended_properties(self) -> dict[str, Any]:
-        return self.data_source_entry.extendedProperties or {}
-
-    @property
-    def source_alias(self) -> str:
-        return self.source.sourceAlias or self.table_name
-
-    @property
-    def source_name(self) -> str:
-        return self.source.sourceAlias or self.table_name
-
-    @property
-    def source_location(self) -> str:
-        return self.source.sourceLocation or self.table_name
-
-    @property
-    def properties(self) -> dict[str, str]:
-        return {ref.property: ref.value for ref in self.source.properties or []}
-
-    @property
-    def extract_mode(self) -> str | None:
-        return self.properties.get("extract_mode")
-
-    @property
-    def mapping(self) -> Sequence[Any] | None:
-        return self.source.mapping
-
-    @property
-    def mapping_entries(self) -> Sequence[Any]:
-        return self.source.mapping or []
-
-    @property
-    def type_mappings(self) -> dict[str, str]:
-        data_source_type = get_one(self.model.dataSourceTypes, self.data_source_entry.type).entity
-        mappings = {m.sourceType: m.targetType for m in data_source_type.dataTypeMapping or []}
-        mappings.update({m.sourceType: m.targetType for m in self.data_source_entry.dataTypeMapping or []})
-        return mappings
-
-    @property
-    def select_columns(self) -> list[str]:
-        columns: list[str] = []
-        mappings_by_target = {mapping.targetName: mapping for mapping in self.mapping_entries}
-        for attr in self.wrapper.entity.attributes:
-            if expr := (getattr(attr, "calculation", None) or getattr(attr, "expression", None)):
-                columns.append(f"{expr} AS `{attr.name}`")
-                continue
-            mapping = mappings_by_target.get(attr.name)
-            if mapping is not None:
-                columns.append(f"`{mapping.targetName}`")
-        return columns
-
-    @property
-    def target_columns(self) -> list[str]:
-        columns: list[str] = []
-        mappings_by_target = {mapping.targetName: mapping for mapping in self.mapping_entries}
-        for attr in self.wrapper.entity.attributes:
-            if getattr(attr, "calculation", None) or getattr(attr, "expression", None):
-                columns.append(attr.name)
-                continue
-            mapping = mappings_by_target.get(attr.name)
-            if mapping is not None:
-                columns.append(mapping.targetName)
-        return columns
-
-    @property
-    def column_renames(self) -> list[dict[str, str]]:
-        return [
-            {"source": mapping.sourceName, "target": mapping.targetName}
-            for mapping in self.mapping_entries
-            if mapping.sourceName != mapping.targetName
-        ]
-
-    @property
-    def delta_column_details(self) -> list[dict[str, str]]:
-        details: list[dict[str, str]] = []
-        for mapping in self.mapping_entries:
-            props = {ref.property: ref.value for ref in mapping.properties or []}
-            if props.get("extract_mode") != "delta":
-                continue
-            data_type = mapping.sourceDataType.type if mapping.sourceDataType else ""
-            details.append(
-                {
-                    "source": mapping.sourceName,
-                    "target": mapping.targetName,
-                    "type": self.type_mappings.get(data_type, data_type),
-                }
-            )
-        return details
-
-    @property
-    def select_expressions(self) -> list[str]:
-        return [
-            *self.select_columns,
-            f"'{self.table_name}' AS __SourceTable",
-            "current_timestamp() AS __InsertTimestampUTC",
-            "current_timestamp() AS __UpdateTimestampUTC",
-            "__InsertTimestampUTC AS __InsertTimestampExternalUTC",
-        ]
 
 
 class MergeConfig:
@@ -316,6 +158,11 @@ class DmlPayload(ModelEntityPayload):
     ) -> None:
         super().__init__(wrapper, model)
         self.transformations = transformations
+        self.external_source_items = [
+            ExternalSource(model, wrapper, source)
+            for source in wrapper.entity.sources or []
+            if getattr(source, "dataSource", None)
+        ]
 
     def get_output_path(self) -> Path:
         return Path(
@@ -379,14 +226,6 @@ class DmlPayload(ModelEntityPayload):
     @property
     def spark_write_mode(self) -> str:
         return {"overwrite": "overwrite", "append": "append"}.get(self.write_mode, "overwrite")
-
-    @property
-    def external_source_items(self) -> list[ExternalSource]:
-        return [
-            ExternalSource(self.model, self.wrapper, source)
-            for source in self.wrapper.entity.sources or []
-            if getattr(source, "dataSource", None)
-        ]
 
     @property
     def external_sources(self) -> list[ExternalSource]:
@@ -519,8 +358,7 @@ class DmlExternalPayload(ModelEntityPayload):
         self.source = source
         self.external_source = ExternalSource(model, wrapper, source)
         self.zone_wrapper = get_external_zone(model)
-        self.current = ExternalSource(model, wrapper, source)
-        self.data_source_entry = get_one(model.dataSources, self.current.data_source).entity
+        self.data_source_entry = get_one(model.dataSources, self.external_source.data_source).entity
 
     def get_data(self) -> object:
         return self
@@ -534,31 +372,53 @@ class DmlExternalPayload(ModelEntityPayload):
             f"{self.table_name}.py",
         )
 
-    def __getattr__(self, name: str) -> Any:
-        try:
-            return getattr(self.current, name)
-        except AttributeError:
-            raise AttributeError(name) from None
-
-    @property
-    def zone(self) -> str:
-        return zone_target_name(self.zone_wrapper)
-
-    @property
-    def zone_display(self) -> str:
-        return zone_display_name(self.zone_wrapper)
-
     @property
     def data_source_display(self) -> str:
-        return self.data_source_entry.displayName or self.current.data_source
+        return self.data_source_entry.displayName or self.external_source.data_source
 
     @property
     def table_name(self) -> str:
-        return self.current.table_name
+        return self.external_source.table_name
 
     @property
     def full_table_name(self) -> str:
-        return self.current.full_table_name
+        return self.external_source.full_table_name
+
+    @property
+    def data_source(self) -> str:
+        return self.external_source.data_source
+
+    @property
+    def source_name(self) -> str:
+        return self.external_source.source_name
+
+    @property
+    def source_location(self) -> str:
+        return self.external_source.source_location
+
+    @property
+    def data_source_type(self) -> str:
+        return self.external_source.data_source_type
+
+    @property
+    def data_source_extended_properties(self) -> dict[str, Any]:
+        return self.external_source.data_source_extended_properties
+
+    @property
+    def column_renames(self) -> list[dict[str, str]]:
+        return self.external_source.column_renames
+
+    @property
+    def delta_column_details(self) -> list[dict[str, str]]:
+        return self.external_source.delta_column_details
+
+    @property
+    def target_columns(self) -> list[str]:
+        return self.external_source.target_columns
+
+    @property
+    def extract_mode(self) -> str | None:
+        return self.external_source.extract_mode
 
     @property
     def write_mode(self) -> str:
@@ -591,7 +451,7 @@ class DmlExternalPayload(ModelEntityPayload):
 
     @property
     def connection_secret_key(self) -> str:
-        return f"datasource-{self.current.data_source}-password"
+        return f"datasource-{self.external_source.data_source}-password"
 
     @property
     def delta_column(self) -> str | None:
