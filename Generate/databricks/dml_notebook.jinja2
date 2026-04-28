@@ -2,10 +2,10 @@
 # MAGIC %md
 # MAGIC # DML for {{ data.zone }}.{{ data.full_table_name }}
 # MAGIC History configuration of this entity
-# MAGIC - __Business Key Columns__: {{ data.history.business_keys }}
-# MAGIC - __SCD0 columns__: {{ data.history.scd0 }}
-# MAGIC - __SCD1 columns__: {{ data.history.scd1 }}
-# MAGIC - __SCD2 columns__: {{ data.history.scd2 }}
+# MAGIC - __Business Key Columns__: {{ data.history.business_keys | safe }}
+# MAGIC - __SCD0 columns__: {{ data.history.scd0 | safe }}
+# MAGIC - __SCD1 columns__: {{ data.history.scd1 | safe }}
+# MAGIC - __SCD2 columns__: {{ data.history.scd2 | safe }}
 
 # COMMAND ----------
 
@@ -121,7 +121,7 @@ source_delta_{{ loop.index }}_df = (
     .filter(F.col("__InsertTimestampUTC") > max_external["{{ external_source.key }}"])
     .selectExpr(
         {%- for expr in external_source.select_expressions %}
-        "{{ expr }}"{% if not loop.last %},{% endif %}
+        "{{ expr | safe }}"{% if not loop.last %},{% endif %}
         {%- endfor %}
     )
 )
@@ -241,7 +241,7 @@ merge_builder = (
     target_table.alias("tgt")
     .merge(
         staged_union.alias("src"),
-        "({{ merge_cfg.merge_condition }}) AND src.__merge_action = 'update'",
+        "({{ merge_cfg.merge_condition | safe }}) AND src.__merge_action = 'update'",
     )
     .whenMatchedUpdate(
         condition="src.scd2_changed",
@@ -254,10 +254,10 @@ merge_builder = (
 )
 {%- if merge_cfg.scd1_change_condition and merge_cfg.scd1_update_assignments %}
 merge_builder = merge_builder.whenMatchedUpdate(
-    condition="(NOT src.scd2_changed) AND ({{ merge_cfg.scd1_change_condition }})",
+    condition="(NOT src.scd2_changed) AND ({{ merge_cfg.scd1_change_condition | safe }})",
     set={
         {%- for assignment in merge_cfg.scd1_update_assignments %}
-        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
         {%- endfor %}
     },
 )
@@ -265,7 +265,7 @@ merge_builder = merge_builder.whenMatchedUpdate(
 merge_builder = merge_builder.whenMatchedUpdate(
     set={
         {%- for assignment in merge_cfg.scd1_update_assignments %}
-        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
         {%- endfor %}
     },
 )
@@ -276,7 +276,7 @@ merge_builder = merge_builder.whenNotMatchedInsert(
         "__ValidTo": "src.__ValidTo",
         "__IsCurrent": "src.__IsCurrent",
         {%- for assignment in merge_cfg.insert_assignments %}
-        "{{ assignment.column }}": {%- if assignment.column in merge_cfg.scd0_helper_lookup -%}'src.{{ merge_cfg.scd0_helper_lookup[assignment.column] }}'{%- else -%}{{ assignment.expression }}{%- endif %}{% if not loop.last %}, {% endif %}
+        "{{ assignment.column }}": {%- if assignment.column in merge_cfg.scd0_helper_lookup -%}'src.{{ merge_cfg.scd0_helper_lookup[assignment.column] }}'{%- else -%}{{ assignment.expression | safe }}{%- endif %}{% if not loop.last %}, {% endif %}
         {%- endfor %}
     },
 )
@@ -287,19 +287,19 @@ merge_builder = (
     target_table.alias("tgt")
     .merge(
         union_df.alias("src"),
-        "{{ merge_cfg.merge_condition }}",
+        "{{ merge_cfg.merge_condition | safe }}",
     )
 )
 {%- if merge_cfg.scd1_update_assignments %}
 merge_builder = merge_builder.whenMatchedUpdate(
     {%- if merge_cfg.scd1_change_condition %}
     condition="""
-        {{ merge_cfg.scd1_change_condition }}
+        {{ merge_cfg.scd1_change_condition | safe }}
     """,
     {%- endif %}
     set={
         {%- for assignment in merge_cfg.scd1_update_assignments %}
-        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
         {%- endfor %}
     },
 )
@@ -307,7 +307,7 @@ merge_builder = merge_builder.whenMatchedUpdate(
 merge_builder = merge_builder.whenNotMatchedInsert(
     values={
         {%- for assignment in merge_cfg.insert_assignments %}
-        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
         {%- endfor %}
     },
 )
@@ -443,7 +443,7 @@ final_df = final_df.drop(
 
 final_df = final_df.withColumns({
     {%- for column in data.calculated_columns %}
-    "{{ column.name }}": F.expr({{ column.expression_literal }}){% if not loop.last %},
+    "{{ column.name }}": F.expr({{ column.expression_literal | safe }}){% if not loop.last %},
     {% endif %}
     {%- endfor %}
 })
@@ -545,7 +545,7 @@ merge_builder = (
     target_table.alias("tgt")
     .merge(
         staged_union.alias("src"),
-        "({{ merge_cfg.merge_condition }}) AND src.__merge_action = 'update'",
+        "({{ merge_cfg.merge_condition | safe }}) AND src.__merge_action = 'update'",
     )
     .whenMatchedUpdate(
         condition="src.scd2_changed",
@@ -558,10 +558,10 @@ merge_builder = (
 )
 {%- if merge_cfg.scd1_change_condition and merge_cfg.scd1_update_assignments %}
 merge_builder = merge_builder.whenMatchedUpdate(
-    condition="(NOT src.scd2_changed) AND ({{ merge_cfg.scd1_change_condition }})",
+    condition="(NOT src.scd2_changed) AND ({{ merge_cfg.scd1_change_condition | safe }})",
     set={
         {%- for assignment in merge_cfg.scd1_update_assignments %}
-        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
         {%- endfor %}
     },
 )
@@ -569,7 +569,7 @@ merge_builder = merge_builder.whenMatchedUpdate(
 merge_builder = merge_builder.whenMatchedUpdate(
     set={
         {%- for assignment in merge_cfg.scd1_update_assignments %}
-        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
         {%- endfor %}
     },
 )
@@ -580,7 +580,7 @@ merge_builder = merge_builder.whenNotMatchedInsert(
         "__ValidTo": "src.__ValidTo",
         "__IsCurrent": "src.__IsCurrent",
         {%- for assignment in merge_cfg.insert_assignments %}
-        "{{ assignment.column }}": {%- if assignment.column in merge_cfg.scd0_helper_lookup -%}'src.{{ merge_cfg.scd0_helper_lookup[assignment.column] }}'{%- else -%}{{ assignment.expression }}{%- endif %}{% if not loop.last %}, {% endif %}
+        "{{ assignment.column }}": {%- if assignment.column in merge_cfg.scd0_helper_lookup -%}'src.{{ merge_cfg.scd0_helper_lookup[assignment.column] }}'{%- else -%}{{ assignment.expression | safe }}{%- endif %}{% if not loop.last %}, {% endif %}
         {%- endfor %}
     },
 )
@@ -591,19 +591,19 @@ merge_builder = (
     target_table.alias("tgt")
     .merge(
         final_df.alias("src"),
-        "{{ merge_cfg.merge_condition }}",
+        "{{ merge_cfg.merge_condition | safe }}",
     )
 )
 {%- if merge_cfg.scd1_update_assignments %}
 merge_builder = merge_builder.whenMatchedUpdate(
     {%- if merge_cfg.scd1_change_condition %}
     condition="""
-        {{ merge_cfg.scd1_change_condition }}
+        {{ merge_cfg.scd1_change_condition | safe }}
     """,
     {%- endif %}
     set={
         {%- for assignment in merge_cfg.scd1_update_assignments %}
-        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
         {%- endfor %}
     },
 )
@@ -611,7 +611,7 @@ merge_builder = merge_builder.whenMatchedUpdate(
 merge_builder = merge_builder.whenNotMatchedInsert(
     values={
         {%- for assignment in merge_cfg.insert_assignments %}
-        "{{ assignment.column }}": {{ assignment.expression }}{% if not loop.last %}, {% endif %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
         {%- endfor %}
     },
 )
