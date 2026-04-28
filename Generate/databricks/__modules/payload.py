@@ -58,12 +58,6 @@ from datam8_model.zone import Zone
 logger = logging.getLogger(__name__)
 
 TARGET = "databricks"
-EXTERNAL_PARTITIONS = ["__Year", "__Month", "__Day", "__InsertTimestampUTC"]
-DATA_TYPE_ALIASES = {
-    "integer": "int",
-    "bigint": "long",
-    "timestamp": "datetime",
-}
 
 
 def create_full_table_name(wrapper: EntityWrapper[ModelEntity]) -> str:
@@ -596,13 +590,13 @@ def dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         attribute_names = [attr.name for attr in entity.attributes]
         transformations = collect_transformations(wrapper)
         cache.set(f"dml_transformations::{wrapper.locator}", transformations)
-        stage_sources = external_sources(model, wrapper)
+        external_source_items = external_sources(model, wrapper)
         source_mode = "none"
         if transformations:
             source_mode = "transformation"
-        elif stage_sources:
+        elif external_source_items:
             source_mode = "external_delta"
-        has_external_source = bool(stage_sources)
+        has_external_source = bool(external_source_items)
         include_external_timestamp = source_mode == "external_delta"
         include_source_table = source_mode == "external_delta"
         include_business_function = not has_external_source
@@ -643,7 +637,7 @@ def dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                             **source,
                             "source_zone": source_zone_name,
                         }
-                        for source in stage_sources
+                        for source in external_source_items
                     ],
                     "transformations": transformations,
                     "final_function_key": transformations[-1]["key"] if transformations else None,
@@ -671,7 +665,9 @@ def dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                     "scd2_columns": history["scd2"],
                     "scd2_non_business_columns": merge_config["scd2_non_business_columns"],
                     "has_scd2_history": bool(history["scd2"]),
-                    "external_merge_config": merge_config if merge_config["enabled"] and stage_sources else None,
+                    "external_merge_config": (
+                        merge_config if merge_config["enabled"] and external_source_items else None
+                    ),
                     "final_merge_config": merge_config if merge_config["enabled"] and transformations else None,
                     "calculated_columns": calculated_columns(entity),
                 },
@@ -782,8 +778,7 @@ class DdlColumn:
 
     @property
     def type_definition(self) -> DataTypeDefinition:
-        type_name = DATA_TYPE_ALIASES.get(self.attribute.dataType.type, self.attribute.dataType.type)
-        return self.model.dataTypes.get(type_name).entity
+        return self.model.dataTypes.get(self.attribute.dataType.type).entity
 
     @property
     def target_type(self) -> str:
@@ -794,11 +789,13 @@ class DdlColumn:
             self.attribute.dataType.charLen,
         ]:
             case [int() as precision, None, None]:
-                target_type += f"({precision})"
+                if target_type.lower() == "decimal":
+                    target_type += f"({precision})"
             case [int() as precision, int() as scale, None]:
-                target_type += f"({precision}, {scale})"
-            case [None, None, int() as char_length]:
-                target_type += f"({char_length})"
+                if target_type.lower() == "decimal":
+                    target_type += f"({precision}, {scale})"
+            case [None, None, int()]:
+                pass
             case [None, None, None]:
                 pass
             case _:
@@ -954,9 +951,10 @@ class DdlExternalColumn(DdlColumn):
 
     @property
     def target_type(self) -> str:
-        type_name = DATA_TYPE_ALIASES.get(self.attribute.dataType.type, self.attribute.dataType.type)
-        type_name = {"short": "smallint", "datetime": "timestamp"}.get(type_name, type_name)
-        return type_name.upper()
+        for data_type in self.model.dataTypes.values():
+            if data_type.entity.name == self.attribute.dataType.type:
+                return data_type.entity.targets[TARGET]
+        return self.type_definition.targets[TARGET]
 
 
 class DdlPayload(BasePayload):
@@ -1137,7 +1135,7 @@ class DdlPayload(BasePayload):
 
 
 class DdlExternalPayload(DdlPayload):
-    partitions = EXTERNAL_PARTITIONS
+    partitions = ["__Year", "__Month", "__Day", "__InsertTimestampUTC"]
     is_external = True
 
     def __init__(

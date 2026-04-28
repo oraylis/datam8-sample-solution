@@ -92,7 +92,7 @@ schema = StructType([
     StructField("__SourceTable", DataType.fromDDL("STRING"), False, metadata={'comment': 'Origin reference for the record'}),
     StructField("ProductModelID", DataType.fromDDL("INT"), False, metadata={'business_key': True}),
     StructField("ProductDescriptionID", DataType.fromDDL("INT"), False, metadata={'business_key': True}),
-    StructField("Culture", DataType.fromDDL("STRING(6)"), False, metadata={'business_key': True}),
+    StructField("Culture", DataType.fromDDL("STRING"), False, metadata={'business_key': True}),
     StructField("rowguid", DataType.fromDDL("STRING"), False),
     StructField("ModifiedDate", DataType.fromDDL("TIMESTAMP"), False),
 ])
@@ -121,7 +121,7 @@ create_sql = f"""CREATE TABLE IF NOT EXISTS {catalog_name}.{zone}.Sales_Product_
   `__SourceTable` STRING NOT NULL COMMENT 'Origin reference for the record',
   `ProductModelID` INT NOT NULL,
   `ProductDescriptionID` INT NOT NULL,
-  `Culture` STRING(6) NOT NULL,
+  `Culture` STRING NOT NULL,
   `rowguid` STRING NOT NULL,
   `ModifiedDate` TIMESTAMP NOT NULL
 )

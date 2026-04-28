@@ -28,7 +28,7 @@
       "description": "Calendar date ID",
       "attributeType": "ID",
       "dataType": {
-        "type": "integer",
+        "type": "int",
         "nullable": false
       },
       "isBusinessKey": true,
