@@ -455,5 +455,132 @@ class ExternalSource:
             f"'{self.table_name}' AS __SourceTable",
             "current_timestamp() AS __InsertTimestampUTC",
             "current_timestamp() AS __UpdateTimestampUTC",
-            "__InsertTimestampUTC AS __InsertTimestampExternalUTC",
+            "__UpdateTimestampUTC AS __InsertTimestampSourceUTC",
         ]
+
+
+class InternalSource:
+    """Template-facing view of one internal source definition."""
+
+    def __init__(
+        self,
+        model: Model,
+        wrapper: EntityWrapper[ModelEntity],
+        source: Any,
+    ) -> None:
+        self.model = model
+        self.wrapper = wrapper
+        self.source = source
+        self.source_wrapper = self._resolve_source_wrapper()
+
+    def _resolve_source_wrapper(self) -> EntityWrapper[ModelEntity]:
+        source_location = getattr(self.source, "sourceLocation", None)
+        if isinstance(source_location, int):
+            return get_model_entity_by_id(self.model, source_location)
+        if isinstance(source_location, str):
+            normalized = source_location.strip("/")
+            if normalized:
+                return get_one(self.model.modelEntities, normalized)
+        raise ValueError(
+            f"Unsupported internal source reference '{source_location}' for entity "
+            f"'{self.wrapper.entity.name}'."
+        )
+
+    @property
+    def source_zone(self) -> str:
+        zone_wrapper = self.model.get_zone_for_entity(self.source_wrapper)
+        return zone_target_name(zone_wrapper)
+
+    @property
+    def source_table_name(self) -> str:
+        return self.source_wrapper.entity.name
+
+    @property
+    def source_full_table_name(self) -> str:
+        folders = self.source_wrapper.locator.folders
+        table_name = self.source_wrapper.locator.entityName or self.source_wrapper.entity.name
+        return "_".join([*folders[1:], table_name])
+
+    @property
+    def key(self) -> str:
+        return task_key(self.source_zone, self.source_full_table_name)
+
+    @property
+    def source_name(self) -> str:
+        return getattr(self.source, "sourceAlias", None) or self.source_table_name
+
+    @property
+    def source_properties(self) -> dict[str, str]:
+        return {ref.property: ref.value for ref in getattr(self.source, "properties", None) or []}
+
+    @property
+    def extract_mode(self) -> str | None:
+        value = self.source_properties.get("extract_mode")
+        if value is None:
+            return None
+        return str(value).strip().lower()
+
+    @property
+    def mapping_entries(self) -> list[dict[str, Any]]:
+        entries: list[dict[str, Any]] = []
+        for mapping in self.source.mapping or []:
+            source_name = getattr(mapping, "sourceName", None)
+            target_name = getattr(mapping, "targetName", None)
+            if not source_name or not target_name:
+                continue
+            mapping_properties = {ref.property: ref.value for ref in mapping.properties or []}
+            entries.append(
+                {
+                    "source": source_name,
+                    "target": target_name,
+                    "is_delta": str(mapping_properties.get("extract_mode", "")).lower() == "delta",
+                }
+            )
+        return entries
+
+    @property
+    def column_renames(self) -> list[dict[str, str]]:
+        return [
+            {"source": entry["source"], "target": entry["target"]}
+            for entry in self.mapping_entries
+            if entry["source"] != entry["target"]
+        ]
+
+    @property
+    def has_mapping(self) -> bool:
+        return len(self.mapping_entries) > 0
+
+    @property
+    def source_delta_column(self) -> str | None:
+        delta_entry = next((entry for entry in self.mapping_entries if entry["is_delta"]), None)
+        if delta_entry:
+            return delta_entry["source"]
+        if self.extract_mode == "delta":
+            return "__UpdateTimestampUTC"
+        return None
+
+    @property
+    def delta_filter_column(self) -> str:
+        return self.source_delta_column or "__InsertTimestampSourceUTC"
+
+    @property
+    def select_expressions(self) -> list[str]:
+        mapping_by_target = {entry["target"]: entry["source"] for entry in self.mapping_entries}
+        expressions: list[str] = []
+        for attr in self.wrapper.entity.attributes:
+            expression = getattr(attr, "calculation", None) or getattr(attr, "expression", None)
+            if expression:
+                expressions.append(f"{expression} AS `{attr.name}`")
+                continue
+            source_name = mapping_by_target.get(attr.name, attr.name)
+            expressions.append(f"`{source_name}` AS `{attr.name}`")
+
+        expressions.extend(
+            [
+                f"'{self.source_name}' AS __SourceTable",
+                "current_timestamp() AS __InsertTimestampUTC",
+                "current_timestamp() AS __UpdateTimestampUTC",
+                "__UpdateTimestampUTC AS __InsertTimestampSourceUTC",
+            ]
+        )
+        return expressions

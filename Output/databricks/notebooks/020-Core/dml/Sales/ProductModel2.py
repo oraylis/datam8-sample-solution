@@ -1,10 +1,10 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DML for bronze.Sales_Product_ProductModelProductDescription
+# MAGIC # DML for silver.Sales_ProductModel2
 # MAGIC History configuration of this entity
-# MAGIC - __Business Key Columns__: ['ProductModelID', 'ProductDescriptionID', 'Culture']
+# MAGIC - __Business Key Columns__: ['ProductModelID']
 # MAGIC - __SCD0 columns__: []
-# MAGIC - __SCD1 columns__: ['ProductModelID', 'ProductDescriptionID', 'Culture', 'rowguid', 'ModifiedDate']
+# MAGIC - __SCD1 columns__: ['ProductModelID', 'Name', 'CatalogDescription', 'rowguid', 'ModifiedDate']
 # MAGIC - __SCD2 columns__: []
 
 # COMMAND ----------
@@ -36,12 +36,11 @@ job_run_id = dbutils.widgets.get("job_run_id")
 
 # static values
 MAX_VALID_TO_DATE = "9999-12-31"
-zone = f"{schema_prefix}bronze" if schema_prefix else "bronze"
+zone = f"{schema_prefix}silver" if schema_prefix else "silver"
 data_product = "Sales"
-data_module = "Product"
-table_name = "ProductModelProductDescription"
+data_module = "default"
+table_name = "ProductModel2"
 full_table_name = "%s_%s_%s" % (data_product, data_module, table_name)
-source_zone = "raw"
 
 # COMMAND ----------
 
@@ -66,7 +65,7 @@ table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Process captured snapshots
+# MAGIC ## Process internal source snapshots
 
 # COMMAND ----------
 
@@ -75,82 +74,71 @@ table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
 
 # COMMAND ----------
 
-max_external: dict = {}
+max_internal: dict = {}
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### 'Sales_Product_ProductModelProductDescription'
+# MAGIC #### 'Sales_Product_ProductModel'
 
 # COMMAND ----------
 
-max_external["raw_Sales_Product_ProductModelProductDescription"] = spark.sql(f"""
+max_internal["bronze_Sales_Product_ProductModel"] = spark.sql(f"""
 SELECT
-  COALESCE(MAX(__InsertTimestampSourceUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxExternal
+  COALESCE(MAX(__InsertTimestampSourceUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxInternal
 FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
+WHERE __SourceTable = 'ProductModel'
 """).first()[0]
 
 # COMMAND ----------
 
-source_delta_df_list = []
+source_internal_df_list = []
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Extraction from source tables
+# MAGIC ### Extraction from internal source tables
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### 'Sales_Product_ProductModelProductDescription'
+# MAGIC #### 'Sales_Product_ProductModel'
 
 # COMMAND ----------
 
-source_delta_1_df = (
-    spark.table(f"{catalog.name}.{schema_prefix}raw.Sales_Product_ProductModelProductDescription")
-    .filter(F.col("__InsertTimestampUTC") > max_external["raw_Sales_Product_ProductModelProductDescription"])
-    .selectExpr(
-        "`ProductModelID`",
-        "`ProductDescriptionID`",
-        "`Culture`",
-        "`rowguid`",
-        "`ModifiedDate`",
-        "'ProductModelProductDescription' AS __SourceTable",
-        "current_timestamp() AS __InsertTimestampUTC",
-        "current_timestamp() AS __UpdateTimestampUTC",
-        "__UpdateTimestampUTC AS __InsertTimestampSourceUTC"
-    )
+source_internal_1_base_df = spark.table(
+    f"{catalog.name}.{schema_prefix}bronze.Sales_Product_ProductModel"
 )
-source_delta_df_list.append(source_delta_1_df)
+source_internal_1_base_df = source_internal_1_base_df.filter(
+    F.col("__UpdateTimestampUTC") > F.lit(max_internal["bronze_Sales_Product_ProductModel"])
+)
+
+source_internal_1_df = source_internal_1_base_df.selectExpr(
+    "`ProductModelID`",
+    "`Name`",
+    "`CatalogDescription`",
+    "`rowguid`",
+    "`ModifiedDate`",
+    "'ProductModel' AS __SourceTable",
+    "current_timestamp() AS __InsertTimestampUTC",
+    "current_timestamp() AS __UpdateTimestampUTC",
+    "__UpdateTimestampUTC AS __InsertTimestampSourceUTC"
+)
+
+source_internal_df_list.append(source_internal_1_df)
 
 # COMMAND ----------
 
-if not source_delta_df_list:
-    raise ValueError("No delta sources configured for this entity.")
-
-union_df = source_delta_df_list[0]
-for additional_df in source_delta_df_list[1:]:
+union_df = source_internal_df_list[0]
+for additional_df in source_internal_df_list[1:]:
     union_df = union_df.unionByName(additional_df)
-
-latest_snapshot_key_cols = ["ProductModelID", "ProductDescriptionID", "Culture"]
-if latest_snapshot_key_cols:
-    # Keep only the latest snapshot per business key to avoid duplicate records from external feeds.
-    latest_snapshot_window = Window.partitionBy(*latest_snapshot_key_cols).orderBy(
-        F.col("__InsertTimestampSourceUTC").desc(),
-    )
-    union_df = (
-        union_df
-        .withColumn("__dm8_latest_snapshot_rank", F.row_number().over(latest_snapshot_window))
-        .where(F.col("__dm8_latest_snapshot_rank") == 1)
-        .drop("__dm8_latest_snapshot_rank")
-    )
 
 union_df.createOrReplaceTempView("union_df")
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Write changes to BRONZE
+# MAGIC ## Write changes to SILVER
 
 # COMMAND ----------# COMMAND ----------
 
@@ -171,14 +159,16 @@ merge_builder = (
     target_table.alias("tgt")
     .merge(
         union_df.alias("src"),
-        "tgt.`ProductModelID` <=> src.`ProductModelID` AND tgt.`ProductDescriptionID` <=> src.`ProductDescriptionID` AND tgt.`Culture` <=> src.`Culture`",
+        "tgt.`ProductModelID` <=> src.`ProductModelID`",
     )
 )
 merge_builder = merge_builder.whenMatchedUpdate(
     condition="""
-        NOT (tgt.`rowguid` <=> src.`rowguid`) OR NOT (tgt.`ModifiedDate` <=> src.`ModifiedDate`)
+        NOT (tgt.`Name` <=> src.`Name`) OR NOT (tgt.`CatalogDescription` <=> src.`CatalogDescription`) OR NOT (tgt.`rowguid` <=> src.`rowguid`) OR NOT (tgt.`ModifiedDate` <=> src.`ModifiedDate`)
     """,
     set={
+        "Name": 'src.`Name`', 
+        "CatalogDescription": 'src.`CatalogDescription`', 
         "rowguid": 'src.`rowguid`', 
         "ModifiedDate": 'src.`ModifiedDate`', 
         "__UpdateTimestampUTC": 'src.__UpdateTimestampUTC'
@@ -191,8 +181,8 @@ merge_builder = merge_builder.whenNotMatchedInsert(
         "__SourceTable": 'src.__SourceTable', 
         "__InsertTimestampSourceUTC": 'src.__InsertTimestampSourceUTC', 
         "ProductModelID": 'src.`ProductModelID`', 
-        "ProductDescriptionID": 'src.`ProductDescriptionID`', 
-        "Culture": 'src.`Culture`', 
+        "Name": 'src.`Name`', 
+        "CatalogDescription": 'src.`CatalogDescription`', 
         "rowguid": 'src.`rowguid`', 
         "ModifiedDate": 'src.`ModifiedDate`'
     },

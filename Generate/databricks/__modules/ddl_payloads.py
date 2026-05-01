@@ -214,6 +214,9 @@ class DdlPayload(ModelEntityPayload):
         has_external_source = any(
             getattr(source, "dataSource", None) for source in self.entity.sources or []
         )
+        has_internal_source = any(
+            not getattr(source, "dataSource", None) for source in self.entity.sources or []
+        )
         has_transformation = bool(self.entity.transformations)
         if has_transformation and not has_external_source:
             columns.append(
@@ -221,10 +224,10 @@ class DdlPayload(ModelEntityPayload):
                     "__BusinessFunction", "STRING", False, "Business function identifier"
                 )
             )
-        if has_external_source:
+        if has_external_source or (has_internal_source and not has_transformation):
             columns.append(
                 RenderedDdlColumn(
-                    "__InsertTimestampExternalUTC", "TIMESTAMP", False, "External load timestamp (UTC)"
+                    "__InsertTimestampSourceUTC", "TIMESTAMP", False, "Source load timestamp (UTC)"
                 )
             )
             columns.append(

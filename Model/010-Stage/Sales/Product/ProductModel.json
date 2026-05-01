@@ -13,6 +13,7 @@
         "nullable": false
       },
       "isBusinessKey": true,
+      "expressionLanguage": "sql",
       "dateModified": "2026-03-20T11:44:10Z",
       "dateAdded": "2025-01-01T01:01:01Z"
     },
@@ -24,6 +25,7 @@
         "type": "string",
         "nullable": false
       },
+      "expressionLanguage": "sql",
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
@@ -34,6 +36,7 @@
         "type": "string",
         "nullable": true
       },
+      "expressionLanguage": "sql",
       "dateModified": "2026-03-20T11:44:10Z",
       "dateAdded": "2025-01-01T01:01:01Z"
     },
@@ -45,6 +48,7 @@
         "type": "uniqueidentifier",
         "nullable": false
       },
+      "expressionLanguage": "sql",
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
@@ -55,6 +59,7 @@
         "type": "datetime",
         "nullable": false
       },
+      "expressionLanguage": "sql",
       "dateAdded": "2025-01-01T01:01:01Z"
     }
   ],

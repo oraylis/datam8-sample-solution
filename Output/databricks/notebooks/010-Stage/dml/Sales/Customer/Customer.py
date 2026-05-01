@@ -86,7 +86,7 @@ max_external: dict = {}
 
 max_external["raw_Sales_Customer_Customer_DE"] = spark.sql(f"""
 SELECT
-  COALESCE(MAX(__InsertTimestampExternalUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxExternal
+  COALESCE(MAX(__InsertTimestampSourceUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxExternal
 FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
 """).first()[0]
 
@@ -99,7 +99,7 @@ FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
 
 max_external["raw_Sales_Customer_Customer_EN"] = spark.sql(f"""
 SELECT
-  COALESCE(MAX(__InsertTimestampExternalUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxExternal
+  COALESCE(MAX(__InsertTimestampSourceUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxExternal
 FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
 """).first()[0]
 
@@ -139,7 +139,7 @@ source_delta_1_df = (
         "'Customer_DE' AS __SourceTable",
         "current_timestamp() AS __InsertTimestampUTC",
         "current_timestamp() AS __UpdateTimestampUTC",
-        "__InsertTimestampUTC AS __InsertTimestampExternalUTC"
+        "__UpdateTimestampUTC AS __InsertTimestampSourceUTC"
     )
 )
 source_delta_df_list.append(source_delta_1_df)
@@ -171,7 +171,7 @@ source_delta_2_df = (
         "'Customer_EN' AS __SourceTable",
         "current_timestamp() AS __InsertTimestampUTC",
         "current_timestamp() AS __UpdateTimestampUTC",
-        "__InsertTimestampUTC AS __InsertTimestampExternalUTC"
+        "__UpdateTimestampUTC AS __InsertTimestampSourceUTC"
     )
 )
 source_delta_df_list.append(source_delta_2_df)
@@ -189,7 +189,7 @@ latest_snapshot_key_cols = ["KundenID"]
 if latest_snapshot_key_cols:
     # Keep only the latest snapshot per business key to avoid duplicate records from external feeds.
     latest_snapshot_window = Window.partitionBy(*latest_snapshot_key_cols).orderBy(
-        F.col("__InsertTimestampExternalUTC").desc(),
+        F.col("__InsertTimestampSourceUTC").desc(),
     )
     union_df = (
         union_df
@@ -297,7 +297,7 @@ merge_builder = merge_builder.whenNotMatchedInsert(
         "__InsertTimestampUTC":'src.__InsertTimestampUTC', 
         "__UpdateTimestampUTC":'src.__UpdateTimestampUTC', 
         "__SourceTable":'src.__SourceTable', 
-        "__InsertTimestampExternalUTC":'src.__InsertTimestampExternalUTC', 
+        "__InsertTimestampSourceUTC":'src.__InsertTimestampSourceUTC', 
         "KundenID":'src.`KundenID`', 
         "NamensTyp":'src.`NamensTyp`', 
         "Titel":'src.`Titel`', 

@@ -88,7 +88,7 @@ table_comment = "Sales order line item details entity"
 schema = StructType([
     StructField("__InsertTimestampUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'Load timestamp (UTC)'}),
     StructField("__UpdateTimestampUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'Last update timestamp (UTC)'}),
-    StructField("__InsertTimestampExternalUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'External load timestamp (UTC)'}),
+    StructField("__InsertTimestampSourceUTC", DataType.fromDDL("TIMESTAMP"), False, metadata={'comment': 'Source load timestamp (UTC)'}),
     StructField("__SourceTable", DataType.fromDDL("STRING"), False, metadata={'comment': 'Origin reference for the record'}),
     StructField("SalesOrderID", DataType.fromDDL("INT"), False, metadata={'business_key': True}),
     StructField("SalesOrderDetailID", DataType.fromDDL("INT"), False, metadata={'business_key': True}),
@@ -120,7 +120,7 @@ partitions = [
 create_sql = f"""CREATE TABLE IF NOT EXISTS {catalog_name}.{zone}.Sales_Order_SalesOrderDetail (
   `__InsertTimestampUTC` TIMESTAMP NOT NULL COMMENT 'Load timestamp (UTC)',
   `__UpdateTimestampUTC` TIMESTAMP NOT NULL COMMENT 'Last update timestamp (UTC)',
-  `__InsertTimestampExternalUTC` TIMESTAMP NOT NULL COMMENT 'External load timestamp (UTC)',
+  `__InsertTimestampSourceUTC` TIMESTAMP NOT NULL COMMENT 'Source load timestamp (UTC)',
   `__SourceTable` STRING NOT NULL COMMENT 'Origin reference for the record',
   `SalesOrderID` INT NOT NULL,
   `SalesOrderDetailID` INT NOT NULL,

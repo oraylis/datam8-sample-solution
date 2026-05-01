@@ -1,0 +1,28 @@
+resources:
+  jobs:
+    Create_silver_Sales_default:
+      name: ${var.job_name_prefix}Create silver Sales default
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: schema_prefix
+          default: ${var.schema_prefix}
+        - name: owner
+          default: ${var.owner}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+      job_clusters:
+        - job_cluster_key: cluster_extra_small
+          new_cluster: ${var.cluster_extra_small}
+      tasks:
+
+        - task_key: silver_sales_default_productmodel2
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/ddl/Sales/ProductModel2
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small

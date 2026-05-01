@@ -199,6 +199,14 @@ resources:
             source: WORKSPACE
           job_cluster_key: cluster_small
 
+        - task_key: load_020_core_sales_productmodel2
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/dml/Sales/ProductModel2
+            source: WORKSPACE
+          job_cluster_key: cluster_small
+
         - task_key: load_020_core_sales_customer_customeraddress
           depends_on:
             - task_key: Start_Load
@@ -236,6 +244,7 @@ resources:
             - task_key: load_010_stage_sales_product_productdescription
             - task_key: load_010_stage_sales_product_productmodel
             - task_key: load_010_stage_sales_product_productmodelproductdescription
+            - task_key: load_020_core_sales_productmodel2
             - task_key: load_020_core_sales_customer_customeraddress
             - task_key: load_020_core_sales_other_address
             - task_key: load_030_curated_sales_customer_dimdate
