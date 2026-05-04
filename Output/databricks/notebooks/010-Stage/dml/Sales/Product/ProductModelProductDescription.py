@@ -124,9 +124,6 @@ source_delta_df_list.append(source_delta_1_df)
 
 # COMMAND ----------
 
-if not source_delta_df_list:
-    raise ValueError("No delta sources configured for this entity.")
-
 union_df = source_delta_df_list[0]
 for additional_df in source_delta_df_list[1:]:
     union_df = union_df.unionByName(additional_df)
