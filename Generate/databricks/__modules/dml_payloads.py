@@ -8,7 +8,6 @@ from datam8.model import EntityWrapper, Model
 from datam8_model.attribute import HistoryType
 from datam8_model.model import ExternalModelSource, ModelEntity
 from datam8_model.zone import Zone
-
 from payload_common import (
     ExternalSource,
     InternalSource,
@@ -29,7 +28,7 @@ class MergeConfig:
         attribute_names: list[str],
         *,
         write_mode: str,
-        include_internal_timestamp: bool,
+        include_source_timestamp: bool,
         include_source_table: bool,
         include_business_function: bool,
     ) -> None:
@@ -37,7 +36,7 @@ class MergeConfig:
         self.history = history
         self.attribute_names = attribute_names
         self.write_mode = write_mode
-        self.include_internal_timestamp = include_internal_timestamp
+        self.include_source_timestamp = include_source_timestamp
         self.include_source_table = include_source_table
         self.include_business_function = include_business_function
 
@@ -132,7 +131,7 @@ class MergeConfig:
             technical_columns.append("__BusinessFunction")
         if self.include_source_table:
             technical_columns.append("__SourceTable")
-        if self.include_internal_timestamp:
+        if self.include_source_timestamp:
             technical_columns.append("__InsertTimestampSourceUTC")
 
         assignments = [
@@ -169,10 +168,7 @@ class DmlPayload(ModelEntityPayload):
             for source in wrapper.entity.sources or []:
                 if getattr(source, "dataSource", None):
                     continue
-                try:
-                    self.internal_source_items.append(InternalSource(model, wrapper, source))
-                except (KeyError, ValueError):
-                    continue
+                self.internal_source_items.append(InternalSource(model, wrapper, source))
 
     def get_output_path(self) -> Path:
         return Path(
@@ -209,10 +205,8 @@ class DmlPayload(ModelEntityPayload):
     def source_mode(self) -> str:
         if self.transformations:
             return "transformation"
-        if self.external_source_items:
-            return "external_delta"
-        if self.internal_source_items:
-            return "internal_delta"
+        if self.delta_source_items:
+            return "source_delta"
         return "none"
 
     @property
@@ -224,12 +218,12 @@ class DmlPayload(ModelEntityPayload):
         return bool(self.internal_source_items)
 
     @property
-    def include_internal_timestamp(self) -> bool:
-        return self.source_mode in {"external_delta", "internal_delta"}
+    def include_source_timestamp(self) -> bool:
+        return self.source_mode == "source_delta"
 
     @property
     def include_source_table(self) -> bool:
-        return self.source_mode in {"external_delta", "internal_delta"}
+        return self.source_mode == "source_delta"
 
     @property
     def include_business_function(self) -> bool:
@@ -252,6 +246,20 @@ class DmlPayload(ModelEntityPayload):
         return self.internal_source_items
 
     @property
+    def delta_source_items(self) -> list[ExternalSource | InternalSource]:
+        if self.external_source_items:
+            return self.external_source_items
+        return self.internal_source_items
+
+    @property
+    def delta_sources(self) -> list[ExternalSource | InternalSource]:
+        return self.delta_source_items
+
+    @property
+    def needs_latest_snapshot_handling(self) -> bool:
+        return bool(self.external_source_items)
+
+    @property
     def final_function_key(self) -> str | None:
         return self.transformations[-1]["key"] if self.transformations else None
 
@@ -270,7 +278,7 @@ class DmlPayload(ModelEntityPayload):
             columns.append("__BusinessFunction")
         if self.include_source_table:
             columns.append("__SourceTable")
-        if self.include_internal_timestamp:
+        if self.include_source_timestamp:
             columns.append("__InsertTimestampSourceUTC")
         columns.extend(self.attribute_columns)
         return columns
@@ -286,7 +294,7 @@ class DmlPayload(ModelEntityPayload):
             self.history,
             self.attribute_columns,
             write_mode=self.write_mode,
-            include_internal_timestamp=self.include_internal_timestamp,
+            include_source_timestamp=self.include_source_timestamp,
             include_source_table=self.include_source_table,
             include_business_function=self.include_business_function,
         )
@@ -345,13 +353,15 @@ class DmlPayload(ModelEntityPayload):
 
     @property
     def external_merge_config(self) -> MergeConfig | None:
-        if self.merge_config.enabled and self.external_source_items:
-            return self.merge_config
-        return None
+        return self.source_merge_config if self.external_source_items else None
 
     @property
     def internal_merge_config(self) -> MergeConfig | None:
-        if self.merge_config.enabled and self.internal_source_items and not self.transformations:
+        return self.source_merge_config if self.internal_source_items and not self.transformations else None
+
+    @property
+    def source_merge_config(self) -> MergeConfig | None:
+        if self.merge_config.enabled and self.delta_source_items and not self.transformations:
             return self.merge_config
         return None
 

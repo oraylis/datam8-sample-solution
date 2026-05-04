@@ -65,7 +65,7 @@ table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Process internal source snapshots
+# MAGIC ## Process source snapshots
 
 # COMMAND ----------
 
@@ -74,7 +74,7 @@ table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
 
 # COMMAND ----------
 
-max_internal: dict = {}
+max_source: dict = {}
 
 # COMMAND ----------
 
@@ -83,21 +83,21 @@ max_internal: dict = {}
 
 # COMMAND ----------
 
-max_internal["bronze_Sales_Product_ProductModel"] = spark.sql(f"""
+max_source["bronze_Sales_Product_ProductModel"] = spark.sql(f"""
 SELECT
-  COALESCE(MAX(__InsertTimestampSourceUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxInternal
+  COALESCE(MAX(__InsertTimestampSourceUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxSource
 FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
 WHERE __SourceTable = 'ProductModel'
 """).first()[0]
 
 # COMMAND ----------
 
-source_internal_df_list = []
+source_delta_df_list = []
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Extraction from internal source tables
+# MAGIC ### Extraction from source tables
 
 # COMMAND ----------
 
@@ -106,33 +106,31 @@ source_internal_df_list = []
 
 # COMMAND ----------
 
-source_internal_1_base_df = spark.table(
-    f"{catalog.name}.{schema_prefix}bronze.Sales_Product_ProductModel"
+source_delta_1_df = (
+    spark.table(f"{catalog.name}.{schema_prefix}bronze.Sales_Product_ProductModel")
+    .filter(F.col("__UpdateTimestampUTC") > F.lit(max_source["bronze_Sales_Product_ProductModel"]))
+    .selectExpr(
+        "`ProductModelID` AS `ProductModelID`",
+        "`Name` AS `Name`",
+        "`CatalogDescription` AS `CatalogDescription`",
+        "`rowguid` AS `rowguid`",
+        "`ModifiedDate` AS `ModifiedDate`",
+        "'ProductModel' AS __SourceTable",
+        "current_timestamp() AS __InsertTimestampUTC",
+        "current_timestamp() AS __UpdateTimestampUTC",
+        "__UpdateTimestampUTC AS __InsertTimestampSourceUTC"
+    )
 )
-source_internal_1_base_df = source_internal_1_base_df.filter(
-    F.col("__UpdateTimestampUTC") > F.lit(max_internal["bronze_Sales_Product_ProductModel"])
-)
-
-source_internal_1_df = source_internal_1_base_df.selectExpr(
-    "`ProductModelID`",
-    "`Name`",
-    "`CatalogDescription`",
-    "`rowguid`",
-    "`ModifiedDate`",
-    "'ProductModel' AS __SourceTable",
-    "current_timestamp() AS __InsertTimestampUTC",
-    "current_timestamp() AS __UpdateTimestampUTC",
-    "__UpdateTimestampUTC AS __InsertTimestampSourceUTC"
-)
-
-source_internal_df_list.append(source_internal_1_df)
+source_delta_df_list.append(source_delta_1_df)
 
 # COMMAND ----------
 
-union_df = source_internal_df_list[0]
-for additional_df in source_internal_df_list[1:]:
-    union_df = union_df.unionByName(additional_df)
+if not source_delta_df_list:
+    raise ValueError("No delta sources configured for this entity.")
 
+union_df = source_delta_df_list[0]
+for additional_df in source_delta_df_list[1:]:
+    union_df = union_df.unionByName(additional_df)
 union_df.createOrReplaceTempView("union_df")
 
 # COMMAND ----------

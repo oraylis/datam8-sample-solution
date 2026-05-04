@@ -41,7 +41,6 @@ data_product = "Sales"
 data_module = "Product"
 table_name = "ProductModel"
 full_table_name = "%s_%s_%s" % (data_product, data_module, table_name)
-source_zone = "raw"
 
 # COMMAND ----------
 
@@ -66,7 +65,7 @@ table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Process captured snapshots
+# MAGIC ## Process source snapshots
 
 # COMMAND ----------
 
@@ -75,7 +74,7 @@ table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
 
 # COMMAND ----------
 
-max_external: dict = {}
+max_source: dict = {}
 
 # COMMAND ----------
 
@@ -84,9 +83,9 @@ max_external: dict = {}
 
 # COMMAND ----------
 
-max_external["raw_Sales_Product_ProductModel"] = spark.sql(f"""
+max_source["raw_Sales_Product_ProductModel"] = spark.sql(f"""
 SELECT
-  COALESCE(MAX(__InsertTimestampSourceUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxExternal
+  COALESCE(MAX(__InsertTimestampSourceUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxSource
 FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
 """).first()[0]
 
@@ -108,7 +107,7 @@ source_delta_df_list = []
 
 source_delta_1_df = (
     spark.table(f"{catalog.name}.{schema_prefix}raw.Sales_Product_ProductModel")
-    .filter(F.col("__InsertTimestampUTC") > max_external["raw_Sales_Product_ProductModel"])
+    .filter(F.col("__InsertTimestampUTC") > F.lit(max_source["raw_Sales_Product_ProductModel"]))
     .selectExpr(
         "`ProductModelID`",
         "`Name`",
@@ -131,10 +130,9 @@ if not source_delta_df_list:
 union_df = source_delta_df_list[0]
 for additional_df in source_delta_df_list[1:]:
     union_df = union_df.unionByName(additional_df)
-
 latest_snapshot_key_cols = ["ProductModelID"]
 if latest_snapshot_key_cols:
-    # Keep only the latest snapshot per business key to avoid duplicate records from external feeds.
+    # Keep only the latest snapshot per business key to avoid duplicate records from source feeds.
     latest_snapshot_window = Window.partitionBy(*latest_snapshot_key_cols).orderBy(
         F.col("__InsertTimestampSourceUTC").desc(),
     )
@@ -144,7 +142,6 @@ if latest_snapshot_key_cols:
         .where(F.col("__dm8_latest_snapshot_rank") == 1)
         .drop("__dm8_latest_snapshot_rank")
     )
-
 union_df.createOrReplaceTempView("union_df")
 
 # COMMAND ----------

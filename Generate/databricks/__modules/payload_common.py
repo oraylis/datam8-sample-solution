@@ -339,6 +339,14 @@ class ExternalSource:
         return self.full_table_name
 
     @property
+    def source_full_table_name(self) -> str:
+        return self.full_table_name
+
+    @property
+    def display_name(self) -> str:
+        return self.external_full_table
+
+    @property
     def data_product(self) -> str:
         return self.wrapper.locator.folders[1] if len(self.wrapper.locator.folders) > 1 else "default"
 
@@ -373,6 +381,14 @@ class ExternalSource:
     @property
     def source_location(self) -> str:
         return self.source.sourceLocation or self.table_name
+
+    @property
+    def target_max_filter(self) -> str | None:
+        return None
+
+    @property
+    def source_delta_column(self) -> str:
+        return "__InsertTimestampUTC"
 
     @property
     def properties(self) -> dict[str, str]:
@@ -502,12 +518,20 @@ class InternalSource:
         return "_".join([*folders[1:], table_name])
 
     @property
+    def display_name(self) -> str:
+        return self.source_full_table_name
+
+    @property
     def key(self) -> str:
         return task_key(self.source_zone, self.source_full_table_name)
 
     @property
     def source_name(self) -> str:
         return getattr(self.source, "sourceAlias", None) or self.source_table_name
+
+    @property
+    def target_max_filter(self) -> str:
+        return f"__SourceTable = '{self.source_name}'"
 
     @property
     def source_properties(self) -> dict[str, str]:
@@ -558,10 +582,6 @@ class InternalSource:
         if self.extract_mode == "delta":
             return "__UpdateTimestampUTC"
         return None
-
-    @property
-    def delta_filter_column(self) -> str:
-        return self.source_delta_column or "__InsertTimestampSourceUTC"
 
     @property
     def select_expressions(self) -> list[str]:
