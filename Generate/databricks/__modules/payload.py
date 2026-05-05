@@ -41,7 +41,6 @@ from pathlib import Path
 from datam8.generate import BasePayload, IPayload, register_payload
 from datam8.model import Model
 from datam8.utils.cache import Cache
-
 from ddl_payloads import DdlExternalPayload, DdlPayload
 from dml_payloads import DmlExternalPayload, DmlFunctionPayload, DmlPayload
 from jobs_payloads import (
@@ -65,7 +64,11 @@ from payload_common import (
 
 @register_payload("notebooks/ddl_notebook.jinja2")
 def ddl_notebooks(model: Model, cache: Cache) -> Sequence[DdlPayload]:
-    """Create DDL notebook payloads for all modeled Databricks entities."""
+    """Create DDL notebook payloads for all modeled Databricks entities.
+
+    DataM8 calls this function and renders one table-creation notebook for each
+    entity returned by `get_model_entity_wrappers`.
+    """
     payloads: list[DdlPayload] = []
 
     for wrapper in get_model_entity_wrappers(model):
@@ -76,7 +79,11 @@ def ddl_notebooks(model: Model, cache: Cache) -> Sequence[DdlPayload]:
 
 @register_payload("notebooks/ddl_notebook.jinja2")
 def ddl_external_notebooks(model: Model, cache: Cache) -> Sequence[DdlPayload]:
-    """Create DDL notebook payloads for external source tables."""
+    """Create DDL notebook payloads for external source tables.
+
+    These payloads create the raw landing tables that external extraction
+    notebooks write into.
+    """
     payloads: list[DdlPayload] = []
 
     for wrapper in get_external_source_wrappers(model):
@@ -90,7 +97,11 @@ def ddl_external_notebooks(model: Model, cache: Cache) -> Sequence[DdlPayload]:
 
 @register_payload("schema.yml.jinja2")
 def dab_schemas(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Create the Databricks Asset Bundle schema resource payload."""
+    """Create the Databricks Asset Bundle schema resource payload.
+
+    The generated YAML defines one Databricks schema for each zone that targets
+    Databricks.
+    """
     return [
         BasePayload(
             data=[
@@ -109,7 +120,11 @@ def dab_schemas(model: Model, cache: Cache) -> Sequence[IPayload]:
 
 @register_payload("clusters.yml.jinja2")
 def dab_cluster(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Create the Databricks Asset Bundle cluster resource payload."""
+    """Create the Databricks Asset Bundle cluster resource payload.
+
+    Cluster definitions come from `cluster` property values in the metadata
+    model and become reusable job cluster variables.
+    """
     clusters = [wrapper.entity for wrapper in get_many(model.propertyValues, "cluster/")]
     if len(clusters) == 0:
         return []
@@ -141,7 +156,11 @@ def dab_cluster(model: Model, cache: Cache) -> Sequence[IPayload]:
 
 @register_payload("notebooks/dml_notebook.jinja2", order=2)
 def dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Create DML notebook payloads and cache transformation script metadata."""
+    """Create DML notebook payloads and cache transformation script metadata.
+
+    DML notebooks load data into modeled tables. Transformation metadata is
+    cached here so `dml_function_scripts` can reuse it without re-reading files.
+    """
     payloads: list[IPayload] = []
 
     for wrapper in get_model_entity_wrappers(model):
@@ -154,7 +173,11 @@ def dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
 
 @register_payload("notebooks/dml_external_notebook.jinja2", order=2)
 def dml_external_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Create DML extraction notebook payloads for external sources."""
+    """Create DML extraction notebook payloads for external sources.
+
+    These notebooks read from source systems and write into external landing
+    tables.
+    """
     payloads: list[IPayload] = []
 
     for wrapper in get_external_source_wrappers(model):
@@ -168,7 +191,11 @@ def dml_external_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
 
 @register_payload("notebooks/dml_function.jinja2", order=2)
 def dml_function_scripts(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Create payloads for Python transformation function files."""
+    """Create payloads for Python transformation function files.
+
+    The rendered files are copied next to DML notebooks so Databricks can import
+    the model-defined transformation functions.
+    """
     payloads: list[IPayload] = []
 
     for wrapper in get_model_entity_wrappers(model):
@@ -185,29 +212,44 @@ def dml_function_scripts(model: Model, cache: Cache) -> Sequence[IPayload]:
 
 @register_payload("jobs/create_module.yml.jinja2")
 def jobs_create_modules(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Create DDL module job payloads."""
+    """Create DDL module job payloads.
+
+    Module jobs run the DDL notebooks for one zone, data product, and module.
+    """
     return create_module_job_payloads(model)
 
 
 @register_payload("jobs/create_zone.yml.jinja2")
 def jobs_create_zones(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Create DDL zone orchestration job payloads."""
+    """Create DDL zone orchestration job payloads.
+
+    Zone jobs call all module-level create jobs for one Databricks zone.
+    """
     return create_zone_job_payloads(model)
 
 
 @register_payload("jobs/create_all.yml.jinja2")
 def jobs_create_all(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Create the top-level DDL orchestration job payload."""
+    """Create the top-level DDL orchestration job payload.
+
+    This is the root job that triggers all table creation jobs.
+    """
     return create_all_job_payloads(model)
 
 
 @register_payload("jobs/load_job_group.yml.jinja2")
 def jobs_load_groups(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Create load job payloads grouped by the jobs property."""
+    """Create load job payloads grouped by the `jobs` property.
+
+    Each group becomes a Databricks job such as `Load_daily` or `Load_weekly`.
+    """
     return create_load_group_payloads(model)
 
 
 @register_payload("jobs/load_all.yml.jinja2")
 def jobs_load_all(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Create the top-level load orchestration job payload."""
+    """Create the top-level load orchestration job payload.
+
+    This is the root job that triggers all grouped load jobs.
+    """
     return create_load_all_payloads(model)

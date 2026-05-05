@@ -13,10 +13,9 @@ from datam8_model.attribute import Attribute, HistoryType
 from datam8_model.data_type import DataType, DataTypeDefinition
 from datam8_model.folder import Folder
 from datam8_model.model import ExternalModelSource, ModelEntity
-
 from payload_common import (
-    ExternalSource,
     TARGET,
+    ExternalSource,
     ModelEntityPayload,
     get_external_zone,
     get_model_entity_by_id,
@@ -30,18 +29,26 @@ logger = logging.getLogger(__name__)
 
 
 class DdlColumn:
-    """Template-facing column wrapper for modeled DDL columns."""
+    """Template-facing column wrapper for modeled DDL columns.
+
+    DDL means "Data Definition Language": the SQL that creates or changes table
+    structures. This wrapper turns one model attribute into the Databricks SQL
+    text and Spark schema metadata needed by the DDL notebook template.
+    """
 
     def __init__(self, attr: Attribute, model: Model) -> None:
+        """Store the model attribute and the full model for later lookups."""
         self.attribute = attr
         self.model = model
 
     @property
     def type_definition(self) -> DataTypeDefinition:
+        """Return the shared data type definition used by this attribute."""
         return get_one(self.model.dataTypes, self.attribute.dataType.type).entity
 
     @property
     def target_type(self) -> str:
+        """Return the Databricks data type for this column."""
         target_type = self.type_definition.targets[TARGET]
         match [
             self.attribute.dataType.precision,
@@ -64,20 +71,24 @@ class DdlColumn:
 
     @property
     def spark_data_type_expression(self) -> str:
+        """Return the Spark SQL type text, for example `STRING` or `DECIMAL(10, 2)`."""
         return f"{self.target_type}".upper()
 
     @property
     def spark_nullable(self) -> str:
+        """Return the SQL nullability text for this column."""
         return " NULL" if self.attribute.dataType.nullable else " NOT NULL"
 
     @property
     def spark_comment(self) -> str:
+        """Return the SQL comment clause for this column, if a description exists."""
         if self.attribute.description is None:
             return ""
         return f" COMMENT '{self.attribute.description}'"
 
     @property
     def is_surrogate_key(self) -> bool:
+        """Return whether this column is marked as a generated surrogate key."""
         return any(
             ref.property.lower() == "attribute_type" and ref.value.lower() == "sk"
             for ref in self.attribute.properties or []
@@ -85,22 +96,27 @@ class DdlColumn:
 
     @property
     def spark_identity(self) -> str:
+        """Return the Databricks identity clause for surrogate key columns."""
         return " GENERATED ALWAYS AS IDENTITY" if self.is_surrogate_key else ""
 
     @property
     def name(self) -> str:
+        """Return the column name from the model attribute."""
         return self.attribute.name
 
     @property
     def spark_type_expr(self) -> str:
+        """Return Python code that recreates the Spark data type from DDL text."""
         return f'DataType.fromDDL("{self.spark_data_type_expression}")'
 
     @property
     def struct_nullable(self) -> bool:
+        """Return whether Spark should allow null values in this field."""
         return self.attribute.dataType.nullable
 
     @property
     def metadata_repr(self) -> str:
+        """Return Python metadata text for Spark `StructField` creation."""
         metadata: dict[str, Any] = {}
         if self.attribute.description:
             metadata["comment"] = self.attribute.description
@@ -110,13 +126,18 @@ class DdlColumn:
 
     @property
     def sql_definition(self) -> str:
+        """Return the complete SQL fragment for this one column."""
         nullable = "" if self.attribute.dataType.nullable else " NOT NULL"
         return f"`{self.name}` {self.spark_data_type_expression}{nullable}{self.spark_comment}"
 
 
 @dataclasses.dataclass
 class RenderedDdlColumn:
-    """Simple rendered column for technical columns not present in the model."""
+    """Simple rendered column for technical columns not present in the model.
+
+    Examples are load timestamps and source tracking columns. They are generated
+    by the Databricks target even when the business model does not list them.
+    """
 
     name: str
     spark_data_type_expression: str
@@ -126,14 +147,17 @@ class RenderedDdlColumn:
 
     @property
     def spark_type_expr(self) -> str:
+        """Return Python code that recreates the Spark data type from DDL text."""
         return f'DataType.fromDDL("{self.spark_data_type_expression}")'
 
     @property
     def struct_nullable(self) -> bool:
+        """Return whether Spark should allow null values in this field."""
         return self.nullable
 
     @property
     def metadata_repr(self) -> str:
+        """Return Python metadata text for Spark `StructField` creation."""
         metadata: dict[str, Any] = {}
         if self.comment:
             metadata["comment"] = self.comment
@@ -143,16 +167,22 @@ class RenderedDdlColumn:
 
     @property
     def sql_definition(self) -> str:
+        """Return the complete SQL fragment for this generated column."""
         nullable = "" if self.nullable else " NOT NULL"
         comment = f" COMMENT '{self.comment}'" if self.comment else ""
         return f"`{self.name}` {self.spark_data_type_expression}{nullable}{comment}"
 
 
 class DdlExternalColumn(DdlColumn):
-    """Column wrapper for external source mappings with source-provided data types."""
+    """Column wrapper for external source mappings with source-provided data types.
+
+    External extracts often start with source system types. This wrapper maps
+    those source types to Databricks types when a mapping exists.
+    """
 
     @property
     def type_definition(self) -> DataTypeDefinition:
+        """Return a minimal type definition based on the source-provided type."""
         return DataTypeDefinition(
             name=self.attribute.dataType.type,
             targets={TARGET: self.attribute.dataType.type},
@@ -160,6 +190,7 @@ class DdlExternalColumn(DdlColumn):
 
     @property
     def target_type(self) -> str:
+        """Return the Databricks type, using model mappings when available."""
         for data_type in self.model.dataTypes.values():
             if data_type.entity.name == self.attribute.dataType.type:
                 return data_type.entity.targets[TARGET]
@@ -167,12 +198,17 @@ class DdlExternalColumn(DdlColumn):
 
 
 class DdlPayload(ModelEntityPayload):
-    """Render payload for a table DDL notebook."""
+    """Render payload for a table DDL notebook.
+
+    One instance represents one generated notebook that creates one modeled
+    Databricks table.
+    """
 
     imports: list[str] = ["StructType", "StructField", "DataType"]
     is_external = False
 
     def __init__(self, wrapper: EntityWrapper[ModelEntity], model: Model) -> None:
+        """Initialize table-level DDL data for one model entity."""
         super().__init__(wrapper, model)
         self.locator = wrapper.locator
         self.first_folder: EntityWrapper[Folder] = get_one(
@@ -181,6 +217,7 @@ class DdlPayload(ModelEntityPayload):
         )
 
     def get_output_path(self) -> Path:
+        """Return where the generated DDL notebook should be written."""
         return Path(
             "notebooks",
             zone_folder_name(self.zone_wrapper),
@@ -191,10 +228,12 @@ class DdlPayload(ModelEntityPayload):
 
     @property
     def table_comment(self) -> str:
+        """Return the table description used as the Databricks table comment."""
         return self.entity.description or ""
 
     @property
     def columns(self) -> Sequence[DdlColumn | RenderedDdlColumn]:
+        """Return all columns that should exist in the generated table."""
         columns: list[DdlColumn | RenderedDdlColumn] = [
             *self.technical_columns,
             *[DdlColumn(attr, self.model) for attr in self.entity.attributes],
@@ -205,6 +244,7 @@ class DdlPayload(ModelEntityPayload):
 
     @property
     def technical_columns(self) -> list[RenderedDdlColumn]:
+        """Return generated tracking columns such as load timestamps and source names."""
         columns = [
             RenderedDdlColumn("__InsertTimestampUTC", "TIMESTAMP", False, "Load timestamp (UTC)"),
             RenderedDdlColumn(
@@ -237,6 +277,7 @@ class DdlPayload(ModelEntityPayload):
 
     @property
     def scd2_tracking_columns(self) -> list[RenderedDdlColumn]:
+        """Return generated columns needed to track SCD2 history."""
         return [
             RenderedDdlColumn("__ValidFrom", "TIMESTAMP", False, "SCD2 start date"),
             RenderedDdlColumn("__ValidTo", "TIMESTAMP", False, "SCD2 end date"),
@@ -245,14 +286,17 @@ class DdlPayload(ModelEntityPayload):
 
     @property
     def has_scd2_history(self) -> bool:
+        """Return whether any attribute needs SCD2 historical tracking."""
         return any([attr.history == HistoryType.SCD2 for attr in self.entity.attributes])
 
     @property
     def partitions(self) -> list[str]:
+        """Return clustering columns based on business key attributes."""
         return [attribute.name for attribute in self.entity.attributes if attribute.isBusinessKey]
 
     @property
     def table_properties(self) -> dict[str, Any]:
+        """Return Delta table properties derived from model properties."""
         discovered: dict[str, Any] = {}
         for ref in get_property_refs(self.model, self.wrapper):
             match [ref.property, ref.value]:
@@ -278,6 +322,7 @@ class DdlPayload(ModelEntityPayload):
 
     @property
     def table_tags(self) -> dict[str, Any]:
+        """Return Databricks table tags derived from model properties."""
         discovered: dict[str, Any] = {}
         for ref in get_property_refs(self.model, self.wrapper):
             if ref.property == "table_properties":
@@ -289,14 +334,17 @@ class DdlPayload(ModelEntityPayload):
 
     @property
     def table_tags_repr(self) -> str:
+        """Return table tags as Python literal text for the notebook template."""
         return repr(self.table_tags)
 
     @property
     def has_table_tags(self) -> bool:
+        """Return whether any table tags should be emitted."""
         return bool(self.table_tags)
 
     @property
     def column_tags(self) -> list[dict[str, str]]:
+        """Return column-level tags derived from attributes and source mappings."""
         tags_by_column: dict[str, dict[str, str]] = {}
         for attr in self.entity.attributes:
             if attr.properties:
@@ -317,6 +365,7 @@ class DdlPayload(ModelEntityPayload):
 
     @property
     def refactored_columns(self) -> list[dict[str, str | Sequence[str]]]:
+        """Return columns that have old names which should be handled as aliases."""
         return [
             {"name": attr.name, "aliases": attr.refactorNames}
             for attr in self.entity.attributes
@@ -325,6 +374,7 @@ class DdlPayload(ModelEntityPayload):
 
     @property
     def create_table_sql(self) -> str:
+        """Build the full `CREATE TABLE IF NOT EXISTS` SQL statement."""
         columns = self.columns
         lines = [
             f"CREATE TABLE IF NOT EXISTS {{catalog_name}}.{{zone}}.{self.full_table_name} (",
@@ -348,6 +398,7 @@ class DdlPayload(ModelEntityPayload):
 
     @property
     def foreign_keys(self) -> list[DdlForeignKey]:
+        """Return foreign key constraints declared by model relationships."""
         constraints: list[DdlForeignKey] = []
         for rel in self.entity.relationships:
             remote_entity = get_model_entity_by_id(self.model, rel.targetLocation)
@@ -366,11 +417,16 @@ class DdlPayload(ModelEntityPayload):
 
     @property
     def primary_key_attributes(self) -> list[Attribute]:
+        """Return business key attributes, used as primary-key-like metadata."""
         return [attr for attr in self.entity.attributes if attr.isBusinessKey]
 
 
 class DdlExternalPayload(DdlPayload):
-    """Render payload for a DDL notebook that creates an external extracted table."""
+    """Render payload for a DDL notebook that creates an external extracted table.
+
+    External DDL notebooks create the raw landing tables used by extraction
+    notebooks before data flows into modeled tables.
+    """
 
     partitions = ["__Year", "__Month", "__Day", "__InsertTimestampUTC"]
     is_external = True
@@ -378,6 +434,7 @@ class DdlExternalPayload(DdlPayload):
     def __init__(
         self, wrapper: EntityWrapper[ModelEntity], model: Model, source: ExternalModelSource
     ) -> None:
+        """Initialize DDL data for one external source table."""
         super().__init__(wrapper, model)
         self.source = source
         self.external_source = ExternalSource(model, wrapper, source)
@@ -402,6 +459,7 @@ class DdlExternalPayload(DdlPayload):
         ]
 
     def get_output_path(self) -> Path:
+        """Return where the generated external DDL notebook should be written."""
         return Path(
             "notebooks",
             zone_folder_name(self.zone_wrapper),
@@ -412,23 +470,28 @@ class DdlExternalPayload(DdlPayload):
 
     @property
     def full_table_name(self) -> str:
+        """Return the full generated table name for the external table."""
         return self.external_source.full_table_name
 
     @property
     def data_source(self) -> str:
+        """Return the configured data source key, such as a SQL Server source name."""
         return self.source.dataSource or ""
 
     @property
     def data_source_display(self) -> str:
+        """Return the readable data source name for comments and notebooks."""
         data_source = get_one(self.model.dataSources, self.data_source).entity
         return data_source.displayName or self.data_source
 
     @property
     def source_name(self) -> str:
+        """Return the source alias, falling back to the generated table name."""
         return self.source.sourceAlias or self.full_table_name
 
     @property
     def table_tags(self) -> dict[str, Any]:
+        """Return table tags for the external landing table."""
         discovered: dict[str, Any] = {}
         for ref in get_property_refs(self.model, self.wrapper):
             if ref.property == "table_properties":
@@ -440,6 +503,7 @@ class DdlExternalPayload(DdlPayload):
 
     @property
     def column_tags(self) -> list[dict[str, str]]:
+        """Return column tags for mapped external source columns."""
         tags_by_column: dict[str, dict[str, str]] = {}
         source_alias = self.source.sourceAlias
         source_location = self.source.sourceLocation
@@ -485,6 +549,7 @@ class DdlExternalPayload(DdlPayload):
 
     @property
     def columns(self) -> list[DdlExternalColumn]:
+        """Return generated partition columns plus mapped external source columns."""
         assert self.source.mapping, "External source should have source mappings"
         column_types: dict[str, DataType] = {}
         for source_column in self.source.mapping:
@@ -512,7 +577,11 @@ class DdlExternalPayload(DdlPayload):
 
 @dataclasses.dataclass
 class DdlForeignKey:
-    """Simple container for a Databricks foreign key constraint."""
+    """Simple container for a Databricks foreign key constraint.
+
+    The DDL template reads these fields to emit constraints between generated
+    tables.
+    """
 
     table: str
     columns: list[str]

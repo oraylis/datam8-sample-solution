@@ -8,7 +8,6 @@ from datam8.generate import BasePayload, IPayload
 from datam8.model import EntityWrapper, Model
 from datam8_model.model import ModelEntity
 from datam8_model.zone import Zone
-
 from payload_common import (
     ExternalSource,
     cluster_for_job,
@@ -29,7 +28,11 @@ from payload_common import (
 def group_entities_by_zone_and_module(
     model: Model,
 ) -> dict[tuple[str, str, str], list[EntityWrapper[ModelEntity]]]:
-    """Group model entities by zone folder, data product, and data module."""
+    """Group model entities by zone folder, data product, and data module.
+
+    Databricks create jobs are generated per group, so this function decides
+    which tables are created together.
+    """
     groups: dict[tuple[str, str, str], list[EntityWrapper[ModelEntity]]] = defaultdict(list)
     for wrapper in get_model_entity_wrappers(model):
         first_folder = wrapper.locator.folders[0] if wrapper.locator.folders else ""
@@ -41,7 +44,7 @@ def group_entities_by_zone_and_module(
 
 
 def create_key(zone: EntityWrapper[Zone], *parts: str) -> str:
-    """Create a Databricks create-job resource key."""
+    """Create a technical Databricks resource key for a table creation job."""
     suffix = "_".join(part for part in parts if part)
     zone_name = zone_target_name(zone)
     if suffix:
@@ -50,7 +53,7 @@ def create_key(zone: EntityWrapper[Zone], *parts: str) -> str:
 
 
 def create_name(zone: EntityWrapper[Zone], *parts: str) -> str:
-    """Create a human-readable Databricks create-job name."""
+    """Create a human-readable Databricks job name for creating tables."""
     suffix = " ".join(part for part in parts if part)
     zone_name = zone_target_name(zone)
     if suffix:
@@ -65,7 +68,11 @@ def notebook_path(
     *,
     name: str | None = None,
 ) -> str:
-    """Build the workspace-relative notebook path used by Databricks jobs."""
+    """Build the workspace-relative notebook path used by Databricks jobs.
+
+    The returned path omits the `.py` file extension because Databricks
+    notebook tasks reference notebooks by workspace path.
+    """
     notebook_name = name or wrapper.locator.entityName or wrapper.entity.name
     return Path(
         zone_folder_name(zone),
@@ -76,12 +83,15 @@ def notebook_path(
 
 
 def clusters(cluster_variable: str) -> list[dict[str, str]]:
-    """Return the job cluster list expected by the job templates."""
+    """Return the job cluster list expected by the Databricks job templates."""
     return [{"job_cluster_key": cluster_variable}] if cluster_variable else []
 
 
 def create_module_job_payloads(model: Model) -> list[IPayload]:
-    """Create one DDL job payload per zone/product/module group."""
+    """Create one DDL job payload per zone, data product, and module group.
+
+    Each generated job runs the DDL notebooks for the tables in that group.
+    """
     payloads: list[IPayload] = []
     default_cluster = default_cluster_variable(model)
     entities_by_zone_and_module = group_entities_by_zone_and_module(model)
@@ -163,7 +173,10 @@ def create_module_job_payloads(model: Model) -> list[IPayload]:
 
 
 def create_zone_job_payloads(model: Model) -> list[IPayload]:
-    """Create one DDL orchestration job payload per Databricks zone."""
+    """Create one DDL orchestration job payload per Databricks zone.
+
+    The zone job calls the smaller module jobs for that zone.
+    """
     payloads: list[IPayload] = []
     entities_by_zone_and_module = group_entities_by_zone_and_module(model)
 
@@ -210,7 +223,10 @@ def create_zone_job_payloads(model: Model) -> list[IPayload]:
 
 
 def create_all_job_payloads(model: Model) -> list[IPayload]:
-    """Create the top-level DDL orchestration job payload."""
+    """Create the top-level DDL orchestration job payload.
+
+    This generated job calls all zone-level create jobs.
+    """
     zone_jobs = [create_key(zone) for zone in [get_external_zone(model), *get_model_backed_zones(model)]]
     return [
         BasePayload(
@@ -235,7 +251,12 @@ def create_all_job_payloads(model: Model) -> list[IPayload]:
 
 
 def create_load_group_payloads(model: Model) -> list[IPayload]:
-    """Create one load job payload per configured job property value."""
+    """Create one load job payload per configured `jobs` property value.
+
+    For example, all entities with `jobs=daily` become tasks in `Load_daily`.
+    External extract tasks run before the modeled table load task that depends
+    on them.
+    """
     grouped: dict[str, list[EntityWrapper[ModelEntity]]] = defaultdict(list)
     for wrapper in get_model_entity_wrappers(model):
         grouped[job_property(wrapper, model)].append(wrapper)
@@ -303,7 +324,10 @@ def create_load_group_payloads(model: Model) -> list[IPayload]:
 
 
 def create_load_all_payloads(model: Model) -> list[IPayload]:
-    """Create the top-level load orchestration job payload."""
+    """Create the top-level load orchestration job payload.
+
+    This generated job calls all grouped load jobs such as daily or weekly.
+    """
     job_names = sorted({job_property(wrapper, model) for wrapper in get_model_entity_wrappers(model)})
     return [
         BasePayload(
