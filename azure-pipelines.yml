@@ -65,10 +65,10 @@ stages:
                 Dm8Data
                 -a generate_template
                 -s "$(solutionPath)"
-                -src ./Generate/databricks-lake
+                -src ./Generate/databricks
                 -dest ./Output
-                -m ./Generate/databricks-lake/__modules
-                -c ./Generate/databricks-lake/__collections
+                -m ./Generate/databricks/__modules
+                -c ./Generate/databricks/__collections
           - task: CopyFiles@2
             displayName: Copy Output to binaries
             inputs:

@@ -73,5 +73,6 @@ For each `DataSource` in the model and the target data lake:
 
 ## Next Reading
 
-- [Template Development How-To](./template-development-howto.md)
-- [Databricks Target Architecture](../Generate/databricks-lake/ARCHITECTURE.md)
+- [Documentation Index](./index.md)
+- [Template and Payload Development](./howto-template-and-payload-development.md)
+- [Databricks Target Architecture](../Generate/databricks/ARCHITECTURE.md)

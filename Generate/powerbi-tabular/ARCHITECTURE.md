@@ -11,7 +11,7 @@ This target generates TMDL artifacts for consumer entities:
 ## Generation Flow
 1. `__modules/payload.py` collects and caches table metadata.
 2. Relationship payloads resolve explicit mappings first, then infer fallbacks.
-3. Jinja templates render files under `powerbi-tabular/`.
+3. Jinja templates render TMDL files under `Output/powerbi-tabular/powerbi-tabular/`.
 
 ## Payload to Template Mapping
 - `database_payload` -> `database.tmdl.jinja2`
@@ -19,6 +19,11 @@ This target generates TMDL artifacts for consumer entities:
 - `expressions_payload` -> `expressions.tmdl.jinja2`
 - `relationships_payload` -> `relationships.tmdl.jinja2`
 - `table_payloads` -> `table.tmdl.jinja2`
+
+Generated output paths are `powerbi-tabular/database.tmdl`,
+`powerbi-tabular/model.tmdl`, `powerbi-tabular/expressions.tmdl`,
+`powerbi-tabular/relationships.tmdl`, and `powerbi-tabular/tables/*.tmdl`
+relative to the target output folder.
 
 ## Property-Driven Behavior
 
