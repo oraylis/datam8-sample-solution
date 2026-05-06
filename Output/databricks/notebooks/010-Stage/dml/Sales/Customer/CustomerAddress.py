@@ -109,9 +109,9 @@ source_delta_1_df = (
     spark.table(f"{catalog.name}.{schema_prefix}raw.Sales_Customer_CustomerAddress")
     .filter(F.col("__InsertTimestampUTC") > F.lit(max_source["raw_Sales_Customer_CustomerAddress"]))
     .selectExpr(
-        "`CustomerID`",
-        "`AddressID`",
-        "`AddressType`",
+        "try_cast(`CustomerID` as int) AS `CustomerID`",
+        "try_cast(`AddressID` as int) AS `AddressID`",
+        "try_cast(`AddressType` as string) AS `AddressType`",
         "'CustomerAddress' AS __SourceTable",
         "current_timestamp() AS __InsertTimestampUTC",
         "current_timestamp() AS __UpdateTimestampUTC",

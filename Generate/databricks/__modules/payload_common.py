@@ -498,8 +498,21 @@ class ExternalSource:
                 continue
             mapping = mappings_by_target.get(attr.name)
             if mapping is not None:
-                columns.append(f"`{mapping.targetName}`")
+                target_type = self._target_databricks_type(attr)
+                columns.append(
+                    f"try_cast(`{mapping.targetName}` as {target_type}) AS `{attr.name}`"
+                )
         return columns
+
+    def _target_databricks_type(self, attr: Any) -> str:
+        """Resolve the Databricks target type for one model attribute."""
+        attr_type = getattr(getattr(attr, "dataType", None), "type", None)
+        if not attr_type:
+            return "string"
+        for data_type in self.model.dataTypes.values():
+            if data_type.entity.name == attr_type:
+                return data_type.entity.targets.get(TARGET, attr_type)
+        return str(attr_type)
 
     @property
     def target_columns(self) -> list[str]:
@@ -681,6 +694,16 @@ class InternalSource:
             return "__UpdateTimestampUTC"
         return None
 
+    def _target_databricks_type(self, attr: Any) -> str:
+        """Resolve the Databricks target type for one model attribute."""
+        attr_type = getattr(getattr(attr, "dataType", None), "type", None)
+        if not attr_type:
+            return "string"
+        for data_type in self.model.dataTypes.values():
+            if data_type.entity.name == attr_type:
+                return data_type.entity.targets.get(TARGET, attr_type)
+        return str(attr_type)
+
     @property
     def select_expressions(self) -> list[str]:
         """Return the full select list, including generated tracking columns."""
@@ -692,7 +715,8 @@ class InternalSource:
                 expressions.append(f"{expression} AS `{attr.name}`")
                 continue
             source_name = mapping_by_target.get(attr.name, attr.name)
-            expressions.append(f"`{source_name}` AS `{attr.name}`")
+            target_type = self._target_databricks_type(attr)
+            expressions.append(f"try_cast(`{source_name}` as {target_type}) AS `{attr.name}`")
 
         expressions.extend(
             [

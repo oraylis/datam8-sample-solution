@@ -109,11 +109,11 @@ source_delta_1_df = (
     spark.table(f"{catalog.name}.{schema_prefix}raw.Sales_Product_ProductModel")
     .filter(F.col("__InsertTimestampUTC") > F.lit(max_source["raw_Sales_Product_ProductModel"]))
     .selectExpr(
-        "`ProductModelID`",
-        "`Name`",
-        "`CatalogDescription`",
-        "`rowguid`",
-        "`ModifiedDate`",
+        "try_cast(`ProductModelID` as int) AS `ProductModelID`",
+        "try_cast(`Name` as string) AS `Name`",
+        "try_cast(`CatalogDescription` as string) AS `CatalogDescription`",
+        "try_cast(`rowguid` as string) AS `rowguid`",
+        "try_cast(`ModifiedDate` as timestamp) AS `ModifiedDate`",
         "'ProductModel' AS __SourceTable",
         "current_timestamp() AS __InsertTimestampUTC",
         "current_timestamp() AS __UpdateTimestampUTC",
