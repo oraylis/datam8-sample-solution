@@ -12,6 +12,7 @@
 from pyspark.sql import functions as F  # noqa: F401
 from pyspark.sql.window import Window  # noqa: F401
 from delta import DeltaTable  # noqa: F401
+from datetime import datetime, timezone
 
 # COMMAND ----------
 
@@ -61,6 +62,8 @@ table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
     "schema": zone,
     "table": full_table_name,
 }
+load_timestamp_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+load_timestamp_utc_sql = load_timestamp_utc.strftime("%Y-%m-%d %H:%M:%S.%f")
 
 # COMMAND ----------
 
@@ -93,7 +96,7 @@ functions["FactSalesOrder"] = {
 
 business_function = business_function.withColumns({  # noqa: F821
     "__BusinessFunction": F.lit("FactSalesOrder"),
-    "__InsertTimestampUTC": F.current_timestamp(),
+    "__InsertTimestampUTC": F.lit(load_timestamp_utc),
 })
 functions["FactSalesOrder"]["df"] = business_function  # noqa: F821
 
@@ -103,7 +106,7 @@ final_df = functions["FactSalesOrder"]["df"]
 # COMMAND ----------
 
 final_df = final_df.withColumns({
-    "__UpdateTimestampUTC": F.current_timestamp(),
+    "__UpdateTimestampUTC": F.lit(load_timestamp_utc),
 })
 
 # COMMAND ----------
@@ -123,3 +126,11 @@ final_write_df = final_df.select(
 final_write_df.write.saveAsTable(table_name_ref, mode="overwrite")
 
 # COMMAND ----------
+
+# COMMAND ----------
+
+# DBTITLE 1,Update load status
+record_count = spark.table(table_name_ref).filter(
+    F.col("__UpdateTimestampUTC") == F.lit(load_timestamp_utc)
+).count()
+print(f"Loaded {record_count} records into target table")

@@ -12,6 +12,7 @@
 from pyspark.sql import functions as F  # noqa: F401
 from pyspark.sql.window import Window  # noqa: F401
 from delta import DeltaTable  # noqa: F401
+from datetime import datetime, timezone
 
 # COMMAND ----------
 
@@ -61,6 +62,8 @@ table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
     "schema": zone,
     "table": full_table_name,
 }
+load_timestamp_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+load_timestamp_utc_sql = load_timestamp_utc.strftime("%Y-%m-%d %H:%M:%S.%f")
 
 # COMMAND ----------
 
@@ -126,6 +129,12 @@ source_delta_{{ loop.index }}_df = (
         {%- for expr in source.select_expressions %}
         "{{ expr | safe }}"{% if not loop.last %},{% endif %}
         {%- endfor %}
+        {%- if source.select_expressions %},
+        {%- endif %}
+        "'{{ source.source_name }}' AS __SourceTable",
+        f"CAST('{load_timestamp_utc_sql}' AS TIMESTAMP) AS __InsertTimestampUTC",
+        f"CAST('{load_timestamp_utc_sql}' AS TIMESTAMP) AS __UpdateTimestampUTC",
+        "__UpdateTimestampUTC AS __InsertTimestampSourceUTC"
     )
 )
 source_delta_df_list.append(source_delta_{{ loop.index }}_df)
@@ -152,6 +161,11 @@ if latest_snapshot_key_cols:
     )
 
 {%- endif %}
+
+if union_df.isEmpty():
+    print("No new source rows found. Skip write to target table.")
+    dbutils.notebook.exit("SKIPPED_EMPTY_SOURCE_DELTA")
+
 union_df.createOrReplaceTempView("union_df")
 
 # COMMAND ----------
@@ -364,7 +378,7 @@ functions["{{ transform.key }}"] = {
 
 business_function = business_function.withColumns({  # noqa: F821
     "__BusinessFunction": F.lit("{{ transform.key }}"),
-    "__InsertTimestampUTC": F.current_timestamp(),
+    "__InsertTimestampUTC": F.lit(load_timestamp_utc),
 })
 functions["{{ transform.key }}"]["df"] = business_function  # noqa: F821
 
@@ -455,7 +469,7 @@ final_df = final_df.withColumns({
 {%- endif %}
 
 final_df = final_df.withColumns({
-    "__UpdateTimestampUTC": F.current_timestamp(),
+    "__UpdateTimestampUTC": F.lit(load_timestamp_utc),
 })
 
 # COMMAND ----------
@@ -641,3 +655,11 @@ final_write_df.write.saveAsTable(table_name_ref, mode="{{ data.spark_write_mode 
 # COMMAND ----------
 
 {%- endif %}
+
+# COMMAND ----------
+
+# DBTITLE 1,Update load status
+record_count = spark.table(table_name_ref).filter(
+    F.col("__UpdateTimestampUTC") == F.lit(load_timestamp_utc)
+).count()
+print(f"Loaded {record_count} records into target table")

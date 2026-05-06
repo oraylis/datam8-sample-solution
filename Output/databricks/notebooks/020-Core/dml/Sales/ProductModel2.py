@@ -12,6 +12,7 @@
 from pyspark.sql import functions as F  # noqa: F401
 from pyspark.sql.window import Window  # noqa: F401
 from delta import DeltaTable  # noqa: F401
+from datetime import datetime, timezone
 
 # COMMAND ----------
 
@@ -61,6 +62,8 @@ table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
     "schema": zone,
     "table": full_table_name,
 }
+load_timestamp_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+load_timestamp_utc_sql = load_timestamp_utc.strftime("%Y-%m-%d %H:%M:%S.%f")
 
 # COMMAND ----------
 
@@ -116,8 +119,8 @@ source_delta_1_df = (
         "try_cast(`rowguid` as string) AS `rowguid`",
         "try_cast(`ModifiedDate` as timestamp) AS `ModifiedDate`",
         "'ProductModel' AS __SourceTable",
-        "current_timestamp() AS __InsertTimestampUTC",
-        "current_timestamp() AS __UpdateTimestampUTC",
+        f"CAST('{load_timestamp_utc_sql}' AS TIMESTAMP) AS __InsertTimestampUTC",
+        f"CAST('{load_timestamp_utc_sql}' AS TIMESTAMP) AS __UpdateTimestampUTC",
         "__UpdateTimestampUTC AS __InsertTimestampSourceUTC"
     )
 )
@@ -128,6 +131,11 @@ source_delta_df_list.append(source_delta_1_df)
 union_df = source_delta_df_list[0]
 for additional_df in source_delta_df_list[1:]:
     union_df = union_df.unionByName(additional_df)
+
+if union_df.isEmpty():
+    print("No new source rows found. Skip write to target table.")
+    dbutils.notebook.exit("SKIPPED_EMPTY_SOURCE_DELTA")
+
 union_df.createOrReplaceTempView("union_df")
 
 # COMMAND ----------
@@ -186,3 +194,11 @@ result = merge_builder.execute()
 print(result)
 
 # COMMAND ----------
+
+# COMMAND ----------
+
+# DBTITLE 1,Update load status
+record_count = spark.table(table_name_ref).filter(
+    F.col("__UpdateTimestampUTC") == F.lit(load_timestamp_utc)
+).count()
+print(f"Loaded {record_count} records into target table")

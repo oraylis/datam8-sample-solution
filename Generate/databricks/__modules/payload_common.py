@@ -557,14 +557,8 @@ class ExternalSource:
 
     @property
     def select_expressions(self) -> list[str]:
-        """Return the full select list, including generated tracking columns."""
-        return [
-            *self.select_columns,
-            f"'{self.table_name}' AS __SourceTable",
-            "current_timestamp() AS __InsertTimestampUTC",
-            "current_timestamp() AS __UpdateTimestampUTC",
-            "__UpdateTimestampUTC AS __InsertTimestampSourceUTC",
-        ]
+        """Return business select list; technical columns are added in template."""
+        return [*self.select_columns]
 
 
 class InternalSource:
@@ -706,7 +700,7 @@ class InternalSource:
 
     @property
     def select_expressions(self) -> list[str]:
-        """Return the full select list, including generated tracking columns."""
+        """Return business select list; technical columns are added in template."""
         mapping_by_target = {entry["target"]: entry["source"] for entry in self.mapping_entries}
         expressions: list[str] = []
         for attr in self.wrapper.entity.attributes:
@@ -718,12 +712,4 @@ class InternalSource:
             target_type = self._target_databricks_type(attr)
             expressions.append(f"try_cast(`{source_name}` as {target_type}) AS `{attr.name}`")
 
-        expressions.extend(
-            [
-                f"'{self.source_name}' AS __SourceTable",
-                "current_timestamp() AS __InsertTimestampUTC",
-                "current_timestamp() AS __UpdateTimestampUTC",
-                "__UpdateTimestampUTC AS __InsertTimestampSourceUTC",
-            ]
-        )
         return expressions
