@@ -13,7 +13,7 @@ from pyspark.sql import functions as F  # noqa: F401
 
 # COMMAND ----------
 
-# MAGIC %run ../../../../../../utils/MigrationFramework
+# MAGIC %run ../../../../../../../utils/MigrationFramework
 
 # COMMAND ----------
 
@@ -22,7 +22,7 @@ from pyspark.sql import functions as F  # noqa: F401
 
 # COMMAND ----------
 
-# MAGIC %run ../../../../../../utils/ExtractionFramework
+# MAGIC %run ../../../../../../../utils/ExtractionFramework
 
 # COMMAND ----------
 
@@ -30,8 +30,7 @@ dbutils.widgets.text("env", "dev", "Environment")
 dbutils.widgets.text("catalog_name", "", "Catalog Name")
 dbutils.widgets.text("schema_prefix", "", "Schema Prefix")
 dbutils.widgets.text("job_run_id", "", "Job Run ID")
-dbutils.widgets.text("keyvault_name", "aut0kvt0dev0campus", "Key Vault Name")
-
+dbutils.widgets.text("keyvault_name", "", "Key Vault Name")
 # COMMAND ----------
 
 # Retrieve a job-level parameter (will use default if it doesn't exist)
@@ -40,11 +39,9 @@ catalog_name = dbutils.widgets.get("catalog_name")
 schema_prefix = dbutils.widgets.get("schema_prefix")
 job_run_id = dbutils.widgets.get("job_run_id")
 keyvault_name = dbutils.widgets.get("keyvault_name")
-
 # static values
 zone = f"{schema_prefix}raw" if schema_prefix else "raw"
 data_source = "AdventureWorks"
-data_source_display = "Adventure Works Demo Database"
 source_name = "ProductModelProductDescription"
 full_table_name = "Sales_Product_ProductModelProductDescription"
 write_mode = "append"
@@ -56,7 +53,6 @@ print("Catalog: %s" % catalog_name)
 print("Schema: %s" % zone)
 print("Table: %s" % full_table_name)
 print("Data Source: %s" % data_source)
-print("Data Source Display: %s" % data_source_display)
 
 # COMMAND ----------
 
@@ -72,15 +68,14 @@ catalog.set_active()
 # COMMAND ----------
 
 # DBTITLE 1,Get connection values
-connection_secret = dbutils.secrets.get(scope=keyvault_name, key="datasource-AdventureWorks-password")
 source_location = "[SalesLT].[ProductModelProductDescription]"
 data_source_type = "SQLServer"
-column_renames = []
 delta_column_details = [{"source": "ModifiedDate", "target": "ModifiedDate", "type": "datetime"}]
-target_columns = ["ProductModelID", "ProductDescriptionID", "Culture", "rowguid", "ModifiedDate"]
 props = {"authMode": "sql_user", "database": "AdventureWorks", "encrypt": true, "host": "datam80sql0dev.database.windows.net", "password": "ref://datasources/AdventureWorks/password", "port": 1433, "trust_server_certificate": true, "username": "sqladmin"}
-props["password"] = connection_secret
-
+props["password"] = dbutils.secrets.get(
+    scope=keyvault_name,
+    key="datasource-AdventureWorks-password",
+)
 # COMMAND ----------
 
 # MAGIC %md
@@ -135,6 +130,8 @@ table_df = (
 )
 # COMMAND ----------
 # DBTITLE 1,Rename & select columns
+column_renames = []
+target_columns = ["ProductModelID", "ProductDescriptionID", "Culture", "rowguid", "ModifiedDate"]
 for rename in column_renames:
     source_column = rename.get("source")
     target_column = rename.get("target")
@@ -142,8 +139,7 @@ for rename in column_renames:
         continue
     table_df = table_df.withColumnRenamed(source_column, target_column)
 
-if target_columns:
-    table_df = table_df.select(*(["__Year","__Month","__Day","__InsertTimestampUTC"] + target_columns))
+table_df = table_df.select(*(["__Year","__Month","__Day","__InsertTimestampUTC"] + target_columns))
 # COMMAND ----------
 
 # MAGIC %md

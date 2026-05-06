@@ -31,7 +31,7 @@ from delta.tables import DeltaTable
 
 # COMMAND ----------
 
-# MAGIC %run ../../../../../../utils/MigrationFramework
+# MAGIC %run ../../../../../../../utils/MigrationFramework
 
 # COMMAND ----------
 

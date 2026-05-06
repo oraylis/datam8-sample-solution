@@ -603,6 +603,24 @@ class DmlExternalPayload(ModelEntityPayload):
             return self.delta_column_details[0]["source"]
         return None
 
+    @property
+    def requires_keyvault(self) -> bool:
+        """Return whether password or secret is configured and needs key vault access."""
+        return self.secret_property_name is not None
+
+    @property
+    def secret_property_name(self) -> str | None:
+        """Return configured secret property name, preferring password over secret."""
+        props = self.data_source_extended_properties or {}
+        for key in ("password", "secret"):
+            value = props.get(key)
+            if value is None:
+                continue
+            if isinstance(value, str) and not value.strip():
+                continue
+            return key
+        return None
+
 
 class DmlFunctionPayload(ModelEntityPayload):
     """Render payload for a Python transformation function file.

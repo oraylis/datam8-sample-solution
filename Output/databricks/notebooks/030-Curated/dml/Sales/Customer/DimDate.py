@@ -17,7 +17,7 @@ from delta import DeltaTable  # noqa: F401
 
 # DBTITLE 1,Initialize Migration Framework
 # MAGIC
-# MAGIC %run ../../../../../../utils/MigrationFramework
+# MAGIC %run ../../../../../../../utils/MigrationFramework
 
 # COMMAND ----------
 
