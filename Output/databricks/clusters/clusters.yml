@@ -6,7 +6,6 @@ variables:
       spark_version: 16.4.x-scala2.12
       node_type_id: Standard_D4ds_v5
       num_workers: 4
-      autotermination_minutes: 60
       kind: CLASSIC_PREVIEW
       data_security_mode: DATA_SECURITY_MODE_DEDICATED
       runtime_engine: STANDARD
@@ -20,7 +19,6 @@ variables:
       spark_version: 16.4.x-scala2.12
       node_type_id: Standard_D4ds_v5
       num_workers: 2
-      autotermination_minutes: 60
       kind: CLASSIC_PREVIEW
       data_security_mode: DATA_SECURITY_MODE_DEDICATED
       runtime_engine: STANDARD

@@ -10,8 +10,6 @@ resources:
           default: ${var.catalog_name}
         - name: schema_prefix
           default: ${var.schema_prefix}
-        - name: owner
-          default: ${var.owner}
         - name: job_name
           default: "{{job.name}}"
         - name: job_run_id

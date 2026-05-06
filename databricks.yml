@@ -14,6 +14,13 @@ sync:
   include:
     - utils/
     - libraries/
+    - Output/databricks
+
+  exclude:
+    - "**"
+    - "!utils/**"
+    - "!libraries/**"
+    - "!Output/databricks/**"
 
 # all defaults are preset with dev values
 variables:
@@ -29,9 +36,6 @@ variables:
   environment:
     description: The logical environment
     default: dev
-  owner:
-    description: The default owner of all created databricks objects
-    default: teilnehmer
   unpause_schedules:
     description: Override the default schedule status
     default: PAUSED

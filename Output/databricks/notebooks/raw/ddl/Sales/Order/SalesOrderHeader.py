@@ -38,7 +38,6 @@ from delta.tables import DeltaTable
 dbutils.widgets.text("env", "dev", "Environment")
 dbutils.widgets.text("catalog_name", "", "Catalog Name")
 dbutils.widgets.text("schema_prefix", "", "Schema Prefix")
-dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
 dbutils.widgets.text("job_run_id", "", "Job Run ID")
 
 # COMMAND ----------
@@ -47,7 +46,6 @@ dbutils.widgets.text("job_run_id", "", "Job Run ID")
 env = dbutils.widgets.get("env")
 catalog_name = dbutils.widgets.get("catalog_name")
 schema_prefix = dbutils.widgets.get("schema_prefix")
-owner = dbutils.widgets.get("owner")
 job_run_id = dbutils.widgets.get("job_run_id")
 
 # static values
@@ -63,11 +61,9 @@ print("Environment: %s" % env)
 print("Catalog: %s" % catalog_name)
 print("Schema: %s" % zone)
 print("Table: %s" % full_table_name)
-print("Owner: %s" % owner)
 print("Data Source: %s" % data_source)
 print("Data Source Display: %s" % data_source_display)
 print("Source Name: %s" % source_name)
-# print("Mode: %s" % run_mode)
 
 # COMMAND ----------
 
@@ -189,8 +185,6 @@ try:
     print("Result: %s" % str(result))
 except Exception as e:
     print(f"Migration failed: {e}")
-
-table_instance.owner = owner
 
 # COMMAND ----------
 

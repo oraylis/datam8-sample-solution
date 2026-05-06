@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import dataclasses
-import json
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
@@ -24,7 +23,6 @@ from payload_common import (
     zone_folder_name,
     zone_target_name,
 )
-
 logger = logging.getLogger(__name__)
 
 
@@ -505,31 +503,6 @@ class DdlExternalPayload(DdlPayload):
     def column_tags(self) -> list[dict[str, str]]:
         """Return column tags for mapped external source columns."""
         tags_by_column: dict[str, dict[str, str]] = {}
-        source_alias = self.source.sourceAlias
-        source_location = self.source.sourceLocation
-        entity_json = {}
-        candidate_files = [
-            self.wrapper.source_file,
-            Path(__file__).resolve().parents[3]
-            / "Model"
-            / Path(*self.locator.folders)
-            / f"{self.locator.entityName or self.entity.name}.json",
-        ]
-        for candidate_file in candidate_files:
-            try:
-                entity_json = json.loads(candidate_file.read_text(encoding="utf-8"))
-                break
-            except OSError:
-                continue
-        for source in entity_json.get("sources", []):
-            if source.get("sourceAlias") != source_alias and source.get("sourceLocation") != source_location:
-                continue
-            for mapping in source.get("mapping", []):
-                properties = mapping.get("properties") or []
-                if properties:
-                    tags_by_column.setdefault(mapping["targetName"], {}).update(
-                        {ref["property"]: ref["value"] for ref in properties}
-                    )
         for mapping in self.source.mapping or []:
             props = {
                 ref.property: ref.value

@@ -138,7 +138,6 @@ def dab_cluster(model: Model, cache: Cache) -> Sequence[IPayload]:
                     "num_workers": getattr(cluster, "num_workers", None),
                     "workload_type": getattr(cluster, "workload_type", "job"),
                     "spark_version": getattr(cluster, "spark_version", "16.4.x-scala2.12"),
-                    "autotermination_minutes": getattr(cluster, "autotermination_minutes", 60),
                     "data_security_mode": getattr(
                         cluster, "data_security_mode", "DATA_SECURITY_MODE_DEDICATED"
                     ),
