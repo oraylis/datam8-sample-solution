@@ -19,7 +19,7 @@ from datam8_{{ data.connector_id }} import extract_data
 
 # COMMAND ----------
 
-# MAGIC %run ../../../../../../utils/MigrationFramework
+# MAGIC %run ../../../../../../../utils/MigrationFramework
 
 {% if not data.use_connector -%}
 # COMMAND ----------
@@ -29,7 +29,7 @@ from datam8_{{ data.connector_id }} import extract_data
 
 # COMMAND ----------
 
-# MAGIC %run ../../../../../../utils/ExtractionFramework
+# MAGIC %run ../../../../../../../utils/ExtractionFramework
 
 {% endif -%}
 
@@ -39,7 +39,7 @@ dbutils.widgets.text("env", "dev", "Environment")
 dbutils.widgets.text("catalog_name", "", "Catalog Name")
 dbutils.widgets.text("schema_prefix", "", "Schema Prefix")
 dbutils.widgets.text("job_run_id", "", "Job Run ID")
-dbutils.widgets.text("keyvault_name", "aut0kvt0dev0campus", "Key Vault Name")
+dbutils.widgets.text("keyvault_name", "", "Key Vault Name")
 
 # COMMAND ----------
 
