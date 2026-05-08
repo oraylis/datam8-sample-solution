@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DDL for silver.Sales_Customer_Customer
+# MAGIC # DDL for core.Sales_Customer_Customer
 
 # COMMAND ----------
 
@@ -49,7 +49,7 @@ schema_prefix = dbutils.widgets.get("schema_prefix")
 job_run_id = dbutils.widgets.get("job_run_id")
 
 # static values
-zone = f"{schema_prefix}silver" if schema_prefix else "silver"
+zone = f"{schema_prefix}core" if schema_prefix else "core"
 data_product = "Sales"
 data_module = "Customer"
 table_name = "Customer"

@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DML for silver.Sales_ProductModel2
+# MAGIC # DML for core.Sales_ProductModel2
 # MAGIC History configuration of this entity
 # MAGIC - __Business Key Columns__: ['ProductModelID']
 # MAGIC - __SCD0 columns__: []
@@ -37,7 +37,7 @@ job_run_id = dbutils.widgets.get("job_run_id")
 
 # static values
 MAX_VALID_TO_DATE = "9999-12-31"
-zone = f"{schema_prefix}silver" if schema_prefix else "silver"
+zone = f"{schema_prefix}core" if schema_prefix else "core"
 data_product = "Sales"
 data_module = "default"
 table_name = "ProductModel2"
@@ -86,7 +86,7 @@ max_source: dict = {}
 
 # COMMAND ----------
 
-max_source["bronze_Sales_Product_ProductModel"] = spark.sql(f"""
+max_source["stage_Sales_Product_ProductModel"] = spark.sql(f"""
 SELECT
   COALESCE(MAX(__InsertTimestampSourceUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxSource
 FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
@@ -110,8 +110,8 @@ source_delta_df_list = []
 # COMMAND ----------
 
 source_delta_1_df = (
-    spark.table(f"{catalog.name}.{schema_prefix}bronze.Sales_Product_ProductModel")
-    .filter(F.col("__UpdateTimestampUTC") > F.lit(max_source["bronze_Sales_Product_ProductModel"]))
+    spark.table(f"{catalog.name}.{schema_prefix}stage.Sales_Product_ProductModel")
+    .filter(F.col("__UpdateTimestampUTC") > F.lit(max_source["stage_Sales_Product_ProductModel"]))
     .selectExpr(
         "try_cast(`ProductModelID` as int) AS `ProductModelID`",
         "try_cast(`Name` as string) AS `Name`",
@@ -141,7 +141,7 @@ union_df.createOrReplaceTempView("union_df")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Write changes to SILVER
+# MAGIC ## Write changes to CORE
 
 # COMMAND ----------# COMMAND ----------
 

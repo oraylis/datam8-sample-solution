@@ -1,7 +1,7 @@
 resources:
   jobs:
-    Create_bronze_Sales_Product:
-      name: ${var.job_name_prefix}Create bronze Sales Product
+    Create_stage_Sales_Product:
+      name: ${var.job_name_prefix}Create stage Sales Product
       max_concurrent_runs: 1
       parameters:
         - name: environment
@@ -19,31 +19,31 @@ resources:
           new_cluster: ${var.cluster_extra_small}
       tasks:
 
-        - task_key: bronze_sales_product_product
+        - task_key: stage_sales_product_product
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Product/Product
             source: WORKSPACE
           job_cluster_key: cluster_extra_small
 
-        - task_key: bronze_sales_product_productcategory
+        - task_key: stage_sales_product_productcategory
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Product/ProductCategory
             source: WORKSPACE
           job_cluster_key: cluster_extra_small
 
-        - task_key: bronze_sales_product_productdescription
+        - task_key: stage_sales_product_productdescription
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Product/ProductDescription
             source: WORKSPACE
           job_cluster_key: cluster_extra_small
 
-        - task_key: bronze_sales_product_productmodel
+        - task_key: stage_sales_product_productmodel
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Product/ProductModel
             source: WORKSPACE
           job_cluster_key: cluster_extra_small
 
-        - task_key: bronze_sales_product_productmodelproductdescription
+        - task_key: stage_sales_product_productmodelproductdescription
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Product/ProductModelProductDescription
             source: WORKSPACE

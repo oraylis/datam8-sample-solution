@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DDL for gold.Sales_Customer_FactSalesOrder
+# MAGIC # DDL for curated.Sales_Customer_FactSalesOrder
 
 # COMMAND ----------
 
@@ -49,7 +49,7 @@ schema_prefix = dbutils.widgets.get("schema_prefix")
 job_run_id = dbutils.widgets.get("job_run_id")
 
 # static values
-zone = f"{schema_prefix}gold" if schema_prefix else "gold"
+zone = f"{schema_prefix}curated" if schema_prefix else "curated"
 data_product = "Sales"
 data_module = "Customer"
 table_name = "FactSalesOrder"

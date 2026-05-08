@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DML for gold.Sales_Customer_DimCustomer
+# MAGIC # DML for curated.Sales_Customer_DimCustomer
 # MAGIC History configuration of this entity
 # MAGIC - __Business Key Columns__: ['CustomerID']
 # MAGIC - __SCD0 columns__: []
@@ -37,7 +37,7 @@ job_run_id = dbutils.widgets.get("job_run_id")
 
 # static values
 MAX_VALID_TO_DATE = "9999-12-31"
-zone = f"{schema_prefix}gold" if schema_prefix else "gold"
+zone = f"{schema_prefix}curated" if schema_prefix else "curated"
 data_product = "Sales"
 data_module = "Customer"
 table_name = "DimCustomer"

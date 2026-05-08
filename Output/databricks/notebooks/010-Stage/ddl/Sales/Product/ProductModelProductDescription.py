@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DDL for bronze.Sales_Product_ProductModelProductDescription
+# MAGIC # DDL for stage.Sales_Product_ProductModelProductDescription
 
 # COMMAND ----------
 
@@ -49,7 +49,7 @@ schema_prefix = dbutils.widgets.get("schema_prefix")
 job_run_id = dbutils.widgets.get("job_run_id")
 
 # static values
-zone = f"{schema_prefix}bronze" if schema_prefix else "bronze"
+zone = f"{schema_prefix}stage" if schema_prefix else "stage"
 data_product = "Sales"
 data_module = "Product"
 table_name = "ProductModelProductDescription"

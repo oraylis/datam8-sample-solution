@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DML for silver.Sales_Other_Address
+# MAGIC # DML for core.Sales_Other_Address
 # MAGIC History configuration of this entity
 # MAGIC - __Business Key Columns__: ['_AddressBK']
 # MAGIC - __SCD0 columns__: ['AddressLine2']
@@ -37,7 +37,7 @@ job_run_id = dbutils.widgets.get("job_run_id")
 
 # static values
 MAX_VALID_TO_DATE = "9999-12-31"
-zone = f"{schema_prefix}silver" if schema_prefix else "silver"
+zone = f"{schema_prefix}core" if schema_prefix else "core"
 data_product = "Sales"
 data_module = "Other"
 table_name = "Address"

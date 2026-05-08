@@ -1,7 +1,7 @@
 resources:
   jobs:
-    Create_bronze_Sales_Other:
-      name: ${var.job_name_prefix}Create bronze Sales Other
+    Create_stage_Sales_Other:
+      name: ${var.job_name_prefix}Create stage Sales Other
       max_concurrent_runs: 1
       parameters:
         - name: environment
@@ -19,7 +19,7 @@ resources:
           new_cluster: ${var.cluster_extra_small}
       tasks:
 
-        - task_key: bronze_sales_other_address
+        - task_key: stage_sales_other_address
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Other/Address
             source: WORKSPACE

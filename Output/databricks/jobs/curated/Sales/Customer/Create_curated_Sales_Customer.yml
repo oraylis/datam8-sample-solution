@@ -1,7 +1,7 @@
 resources:
   jobs:
-    Create_bronze_Sales_Customer:
-      name: ${var.job_name_prefix}Create bronze Sales Customer
+    Create_curated_Sales_Customer:
+      name: ${var.job_name_prefix}Create curated Sales Customer
       max_concurrent_runs: 1
       parameters:
         - name: environment
@@ -19,14 +19,20 @@ resources:
           new_cluster: ${var.cluster_extra_small}
       tasks:
 
-        - task_key: bronze_sales_customer_customer
+        - task_key: curated_sales_customer_dimcustomer
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Customer/Customer
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/ddl/Sales/Customer/DimCustomer
             source: WORKSPACE
           job_cluster_key: cluster_extra_small
 
-        - task_key: bronze_sales_customer_customeraddress
+        - task_key: curated_sales_customer_dimdate
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Customer/CustomerAddress
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/ddl/Sales/Customer/DimDate
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: curated_sales_customer_factsalesorder
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/ddl/Sales/Customer/FactSalesOrder
             source: WORKSPACE
           job_cluster_key: cluster_extra_small

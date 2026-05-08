@@ -1,7 +1,7 @@
 resources:
   jobs:
-    Create_silver_tables:
-      name: ${var.job_name_prefix}Create silver
+    Create_core_tables:
+      name: ${var.job_name_prefix}Create core
       max_concurrent_runs: 1
       parameters:
         - name: environment
@@ -16,17 +16,17 @@ resources:
           default: "{{job.run_id}}"
       tasks:
 
-        - task_key: Create_silver_Sales_default
+        - task_key: Create_core_Sales_default
           run_job_task:
-            job_id: ${resources.jobs.Create_silver_Sales_default.id}
+            job_id: ${resources.jobs.Create_core_Sales_default.id}
 
 
-        - task_key: Create_silver_Sales_Customer
+        - task_key: Create_core_Sales_Customer
           run_job_task:
-            job_id: ${resources.jobs.Create_silver_Sales_Customer.id}
+            job_id: ${resources.jobs.Create_core_Sales_Customer.id}
 
 
-        - task_key: Create_silver_Sales_Other
+        - task_key: Create_core_Sales_Other
           run_job_task:
-            job_id: ${resources.jobs.Create_silver_Sales_Other.id}
+            job_id: ${resources.jobs.Create_core_Sales_Other.id}
 

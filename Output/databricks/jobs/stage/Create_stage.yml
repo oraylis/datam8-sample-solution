@@ -1,0 +1,37 @@
+resources:
+  jobs:
+    Create_stage_tables:
+      name: ${var.job_name_prefix}Create stage
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: schema_prefix
+          default: ${var.schema_prefix}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+      tasks:
+
+        - task_key: Create_stage_Sales_Customer
+          run_job_task:
+            job_id: ${resources.jobs.Create_stage_Sales_Customer.id}
+
+
+        - task_key: Create_stage_Sales_Order
+          run_job_task:
+            job_id: ${resources.jobs.Create_stage_Sales_Order.id}
+
+
+        - task_key: Create_stage_Sales_Other
+          run_job_task:
+            job_id: ${resources.jobs.Create_stage_Sales_Other.id}
+
+
+        - task_key: Create_stage_Sales_Product
+          run_job_task:
+            job_id: ${resources.jobs.Create_stage_Sales_Product.id}
+

@@ -1,7 +1,7 @@
 resources:
   jobs:
-    Create_silver_Sales_Customer:
-      name: ${var.job_name_prefix}Create silver Sales Customer
+    Create_core_Sales_Customer:
+      name: ${var.job_name_prefix}Create core Sales Customer
       max_concurrent_runs: 1
       parameters:
         - name: environment
@@ -19,13 +19,13 @@ resources:
           new_cluster: ${var.cluster_extra_small}
       tasks:
 
-        - task_key: silver_sales_customer_customer
+        - task_key: core_sales_customer_customer
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/ddl/Sales/Customer/Customer
             source: WORKSPACE
           job_cluster_key: cluster_extra_small
 
-        - task_key: silver_sales_customer_customeraddress
+        - task_key: core_sales_customer_customeraddress
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/ddl/Sales/Customer/CustomerAddress
             source: WORKSPACE

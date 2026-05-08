@@ -1,7 +1,7 @@
 resources:
   jobs:
-    Create_silver_Sales_default:
-      name: ${var.job_name_prefix}Create silver Sales default
+    Create_stage_Sales_Order:
+      name: ${var.job_name_prefix}Create stage Sales Order
       max_concurrent_runs: 1
       parameters:
         - name: environment
@@ -19,8 +19,14 @@ resources:
           new_cluster: ${var.cluster_extra_small}
       tasks:
 
-        - task_key: silver_sales_default_productmodel2
+        - task_key: stage_sales_order_salesorderdetail
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/ddl/Sales/ProductModel2
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Order/SalesOrderDetail
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: stage_sales_order_salesorderheader
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Order/SalesOrderHeader
             source: WORKSPACE
           job_cluster_key: cluster_extra_small

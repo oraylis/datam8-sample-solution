@@ -4,15 +4,15 @@ resources:
       name: raw
       catalog_name: ${var.catalog_name}
       comment: "Raw Data Layer"
-    schema_bronze:
-      name: bronze
+    schema_stage:
+      name: stage
       catalog_name: ${var.catalog_name}
       comment: "Staging Data Layer"
-    schema_silver:
-      name: silver
+    schema_core:
+      name: core
       catalog_name: ${var.catalog_name}
       comment: "Core Business Layer"
-    schema_gold:
-      name: gold
+    schema_curated:
+      name: curated
       catalog_name: ${var.catalog_name}
       comment: "Curated Analytics Layer"

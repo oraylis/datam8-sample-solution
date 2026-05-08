@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # DML for bronze.Sales_Product_Product
+# MAGIC # DML for stage.Sales_Product_Product
 # MAGIC History configuration of this entity
 # MAGIC - __Business Key Columns__: ['ProductID']
 # MAGIC - __SCD0 columns__: []
@@ -37,7 +37,7 @@ job_run_id = dbutils.widgets.get("job_run_id")
 
 # static values
 MAX_VALID_TO_DATE = "9999-12-31"
-zone = f"{schema_prefix}bronze" if schema_prefix else "bronze"
+zone = f"{schema_prefix}stage" if schema_prefix else "stage"
 data_product = "Sales"
 data_module = "Product"
 table_name = "Product"
@@ -164,7 +164,7 @@ union_df.createOrReplaceTempView("union_df")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Write changes to BRONZE
+# MAGIC ## Write changes to STAGE
 
 # COMMAND ----------# COMMAND ----------
 

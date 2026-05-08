@@ -14,7 +14,7 @@
     },
     {
       "name": "stage",
-      "targetName": "bronze",
+      "targetName": "stage",
       "displayName": "Staging Data Layer",
       "localFolderName": "010-Stage",
       "properties": [
@@ -26,7 +26,7 @@
     },
     {
       "name": "core",
-      "targetName": "silver",
+      "targetName": "core",
       "displayName": "Core Business Layer",
       "localFolderName": "020-Core",
       "properties": [
@@ -38,7 +38,7 @@
     },
     {
       "name": "curated",
-      "targetName": "gold",
+      "targetName": "curated",
       "displayName": "Curated Analytics Layer",
       "localFolderName": "030-Curated",
       "properties": [
@@ -50,7 +50,7 @@
     },
     {
       "name": "consumer",
-      "targetName": "platin",
+      "targetName": "consumer",
       "displayName": "Consumer Tabular Layer",
       "localFolderName": "040-Consumer",
       "properties": [

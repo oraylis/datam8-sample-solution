@@ -1,7 +1,7 @@
 resources:
   jobs:
-    Create_gold_Sales_Customer:
-      name: ${var.job_name_prefix}Create gold Sales Customer
+    Create_stage_Sales_Customer:
+      name: ${var.job_name_prefix}Create stage Sales Customer
       max_concurrent_runs: 1
       parameters:
         - name: environment
@@ -19,20 +19,14 @@ resources:
           new_cluster: ${var.cluster_extra_small}
       tasks:
 
-        - task_key: gold_sales_customer_dimcustomer
+        - task_key: stage_sales_customer_customer
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/ddl/Sales/Customer/DimCustomer
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Customer/Customer
             source: WORKSPACE
           job_cluster_key: cluster_extra_small
 
-        - task_key: gold_sales_customer_dimdate
+        - task_key: stage_sales_customer_customeraddress
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/ddl/Sales/Customer/DimDate
-            source: WORKSPACE
-          job_cluster_key: cluster_extra_small
-
-        - task_key: gold_sales_customer_factsalesorder
-          notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/ddl/Sales/Customer/FactSalesOrder
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Customer/CustomerAddress
             source: WORKSPACE
           job_cluster_key: cluster_extra_small
