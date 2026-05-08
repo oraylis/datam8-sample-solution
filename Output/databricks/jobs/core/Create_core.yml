@@ -16,11 +16,6 @@ resources:
           default: "{{job.run_id}}"
       tasks:
 
-        - task_key: Create_core_Sales_default
-          run_job_task:
-            job_id: ${resources.jobs.Create_core_Sales_default.id}
-
-
         - task_key: Create_core_Sales_Customer
           run_job_task:
             job_id: ${resources.jobs.Create_core_Sales_Customer.id}

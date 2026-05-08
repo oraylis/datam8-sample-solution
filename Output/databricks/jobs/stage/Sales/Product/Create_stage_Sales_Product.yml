@@ -42,9 +42,3 @@ resources:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Product/ProductModel
             source: WORKSPACE
           job_cluster_key: cluster_extra_small
-
-        - task_key: stage_sales_product_productmodelproductdescription
-          notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/ddl/Sales/Product/ProductModelProductDescription
-            source: WORKSPACE
-          job_cluster_key: cluster_extra_small
