@@ -24,7 +24,10 @@ resources:
       tasks:
 {% for task in data.tasks %}
         - task_key: {{ task.task_key }}
-{% if task.type == "notebook" %}
+{% if task.job_ref is defined and task.job_ref %}
+          run_job_task:
+            job_id: ${resources.jobs.{{ task.job_ref }}.id}
+{% else %}
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/{{ task.notebook_path }}
             source: WORKSPACE
@@ -34,9 +37,6 @@ resources:
 {%- else %}
           existing_cluster_id: ${var.{{ task.cluster_var | default(data.cluster_var) }}}
 {%- endif %}
-{% else %}
-          run_job_task:
-            job_id: ${resources.jobs.{{ task.job_ref }}.id}
 {% endif %}
 {% if task.depends_on %}
           depends_on:
