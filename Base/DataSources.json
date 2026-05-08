@@ -13,7 +13,7 @@
       "type": "SQLServer",
       "extendedProperties": {
         "authMode": "sql_user",
-        "host": "datam80sql0dev.database.windows.net",
+        "host": "aut0sql0dev.database.windows.net",
         "database": "AdventureWorks",
         "username": "sqladmin",
         "password": "ref://datasources/AdventureWorks/password",

@@ -71,7 +71,7 @@ catalog.set_active()
 source_location = "[SalesLT].[SalesOrderHeader]"
 data_source_type = "SQLServer"
 delta_column_details = [{"source": "ModifiedDate", "target": "ModifiedDate", "type": "datetime"}]
-props = {"authMode": "sql_user", "database": "AdventureWorks", "encrypt": true, "host": "datam80sql0dev.database.windows.net", "password": "ref://datasources/AdventureWorks/password", "port": 1433, "trust_server_certificate": true, "username": "sqladmin"}
+props = {"authMode": "sql_user", "database": "AdventureWorks", "encrypt": true, "host": "aut0sql0dev.database.windows.net", "password": "ref://datasources/AdventureWorks/password", "port": 1433, "trust_server_certificate": true, "username": "sqladmin"}
 props["password"] = dbutils.secrets.get(
     scope=keyvault_name,
     key="datasource-AdventureWorks-password",
