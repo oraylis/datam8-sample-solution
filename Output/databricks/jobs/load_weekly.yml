@@ -42,6 +42,7 @@ resources:
         - task_key: load_030_curated_sales_customer_dimcustomer
           depends_on:
             - task_key: Start_Load
+            - task_key: load_020_core_sales_customer_customer
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/030-Curated/dml/Sales/Customer/DimCustomer
             source: WORKSPACE

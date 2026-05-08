@@ -40,7 +40,7 @@ resources:
 
         - task_key: raw_customer_en_customer_en
           depends_on:
-            - task_key: raw_customer_de_customer_de
+            - task_key: Start_Load
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/raw/dml/Sales/Customer/Customer_EN
             source: WORKSPACE
@@ -121,6 +121,8 @@ resources:
 
         - task_key: load_010_stage_sales_customer_customer
           depends_on:
+            - task_key: Start_Load
+            - task_key: raw_customer_de_customer_de
             - task_key: raw_customer_en_customer_en
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Customer/Customer
@@ -129,6 +131,7 @@ resources:
 
         - task_key: load_010_stage_sales_customer_customeraddress
           depends_on:
+            - task_key: Start_Load
             - task_key: raw_customeraddress_customeraddress
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Customer/CustomerAddress
@@ -137,6 +140,7 @@ resources:
 
         - task_key: load_010_stage_sales_order_salesorderdetail
           depends_on:
+            - task_key: Start_Load
             - task_key: raw_salesorderdetail_salesorderdetail
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Order/SalesOrderDetail
@@ -145,6 +149,7 @@ resources:
 
         - task_key: load_010_stage_sales_order_salesorderheader
           depends_on:
+            - task_key: Start_Load
             - task_key: raw_salesorderheader_salesorderheader
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Order/SalesOrderHeader
@@ -153,6 +158,7 @@ resources:
 
         - task_key: load_010_stage_sales_other_address
           depends_on:
+            - task_key: Start_Load
             - task_key: raw_address_address
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Other/Address
@@ -161,6 +167,7 @@ resources:
 
         - task_key: load_010_stage_sales_product_product
           depends_on:
+            - task_key: Start_Load
             - task_key: raw_product_product
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Product/Product
@@ -169,6 +176,7 @@ resources:
 
         - task_key: load_010_stage_sales_product_productcategory
           depends_on:
+            - task_key: Start_Load
             - task_key: raw_productcategory_productcategory
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Product/ProductCategory
@@ -177,6 +185,7 @@ resources:
 
         - task_key: load_010_stage_sales_product_productdescription
           depends_on:
+            - task_key: Start_Load
             - task_key: raw_productdescription_productdescription
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Product/ProductDescription
@@ -185,6 +194,7 @@ resources:
 
         - task_key: load_010_stage_sales_product_productmodel
           depends_on:
+            - task_key: Start_Load
             - task_key: raw_productmodel_productmodel
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Product/ProductModel
@@ -193,6 +203,7 @@ resources:
 
         - task_key: load_010_stage_sales_product_productmodelproductdescription
           depends_on:
+            - task_key: Start_Load
             - task_key: raw_productmodelproductdescription_productmodelproductdescription
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/010-Stage/dml/Sales/Product/ProductModelProductDescription
@@ -202,6 +213,7 @@ resources:
         - task_key: load_020_core_sales_productmodel2
           depends_on:
             - task_key: Start_Load
+            - task_key: load_010_stage_sales_product_productmodel
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/dml/Sales/ProductModel2
             source: WORKSPACE
@@ -210,6 +222,7 @@ resources:
         - task_key: load_020_core_sales_customer_customeraddress
           depends_on:
             - task_key: Start_Load
+            - task_key: load_010_stage_sales_customer_customeraddress
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.notebook_path}/020-Core/dml/Sales/Customer/CustomerAddress
             source: WORKSPACE

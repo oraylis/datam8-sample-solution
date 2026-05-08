@@ -268,9 +268,18 @@ def create_load_group_payloads(model: Model) -> list[IPayload]:
         external_tasks: list[dict[str, Any]] = []
         entity_tasks: list[dict[str, Any]] = []
         complete_dependencies: list[str] = []
+        entity_task_keys_by_id: dict[int, str] = {}
+
+        for grouped_wrapper in wrappers:
+            entity_id = getattr(grouped_wrapper.entity, "id", None)
+            if not isinstance(entity_id, int):
+                continue
+            entity_task_keys_by_id[entity_id] = task_key(
+                "load", *grouped_wrapper.locator.folders, grouped_wrapper.entity.name
+            ).lower()
 
         for wrapper in wrappers:
-            previous_tasks: list[str] = ["Start_Load"]
+            external_dependency_tasks: list[str] = []
             for item in wrapper.entity.sources or []:
                 if not getattr(item, "dataSource", None):
                     continue
@@ -279,7 +288,7 @@ def create_load_group_payloads(model: Model) -> list[IPayload]:
                 external_tasks.append(
                     {
                         "task_key": task,
-                        "depends_on": previous_tasks,
+                        "depends_on": ["Start_Load"],
                         "notebook_path": notebook_path(
                             external_zone, "dml", wrapper, name=source.table_name
                         ),
@@ -287,13 +296,25 @@ def create_load_group_payloads(model: Model) -> list[IPayload]:
                         "resolved_job_cluster_key": cluster_variable,
                     }
                 )
-                previous_tasks = [task]
+                external_dependency_tasks.append(task)
 
             entity_task_key = task_key("load", *wrapper.locator.folders, wrapper.entity.name).lower()
+            internal_dependencies: list[str] = []
+            for item in wrapper.entity.sources or []:
+                source_location = getattr(item, "sourceLocation", None)
+                if not isinstance(source_location, int):
+                    continue
+                dependency_task = entity_task_keys_by_id.get(source_location)
+                if dependency_task and dependency_task != entity_task_key:
+                    internal_dependencies.append(dependency_task)
+
+            depends_on = list(
+                dict.fromkeys(["Start_Load", *external_dependency_tasks, *internal_dependencies])
+            )
             entity_tasks.append(
                 {
                     "task_key": entity_task_key,
-                    "depends_on": previous_tasks,
+                    "depends_on": depends_on,
                     "notebook_path": notebook_path(
                         get_zone_for_folder(model, wrapper.locator.folders[0])
                         or model.get_zone_for_entity(wrapper),
