@@ -1,0 +1,14 @@
+resources:
+  pipelines:
+    lakeflow_entity_stage_sales_customer_customeraddress:
+      name: ${var.job_name_prefix}Lakeflow Entity stage Sales_Customer_CustomerAddress
+      catalog: ${var.catalog_name}
+      schema: ${var.lakeflow_schema_prefix}stage
+      serverless: true
+      channel: PREVIEW
+      configuration:
+        catalog_name: ${var.catalog_name}
+        schema_prefix: ${var.lakeflow_schema_prefix}
+      libraries:
+        - notebook:
+            path: ${workspace.root_path}/${var.lakeflow_output_path}/pipelines/notebooks/entities/010-Stage/Sales/Customer/CustomerAddress

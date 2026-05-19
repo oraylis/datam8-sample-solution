@@ -1,0 +1,33 @@
+resources:
+  jobs:
+    Lakeflow_Load_All_Tables:
+      name: ${var.job_name_prefix}Lakeflow Load All Tables
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: schema_prefix
+          default: ${var.lakeflow_schema_prefix}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+
+      tasks:
+
+        - task_key: Lakeflow_Load_daily
+          run_job_task:
+            job_id: ${resources.jobs.Lakeflow_Load_daily.id}
+
+
+        - task_key: Lakeflow_Load_weekly
+          run_job_task:
+            job_id: ${resources.jobs.Lakeflow_Load_weekly.id}
+
+          depends_on:
+
+            - task_key: Lakeflow_Load_daily
+
+

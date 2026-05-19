@@ -1,0 +1,665 @@
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # DML for {{ data.zone }}.{{ data.full_table_name }}
+# MAGIC History configuration of this entity
+# MAGIC - __Business Key Columns__: {{ data.history.business_keys | safe }}
+# MAGIC - __SCD0 columns__: {{ data.history.scd0 | safe }}
+# MAGIC - __SCD1 columns__: {{ data.history.scd1 | safe }}
+# MAGIC - __SCD2 columns__: {{ data.history.scd2 | safe }}
+
+# COMMAND ----------
+
+from pyspark.sql import functions as F  # noqa: F401
+from pyspark.sql.window import Window  # noqa: F401
+from delta import DeltaTable  # noqa: F401
+from datetime import datetime, timezone
+
+# COMMAND ----------
+
+# DBTITLE 1,Initialize Migration Framework
+# MAGIC
+# MAGIC %run ../../../../../../../utils/MigrationFramework
+
+# COMMAND ----------
+
+dbutils.widgets.text("env", "dev", "Environment")
+dbutils.widgets.text("catalog_name", "", "Catalog Name")
+dbutils.widgets.text("schema_prefix", "", "Schema Prefix")
+dbutils.widgets.text("job_run_id", "", "Job Run ID")
+
+# COMMAND ----------
+
+# Retrieve a job-level parameter (will use default if it doesn't exist)
+env = dbutils.widgets.get("env")
+catalog_name = dbutils.widgets.get("catalog_name")
+schema_prefix = dbutils.widgets.get("schema_prefix")
+job_run_id = dbutils.widgets.get("job_run_id")
+
+# static values
+MAX_VALID_TO_DATE = "9999-12-31"
+zone = f"{schema_prefix}{{ data.zone }}" if schema_prefix else "{{ data.zone }}"
+data_product = "{{ data.data_product }}"
+data_module = "{{ data.data_module }}"
+table_name = "{{ data.table_name }}"
+full_table_name = "%s_%s_%s" % (data_product, data_module, table_name)
+
+# COMMAND ----------
+
+print("Environment: %s" % env)
+print("Catalog: %s" % catalog_name)
+print("Schema: %s" % zone)
+print("Table: %s" % full_table_name)
+
+# COMMAND ----------
+
+catalog = Catalog(catalog_name)
+catalog.schema = zone
+catalog.set_active()
+
+# Reference to the fully-qualified target table (with backticks for catalog/schema/table).
+table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
+    "catalog": catalog.name,
+    "schema": zone,
+    "table": full_table_name,
+}
+load_timestamp_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+load_timestamp_utc_sql = load_timestamp_utc.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+# COMMAND ----------
+
+{%- if data.source_mode == "source_delta" and data.delta_sources %}
+
+# MAGIC %md
+# MAGIC ## Process source snapshots
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Max timestamp in target table
+
+# COMMAND ----------
+
+max_source: dict = {}
+
+{%- for source in data.delta_sources %}
+{%- if source.source_delta_column %}
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### '{{ source.display_name }}'
+
+# COMMAND ----------
+
+max_source["{{ source.key }}"] = spark.sql(f"""
+SELECT
+  COALESCE(MAX(__InsertTimestampSourceUTC), CAST('1970-01-01' AS TIMESTAMP)) AS MaxSource
+FROM `{catalog.name}`.`{zone}`.`{full_table_name}`
+{%- if source.target_max_filter %}
+WHERE {{ source.target_max_filter | safe }}
+{%- endif %}
+""").first()[0]
+{%- endif %}
+{%- endfor %}
+
+# COMMAND ----------
+
+source_delta_df_list = []
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Extraction from source tables
+
+{%- for source in data.delta_sources %}
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### '{{ source.display_name }}'
+
+# COMMAND ----------
+
+source_delta_{{ loop.index }}_df = (
+    spark.table(f"{catalog.name}.{schema_prefix}{{ source.source_zone }}.{{ source.source_full_table_name }}")
+    {%- if source.source_delta_column %}
+    .filter(F.col("{{ source.source_delta_column }}") > F.lit(max_source["{{ source.key }}"]))
+    {%- endif %}
+    .selectExpr(
+        {%- for expr in source.select_expressions %}
+        "{{ expr | safe }}"{% if not loop.last %},{% endif %}
+        {%- endfor %}
+        {%- if source.select_expressions %},
+        {%- endif %}
+        "'{{ source.source_name }}' AS __SourceTable",
+        f"CAST('{load_timestamp_utc_sql}' AS TIMESTAMP) AS __InsertTimestampUTC",
+        f"CAST('{load_timestamp_utc_sql}' AS TIMESTAMP) AS __UpdateTimestampUTC",
+        "__UpdateTimestampUTC AS __InsertTimestampSourceUTC"
+    )
+)
+source_delta_df_list.append(source_delta_{{ loop.index }}_df)
+{%- endfor %}
+
+# COMMAND ----------
+
+union_df = source_delta_df_list[0]
+for additional_df in source_delta_df_list[1:]:
+    union_df = union_df.unionByName(additional_df)
+
+{%- if data.needs_latest_snapshot_handling %}
+latest_snapshot_key_cols = [{% for column in data.history.business_keys %}"{{ column }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+if latest_snapshot_key_cols:
+    # Keep only the latest snapshot per business key to avoid duplicate records from source feeds.
+    latest_snapshot_window = Window.partitionBy(*latest_snapshot_key_cols).orderBy(
+        F.col("__InsertTimestampSourceUTC").desc(),
+    )
+    union_df = (
+        union_df
+        .withColumn("__dm8_latest_snapshot_rank", F.row_number().over(latest_snapshot_window))
+        .where(F.col("__dm8_latest_snapshot_rank") == 1)
+        .drop("__dm8_latest_snapshot_rank")
+    )
+
+{%- endif %}
+
+if union_df.isEmpty():
+    print("No new source rows found. Skip write to target table.")
+    dbutils.notebook.exit("SKIPPED_EMPTY_SOURCE_DELTA")
+
+union_df.createOrReplaceTempView("union_df")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Write changes to {{ data.zone | upper }}
+
+# COMMAND ----------
+
+{%- set merge_cfg = data.source_merge_config -%}
+{%- if merge_cfg and merge_cfg.enabled -%}
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Prepare merge statement
+
+# COMMAND ----------
+
+target_table = DeltaTable.forName(spark, table_name_ref)
+{%- if merge_cfg.has_scd2_history %}
+current_snapshot_df = (
+    spark.table(table_name_ref)
+    .where(F.col("__IsCurrent").eqNullSafe(True))
+)
+
+staged_base = (
+    union_df.alias("src")
+    .join(
+        current_snapshot_df.alias("tgt"),
+        [
+            {%- for column in merge_cfg.business_keys %}
+            (F.col("src.`{{ column }}`") == F.col("tgt.`{{ column }}`")){% if not loop.last %},
+            {% endif %}
+            {%- endfor %}
+        ],
+        "left",
+    )
+    .withColumns({
+        "__target_exists": F.col("tgt.__IsCurrent").isNotNull(),
+        "scd2_changed": 
+        {%- if merge_cfg.scd2_non_business_columns %}
+        (
+            {%- for column in merge_cfg.scd2_non_business_columns %}
+            (~F.col("tgt.`{{ column }}`").eqNullSafe(F.col("src.`{{ column }}`"))){% if not loop.last %} |
+            {% endif %}
+            {%- endfor %}
+        )
+        {%- else %}
+        F.lit(False)
+        {%- endif %}
+        ,
+        "__ValidFrom": F.col("src.__InsertTimestampUTC"),
+        "__ValidTo": F.to_timestamp(F.lit(MAX_VALID_TO_DATE)),
+        "__IsCurrent": F.lit(True),
+    })
+    .select("src.*", "__target_exists", "scd2_changed", "__ValidFrom", "__ValidTo", "__IsCurrent")
+)
+{%- for helper in merge_cfg.scd0_helper_columns %}
+staged_base = staged_base.withColumn(
+    "{{ helper.helper }}",
+    F.coalesce(
+        F.col("tgt.`{{ helper.column }}`"),
+        F.col("src.`{{ helper.column }}`"),
+    ),
+)
+{%- endfor %}
+
+staged_updates = staged_base.filter(F.col("__target_exists")).withColumn("__merge_action", F.lit("update"))
+staged_inserts = (
+    staged_base
+    .filter(
+        (~F.col("__target_exists")) | F.col("scd2_changed")
+    )
+    .withColumn("__merge_action", F.lit("insert"))
+)
+staged_union = staged_updates.unionByName(staged_inserts)
+{%- endif %}
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Execute merge
+
+# COMMAND ----------
+
+{%- if merge_cfg.has_scd2_history %}
+merge_builder = (
+    target_table.alias("tgt")
+    .merge(
+        staged_union.alias("src"),
+        "({{ merge_cfg.merge_condition | safe }}) AND src.__merge_action = 'update'",
+    )
+    .whenMatchedUpdate(
+        condition="src.scd2_changed",
+        set={
+            "__ValidTo": "src.__InsertTimestampUTC",
+            "__IsCurrent": "False",
+            "__UpdateTimestampUTC": "src.__UpdateTimestampUTC",
+        },
+    )
+)
+{%- if merge_cfg.scd1_change_condition and merge_cfg.scd1_update_assignments %}
+merge_builder = merge_builder.whenMatchedUpdate(
+    condition="(NOT src.scd2_changed) AND ({{ merge_cfg.scd1_change_condition | safe }})",
+    set={
+        {%- for assignment in merge_cfg.scd1_update_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+{%- elif merge_cfg.scd1_update_assignments %}
+merge_builder = merge_builder.whenMatchedUpdate(
+    set={
+        {%- for assignment in merge_cfg.scd1_update_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+{%- endif %}
+merge_builder = merge_builder.whenNotMatchedInsert(
+    values={
+        "__ValidFrom": "src.__ValidFrom",
+        "__ValidTo": "src.__ValidTo",
+        "__IsCurrent": "src.__IsCurrent",
+        {%- for assignment in merge_cfg.insert_assignments %}
+        "{{ assignment.column }}": {%- if assignment.column in merge_cfg.scd0_helper_lookup -%}'src.{{ merge_cfg.scd0_helper_lookup[assignment.column] }}'{%- else -%}{{ assignment.expression | safe }}{%- endif %}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+result = merge_builder.execute()
+print(result)
+{%- else %}
+merge_builder = (
+    target_table.alias("tgt")
+    .merge(
+        union_df.alias("src"),
+        "{{ merge_cfg.merge_condition | safe }}",
+    )
+)
+{%- if merge_cfg.scd1_update_assignments %}
+merge_builder = merge_builder.whenMatchedUpdate(
+    {%- if merge_cfg.scd1_change_condition %}
+    condition="""
+        {{ merge_cfg.scd1_change_condition | safe }}
+    """,
+    {%- endif %}
+    set={
+        {%- for assignment in merge_cfg.scd1_update_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+{%- endif %}
+merge_builder = merge_builder.whenNotMatchedInsert(
+    values={
+        {%- for assignment in merge_cfg.insert_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+result = merge_builder.execute()
+print(result)
+{%- endif %}
+{%- else %}
+(
+    union_df
+    .write.saveAsTable(
+        f"{catalog.name}.{zone}.{full_table_name}",
+        mode="{{ data.spark_write_mode }}",
+    )
+)
+{%- endif %}
+
+# COMMAND ----------
+
+{%- elif data.source_mode == "transformation" %}
+
+# MAGIC %md
+# MAGIC ### Execute transformation functions
+
+# COMMAND ----------
+
+functions = {}
+
+# COMMAND ----------
+
+{%- for transform in data.transformations %}
+# MAGIC %md
+# MAGIC #### {{ transform.key }}
+
+# COMMAND ----------
+
+functions["{{ transform.key }}"] = {
+  "name": "{{ transform.name }}",
+  "merge_type": "{{ transform.merge_type }}",
+  "frequency": "{{ transform.frequency }}",
+  "source": [
+    {%- for reference in transform.sources %}
+    {"dm8l": "{{ reference.dm8l }}"}{% if not loop.last %},{% endif %}
+    {%- endfor %}
+  ],
+}
+
+# COMMAND ----------
+
+# MAGIC %run ./{{ transform.script_module }}
+
+# COMMAND ----------
+
+business_function = business_function.withColumns({  # noqa: F821
+    "__BusinessFunction": F.lit("{{ transform.key }}"),
+    "__InsertTimestampUTC": F.lit(load_timestamp_utc),
+})
+functions["{{ transform.key }}"]["df"] = business_function  # noqa: F821
+
+# COMMAND ----------
+
+{%- endfor %}
+
+{%- if data.final_function_key %}
+final_df = functions["{{ data.final_function_key }}"]["df"]
+
+# COMMAND ----------
+
+{%- if data.has_lookup_dimensions and data.dimension_lookups %}
+# MAGIC %md
+# MAGIC ### Lookup dimensions
+
+# COMMAND ----------
+
+{%- for lookup in data.dimension_lookups %}
+{%- set join_dimension_columns = lookup.join_columns | map(attribute='dimension_column') | list %}
+{%- set dimension_sid_in_join = lookup.dimension_sid_column in join_dimension_columns %}
+dimension_df_{{ loop.index }} = (
+    spark.table(f"{catalog.name}.{{ lookup.dimension_zone }}.{{ lookup.dimension_full_table_name }}")
+    .select(
+        {%- for join_column in lookup.join_columns %}
+        F.col("{{ join_column.dimension_column }}").alias("{{ lookup.dimension_alias }}__{{ join_column.dimension_column }}"){% if not loop.last or (not dimension_sid_in_join) %}, {% endif %}
+        {%- endfor %}
+        {%- if not dimension_sid_in_join %}
+        F.col("{{ lookup.dimension_sid_column }}").alias("{{ lookup.dimension_alias }}__{{ lookup.dimension_sid_column }}")
+        {%- endif %}
+    )
+)
+
+final_df = (
+    final_df.alias("fact")
+    .join(
+        dimension_df_{{ loop.index }}.alias("{{ lookup.dimension_alias }}"),
+        {%- if lookup.join_columns %}
+        {%- for join_column in lookup.join_columns %}
+        (F.col("fact.{{ join_column.fact_column }}") == F.col("{{ lookup.dimension_alias }}__{{ join_column.dimension_column }}")){% if not loop.last %} & {% endif %}
+        {%- endfor %}
+        {%- else %}
+        F.lit(True)
+        {%- endif %}
+        ,
+        "left",
+    )
+)
+
+final_df = final_df.withColumn(
+    "{{ lookup.sid_column }}",
+    F.coalesce(
+        F.col("{{ lookup.dimension_alias }}__{{ lookup.dimension_sid_column }}"),
+        F.lit(-1),
+    ),
+)
+
+final_df = final_df.drop(
+    {%- for join_column in lookup.join_columns %}
+    "{{ lookup.dimension_alias }}__{{ join_column.dimension_column }}"{% if not loop.last or (not dimension_sid_in_join) %}, {% endif %}
+    {%- endfor %}
+    {%- if not dimension_sid_in_join %}
+    "{{ lookup.dimension_alias }}__{{ lookup.dimension_sid_column }}"
+    {%- endif %}
+)
+
+{%- endfor %}
+{%- endif %}
+
+{%- if data.calculated_columns %}
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Apply calculated columns
+
+# COMMAND ----------
+
+final_df = final_df.withColumns({
+    {%- for column in data.calculated_columns %}
+    "{{ column.name }}": F.expr({{ column.expression_literal | safe }}){% if not loop.last %},
+    {% endif %}
+    {%- endfor %}
+})
+
+# COMMAND ----------
+
+{%- endif %}
+
+final_df = final_df.withColumns({
+    "__UpdateTimestampUTC": F.lit(load_timestamp_utc),
+})
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Write into target table
+
+# COMMAND ----------
+
+{%- set merge_cfg = data.final_merge_config %}
+{%- if merge_cfg and merge_cfg.enabled %}
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Prepare merge statement
+
+# COMMAND ----------
+
+target_table = DeltaTable.forName(spark, table_name_ref)
+{%- if merge_cfg.has_scd2_history %}
+current_snapshot_df = (
+    spark.table(table_name_ref)
+    .where(F.col("__IsCurrent").eqNullSafe(True))
+)
+
+staged_base = (
+    final_df.alias("src")
+    .join(
+        current_snapshot_df.alias("tgt"),
+        [
+            {%- for column in merge_cfg.business_keys %}
+            (F.col("src.`{{ column }}`") == F.col("tgt.`{{ column }}`")){% if not loop.last %},
+            {% endif %}
+            {%- endfor %}
+        ],
+        "left",
+    )
+    .withColumns({
+        "__target_exists": F.col("tgt.__IsCurrent").isNotNull(),
+        "scd2_changed": 
+        {%- if merge_cfg.scd2_non_business_columns %}
+        (
+            {%- for column in merge_cfg.scd2_non_business_columns %}
+            (~F.col("tgt.`{{ column }}`").eqNullSafe(F.col("src.`{{ column }}`"))){% if not loop.last %} |
+            {% endif %}
+            {%- endfor %}
+        )
+        {%- else %}
+        F.lit(False)
+        {%- endif %}
+        ,
+        "__ValidFrom": F.col("src.__InsertTimestampUTC"),
+        "__ValidTo": F.to_timestamp(F.lit(MAX_VALID_TO_DATE)),
+        "__IsCurrent": F.lit(True),
+    })
+    .select("src.*", "__target_exists", "scd2_changed", "__ValidFrom", "__ValidTo", "__IsCurrent")
+)
+{%- for helper in merge_cfg.scd0_helper_columns %}
+staged_base = staged_base.withColumn(
+    "{{ helper.helper }}",
+    F.coalesce(
+        F.col("tgt.`{{ helper.column }}`"),
+        F.col("src.`{{ helper.column }}`"),
+    ),
+)
+{%- endfor %}
+
+staged_updates = staged_base.filter(F.col("__target_exists")).withColumn("__merge_action", F.lit("update"))
+staged_inserts = (
+    staged_base
+    .filter(
+        (~F.col("__target_exists")) | F.col("scd2_changed")
+    )
+    .withColumn("__merge_action", F.lit("insert"))
+)
+staged_union = staged_updates.unionByName(staged_inserts)
+{%- endif %}
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Execute merge
+
+# COMMAND ----------
+
+{%- if merge_cfg.has_scd2_history %}
+merge_builder = (
+    target_table.alias("tgt")
+    .merge(
+        staged_union.alias("src"),
+        "({{ merge_cfg.merge_condition | safe }}) AND src.__merge_action = 'update'",
+    )
+    .whenMatchedUpdate(
+        condition="src.scd2_changed",
+        set={
+            "__ValidTo": "src.__InsertTimestampUTC",
+            "__IsCurrent": "False",
+            "__UpdateTimestampUTC": "src.__UpdateTimestampUTC",
+        },
+    )
+)
+{%- if merge_cfg.scd1_change_condition and merge_cfg.scd1_update_assignments %}
+merge_builder = merge_builder.whenMatchedUpdate(
+    condition="(NOT src.scd2_changed) AND ({{ merge_cfg.scd1_change_condition | safe }})",
+    set={
+        {%- for assignment in merge_cfg.scd1_update_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+{%- elif merge_cfg.scd1_update_assignments %}
+merge_builder = merge_builder.whenMatchedUpdate(
+    set={
+        {%- for assignment in merge_cfg.scd1_update_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+{%- endif %}
+merge_builder = merge_builder.whenNotMatchedInsert(
+    values={
+        "__ValidFrom": "src.__ValidFrom",
+        "__ValidTo": "src.__ValidTo",
+        "__IsCurrent": "src.__IsCurrent",
+        {%- for assignment in merge_cfg.insert_assignments %}
+        "{{ assignment.column }}": {%- if assignment.column in merge_cfg.scd0_helper_lookup -%}'src.{{ merge_cfg.scd0_helper_lookup[assignment.column] }}'{%- else -%}{{ assignment.expression | safe }}{%- endif %}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+result = merge_builder.execute()
+print(result)
+{%- else %}
+merge_builder = (
+    target_table.alias("tgt")
+    .merge(
+        final_df.alias("src"),
+        "{{ merge_cfg.merge_condition | safe }}",
+    )
+)
+{%- if merge_cfg.scd1_update_assignments %}
+merge_builder = merge_builder.whenMatchedUpdate(
+    {%- if merge_cfg.scd1_change_condition %}
+    condition="""
+        {{ merge_cfg.scd1_change_condition | safe }}
+    """,
+    {%- endif %}
+    set={
+        {%- for assignment in merge_cfg.scd1_update_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+{%- endif %}
+merge_builder = merge_builder.whenNotMatchedInsert(
+    values={
+        {%- for assignment in merge_cfg.insert_assignments %}
+        "{{ assignment.column }}": {{ assignment.expression | safe }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    },
+)
+result = merge_builder.execute()
+print(result)
+{%- endif %}
+{%- else %}
+{%- set final_write_columns = data.write_schema_columns or data.schema_columns %}
+final_write_df = final_df.select(
+    {%- for column in final_write_columns %}
+    "{{ column }}"{% if not loop.last %}, {% endif %}
+    {%- endfor %}
+)
+final_write_df.write.saveAsTable(table_name_ref, mode="{{ data.spark_write_mode }}")
+{%- endif %}
+{%- endif %}
+
+# COMMAND ----------
+
+{%- else %}
+
+# MAGIC %md
+# MAGIC This entity does not have configured DML logic. Review the metadata to add sources or transformations.
+
+# COMMAND ----------
+
+{%- endif %}
+
+# COMMAND ----------
+
+# DBTITLE 1,Update load status
+record_count = spark.table(table_name_ref).filter(
+    F.col("__UpdateTimestampUTC") == F.lit(load_timestamp_utc)
+).count()
+print(f"Loaded {record_count} records into target table")

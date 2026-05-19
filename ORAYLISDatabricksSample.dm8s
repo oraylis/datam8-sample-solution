@@ -11,6 +11,12 @@
       "outputPath": "Output/databricks"
     },
     {
+      "name": "databricks-lakeflow",
+      "isDefault": false,
+      "sourcePath": "Generate/databricks-lakeflow",
+      "outputPath": "Output/databricks-lakeflow"
+    },
+    {
       "name": "powerbi",
       "isDefault": false,
       "sourcePath": "Generate/powerbi-tabular",

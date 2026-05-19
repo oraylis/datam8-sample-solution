@@ -9,30 +9,42 @@ include:
   - Output/databricks/jobs/*.yml  # top-level
   - Output/databricks/jobs/*/*.yml  # layer-level
   - Output/databricks/jobs/*/*/*/*.yml  # product/module-level
+  - Output/databricks-lakeflow/schemas/*.yml
+  - Output/databricks-lakeflow/pipelines/external/*.yml
+  - Output/databricks-lakeflow/pipelines/entities/*/*/*/*.yml
+  - Output/databricks-lakeflow/jobs/*.yml
 
 sync:
   include:
     - utils/
     - libraries/
     - Output/databricks
+    - Output/databricks-lakeflow
 
   exclude:
     - "**"
     - "!utils/**"
     - "!libraries/**"
     - "!Output/databricks/**"
+    - "!Output/databricks-lakeflow/**"
 
 # all defaults are preset with dev values
 variables:
   notebook_path:
     description: Location of the notebooks within the bundle
     default: 'files/notebooks'
+  lakeflow_output_path:
+    description: Location of the generated Lakeflow target files within the bundle
+    default: 'files/Output/databricks-lakeflow'
   catalog_name:
     description: The name of the unity catalog
     default: datam8_sample_catalog
   schema_prefix:
     description: Prefix applied to schema names in notebooks
     default: ""
+  lakeflow_schema_prefix:
+    description: Prefix applied to schema names generated and used by the Lakeflow target
+    default: "lf_"
   environment:
     description: The logical environment
     default: dev
@@ -70,4 +82,3 @@ targets:
     workspace:
       host: https://adb-xxxxxxxxxxxxxx.8.azuredatabricks.net
       root_path: /etl/${bundle.name}/${bundle.target}
-

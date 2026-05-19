@@ -1,0 +1,27 @@
+variables:
+  cluster_small:
+    description: S
+    type: complex
+    default:
+      spark_version: 16.4.x-scala2.12
+      node_type_id: Standard_D4ds_v5
+      num_workers: 4
+      kind: CLASSIC_PREVIEW
+      data_security_mode: DATA_SECURITY_MODE_DEDICATED
+      runtime_engine: STANDARD
+      custom_tags:
+        friendly_name: S
+        workload_type: job
+  cluster_extra_small:
+    description: XY
+    type: complex
+    default:
+      spark_version: 16.4.x-scala2.12
+      node_type_id: Standard_D4ds_v5
+      num_workers: 2
+      kind: CLASSIC_PREVIEW
+      data_security_mode: DATA_SECURITY_MODE_DEDICATED
+      runtime_engine: STANDARD
+      custom_tags:
+        friendly_name: XY
+        workload_type: job

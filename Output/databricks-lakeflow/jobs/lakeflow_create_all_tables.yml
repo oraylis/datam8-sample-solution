@@ -1,0 +1,55 @@
+resources:
+  jobs:
+    Lakeflow_Create_All_Tables:
+      name: ${var.job_name_prefix}Lakeflow Create All Tables
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: schema_prefix
+          default: ${var.lakeflow_schema_prefix}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+      job_clusters:
+        - job_cluster_key: cluster_extra_small
+          new_cluster: ${var.cluster_extra_small}
+      tasks:
+        - task_key: lakeflow_create_020_core_sales_other_address
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.lakeflow_output_path}/notebooks/020-Core/ddl/Sales/Other/Address
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: lakeflow_create_020_core_sales_customer_customeraddress
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.lakeflow_output_path}/notebooks/020-Core/ddl/Sales/Customer/CustomerAddress
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: lakeflow_create_020_core_sales_customer_customer
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.lakeflow_output_path}/notebooks/020-Core/ddl/Sales/Customer/Customer
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: lakeflow_create_030_curated_sales_customer_factsalesorder
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.lakeflow_output_path}/notebooks/030-Curated/ddl/Sales/Customer/FactSalesOrder
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: lakeflow_create_030_curated_sales_customer_dimcustomer
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.lakeflow_output_path}/notebooks/030-Curated/ddl/Sales/Customer/DimCustomer
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: lakeflow_create_030_curated_sales_customer_dimdate
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.lakeflow_output_path}/notebooks/030-Curated/ddl/Sales/Customer/DimDate
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small

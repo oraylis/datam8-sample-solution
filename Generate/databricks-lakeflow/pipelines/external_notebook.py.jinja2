@@ -1,0 +1,13 @@
+# Databricks notebook source
+from pyspark import pipelines as dp
+from pyspark.sql import functions as F
+
+
+@dp.table(name="{{ data.destination_table }}")
+def {{ data.pipeline.resource_key }}():
+    source_df = spark.sql({{ data.remote_query_sql | tojson }})
+    return source_df.select(
+        {%- for expression in data.select_expressions %}
+        {{ expression | safe }}{% if not loop.last %},{% endif %}
+        {%- endfor %}
+    )

@@ -1,0 +1,33 @@
+resources:
+  jobs:
+    {{ data.job_key }}:
+      name: ${var.job_name_prefix}{{ data.job_name }}
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: schema_prefix
+          default: ${var.lakeflow_schema_prefix}
+        - name: job_name
+          default: "{{ '{{job.name}}' }}"
+        - name: job_run_id
+          default: "{{ '{{job.run_id}}' }}"
+{%- if data.job_clusters %}
+      job_clusters:
+{%- for cluster in data.job_clusters %}
+        - job_cluster_key: {{ cluster.job_cluster_key }}
+          new_cluster: ${var.{{ cluster.job_cluster_key }}}
+{%- endfor %}
+{%- endif %}
+      tasks:
+{%- for task in data.tasks %}
+        - task_key: {{ task.task_key }}
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.lakeflow_output_path}/notebooks/{{ task.notebook_path }}
+            source: WORKSPACE
+{%- if task.resolved_job_cluster_key %}
+          job_cluster_key: {{ task.resolved_job_cluster_key }}
+{%- endif %}
+{% endfor %}

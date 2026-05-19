@@ -1,0 +1,69 @@
+resources:
+  jobs:
+    Lakeflow_Load_weekly:
+      name: ${var.job_name_prefix}Lakeflow Load weekly
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: schema_prefix
+          default: ${var.lakeflow_schema_prefix}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+      job_clusters:
+        - job_cluster_key: cluster_extra_small
+          new_cluster: ${var.cluster_extra_small}
+
+      schedule:
+        quartz_cron_expression: 55 0 2 ? * Sun
+        timezone_id: UTC
+        pause_status: ${var.unpause_schedules}
+
+      tasks:
+        - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/files/utils/Start_Load
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: lakeflow_delta_020_core_sales_customer_customer
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.lakeflow_output_path}/notebooks/020-Core/dml/Sales/Customer/Customer
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: lakeflow_delta_030_curated_sales_customer_factsalesorder
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.lakeflow_output_path}/notebooks/030-Curated/dml/Sales/Customer/FactSalesOrder
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+        - task_key: lakeflow_delta_030_curated_sales_customer_dimcustomer
+          depends_on:
+            - task_key: Start_Load
+            - task_key: lakeflow_delta_020_core_sales_customer_customer
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.lakeflow_output_path}/notebooks/030-Curated/dml/Sales/Customer/DimCustomer
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: Complete_Load
+          depends_on:
+            - task_key: lakeflow_delta_020_core_sales_customer_customer
+            - task_key: lakeflow_delta_030_curated_sales_customer_factsalesorder
+            - task_key: lakeflow_delta_030_curated_sales_customer_dimcustomer
+          run_if: ALL_DONE
+          notebook_task:
+            notebook_path: ${workspace.root_path}/files/utils/Complete_Load
+            source: WORKSPACE
+          job_cluster_key: cluster_extra_small

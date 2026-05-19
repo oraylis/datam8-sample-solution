@@ -1,0 +1,18 @@
+resources:
+  schemas:
+    lakeflow_schema_raw:
+      name: ${var.lakeflow_schema_prefix}raw
+      catalog_name: ${var.catalog_name}
+      comment: "Raw Data Layer"
+    lakeflow_schema_stage:
+      name: ${var.lakeflow_schema_prefix}stage
+      catalog_name: ${var.catalog_name}
+      comment: "Staging Data Layer"
+    lakeflow_schema_core:
+      name: ${var.lakeflow_schema_prefix}core
+      catalog_name: ${var.catalog_name}
+      comment: "Core Business Layer"
+    lakeflow_schema_curated:
+      name: ${var.lakeflow_schema_prefix}curated
+      catalog_name: ${var.catalog_name}
+      comment: "Curated Analytics Layer"

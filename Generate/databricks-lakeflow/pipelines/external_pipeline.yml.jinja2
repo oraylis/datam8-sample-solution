@@ -1,0 +1,47 @@
+resources:
+  pipelines:
+    {{ data.resource_key }}:
+      name: ${var.job_name_prefix}{{ data.pipeline_name }}
+      catalog: ${var.catalog_name}
+      schema: {{ data.destination_schema }}
+      serverless: true
+      channel: PREVIEW
+      configuration:
+        catalog_name: ${var.catalog_name}
+        schema_prefix: ${var.lakeflow_schema_prefix}
+{%- if data.is_managed_connect %}
+      ingestion_definition:
+        connection_name: {{ data.connection_name }}
+        objects:
+          - table:
+              source_catalog: {{ data.source_catalog }}
+              source_schema: {{ data.source_schema }}
+              source_table: {{ data.source_table }}
+{%- if data.cursor_column %}
+              table_configuration:
+{%- if data.primary_key_columns %}
+                primary_keys:
+{%- for column in data.primary_key_columns %}
+                  - {{ column }}
+{%- endfor %}
+{%- endif %}
+                query_based_connector_config:
+{%- if data.cursor_column %}
+                  cursor_columns:
+                    - {{ data.cursor_column }}
+{%- endif %}
+{%- elif data.primary_key_columns %}
+              table_configuration:
+                primary_keys:
+{%- for column in data.primary_key_columns %}
+                  - {{ column }}
+{%- endfor %}
+{%- endif %}
+              destination_catalog: ${var.catalog_name}
+              destination_schema: {{ data.destination_schema }}
+              destination_table: {{ data.destination_table }}
+{%- else %}
+      libraries:
+        - notebook:
+            path: ${workspace.root_path}/${var.lakeflow_output_path}/{{ data.notebook_relative_path }}
+{%- endif %}

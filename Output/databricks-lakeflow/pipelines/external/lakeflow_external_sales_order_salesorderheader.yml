@@ -1,0 +1,27 @@
+resources:
+  pipelines:
+    lakeflow_external_sales_order_salesorderheader:
+      name: ${var.job_name_prefix}Lakeflow External Sales_Order_SalesOrderHeader
+      catalog: ${var.catalog_name}
+      schema: ${var.lakeflow_schema_prefix}raw
+      serverless: true
+      channel: PREVIEW
+      configuration:
+        catalog_name: ${var.catalog_name}
+        schema_prefix: ${var.lakeflow_schema_prefix}
+      ingestion_definition:
+        connection_name: adventureworks
+        objects:
+          - table:
+              source_catalog: AdventureWorks
+              source_schema: SalesLT
+              source_table: SalesOrderHeader
+              table_configuration:
+                primary_keys:
+                  - SalesOrderID
+                query_based_connector_config:
+                  cursor_columns:
+                    - ModifiedDate
+              destination_catalog: ${var.catalog_name}
+              destination_schema: ${var.lakeflow_schema_prefix}raw
+              destination_table: Sales_Order_SalesOrderHeader

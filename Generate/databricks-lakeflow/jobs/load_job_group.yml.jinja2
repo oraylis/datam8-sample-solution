@@ -1,0 +1,87 @@
+resources:
+  jobs:
+    {{ data.job_key }}:
+      name: ${var.job_name_prefix}{{ data.job_name }}
+      max_concurrent_runs: 1
+      parameters:
+        - name: environment
+          default: ${var.environment}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: schema_prefix
+          default: ${var.schema_prefix}
+        - name: job_name
+          default: "{{ '{{job.name}}' }}"
+        - name: job_run_id
+          default: "{{ '{{job.run_id}}' }}"
+{%- if data.job_clusters %}
+      job_clusters:
+{%- for cluster in data.job_clusters %}
+        - job_cluster_key: {{ cluster.job_cluster_key }}
+          new_cluster: ${var.{{ cluster.job_cluster_key }}}
+{%- endfor %}
+{%- endif %}
+{% if data.schedule %}
+      schedule:
+        quartz_cron_expression: {{ data.schedule.cron_expression }}
+        timezone_id: {{ data.schedule.timezone_id }}
+        pause_status: ${var.unpause_schedules}
+{% endif %}
+      tasks:
+        - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.root_path}/files/utils/Start_Load
+            source: WORKSPACE
+{%- if data.default_job_cluster_key %}
+          job_cluster_key: {{ data.default_job_cluster_key }}
+{%- endif %}
+{% for task in data.external_tasks %}
+        - task_key: {{ task.task_key }}
+{%- if task.depends_on %}
+          depends_on:
+{%- for dependency in task.depends_on %}
+            - task_key: {{ dependency }}
+{%- endfor %}
+{%- endif %}
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/{{ task.notebook_path }}
+            source: WORKSPACE
+{%- if task.libraries %}
+          libraries:
+{%- for library in task.libraries %}
+            - whl: {{ library.whl }}
+{%- endfor %}
+{%- endif %}
+{%- if task.resolved_job_cluster_key %}
+          job_cluster_key: {{ task.resolved_job_cluster_key }}
+{%- endif %}
+{% endfor %}
+{% for task in data.entity_tasks %}
+        - task_key: {{ task.task_key }}
+{%- if task.depends_on %}
+          depends_on:
+{%- for dependency in task.depends_on %}
+            - task_key: {{ dependency }}
+{%- endfor %}
+{%- endif %}
+          notebook_task:
+            notebook_path: ${workspace.root_path}/${var.notebook_path}/{{ task.notebook_path }}
+            source: WORKSPACE
+{%- if task.resolved_job_cluster_key %}
+          job_cluster_key: {{ task.resolved_job_cluster_key }}
+{%- endif %}
+{% endfor %}
+{% if data.complete_dependencies %}
+        - task_key: Complete_Load
+          depends_on:
+{%- for dependency in data.complete_dependencies %}
+            - task_key: {{ dependency }}
+{%- endfor %}
+          run_if: ALL_DONE
+          notebook_task:
+            notebook_path: ${workspace.root_path}/files/utils/Complete_Load
+            source: WORKSPACE
+{%- if data.default_job_cluster_key %}
+          job_cluster_key: {{ data.default_job_cluster_key }}
+{%- endif %}
+{% endif %}
