@@ -1,7 +1,0 @@
-resources:
-  schemas:{% for schema in data.schemas %}
-    {{ schema.resource_key }}:
-      name: {{ schema.schema_name }}
-      catalog_name: ${var.catalog_name}{% if schema.comment %}
-      comment: {{ schema.comment | tojson }}{% endif %}
-{% endfor %}
