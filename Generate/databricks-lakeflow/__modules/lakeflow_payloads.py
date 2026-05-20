@@ -95,11 +95,8 @@ def parse_source_table(source_location: str) -> tuple[str, str]:
     raise ValueError(f"Unsupported source table reference: {source_location}")
 
 
-def qualify_source_query(query: str, catalog: str) -> str:
-    def replace(match: re.Match[str]) -> str:
-        return f"[{catalog}].[{match.group(1)}].[{match.group(2)}]"
-
-    return re.sub(r"\[([^\]]+)\]\.\[([^\]]+)\]", replace, query)
+def remove_database_qualifier(query: str) -> str:
+    return re.sub(r"\[[^\]]+\]\.\[([^\]]+)\]\.\[([^\]]+)\]", r"[\1].[\2]", query)
 
 
 def source_catalog(source: ExternalSource) -> str:
@@ -300,14 +297,18 @@ class LakeflowExternalNotebookPayload(BasePayload):
     @property
     def source_query(self) -> str:
         if self.mode == "query":
-            return qualify_source_query(self.source_location, source_catalog(self.external_source))
+            return remove_database_qualifier(self.source_location)
         schema, table = parse_source_table(self.source_location)
-        return f"SELECT * FROM [{source_catalog(self.external_source)}].[{schema}].[{table}]"
+        return f"SELECT * FROM [{schema}].[{table}]"
 
     @property
     def remote_query_sql(self) -> str:
         escaped_query = self.source_query.replace("'", "''")
-        return f"SELECT * FROM remote_query('{self.connection_name}', query => '{escaped_query}')"
+        escaped_database = source_catalog(self.external_source).replace("'", "''")
+        return (
+            f"SELECT * FROM remote_query('{self.connection_name}', "
+            f"database => '{escaped_database}', query => '{escaped_query}')"
+        )
 
     @property
     def select_expressions(self) -> list[str]:
