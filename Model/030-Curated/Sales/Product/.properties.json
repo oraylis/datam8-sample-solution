@@ -1,0 +1,13 @@
+{
+  "type": "folders",
+  "folders": [
+    {
+      "id": 312,
+      "name": "Product",
+      "path": "030-Curated/Sales/Product",
+      "dataProduct": "Sales",
+      "dataModule": "Product",
+      "properties": []
+    }
+  ]
+}

@@ -1,7 +1,8 @@
 from pyspark.sql import functions as F
 
-customer = spark.table("datam8_campus_dev_fka.stage.sales_customer_customer")
-customeraddress = spark.table("datam8_campus_dev_fka.stage.sales_customer_customeraddress")
+stage_schema = f"{schema_prefix}stage" if schema_prefix else "stage"
+customer = spark.table(f"{catalog_name}.{stage_schema}.sales_customer_customer")
+customeraddress = spark.table(f"{catalog_name}.{stage_schema}.sales_customer_customeraddress")
 
 business_function = (
     customer.alias("c")
@@ -13,7 +14,6 @@ business_function = (
             F.col("ca.AddressType") == "Main Office"
         ]
     )
-    .filter("c.__IsCurrent = True")
     .select(
         F.col("c.KundenID").alias("KundenNummer"),
         "c.Vorname",
@@ -23,4 +23,5 @@ business_function = (
     .fillna({
         "AddressType": "N/A"
     })
+    .distinct()
 )

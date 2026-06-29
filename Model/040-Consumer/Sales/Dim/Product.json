@@ -1,0 +1,33 @@
+{
+  "id": 4004,
+  "name": "Product",
+  "displayName": "Product",
+  "description": "Product dimension exposed for reporting",
+  "attributes": [
+    {"ordinalNumber": 1, "name": "Product SID", "attributeType": "SID", "dataType": {"type": "long", "nullable": false}, "isBusinessKey": true, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 2, "name": "Product", "attributeType": "Name", "dataType": {"type": "string", "nullable": false}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 3, "name": "Product Number", "attributeType": "ID", "dataType": {"type": "string", "nullable": false}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 4, "name": "Category", "attributeType": "Name", "dataType": {"type": "string", "nullable": true}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 5, "name": "Parent Category", "attributeType": "Name", "dataType": {"type": "string", "nullable": true}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 6, "name": "Model", "attributeType": "Name", "dataType": {"type": "string", "nullable": true}, "dateAdded": "2025-01-01T01:01:01Z"}
+  ],
+  "properties": [
+    {"property": "jobs", "value": "daily"},
+    {"property": "write_mode", "value": "merge"}
+  ],
+  "sources": [
+    {
+      "sourceLocation": 3003,
+      "mapping": [
+        {"sourceName": "ProductSID", "targetName": "Product SID", "sourceDataType": {"type": "long", "nullable": false}},
+        {"sourceName": "ProductName", "targetName": "Product", "sourceDataType": {"type": "string", "nullable": false}},
+        {"sourceName": "ProductNumber", "targetName": "Product Number", "sourceDataType": {"type": "string", "nullable": false}},
+        {"sourceName": "ProductCategoryName", "targetName": "Category", "sourceDataType": {"type": "string", "nullable": true}},
+        {"sourceName": "ParentProductCategoryName", "targetName": "Parent Category", "sourceDataType": {"type": "string", "nullable": true}},
+        {"sourceName": "ProductModelName", "targetName": "Model", "sourceDataType": {"type": "string", "nullable": true}}
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

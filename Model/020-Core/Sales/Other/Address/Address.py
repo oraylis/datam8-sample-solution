@@ -1,4 +1,6 @@
-business_function = spark.sql("""
+stage_schema = f"{schema_prefix}stage" if schema_prefix else "stage"
+
+business_function = spark.sql(f"""
     SELECT
     concat(AddressID) AS _AddressBK,
     AddressID,
@@ -10,5 +12,5 @@ business_function = spark.sql("""
     StateProvince AS StateProvinceName
     
     FROM
-    stage.sales_other_address
+    {catalog_name}.{stage_schema}.sales_other_address
 """)

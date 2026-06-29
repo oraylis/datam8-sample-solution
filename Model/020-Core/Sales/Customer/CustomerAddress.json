@@ -21,22 +21,6 @@
     },
     {
       "ordinalNumber": 2,
-      "name": "_CustomerAddressSID",
-      "attributeType": "SID",
-      "dataType": {
-        "type": "long",
-        "nullable": false
-      },
-      "dateAdded": "2025-01-01T01:01:01Z",
-      "properties": [
-        {
-          "property": "attribute_type",
-          "value": "SK"
-        }
-      ]
-    },
-    {
-      "ordinalNumber": 3,
       "name": "AddressID",
       "attributeType": "ID",
       "dataType": {
@@ -47,7 +31,7 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
-      "ordinalNumber": 4,
+      "ordinalNumber": 3,
       "name": "CustomerID",
       "attributeType": "ID",
       "dataType": {
@@ -61,7 +45,7 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
-      "ordinalNumber": 5,
+      "ordinalNumber": 4,
       "name": "AddressType",
       "attributeType": "Text",
       "dataType": {

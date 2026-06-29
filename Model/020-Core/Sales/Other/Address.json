@@ -19,23 +19,6 @@
     },
     {
       "ordinalNumber": 2,
-      "name": "_AddressSID",
-      "attributeType": "SID",
-      "dataType": {
-        "type": "long",
-        "nullable": false
-      },
-      "refactorNames": [],
-      "dateAdded": "2025-01-01T01:01:01Z",
-      "properties": [
-        {
-          "property": "attribute_type",
-          "value": "SK"
-        }
-      ]
-    },
-    {
-      "ordinalNumber": 3,
       "name": "AddressID",
       "attributeType": "ID",
       "dataType": {
@@ -47,7 +30,7 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
-      "ordinalNumber": 4,
+      "ordinalNumber": 3,
       "name": "AddressLine1",
       "attributeType": "Text",
       "dataType": {
@@ -62,7 +45,7 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
-      "ordinalNumber": 5,
+      "ordinalNumber": 4,
       "name": "AddressLine2",
       "attributeType": "Text",
       "dataType": {
@@ -74,7 +57,7 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
-      "ordinalNumber": 6,
+      "ordinalNumber": 5,
       "name": "CityName",
       "attributeType": "Name",
       "dataType": {
@@ -87,7 +70,7 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
-      "ordinalNumber": 7,
+      "ordinalNumber": 6,
       "name": "CountryRegionName",
       "attributeType": "Name",
       "dataType": {
@@ -100,7 +83,7 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
-      "ordinalNumber": 8,
+      "ordinalNumber": 7,
       "name": "PostalCode",
       "attributeType": "Text",
       "dataType": {
@@ -111,7 +94,7 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
-      "ordinalNumber": 9,
+      "ordinalNumber": 8,
       "name": "StateProvinceName",
       "attributeType": "Name",
       "dataType": {
@@ -140,7 +123,7 @@
   ],
   "sources": [
     {
-      "sourceLocation": 1000
+      "sourceLocation": 1002
     }
   ],
   "transformations": [

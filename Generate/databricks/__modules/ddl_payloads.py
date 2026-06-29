@@ -120,13 +120,17 @@ class DdlColumn:
             metadata["comment"] = self.attribute.description
         if self.attribute.isBusinessKey:
             metadata["business_key"] = True
+        if self.is_surrogate_key:
+            metadata["surrogate_key"] = True
         return repr(metadata) if metadata else ""
 
     @property
     def sql_definition(self) -> str:
         """Return the complete SQL fragment for this one column."""
+        if self.is_surrogate_key:
+            return f"`{self.name}` {self.spark_data_type_expression}{self.spark_identity}{self.spark_comment}"
         nullable = "" if self.attribute.dataType.nullable else " NOT NULL"
-        return f"`{self.name}` {self.spark_data_type_expression}{nullable}{self.spark_comment}"
+        return f"`{self.name}` {self.spark_data_type_expression}{self.spark_identity}{nullable}{self.spark_comment}"
 
 
 @dataclasses.dataclass
@@ -561,5 +565,3 @@ class DdlForeignKey:
     remote_columns: list[str]
     remote_table: str
     remote_zone: str
-
-

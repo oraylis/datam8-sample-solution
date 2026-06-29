@@ -1,0 +1,40 @@
+{
+  "id": 2003,
+  "name": "Product",
+  "displayName": "Product",
+  "description": "Reusable core product with category, model and English description logic",
+  "attributes": [
+    {"ordinalNumber": 1, "name": "ProductID", "attributeType": "ID", "dataType": {"type": "int", "nullable": false}, "isBusinessKey": true, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 2, "name": "ProductName", "attributeType": "Name", "dataType": {"type": "string", "nullable": false}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 3, "name": "ProductNumber", "attributeType": "ID", "dataType": {"type": "string", "nullable": false}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 4, "name": "Color", "attributeType": "Text", "dataType": {"type": "string", "nullable": true}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 5, "name": "Size", "attributeType": "Text", "dataType": {"type": "string", "nullable": true}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 6, "name": "StandardCost", "attributeType": "Currency", "dataType": {"type": "double", "nullable": false}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 7, "name": "ListPrice", "attributeType": "Currency", "dataType": {"type": "double", "nullable": false}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 8, "name": "ProductCategoryID", "attributeType": "ID", "dataType": {"type": "int", "nullable": true}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 9, "name": "ProductCategoryName", "attributeType": "Name", "dataType": {"type": "string", "nullable": true}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 10, "name": "ParentProductCategoryID", "attributeType": "ID", "dataType": {"type": "int", "nullable": true}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 11, "name": "ParentProductCategoryName", "attributeType": "Name", "dataType": {"type": "string", "nullable": true}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 12, "name": "ProductModelID", "attributeType": "ID", "dataType": {"type": "int", "nullable": true}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 13, "name": "ProductModelName", "attributeType": "Name", "dataType": {"type": "string", "nullable": true}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 14, "name": "ProductDescription", "attributeType": "Description", "dataType": {"type": "string", "nullable": true}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 15, "name": "SellStartDate", "attributeType": "CreationDate", "dataType": {"type": "datetime", "nullable": false}, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 16, "name": "SellEndDate", "attributeType": "Date", "dataType": {"type": "datetime", "nullable": true}, "dateAdded": "2025-01-01T01:01:01Z"}
+  ],
+  "properties": [
+    {"property": "jobs", "value": "daily"},
+    {"property": "write_mode", "value": "merge"},
+    {"property": "data_retention", "value": "7_days"}
+  ],
+  "sources": [
+    {"sourceLocation": 1003},
+    {"sourceLocation": 1004},
+    {"sourceLocation": 1005},
+    {"sourceLocation": 1006},
+    {"sourceLocation": 1007}
+  ],
+  "transformations": [
+    {"stepNo": 1, "kind": "function", "name": "transform_product", "function": {"source": "Product.py"}}
+  ],
+  "relationships": []
+}

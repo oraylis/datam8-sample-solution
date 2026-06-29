@@ -1,0 +1,32 @@
+{
+  "id": 3003,
+  "name": "DimProduct",
+  "displayName": "Product",
+  "description": "Product dimension with category and model hierarchy",
+  "attributes": [
+    {"ordinalNumber": 1, "name": "ProductSID", "attributeType": "SID", "dataType": {"type": "long", "nullable": false}, "properties": [{"property": "attribute_type", "value": "SK"}], "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 2, "name": "ProductID", "attributeType": "ID", "dataType": {"type": "int", "nullable": false}, "isBusinessKey": true, "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 3, "name": "ProductName", "attributeType": "Name", "dataType": {"type": "string", "nullable": false}, "history": "SCD2", "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 4, "name": "ProductNumber", "attributeType": "ID", "dataType": {"type": "string", "nullable": false}, "history": "SCD1", "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 5, "name": "Color", "attributeType": "Text", "dataType": {"type": "string", "nullable": true}, "history": "SCD1", "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 6, "name": "Size", "attributeType": "Text", "dataType": {"type": "string", "nullable": true}, "history": "SCD1", "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 7, "name": "ProductCategoryName", "attributeType": "Name", "dataType": {"type": "string", "nullable": true}, "history": "SCD2", "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 8, "name": "ParentProductCategoryName", "attributeType": "Name", "dataType": {"type": "string", "nullable": true}, "history": "SCD2", "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 9, "name": "ProductModelName", "attributeType": "Name", "dataType": {"type": "string", "nullable": true}, "history": "SCD2", "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 10, "name": "ProductDescription", "attributeType": "Description", "dataType": {"type": "string", "nullable": true}, "history": "SCD1", "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 11, "name": "ListPrice", "attributeType": "Currency", "dataType": {"type": "double", "nullable": false}, "history": "SCD2", "dateAdded": "2025-01-01T01:01:01Z"},
+    {"ordinalNumber": 12, "name": "StandardCost", "attributeType": "Currency", "dataType": {"type": "double", "nullable": false}, "history": "SCD2", "dateAdded": "2025-01-01T01:01:01Z"}
+  ],
+  "properties": [
+    {"property": "jobs", "value": "daily"},
+    {"property": "write_mode", "value": "merge"},
+    {"property": "data_retention", "value": "7_days"}
+  ],
+  "sources": [
+    {"sourceLocation": 2003}
+  ],
+  "transformations": [
+    {"stepNo": 1, "kind": "function", "name": "transform_product_dimension", "function": {"source": "DimProduct.py"}}
+  ],
+  "relationships": []
+}

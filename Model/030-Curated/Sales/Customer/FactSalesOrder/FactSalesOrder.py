@@ -1,13 +1,17 @@
-# Databricks notebook source
-business_function = spark.sql("""
-    SELECT
-        int(date_format(salesheader.ShipDate, 'yyyyMMdd')) AS ShipDateID,
-        salesheader.CustomerID,
-        CAST(SUM(salesheader.TotalDue) AS double) AS TotalCosts,
-        CAST(SUM(salesorder.LineTotal) AS double) AS OrderQuantity
+from pyspark.sql import functions as F
 
-    FROM stage.sales_order_salesorderdetail AS salesorder
-    JOIN stage.sales_order_salesorderheader AS salesheader ON salesorder.SalesOrderID = salesheader.SalesOrderID
-                              
-    GROUP BY ALL
-""")
+core_schema = f"{schema_prefix}core" if schema_prefix else "core"
+sales_order_line = spark.table(f"{catalog_name}.{core_schema}.sales_order_salesorderline")
+
+business_function = (
+    sales_order_line
+    .select(
+        F.col("CustomerID").alias("CustomerSID"),
+        F.col("ProductID").alias("ProductSID"),
+        F.coalesce(F.col("ShipDateID"), F.lit(-1)).alias("ShipDateID"),
+        F.col("SalesOrderLineID"),
+        F.col("OrderQuantity"),
+        F.col("LineTotal"),
+        F.col("TotalDue").alias("TotalCosts"),
+    )
+)

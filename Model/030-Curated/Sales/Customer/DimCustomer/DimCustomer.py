@@ -3,9 +3,11 @@ from pyspark.sql import functions as F
 
 # COMMAND ----------
 
-customer = spark.table("core.sales_customer_customer")
-customer_address = spark.table("core.sales_customer_customeraddress")
-address = spark.table("core.sales_other_address")
+core_schema = f"{schema_prefix}core" if schema_prefix else "core"
+
+customer = spark.table(f"{catalog_name}.{core_schema}.sales_customer_customer")
+customer_address = spark.table(f"{catalog_name}.{core_schema}.sales_customer_customeraddress")
+address = spark.table(f"{catalog_name}.{core_schema}.sales_other_address")
 
 # COMMAND ----------
 

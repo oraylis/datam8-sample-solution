@@ -13,6 +13,7 @@ from payload_common import (
     InternalSource,
     ModelEntityPayload,
     get_external_zone,
+    get_model_entity_by_id,
     get_one,
     zone_folder_name,
 )
@@ -359,15 +360,71 @@ class DmlPayload(ModelEntityPayload):
         """Return source references; currently kept empty for template compatibility."""
         return []
 
+    def _dimension_sid_column(self, dimension: ModelEntity) -> str | None:
+        """Return the surrogate key column exposed by a dimension entity."""
+        for attr in dimension.attributes:
+            if any(
+                ref.property.lower() == "attribute_type" and ref.value.lower() == "sk"
+                for ref in attr.properties or []
+            ):
+                return attr.name
+        for attr in dimension.attributes:
+            if str(attr.attributeType).lower() == "sid":
+                return attr.name
+        return None
+
+    def _dimension_business_keys(self, dimension: ModelEntity) -> list[str]:
+        """Return dimension business keys used to resolve surrogate-key lookups."""
+        return [attr.name for attr in dimension.attributes if attr.isBusinessKey]
+
     @property
     def has_lookup_dimensions(self) -> bool:
         """Return whether dimension lookup generation is enabled."""
-        return False
+        return bool(self.dimension_lookups)
 
     @property
     def dimension_lookups(self) -> list[Any]:
-        """Return dimension lookup definitions; currently none are generated."""
-        return []
+        """Return dimension lookup definitions derived from model relationships."""
+        lookups: list[dict[str, Any]] = []
+        for index, rel in enumerate(self.entity.relationships or [], start=1):
+            try:
+                dimension_wrapper = get_model_entity_by_id(self.model, rel.targetLocation)
+            except KeyError:
+                continue
+            dimension = dimension_wrapper.entity
+            dimension_sid_column = self._dimension_sid_column(dimension)
+            if not dimension_sid_column:
+                continue
+            relationship_attributes = list(rel.attributes or [])
+            if not relationship_attributes or any(
+                attr.targetName != dimension_sid_column for attr in relationship_attributes
+            ):
+                continue
+            dimension_business_keys = self._dimension_business_keys(dimension)
+            if len(dimension_business_keys) < len(relationship_attributes):
+                continue
+            join_columns = [
+                {
+                    "fact_column": attr.sourceName,
+                    "dimension_column": dimension_business_keys[position],
+                }
+                for position, attr in enumerate(relationship_attributes)
+            ]
+            if not join_columns:
+                continue
+            sid_column = join_columns[0]["fact_column"]
+            dimension_payload = ModelEntityPayload(dimension_wrapper, self.model)
+            lookups.append(
+                {
+                    "sid_column": sid_column,
+                    "dimension_alias": f"dim_{index}",
+                    "dimension_zone": dimension_payload.zone,
+                    "dimension_full_table_name": dimension_payload.full_table_name,
+                    "dimension_sid_column": dimension_sid_column,
+                    "join_columns": join_columns,
+                }
+            )
+        return lookups
 
     @property
     def insert_assignments(self) -> list[dict[str, str]]:
@@ -660,5 +717,3 @@ class DmlFunctionPayload(ModelEntityPayload):
     def content(self) -> str:
         """Return the original Python script content."""
         return self.transform["script_content"]
-
-

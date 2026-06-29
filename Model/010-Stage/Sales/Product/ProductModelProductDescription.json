@@ -1,0 +1,125 @@
+{
+  "id": 1007,
+  "name": "ProductModelProductDescription",
+  "displayName": "ProductModelProductDescription",
+  "description": "Product model to product description bridge",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "ProductModelID",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateAdded": "2026-05-30T13:57:10.682056Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "ProductDescriptionID",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateAdded": "2026-05-30T13:57:10.682056Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "Culture",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "dateAdded": "2026-05-30T13:57:10.682056Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "rowguid",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "dateAdded": "2026-05-30T13:57:10.682056Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "ModifiedDate",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "dateAdded": "2026-05-30T13:57:10.682056Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "merge"
+    },
+    {
+      "property": "data_retention",
+      "value": "7_days"
+    }
+  ],
+  "sources": [
+    {
+      "dataSource": "AdventureWorks",
+      "sourceLocation": "[SalesLT].[ProductModelProductDescription]",
+      "mapping": [
+        {
+          "sourceName": "ProductModelID",
+          "targetName": "ProductModelID",
+          "sourceDataType": {
+            "type": "int",
+            "nullable": false,
+            "precision": 10
+          }
+        },
+        {
+          "sourceName": "ProductDescriptionID",
+          "targetName": "ProductDescriptionID",
+          "sourceDataType": {
+            "type": "int",
+            "nullable": false,
+            "precision": 10
+          }
+        },
+        {
+          "sourceName": "Culture",
+          "targetName": "Culture",
+          "sourceDataType": {
+            "type": "nchar",
+            "nullable": false,
+            "charLen": 6
+          }
+        },
+        {
+          "sourceName": "rowguid",
+          "targetName": "rowguid",
+          "sourceDataType": {
+            "type": "uniqueidentifier",
+            "nullable": false
+          }
+        },
+        {
+          "sourceName": "ModifiedDate",
+          "targetName": "ModifiedDate",
+          "sourceDataType": {
+            "type": "datetime",
+            "nullable": false
+          }
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

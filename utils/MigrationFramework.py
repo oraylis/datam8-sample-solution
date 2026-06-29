@@ -750,6 +750,17 @@ class Table(object):
             len(target_data_layout) > 0
             and set(existing_data_layout) != set(target_data_layout)
         )
+        target_surrogate_key_columns = {
+            field.name
+            for field in schema
+            if (field.metadata or {}).get("surrogate_key")
+        }
+        existing_identity_columns = {
+            field.name
+            for field in self.schema
+            if any(str(key).startswith("delta.identity") for key in (field.metadata or {}).keys())
+        }
+        has_changed_surrogate_key_identity = len(target_surrogate_key_columns - existing_identity_columns) > 0
 
         if any([
             has_deleted_columns,
@@ -757,7 +768,8 @@ class Table(object):
             has_changed_columns_datatype,
             has_renamed_columns,
             has_changed_partition_key,
-            has_changed_data_layout
+            has_changed_data_layout,
+            has_changed_surrogate_key_identity
         ]):
 
             # Archive the old table

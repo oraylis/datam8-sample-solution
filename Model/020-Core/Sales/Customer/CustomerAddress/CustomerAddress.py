@@ -1,9 +1,11 @@
-business_function = spark.sql("""
+stage_schema = f"{schema_prefix}stage" if schema_prefix else "stage"
+
+business_function = spark.sql(f"""
     SELECT
     concat(CustomerID, AddressID) AS _CustomerAddressBK,
     AddressID,
     CustomerID,
     AddressType
     FROM
-    datam8_campus_dev_fka.stage.sales_customer_customeraddress
+    {catalog_name}.{stage_schema}.sales_customer_customeraddress
 """)

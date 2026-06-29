@@ -190,6 +190,22 @@ target_table = DeltaTable.forName(spark, table_name_ref)
 current_snapshot_df = (
     spark.table(table_name_ref)
     .where(F.col("__IsCurrent").eqNullSafe(True))
+    .withColumn(
+        "__dm8_current_rank",
+        F.row_number().over(
+            Window.partitionBy(
+                {%- for column in merge_cfg.business_keys %}
+                F.col("`{{ column }}`"){% if not loop.last %},
+                {% endif %}
+                {%- endfor %}
+            ).orderBy(
+                F.col("__ValidFrom").desc(),
+                F.col("__UpdateTimestampUTC").desc(),
+            )
+        ),
+    )
+    .where(F.col("__dm8_current_rank") == 1)
+    .drop("__dm8_current_rank")
 )
 
 staged_base = (
@@ -257,7 +273,7 @@ merge_builder = (
     target_table.alias("tgt")
     .merge(
         staged_union.alias("src"),
-        "({{ merge_cfg.merge_condition | safe }}) AND src.__merge_action = 'update'",
+        "({{ merge_cfg.merge_condition | safe }}) AND tgt.__IsCurrent = true AND src.__merge_action = 'update'",
     )
     .whenMatchedUpdate(
         condition="src.scd2_changed",
@@ -401,7 +417,7 @@ final_df = functions["{{ data.final_function_key }}"]["df"]
 {%- set join_dimension_columns = lookup.join_columns | map(attribute='dimension_column') | list %}
 {%- set dimension_sid_in_join = lookup.dimension_sid_column in join_dimension_columns %}
 dimension_df_{{ loop.index }} = (
-    spark.table(f"{catalog.name}.{{ lookup.dimension_zone }}.{{ lookup.dimension_full_table_name }}")
+    spark.table(f"{catalog.name}.{schema_prefix}{{ lookup.dimension_zone }}.{{ lookup.dimension_full_table_name }}")
     .select(
         {%- for join_column in lookup.join_columns %}
         F.col("{{ join_column.dimension_column }}").alias("{{ lookup.dimension_alias }}__{{ join_column.dimension_column }}"){% if not loop.last or (not dimension_sid_in_join) %}, {% endif %}
@@ -494,6 +510,22 @@ target_table = DeltaTable.forName(spark, table_name_ref)
 current_snapshot_df = (
     spark.table(table_name_ref)
     .where(F.col("__IsCurrent").eqNullSafe(True))
+    .withColumn(
+        "__dm8_current_rank",
+        F.row_number().over(
+            Window.partitionBy(
+                {%- for column in merge_cfg.business_keys %}
+                F.col("`{{ column }}`"){% if not loop.last %},
+                {% endif %}
+                {%- endfor %}
+            ).orderBy(
+                F.col("__ValidFrom").desc(),
+                F.col("__UpdateTimestampUTC").desc(),
+            )
+        ),
+    )
+    .where(F.col("__dm8_current_rank") == 1)
+    .drop("__dm8_current_rank")
 )
 
 staged_base = (
@@ -561,7 +593,7 @@ merge_builder = (
     target_table.alias("tgt")
     .merge(
         staged_union.alias("src"),
-        "({{ merge_cfg.merge_condition | safe }}) AND src.__merge_action = 'update'",
+        "({{ merge_cfg.merge_condition | safe }}) AND tgt.__IsCurrent = true AND src.__merge_action = 'update'",
     )
     .whenMatchedUpdate(
         condition="src.scd2_changed",

@@ -2,20 +2,62 @@
   "id": 4002,
   "name": "Measure",
   "displayName": "Measure",
-  "description": "",
+  "description": "Sales measures exposed for reporting",
   "attributes": [
     {
       "ordinalNumber": 1,
-      "name": "Total Costs (EUR)",
-      "description": "",
+      "name": "Sales Amount",
+      "description": "Total sales line amount",
       "attributeType": "Currency",
       "dataType": {
-        "type": "long",
+        "type": "double",
+        "nullable": false
+      },
+      "expression": "SUM('Sales Order'[Line Total])",
+      "expressionLanguage": "dax",
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "Total Costs (EUR)",
+      "description": "Total order cost amount",
+      "attributeType": "Currency",
+      "dataType": {
+        "type": "double",
         "nullable": false
       },
       "expression": "SUM('Sales Order'[Total Costs])",
       "expressionLanguage": "dax",
-      "dateModified": "2025-07-23T01:01:01Z",
+      "dateModified": "2026-05-30T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "Order Quantity",
+      "description": "Total ordered quantity",
+      "attributeType": "Quantity",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "expression": "SUM('Sales Order'[Order Quantity])",
+      "expressionLanguage": "dax",
+      "dateModified": "2026-05-30T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "Average Order Value",
+      "description": "Average line sales amount",
+      "attributeType": "Currency",
+      "dataType": {
+        "type": "double",
+        "nullable": false
+      },
+      "expression": "DIVIDE([Sales Amount], DISTINCTCOUNT('Sales Order'[Sales Order Line ID]))",
+      "expressionLanguage": "dax",
+      "dateModified": "2026-05-30T01:01:01Z",
       "dateAdded": "2025-01-01T01:01:01Z"
     }
   ],

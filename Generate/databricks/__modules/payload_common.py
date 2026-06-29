@@ -234,8 +234,7 @@ def default_cluster_variable(model: Model) -> str:
     for pv in get_many(model.propertyValues, "cluster/"):
         if pv.entity.default:
             return f"cluster_{create_resource_slug_from_name(pv.entity.name)}"
-    clusters = get_many(model.propertyValues, "cluster/")
-    return f"cluster_{create_resource_slug_from_name(clusters[0].entity.name)}" if clusters else ""
+    return ""
 
 
 def job_property(wrapper: EntityWrapper[Any], model: Model | None = None) -> str:

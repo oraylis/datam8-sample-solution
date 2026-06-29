@@ -47,3 +47,10 @@ business_function = result_df.select(
     "CalendarYear",
     "MonthName"
 )
+
+unknown_date = spark.createDataFrame(
+    [(-1, "1900-01-01", "Unknown", "Unknown")],
+    "DateID INT, Date STRING, CalendarYear STRING, MonthName STRING",
+).withColumn("Date", col("Date").cast("date"))
+
+business_function = unknown_date.unionByName(business_function)

@@ -18,6 +18,18 @@
     },
     {
       "ordinalNumber": 2,
+      "name": "Product SID",
+      "description": "Product surrogate key",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "dateModified": "2026-05-30T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 3,
       "name": "Ship Date ID",
       "description": "Ship date as integer",
       "attributeType": "ID",
@@ -29,7 +41,43 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
-      "ordinalNumber": 3,
+      "ordinalNumber": 4,
+      "name": "Sales Order Line ID",
+      "description": "Sales order line identifier",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "dateModified": "2026-05-30T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "Order Quantity",
+      "description": "Quantity ordered",
+      "attributeType": "Quantity",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateModified": "2026-05-30T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "Line Total",
+      "description": "Line sales amount",
+      "attributeType": "Currency",
+      "dataType": {
+        "type": "double",
+        "nullable": false
+      },
+      "dateModified": "2026-05-30T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 7,
       "name": "Total Costs",
       "description": "Costs of sales orders",
       "attributeType": "Currency",
@@ -64,11 +112,43 @@
           }
         },
         {
+          "sourceName": "ProductSID",
+          "targetName": "Product SID",
+          "sourceDataType": {
+            "type": "long",
+            "nullable": false
+          }
+        },
+        {
           "sourceName": "ShipDateID",
           "targetName": "Ship Date ID",
           "sourceDataType": {
             "type": "int",
             "nullable": true
+          }
+        },
+        {
+          "sourceName": "SalesOrderLineID",
+          "targetName": "Sales Order Line ID",
+          "sourceDataType": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        {
+          "sourceName": "OrderQuantity",
+          "targetName": "Order Quantity",
+          "sourceDataType": {
+            "type": "int",
+            "nullable": false
+          }
+        },
+        {
+          "sourceName": "LineTotal",
+          "targetName": "Line Total",
+          "sourceDataType": {
+            "type": "double",
+            "nullable": false
           }
         },
         {
@@ -83,6 +163,9 @@
     },
     {
       "sourceLocation": 4000
+    },
+    {
+      "sourceLocation": 4004
     },
     {
       "sourceLocation": 4003,
@@ -106,6 +189,15 @@
         {
           "sourceName": "Customer SID",
           "targetName": "Customer SID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 4004,
+      "attributes": [
+        {
+          "sourceName": "Product SID",
+          "targetName": "Product SID"
         }
       ]
     },

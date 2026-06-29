@@ -18,6 +18,18 @@
     },
     {
       "ordinalNumber": 2,
+      "name": "ProductSID",
+      "description": "Product surrogate key",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "dateModified": "2026-05-30T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 3,
       "name": "ShipDateID",
       "description": "Ship date as integer",
       "attributeType": "ID",
@@ -29,7 +41,46 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     },
     {
-      "ordinalNumber": 3,
+      "ordinalNumber": 4,
+      "name": "SalesOrderLineID",
+      "description": "Sales order line business key",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "dateModified": "2026-05-30T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "OrderQuantity",
+      "description": "Quantity ordered",
+      "attributeType": "Quantity",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "history": "SCD1",
+      "dateModified": "2026-05-30T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "LineTotal",
+      "description": "Line sales amount",
+      "attributeType": "Currency",
+      "dataType": {
+        "type": "double",
+        "nullable": false
+      },
+      "history": "SCD1",
+      "dateModified": "2026-05-30T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 7,
       "name": "TotalCosts",
       "description": "Costs of sales orders",
       "attributeType": "Currency",
@@ -54,10 +105,16 @@
   ],
   "sources": [
     {
-      "sourceLocation": 1008
+      "sourceLocation": 2004
     },
     {
-      "sourceLocation": 1009
+      "sourceLocation": 3000
+    },
+    {
+      "sourceLocation": 3002
+    },
+    {
+      "sourceLocation": 3003
     }
   ],
   "transformations": [
@@ -82,6 +139,15 @@
         {
           "sourceName": "CustomerSID",
           "targetName": "CustomerSID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3003,
+      "attributes": [
+        {
+          "sourceName": "ProductSID",
+          "targetName": "ProductSID"
         }
       ]
     },
