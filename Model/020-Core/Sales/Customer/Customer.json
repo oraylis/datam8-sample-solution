@@ -104,7 +104,7 @@
       "kind": "function",
       "name": "transform_first_step",
       "function": {
-        "source": "CustomerNew.py"
+        "source": "Customer/CustomerNew.py"
       }
     }
   ],
