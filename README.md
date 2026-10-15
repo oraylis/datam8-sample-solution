@@ -3,6 +3,11 @@
 This repository supplies a v2 metadata model, Python payloads and Jinja templates
 for Databricks, Power BI and generated model documentation.
 
+Use **DataM8 app 2.0.0** to create and edit the model and generate output with its
+bundled generator. Alternatively, use **DataM8 CLI 2.0.0** for validation and
+generation from the command line. Both routes are covered in
+[getting started](docs/getting-started.md).
+
 - [Local getting started](docs/getting-started.md)
 - [Documentation index](docs/index.md)
 - [Template and payload development](docs/template-development.md)
@@ -10,13 +15,9 @@ for Databricks, Power BI and generated model documentation.
 - [Optional deployment preparation](docs/quickstart.md)
 - [Central illustrated handbook](https://github.com/oraylis/datam8/blob/codex/documentation-v2/docs/user-guide/README.md)
 
-This documentation branch starts from main commit
-`68001a2dcaa0b2931ee341f3527b96266a6e46da`, whose descriptor contains three targets.
-The central screenshots use a different pinned four-target snapshot. Read
-[compatibility](https://github.com/oraylis/datam8/blob/codex/documentation-v2/docs/compatibility.md) before mixing paths or versions.
-
-Work on a complete disposable copy. Do not contact the sample cloud host for a
-routine exercise. Keep secrets out of committed JSON and generated output.
+The solution includes three targets: **databricks**, **powerbi** and **docs**.
+Start on a complete working copy and keep secrets out of committed JSON and
+generated output. Local model editing and docs generation need no cloud account.
 
 ## Checks
 

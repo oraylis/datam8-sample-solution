@@ -1,36 +1,86 @@
-# Local Getting Started
+# Getting Started with DataM8 2.0.0
 
-Use a complete copy of sample commit `68001a2dcaa0b2931ee341f3527b96266a6e46da`.
-Base, Model, Plugins, Generate and supporting files must accompany the `.dm8s`.
-Keep the original clone unchanged; generating with clean output can remove files.
+Choose how you want to work with the sample:
 
-## Backend selection
+- **DataM8 app 2.0.0:** create and edit model entities, then generate output in the
+  application. The app includes the generator and its runtime.
+- **DataM8 CLI 2.0.0:** edit the model and templates in your preferred editor, then
+  validate and generate from the command line.
 
-`pyproject.toml` pins DataM8 CLI beta.1. That pin has not been changed here and is
-not proof of compatibility with current frontend/backend branches. For the local
-CLI run verified on 2026-10-01, use backend commit
-`85683fcaeaf13c4573bee3de9c4668b1ba3ab3b9` with its pinned schema
-`f7dd5f519c5e17c5b595c5b99f600c51b9fe84ac`; follow
-[backend setup](https://github.com/oraylis/datam8-cli/blob/feature/external_refresh/README.md). Record the runtime you actually use.
+## Get the sample
 
-## First run
-
-From your disposable sample directory, using the selected backend environment:
+[Download the sample as a ZIP](https://github.com/oraylis/datam8-sample-solution/archive/refs/heads/main.zip)
+and extract it, or clone the repository:
 
 ```sh
-python -m datam8 validate --solution ./ORAYLISDatabricksSample.dm8s
-python -m datam8 generate docs --solution ./ORAYLISDatabricksSample.dm8s
+git clone https://github.com/oraylis/datam8-sample-solution.git datam8-sample
+cd datam8-sample
 ```
 
-Check both exit codes and confirm a newly written `Output/docs/index.md` containing
-Customer, entity pages and the generated relationship diagram. Remove a copied
-pre-existing index before the run if you need proof of fresh output.
-These commands were exercised against the exact baseline above on a temporary copy.
-They do not connect to SQL or deploy cloud resources.
+Use a working copy for your changes. Keep Base, Model, Plugins, Generate and the
+supporting configuration alongside `ORAYLISDatabricksSample.dm8s`. Copy the whole
+solution when creating another exercise directory. Autosave writes your edits to
+disk, and generation can replace files in a target output directory.
 
-For UI exercises use the [central handbook](https://github.com/oraylis/datam8/blob/codex/documentation-v2/docs/user-guide/README.md).
-Its screenshots refer to a separate sample snapshot and output-path layout.
-Native desktop/sample compatibility remains a separate acceptance item.
+## Option 1: Use the DataM8 app
+
+Install **DataM8 app 2.0.0** from the
+[desktop release](https://github.com/oraylis/datam8-frontend/releases/tag/v2.0.0).
+The app bundles generator functionality; you can work with the model and generate
+output without installing Python or the CLI separately.
+
+1. Launch DataM8 and choose **Open**.
+2. Choose **Open Solution...** and select `ORAYLISDatabricksSample.dm8s` in your
+   working copy.
+3. Explore Base and Model. Create entities or edit existing ones; for a first
+   change, edit the Stage Customer description and wait for autosave to finish.
+4. Reload the solution and confirm that your change was saved.
+5. Open **Toggle generator**, select **docs**, and choose **Generate**.
+6. Open `Output/docs/index.md` and inspect the generated model documentation.
+
+Follow the [illustrated user guide](https://github.com/oraylis/datam8/blob/codex/documentation-v2/docs/user-guide/README.md)
+for the model editors, relationships, sources and generation workflow.
+
+## Option 2: Use the DataM8 CLI
+
+Use Python 3.12 or newer and install **DataM8 CLI 2.0.0** in a virtual environment.
+From your sample working directory:
+
+```sh
+python -m venv .venv
+```
+
+Activate it on Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Or on macOS/Linux:
+
+```sh
+source .venv/bin/activate
+```
+
+Install the CLI, validate the solution and generate its documentation:
+
+```sh
+python -m pip install "datam8==2.0.0"
+datam8 validate --solution ./ORAYLISDatabricksSample.dm8s
+datam8 generate docs --solution ./ORAYLISDatabricksSample.dm8s
+```
+
+Check the exit codes, then open `Output/docs/index.md`. It should contain Customer
+and links to entity pages and the relationship diagram. Edit the model or templates
+in your editor, then validate and generate again to inspect your changes.
+
+## Inspect the generated output
+
+Both routes use the targets configured in `ORAYLISDatabricksSample.dm8s` and write
+files beneath their configured output roots. Start with **docs**; it works with
+the local metadata and does not require a database connection or cloud account.
+See [configured targets](reference/targets.md) for Databricks and Power BI output
+paths. Deployment is a separate step after generation.
 
 ## Next steps
 

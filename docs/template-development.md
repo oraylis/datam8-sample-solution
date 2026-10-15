@@ -24,9 +24,9 @@ it is not a complete standalone plugin. Inspect the backend's
 
 ## Change and verify
 
-1. Work in a disposable full sample with a pinned backend/schema combination.
+1. Work on a complete sample copy using DataM8 app 2.0.0 or CLI 2.0.0.
 2. Add/shape a field in Python and update its Jinja consumer.
-3. Generate that target with the [documented CLI](getting-started.md).
+3. Generate that target in the app or with the [CLI](getting-started.md).
 4. Assert new output content, links, ordering and paths; compare unchanged output
    with the parity script when required.
 5. Update the affected target architecture and central user chapter if behavior changes.
