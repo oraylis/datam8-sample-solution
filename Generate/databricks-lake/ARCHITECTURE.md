@@ -1,5 +1,8 @@
 # Databricks Lake Generator Architecture
 
+For the target's intended data platform, generated artifacts and usage, start
+with the [target overview](README.md).
+
 ## Purpose
 
 This target generates Databricks notebooks and bundle resources for:

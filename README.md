@@ -19,6 +19,14 @@ The solution includes three targets: **databricks**, **powerbi** and **docs**.
 Start on a complete working copy and keep secrets out of committed JSON and
 generated output. Local model editing and docs generation need no cloud account.
 
+## What the targets build
+
+| Target | Result |
+| --- | --- |
+| [Databricks](Generate/databricks-lake/README.md) | A layered lakehouse with Raw, Stage, Core and Curated notebooks, table definitions and creation/load jobs |
+| [Power BI](Generate/powerbi-tabular/README.md) | A consumer semantic model with tables, relationships, DAX measures and Databricks queries |
+| [Documentation](Generate/docs/README.md) | A browsable model catalog, entity reference pages and a draw.io relationship diagram |
+
 ## Checks
 
 ```sh

@@ -5,6 +5,9 @@ Start with **DataM8 app 2.0.0**, which bundles the generator, or install
 
 - [Local getting started](getting-started.md)
 - [Configured targets and output paths](reference/targets.md)
+- [Databricks: layered lakehouse, notebooks and jobs](../Generate/databricks-lake/README.md)
+- [Power BI: consumer semantic model](../Generate/powerbi-tabular/README.md)
+- [Documentation: model catalog and relationship diagram](../Generate/docs/README.md)
 - [Template and payload development](template-development.md)
 - [Optional deployment preparation](quickstart.md)
 - [Documentation handoff](documentation-handoff.md)

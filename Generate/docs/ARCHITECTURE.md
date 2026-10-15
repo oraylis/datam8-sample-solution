@@ -1,5 +1,8 @@
 # Documentation Target Architecture
 
+For the generated model reference and how to use it, start with the
+[target overview](README.md).
+
 ## Purpose
 
 This target produces model documentation artifacts:

@@ -4,11 +4,11 @@ The [solution descriptor](../../ORAYLISDatabricksSample.dm8s) defines three targ
 Names select CLI targets; template directory names and generated subdirectories
 are separate concepts.
 
-| Target | Template source | Configured output root | Architecture |
-| --- | --- | --- | --- |
-| databricks | `Generate/databricks-lake` | `Output/databricks-lake/generated` | [Databricks](../../Generate/databricks-lake/ARCHITECTURE.md) |
-| powerbi | `Generate/powerbi-tabular` | `Output/powerbi-tabular/generated` | [Power BI](../../Generate/powerbi-tabular/ARCHITECTURE.md) |
-| docs | `Generate/docs` | `Output/docs` | [Documentation](../../Generate/docs/ARCHITECTURE.md) |
+| Target | Template source | Configured output root | What you can build | Architecture |
+| --- | --- | --- | --- | --- |
+| databricks | `Generate/databricks-lake` | `Output/databricks-lake/generated` | [Layered lakehouse with notebooks and jobs](../../Generate/databricks-lake/README.md) | [Implementation](../../Generate/databricks-lake/ARCHITECTURE.md) |
+| powerbi | `Generate/powerbi-tabular` | `Output/powerbi-tabular/generated` | [Semantic model with tables, relationships and measures](../../Generate/powerbi-tabular/README.md) | [Implementation](../../Generate/powerbi-tabular/ARCHITECTURE.md) |
+| docs | `Generate/docs` | `Output/docs` | [Model catalog, entity pages and relationship diagram](../../Generate/docs/README.md) | [Implementation](../../Generate/docs/ARCHITECTURE.md) |
 
 Payload `output_path` is resolved beneath that root. Inspect the payload and real
 output before assuming where a deployable notebook, bundle or TMDL file is located.

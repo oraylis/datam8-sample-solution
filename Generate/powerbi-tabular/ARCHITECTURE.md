@@ -1,5 +1,8 @@
 # Power BI Tabular Generator Architecture
 
+For the intended semantic model, generated artifacts and usage, start with the
+[target overview](README.md).
+
 ## Purpose
 
 This target generates TMDL artifacts for consumer entities:
