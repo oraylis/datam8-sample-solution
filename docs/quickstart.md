@@ -1,72 +1,28 @@
-# Quickstart Tutorial for DataM8 Deployment
+# Optional Deployment Preparation
 
-## Prerequisites for Alternate Environment Deployment
-Before deploying DataM8 to a different environment, ensure you have:
-- A designated DevOps Project for the solution.
-- DevOps Service Connections for Databricks and GitHub access.
-- Access to Azure resources like Databricks, KeyVault, or permissions to create them.
+Start with [local generation](getting-started.md). Deployment is optional and was
+not exercised by this documentation update. Generated artifacts are inputs to a
+separate platform-specific release process, not proof of running infrastructure.
 
-## Git Version Control Setup
+## Databricks
 
-### 1. Accessing the DevOps Project
-- Navigate to [DataM8 Beta Project](https://dev.azure.com/mwotruba0925/datam8-beta).
-- Contact Marco Wotruba (ORAYLIS GmbH) for access issues.
+Choose your own workspace, storage, authentication, secret management and CI/CD
+environment. Inspect the actual generated target tree and hand-written deployment
+configuration before selecting a deployment runner. Review notebooks, jobs and
+resource names; confirm that source and target permissions match your environment.
 
-### 2. Repository Creation for Testing
-- Create a new repository in DevOps without interfering with others' work.
-- Follow standard repository creation steps, as shown:
+Do not reuse example cloud URLs, service connections or organization-specific
+access instructions. Supply credentials outside committed JSON and output files.
+Run a small deployment in your own test workspace and record its platform/tool
+versions, results and rollback procedure before describing it as supported.
 
-  ![Repository Creation](./assets/images/image.png)
+## Power BI
 
-- Initialize and push the repository with these commands:
+Review generated TMDL and the selected workspace/deployment tooling independently.
+Generating files does not publish a semantic model or validate its refresh access.
 
-```console
-git init
-git add *
-git commit -m "first commit"
-git branch -M main
-git remote add origin https://mwotruba0925@dev.azure.com/mwotruba0925/datam8-beta/_git/marcos-datam8-test
-git push -u origin main
-```
+## Existing pipeline
 
-
-## Setting Up Databricks Solution in ORAYLIS IT - DEV
-
-### 1. Resource Group Setup
-Create the following in your ORAYLIS IT resource group:
-- A Databricks Workspace with default settings.
-- A storage account with a "data" container.
-- A KeyVault with "Vault access policy" permission model.
-
-  ![KeyVault Access Policy](./assets/images/image1.png)
-
-### 2. Secret Scope Creation in Azure Databricks
-- Visit your Databricks URL:
-
-  `[Databricks Secret Scope Creation](https://<your url>.azuredatabricks.net/#secrets/createScope)`
-
-- Name the scope "keyvault" and use values from your KeyVault.
-
-### 3. Configuring Azure KeyVault
-- Add Get, Set, and List access policy for your user:
-
-  ![KeyVault User Access](./assets/images/image4.png)
-
-### 4. Service Principal Permission Assignment
-- Grant "Contributor" role to "oraylis-dev-sp-for-devops" Service Principal:
-
-  ![Service Principal Permissions](./assets/images/image5.png)
-
-## Adding Secrets to Azure KeyVault
-For each "DataSource" in DataM8 Modeller and the target datalake:
-- Create a secret named "datasource-<datasource name>-connectionstring".
-- Add the datalake account's access key as "fs-azure-account-key-<datalake account name>-dfs-core-windows-net".
-
-  ![Datalake Secret](./assets/images/image7.png)
-
-## Configuring DataM8 for CI/CD
-1. Search the solution for "TODO" comments and follow the instructions. Use the [TODO Tree extension](https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree) in VS Code.
-
-   ![TODO Tree](./assets/images/image6.png)
-
-This tutorial provides a detailed guide for setting up and deploying the DataM8 solution in an alternate environment.
+`azure-pipelines.yml` references superseded tool commands and environment-specific
+resources. It has not been modernized or accepted here. Do not use it as the current
+v2 setup procedure; see [the handoff](documentation-handoff.md) for the replacement task.
