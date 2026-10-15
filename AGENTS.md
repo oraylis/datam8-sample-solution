@@ -4,7 +4,7 @@ This repository owns concrete v2 metadata, target payloads/templates and deploym
 examples. Backend execution semantics and schemas belong to their own repositories.
 
 - Read [the index](docs/index.md), the descriptor and affected target architecture.
-- Document the targets actually present in this checkout. Do not port Lakeflow
+- Document the targets actually present in this checkout. Do not add targets
   or change metadata just to match screenshots from another revision.
 - Run exercises on a disposable full copy; do not contact sample cloud services.
 - Keep target shaping in Python and rendering in Jinja. Inspect generated files

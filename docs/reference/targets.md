@@ -15,8 +15,5 @@ output before assuming where a deployable notebook, bundle or TMDL file is locat
 Only docs generation and validation were checked for this baseline in this update.
 Databricks/Power BI generation and deployment require their own acceptance.
 
-Lakeflow is not configured in this main-derived checkout. The central tutorial
-records it in a different four-target revision; no Lakeflow port is included here.
-
 Target property interpretation belongs in each architecture document. Field
 constraints belong in schemas; CLI/API behavior belongs in the backend.
