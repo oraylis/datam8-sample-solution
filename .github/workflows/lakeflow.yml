@@ -21,5 +21,5 @@ jobs:
         with:
           python-version: "3.13"
       # The backend commit also pins its datam8-model submodule revision.
-      - run: python -m pip install "datam8 @ git+https://github.com/oraylis/datam8-generator@${{ matrix.backend }}"
+      - run: python -m pip install "datam8 @ git+https://github.com/oraylis/datam8-generator@${{ matrix.backend }}" "PyYAML==6.0.3"
       - run: python scripts/check_lakeflow.py --baseline-ref origin/main
