@@ -468,10 +468,6 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             source_alias = raw_source.get("source_alias") or raw_name
             properties = raw_source.get("properties", {})
             data_source_entry = resolver.data_sources.get(data_source_name)
-            driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
-            if getattr(data_source_entry, "type", None) == "SynapseDataSource":
-                driver = "com.databricks.spark.sqldw"
-
             extract_mode = properties.get("extract_mode")
             if extract_mode == "overwrite":
                 write_mode = "overwrite"
@@ -485,26 +481,56 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 data_source_name=data_source_name,
             )
             data_source_type = raw_source.get("source_type") or getattr(data_source_entry, "type", None)
+            extended = getattr(data_source_entry, "extendedProperties", {}) or {}
+            connection_name = extended.get("unityCatalogConnection") or data_source_name.lower()
+            source_location = str(raw_source.get("source_location") or source_alias)
+            oracle_source = data_source_type and str(data_source_type).lower() in {"oracle", "oracledatasource"}
+            remote_option = "service_name" if oracle_source else "database"
+            remote_database = (
+                extended.get("service") or extended.get("connection")
+                if oracle_source else extended.get("database")
+            )
+            # Prefer dbtable for ordinary table reads. SQL Server bracketed identifiers
+            # inside remote_query(query => ...) fail during JDBC schema discovery.
+            # Keep simple SELECT * ... WHERE ... filters and apply them in Spark.
+            table_pattern = r'(?:\[([^]]+)\]|"?([^."\s]+)"?)\s*\.\s*(?:\[([^]]+)\]|"?([^."\s]+)"?)'
+            select_match = re.fullmatch(
+                r"\s*SELECT\s+\*\s+FROM\s+(?P<table>.+?)(?:\s+WHERE\s+(?P<filter>.+))?\s*;?\s*",
+                source_location,
+                re.IGNORECASE,
+            )
+            table_source = select_match.group("table").strip() if select_match else source_location.strip()
+            filter_expression = select_match.group("filter").strip() if select_match else None
+            match = re.fullmatch(table_pattern, table_source, re.IGNORECASE)
+            if match:
+                schema, table = match.group(1) or match.group(2), match.group(3) or match.group(4)
+                remote_query_dbtable = f"{schema}.{table}"
+                source_query = None
+            else:
+                # Retain support for full SQL source locations that cannot use dbtable.
+                remote_query_dbtable = None
+                source_query = source_location
+            if not remote_database:
+                raise ValueError(f"Data source {data_source_name} requires a database/service for UC remote_query.")
 
             data = {
                 "zone": raw_zone.name,
                 "zone_display": raw_zone.display_name,
                 "data_source": data_source_name,
                 "data_source_display": getattr(data_source_entry, "displayName", None) or data_source_name,
-                "data_source_type": data_source_type,
                 "source_name": source_alias,
                 "full_table_name": full_table_name,
                 "write_mode": write_mode,
                 "source_location": raw_source.get("source_location"),
+                "connection_name": connection_name,
+                "remote_query_option": remote_option,
+                "remote_query_database": str(remote_database),
+                "remote_query_query": source_query,
+                "remote_query_dbtable": remote_query_dbtable,
+                "source_filter": filter_expression,
                 "extract_mode": extract_mode,
-                "driver": driver,
-                "connection_secret": f"datasource-{data_source_name}-connectionstring",
-                "mapping": raw_source.get("mapping"),
-                "mapping_entries": mapping_entries,
-                "select_columns": mapping_projection["select_columns"],
                 "target_columns": mapping_projection["target_columns"],
                 "column_renames": mapping_projection["column_renames"],
-                "delta_column_details": mapping_projection["delta_column_details"] or None,
                 "delta_column": raw_source.get("delta_column"),
                 "source_delta_column": raw_source.get("source_delta_column"),
             }
@@ -616,16 +642,18 @@ def generate_cluster_resources(model: Model, cache: Cache) -> Sequence[IPayload]
 
     cluster_entries: list[dict[str, Any]] = []
     for cluster in clusters:
+        if cluster.get("serverless"):
+            continue
         variable_name = cluster.get("variable_name")
         if not variable_name:
             continue
         custom_tags: dict[str, str] = {}
         display_name = cluster.get("display_name")
         if display_name:
-            custom_tags["friendly_name"] = repr(display_name)
+            custom_tags["friendly_name"] = display_name
         workload_type = cluster.get("workload_type")
         if workload_type:
-            custom_tags["workload_type"] = repr(workload_type)
+            custom_tags["workload_type"] = workload_type
 
         cluster_entries.append(
             {
@@ -669,6 +697,8 @@ def _prepare_job_data(job: dict[str, Any], **extra: Any) -> dict[str, Any]:
     """Create template payload data while stripping non-template fields."""
     data = {k: v for k, v in job.items() if k != "output_path"}
     data.update(extra)
+    data.setdefault("job_clusters", [])
+    data.setdefault("default_job_cluster_key", None)
     return data
 
 
@@ -715,13 +745,19 @@ def generate_jobs_create_modules(model: Model, cache: Cache) -> Sequence[IPayloa
     plan = _get_jobs_plan(model, cache)
     payloads: list[IPayload] = []
     resolver = MetadataResolver(model)
-    default_cluster = resolver.default_cluster_variable_name()
+    create_all = resolver.job_definition("create_all") or {}
+    create_cluster = create_all.get("cluster") or {}
+    default_cluster = None if create_cluster.get("serverless") else create_cluster.get("variable_name")
+    if not create_cluster:
+        default_cluster = resolver.default_cluster_variable_name()
     for job in plan.get("create_modules", []):
         data = _prepare_job_data(job)
         if not data.get("tasks"):
             continue
         if not data.get("cluster_variable"):
             data["cluster_variable"] = default_cluster
+        data["serverless"] = bool(create_cluster.get("serverless"))
+        data["environment_version"] = create_cluster.get("environment_version", "6")
         _assign_job_clusters(data, [data.get("cluster_variable")])
         payloads.append(BasePayload(data=data, output_path=job["output_path"]))
     return payloads

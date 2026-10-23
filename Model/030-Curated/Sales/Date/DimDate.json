@@ -93,7 +93,7 @@
       "kind": "function",
       "name": "transform_dimdate",
       "function": {
-        "source": "GenerateDates.py"
+        "source": "DimDate/GenerateDates.py"
       }
     }
   ],

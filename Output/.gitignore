@@ -1,10 +1,12 @@
 .databricks
 
 # remove all files
+databricks/generated
 databricks-lake/generated
 databricks-lakeflow/generated
 powerbi-tabular/generated
 docs/
+e2e-test-reports/
 
 # allow the gitignore file
 !.gitignore

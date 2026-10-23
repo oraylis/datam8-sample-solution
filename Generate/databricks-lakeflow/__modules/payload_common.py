@@ -340,9 +340,31 @@ def cluster_for_job(model: Model, job_name: str) -> str:
     """Return the Databricks cluster variable configured for one load job."""
     job = get_one(model.propertyValues, f"jobs/{job_name}").entity
     clusters = property_values_by_name(job.properties, "cluster")
-    if clusters:
-        return f"cluster_{create_resource_slug_from_name(clusters[0])}"
-    return default_cluster_variable(model)
+    cluster_name = clusters[0] if clusters else None
+    if cluster_name is None:
+        cluster_name = next(
+            (pv.entity.name for pv in get_many(model.propertyValues, "cluster/") if pv.entity.default),
+            None,
+        )
+    if cluster_name is None:
+        values = get_many(model.propertyValues, "cluster/")
+        cluster_name = values[0].entity.name if values else None
+    if cluster_name is None:
+        return ""
+    cluster = get_one(model.propertyValues, f"cluster/{cluster_name}").entity
+    return "" if getattr(cluster, "serverless", False) else f"cluster_{create_resource_slug_from_name(cluster_name)}"
+
+
+def serverless_environment_for_job(model: Model, job_name: str) -> str | None:
+    """Return a Serverless Jobs environment version when the job's cluster property selects it."""
+    job = get_one(model.propertyValues, f"jobs/{job_name}").entity
+    clusters = property_values_by_name(job.properties, "cluster")
+    if not clusters:
+        return None
+    cluster = get_one(model.propertyValues, f"cluster/{clusters[0]}").entity
+    if not getattr(cluster, "serverless", False):
+        return None
+    return str(getattr(cluster, "environment_version", "6"))
 
 
 class ModelEntityPayload(BasePayload):

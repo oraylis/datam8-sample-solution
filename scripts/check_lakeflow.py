@@ -75,6 +75,37 @@ def check_graph(tasks: list[dict]) -> None:
         visit(key)
 
 
+def check_notebook_markdown_cells(output: Path) -> None:
+    """Ensure executable Python never shares a source cell with a Markdown magic."""
+    for path in output.rglob("*.py"):
+        if "notebooks" not in path.parts:
+            continue
+        cells: list[list[str]] = []
+        current: list[str] = []
+        for line in path.read_text(encoding="utf-8-sig").splitlines():
+            if re.fullmatch(r"# COMMAND ----------(?:# COMMAND ----------)*", line.strip()):
+                cells.append(current)
+                current = []
+            else:
+                current.append(line)
+        cells.append(current)
+
+        for index, cell in enumerate(cells, start=1):
+            if not any(line.strip() == "# MAGIC %md" for line in cell):
+                continue
+            executable_lines = [
+                line
+                for line in cell
+                if line.strip()
+                and not line.strip().startswith("# MAGIC")
+                and line.strip() != "# Databricks notebook source"
+            ]
+            require(
+                not executable_lines,
+                f"{path}: Markdown cell {index} contains non-Markdown lines: {executable_lines[:3]}",
+            )
+
+
 def check_lakeflow(model, output: Path) -> None:
     import jinja2
     from datam8.utils.cache import Cache
@@ -154,7 +185,8 @@ def check_lakeflow(model, output: Path) -> None:
     )
     content = scripts[0].get_data().content
     require("datam8_campus_dev_fka" not in content, "Hard-coded catalog in Lakeflow function")
-    require("{schema_prefix}bronze" in content, "Function must honor zone targetName")
+    require(".stage.Sales_Customer_Customer" in content, "Function must honor zone targetName")
+    require("bronze" not in content, "Function must not use the bronze layer name")
     require("c.__IsCurrent = True" in content, "Existing customer filter was removed")
     require(
         collect_transformations(core_customer, model)[0]["script_name"] == "CustomerNew.py",
@@ -231,7 +263,7 @@ def check_lakeflow(model, output: Path) -> None:
     pipeline = LakeflowExternalPipelinePayload(oracle, model, oracle.entity.sources[0])
     sql = LakeflowExternalNotebookPayload(pipeline).remote_query_sql
     require(
-        "service_name => 'datam8test'" in sql and "database =>" not in sql,
+        "service_name => 'oratest2'" in sql and "database =>" not in sql,
         "Oracle remote_query options are wrong",
     )
 
@@ -282,7 +314,8 @@ def check_lakeflow(model, output: Path) -> None:
     managed = next(iter(spec["resources"]["pipelines"].values()))
     require(
         "ingestion_definition" in managed
-        and not {"schema", "catalog", "libraries"} & managed.keys(),
+        and managed.get("serverless") is True
+        and "libraries" not in managed,
         "Managed ingestion mixes incompatible pipeline settings",
     )
     table = managed["ingestion_definition"]["objects"][0]["table"]
@@ -307,6 +340,7 @@ def worker(root: Path, target: str) -> None:
     model = asyncio.run(parser.parse_full_solution_async(config.solution_path))
     model.resolve()
     output = generate.generate_output(model, target, [], generate_all=True, clean_output=False)
+    check_notebook_markdown_cells(output)
     if target == "databricks-lakeflow":
         check_lakeflow(model, output)
     print(f"PASS: generated {target}: {len(file_map(output))} artifacts")

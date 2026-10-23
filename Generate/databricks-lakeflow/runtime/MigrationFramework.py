@@ -10,6 +10,7 @@
 # COMMAND ----------
 
 from operator import itemgetter
+import re
 from pyspark.errors import AnalysisException
 from pyspark.sql.types import StructField, StructType
 from pyspark.sql.functions import row_number, lit, when, col, max as _max, coalesce, lower
@@ -760,6 +761,19 @@ class Table(object):
             for field in self.schema
             if any(str(key).startswith("delta.identity") for key in (field.metadata or {}).keys())
         }
+        if target_surrogate_key_columns and not target_surrogate_key_columns.issubset(existing_identity_columns):
+            qualified_table = ".".join(
+                f"`{part.replace('`', '``')}`"
+                for part in (self.catalog.name, self.schema_name, self.table_name)
+            )
+            create_statement = self.spark.sql(f"SHOW CREATE TABLE {qualified_table}").first()[0]
+            for column_name in target_surrogate_key_columns:
+                identity_column = re.compile(
+                    rf"(?im)^\s*`?{re.escape(column_name)}`?\s+[^,\n]*"
+                    r"GENERATED\s+ALWAYS\s+AS\s+IDENTITY"
+                )
+                if identity_column.search(create_statement):
+                    existing_identity_columns.add(column_name)
         has_changed_surrogate_key_identity = len(target_surrogate_key_columns - existing_identity_columns) > 0
 
         if any([

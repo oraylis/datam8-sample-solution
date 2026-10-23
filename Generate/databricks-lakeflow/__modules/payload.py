@@ -92,6 +92,7 @@ def dab_cluster(model: Model, cache: Cache) -> Sequence[IPayload]:
                     "custom_tags": {},
                 }
                 for cluster in clusters
+                if not getattr(cluster, "serverless", False)
             ],
             output_path=Path("clusters", "clusters.yml"),
         )

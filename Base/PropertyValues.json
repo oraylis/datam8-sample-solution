@@ -2,6 +2,14 @@
   "type": "propertyValues",
   "propertyValues": [
     {
+      "name": "serverless",
+      "displayName": "Serverless",
+      "property": "cluster",
+      "workload_type": "job",
+      "serverless": true,
+      "environment_version": "6"
+    },
+    {
       "name": "merge",
       "displayName": "merge",
       "default": true,
@@ -75,7 +83,7 @@
         },
         {
           "property": "cluster",
-          "value": "small"
+          "value": "serverless"
         }
       ]
     },
@@ -91,7 +99,7 @@
         },
         {
           "property": "cluster",
-          "value": "extra_small"
+          "value": "serverless"
         }
       ]
     },
@@ -118,6 +126,28 @@
     {
       "name": "power-bi",
       "property": "target"
+    },
+    {
+      "name": "create_all",
+      "displayName": "Create All",
+      "property": "jobs",
+      "properties": [
+        {
+          "property": "cluster",
+          "value": "serverless"
+        }
+      ]
+    },
+    {
+      "name": "validate_all",
+      "displayName": "Validate All",
+      "property": "jobs",
+      "properties": [
+        {
+          "property": "cluster",
+          "value": "serverless"
+        }
+      ]
     }
   ]
 }

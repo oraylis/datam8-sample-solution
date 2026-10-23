@@ -1,0 +1,9 @@
+targets:
+  e2e-serverless:
+    variables:
+      catalog_name: datam8_sample_test_lakeflow
+      lakeflow_schema_prefix: ""
+      unpause_schedules: PAUSED
+    workspace:
+      host: https://adb-7622639135174415.15.azuredatabricks.net
+      root_path: ~/.bundle/${bundle.name}/${bundle.target}

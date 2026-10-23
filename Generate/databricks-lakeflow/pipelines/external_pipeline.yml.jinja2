@@ -4,6 +4,8 @@ resources:
       name: ${var.job_name_prefix}{{ data.pipeline_name }}
       serverless: true
       channel: PREVIEW
+      catalog: ${var.catalog_name}
+      schema: {{ data.destination_schema }}
 {%- if data.is_managed_connect %}
       ingestion_definition:
         connection_name: {{ data.connection_name }}
@@ -36,8 +38,6 @@ resources:
               destination_schema: {{ data.destination_schema }}
               destination_table: {{ data.destination_table }}
 {%- else %}
-      catalog: ${var.catalog_name}
-      schema: {{ data.destination_schema }}
       configuration:
         catalog_name: ${var.catalog_name}
         schema_prefix: ${var.lakeflow_schema_prefix}

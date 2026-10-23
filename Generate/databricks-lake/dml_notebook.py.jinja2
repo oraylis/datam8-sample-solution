@@ -348,6 +348,9 @@ result = merge_builder.execute()
 print(result)
 {%- endif %}
 {%- else %}
+
+# COMMAND ----------
+
 (
     union_df
     .write.saveAsTable(

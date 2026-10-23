@@ -103,7 +103,7 @@
       "kind": "function",
       "name": "transform_first_step",
       "function": {
-        "source": "CustomerAddress.py"
+        "source": "CustomerAddress/CustomerAddress.py"
       }
     }
   ],

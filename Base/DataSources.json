@@ -12,7 +12,8 @@
             "extendedProperties": {
                 "authMode": "sql_user",
                 "host": "localhost",
-                "database": "AdventureWorks",
+                "database": "adventureworks",
+                "unityCatalogConnection": "datam8_sample_adventureworks",
                 "username": "sa",
                 "password": "ref://sources/SQLServer/AdventureWorks",
                 "trust_server_certificate": true
@@ -33,10 +34,11 @@
         },
         {
             "extendedProperties": {
-                "host": "datam80ora.westeurope.cloudapp.azure.com",
+                "host": "aut0ora0dev.westeurope.cloudapp.azure.com",
                 "port": 1521,
                 "connectionType": "Service",
-                "connection": "datam8test",
+                "connection": "oratest2",
+                "unityCatalogConnection": "datam8_sample_oracledev",
                 "user": "datam8"
             },
             "name": "OracleDev",

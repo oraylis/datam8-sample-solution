@@ -278,7 +278,13 @@ class JobsPlanner:
 
         create_modules: list[dict[str, Any]] = []
         create_zones: list[dict[str, Any]] = []
-        default_cluster_variable = self.resolver.default_cluster_variable_name()
+        create_all = self.resolver.job_definition("create_all") or {}
+        create_cluster = create_all.get("cluster") or {}
+        default_cluster_variable = (
+            None if create_cluster.get("serverless") else create_cluster.get("variable_name")
+        )
+        if not create_cluster:
+            default_cluster_variable = self.resolver.default_cluster_variable_name()
 
         for zone_name in self.ZONE_ORDER:
             zone_modules = zone_map.get(zone_name, [])
@@ -317,6 +323,8 @@ class JobsPlanner:
                         "zone_title": _zone_title(module.zone_name),
                         "tasks": tasks,
                         "cluster_variable": default_cluster_variable,
+                        "serverless": bool(create_cluster.get("serverless")),
+                        "environment_version": create_cluster.get("environment_version", "6"),
                         "output_path": output_path,
                     }
                 )
@@ -407,8 +415,8 @@ class JobsPlanner:
             cluster_variable = None
             cluster_data = job_config.get("cluster") if job_config else None
             if cluster_data:
-                cluster_variable = cluster_data.get("variable_name")
-            if cluster_variable is None:
+                cluster_variable = None if cluster_data.get("serverless") else cluster_data.get("variable_name")
+            else:
                 cluster_variable = self.resolver.default_cluster_variable_name()
             schedule_info = job_config.get("schedule") or {}
             cron_expression = self._format_cron(schedule_info.get("cron"))
@@ -421,6 +429,8 @@ class JobsPlanner:
             )
             if not job:
                 continue
+            job["serverless"] = bool(cluster_data and cluster_data.get("serverless"))
+            job["environment_version"] = (cluster_data or {}).get("environment_version", "6")
 
             job["schedule"] = (
                 {"cron_expression": cron_expression, "timezone_id": 'Europe/Amsterdam'}

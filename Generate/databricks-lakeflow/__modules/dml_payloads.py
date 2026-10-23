@@ -422,23 +422,28 @@ class DmlPayload(ModelEntityPayload):
             if not dimension_sid_column:
                 continue
             relationship_attributes = list(rel.attributes or [])
-            if not relationship_attributes or any(
-                attr.targetName != dimension_sid_column for attr in relationship_attributes
-            ):
+            if not relationship_attributes:
                 continue
             dimension_business_keys = self._dimension_business_keys(dimension)
-            if len(dimension_business_keys) < len(relationship_attributes):
+            business_key_mappings = [
+                attr for attr in relationship_attributes if attr.targetName in dimension_business_keys
+            ]
+            sid_mapping = next(
+                (attr for attr in relationship_attributes if attr.targetName == dimension_sid_column),
+                None,
+            )
+            if not business_key_mappings or sid_mapping is None:
                 continue
             join_columns = [
                 {
                     "fact_column": attr.sourceName,
-                    "dimension_column": dimension_business_keys[position],
+                    "dimension_column": attr.targetName,
                 }
-                for position, attr in enumerate(relationship_attributes)
+                for attr in business_key_mappings
             ]
             if not join_columns:
                 continue
-            sid_column = join_columns[0]["fact_column"]
+            sid_column = sid_mapping.sourceName
             dimension_payload = ModelEntityPayload(dimension_wrapper, self.model)
             lookups.append(
                 {

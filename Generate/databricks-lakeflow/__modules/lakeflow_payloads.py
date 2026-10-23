@@ -25,6 +25,7 @@ from payload_common import (
     get_zone_for_folder,
     job_property,
     schedule_for_job,
+    serverless_environment_for_job,
     target_data_type,
     task_key,
     zone_folder_name,
@@ -237,7 +238,10 @@ class LakeflowExternalPipelinePayload(BasePayload):
 
     @property
     def connection_name(self) -> str:
-        return self.external_source.data_source.lower()
+        return str(
+            self.external_source.data_source_extended_properties.get("unityCatalogConnection")
+            or self.external_source.data_source.lower()
+        )
 
     @property
     def destination_schema(self) -> str:
@@ -485,7 +489,8 @@ def clusters(cluster_variable: str) -> list[dict[str, str]]:
 
 
 def create_create_all_payloads(model: Model) -> list[IPayload]:
-    default_cluster = default_cluster_variable(model)
+    default_cluster = cluster_for_job(model, "create_all")
+    environment_version = serverless_environment_for_job(model, "create_all")
     tasks = []
     for wrapper in notebook_wrappers(model):
         zone = get_zone_for_folder(model, wrapper.locator.folders[0]) or model.get_zone_for_entity(
@@ -506,6 +511,7 @@ def create_create_all_payloads(model: Model) -> list[IPayload]:
                 "job_name": "Lakeflow Create All Tables",
                 "job_clusters": clusters(default_cluster),
                 "default_job_cluster_key": default_cluster,
+                "serverless_environment_version": environment_version,
                 "tasks": tasks,
             },
             output_path=Path("jobs", "lakeflow_create_all_tables.yml"),
@@ -541,6 +547,7 @@ def create_load_group_payloads(model: Model) -> list[IPayload]:
     payloads: list[IPayload] = []
     for job_name, wrappers in grouped.items():
         cluster_variable = cluster_for_job(model, job_name)
+        environment_version = serverless_environment_for_job(model, job_name)
         external_tasks: list[dict[str, Any]] = []
         entity_tasks: list[dict[str, Any]] = []
         complete_dependencies: list[str] = []
@@ -623,6 +630,7 @@ def create_load_group_payloads(model: Model) -> list[IPayload]:
                     "job_name": f"Lakeflow Load {job_name}",
                     "job_clusters": clusters(cluster_variable),
                     "default_job_cluster_key": cluster_variable,
+                    "serverless_environment_version": environment_version,
                     "schedule": schedule_for_job(model, job_name),
                     "external_tasks": unique_external_tasks,
                     "entity_tasks": entity_tasks,
