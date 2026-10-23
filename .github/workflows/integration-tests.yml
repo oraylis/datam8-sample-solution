@@ -1,6 +1,11 @@
 name: Sample integration tests
 
 on:
+  push:
+    branches:
+      - codex/databricks-lakeflow
+    paths:
+      - .github/workflows/integration-tests.yml
   workflow_dispatch:
     inputs:
       target:
@@ -52,7 +57,7 @@ jobs:
         run: databricks current-user me
       - run: uv sync --frozen
       - name: Run selected integration targets
-        if: ${{ !inputs.authentication_only }}
+        if: ${{ github.event_name == 'workflow_dispatch' && !inputs.authentication_only }}
         env:
           SELECTED_TARGET: ${{ inputs.target }}
         run: uv run python scripts/run_integration_tests.py --target "$SELECTED_TARGET"
