@@ -20,11 +20,29 @@ Integration tests are manually dispatched from GitHub Actions. Set `target` to
 `databricks`, `databricks-lakeflow`, or `all`. The `all` selection runs every
 registered Databricks integration target in sequence. CI requires a protected
 GitHub environment named `sample-integration`, with `DATABRICKS_HOST`,
-`DATABRICKS_CLIENT_ID`, and a serverless `DATABRICKS_SQL_WAREHOUSE_ID` variable,
-plus an OIDC federation policy for its dedicated Databricks service principal.
+`ARM_CLIENT_ID`, `ARM_TENANT_ID`, and a serverless
+`DATABRICKS_SQL_WAREHOUSE_ID` variable. The workflow signs in through
+`azure/login` using OIDC, then the Databricks CLI uses that Azure CLI identity.
+Configure a federated credential on the Entra application with issuer
+`https://token.actions.githubusercontent.com`, audience
+`api://AzureADTokenExchange`, and subject
+`repo:oraylis/datam8-sample-solution:environment:sample-integration`.
+This trust is managed by the Entra application owner; no Databricks
+account federation policy is required.
 Grant that identity access to the workspace, catalogs, UC Connections, SQL
 warehouse and test bundles. Do not put tokens or passwords in repository
 variables.
+
+The shared development identity is `oraylis-automation-databricks-dev`.
+Its client ID, tenant ID and client secret are stored in
+`aut0kvt0dev0standard` under the same prefix with suffixes `-client-id`,
+`-tenant-id`, and `-client-secret`. GitHub uses OIDC and does not consume the
+client secret. Other local automation can use the secret in memory with
+Microsoft Entra service principal authentication.
+
+Set `authentication_only=true` on a manual run to verify OIDC and Databricks
+identity access without deploying or resetting resources. This check does
+not count as a successful integration test.
 
 For local work, authenticate with `databricks auth login --profile
 oraylis-aut-dev` and run:

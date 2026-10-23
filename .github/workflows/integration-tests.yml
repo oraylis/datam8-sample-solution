@@ -8,6 +8,11 @@ on:
         required: true
         default: all
         type: string
+      authentication_only:
+        description: Verify the deployment identity without deploying or resetting data
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -25,9 +30,10 @@ jobs:
       contents: read
       id-token: write
     env:
-      DATABRICKS_AUTH_TYPE: github-oidc
+      DATABRICKS_AUTH_TYPE: azure-cli
       DATABRICKS_HOST: ${{ vars.DATABRICKS_HOST }}
-      DATABRICKS_CLIENT_ID: ${{ vars.DATABRICKS_CLIENT_ID }}
+      ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
       DATABRICKS_SQL_WAREHOUSE_ID: ${{ vars.DATABRICKS_SQL_WAREHOUSE_ID }}
     steps:
       - uses: actions/checkout@v6
@@ -36,8 +42,17 @@ jobs:
         with:
           python-version: "3.13"
       - uses: databricks/setup-cli@main
+      - name: Sign in to Azure using OIDC
+        uses: azure/login@v3
+        with:
+          client-id: ${{ vars.ARM_CLIENT_ID }}
+          tenant-id: ${{ vars.ARM_TENANT_ID }}
+          allow-no-subscriptions: true
+      - name: Verify Databricks identity
+        run: databricks current-user me
       - run: uv sync --frozen
       - name: Run selected integration targets
+        if: ${{ !inputs.authentication_only }}
         env:
           SELECTED_TARGET: ${{ inputs.target }}
         run: uv run python scripts/run_integration_tests.py --target "$SELECTED_TARGET"

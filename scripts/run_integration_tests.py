@@ -142,8 +142,8 @@ def main() -> None:
         parser.error(f"Unknown target. Available: {', '.join(TARGETS)}")
     if not args.warehouse_id:
         parser.error("Set --warehouse-id or DATABRICKS_SQL_WAREHOUSE_ID for catalog data checks")
-    if not args.profile and not (os.getenv("DATABRICKS_AUTH_TYPE") == "github-oidc" and os.getenv("DATABRICKS_HOST") and os.getenv("DATABRICKS_CLIENT_ID")):
-        parser.error("Use --profile locally or configure GitHub Databricks OIDC variables")
+    if not args.profile and not os.getenv("DATABRICKS_HOST"):
+        parser.error("Use --profile locally or configure DATABRICKS_HOST and Databricks authentication")
     warehouse = json.loads(cli(["--output", "json", "api", "get", f"/api/2.0/sql/warehouses/{args.warehouse_id}"], cwd=ROOT, profile=args.profile, timeout=60))
     if not (
         warehouse.get("warehouse_type") == "SERVERLESS"
@@ -165,8 +165,8 @@ def main() -> None:
             shutil.copytree(ROOT, solution, ignore=shutil.ignore_patterns(".git", ".venv", "__pycache__", ".databricks", "generated", "e2e-test-reports"))
             bundle = solution / spec["bundle_path"]
             descriptor = solution / "ORAYLISDatabricksSample.dm8s"
-            cli(["validate", "--solution", str(descriptor)], cwd=solution, profile=None, timeout=300)
-            cli(["generate", name, "--solution", str(descriptor), "--clean-output"], cwd=solution, profile=None, timeout=900)
+            subprocess.run(["datam8", "validate", "--solution", str(descriptor)], cwd=solution, check=True, timeout=300)
+            subprocess.run(["datam8", "generate", name, "--solution", str(descriptor), "--clean-output"], cwd=solution, check=True, timeout=900)
             cli(["bundle", "validate", "--target", "e2e-serverless"], cwd=bundle, profile=args.profile, timeout=300)
             expected_tables = generated_table_names(bundle)
             for schema in existing & set(SCHEMAS):
