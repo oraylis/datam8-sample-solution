@@ -95,7 +95,7 @@ table_comment = {{ data.table_comment | tojson }}
 
 schema = StructType([
 {%- for column in data.columns %}
-    StructField("{{ column.name }}", {{ column.spark_type_expr }}, {{ "True" if column.struct_nullable else "False" }}{% if column.metadata_repr %}, metadata={{ column.metadata_repr }}{% endif %}),
+    StructField("{{ column.name }}", {{ column.spark_type_expr | safe }}, {{ "True" if column.struct_nullable else "False" }}{% if column.metadata_repr %}, metadata={{ column.metadata_repr | safe }}{% endif %}),
 {%- endfor %}
 ])
 
@@ -224,9 +224,9 @@ table_instance.owner = owner
 
 # DBTITLE 1,Set table & column tags
 # table attributes
-table_instance.set_table_tags({{ data.table_tags_repr }})
+table_instance.set_table_tags({{ data.table_tags_repr | safe }})
 
 # column attributes
 {%- for column in data.column_tags %}
-table_instance.set_column_tags("{{ column.column }}", {{ column.tags_repr }})
+table_instance.set_column_tags("{{ column.column }}", {{ column.tags_repr | safe }})
 {%- endfor %}

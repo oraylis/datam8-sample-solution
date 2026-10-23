@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -42,8 +43,27 @@ def sql(statement: str, *, warehouse: str, profile: str | None) -> list[list[str
 
 
 def run_job(resource: str, *, bundle: Path, profile: str | None, timeout: int) -> str:
-    started = cli(["--output", "json", "bundle", "run", "--no-wait", "--target", "e2e-serverless", resource], cwd=bundle, profile=profile, timeout=120)
-    run_id = json.loads(started)["run_id"]
+    summary = json.loads(
+        cli(
+            ["--output", "json", "bundle", "summary", "--force-pull", "--target", "e2e-serverless"],
+            cwd=bundle,
+            profile=profile,
+            timeout=120,
+        )
+    )
+    try:
+        job_id = int(summary["resources"]["jobs"][resource]["id"])
+    except (KeyError, TypeError, ValueError) as error:
+        raise RuntimeError(f"Deployed bundle job not found: {resource}") from error
+    started = json.loads(
+        cli(
+            ["--output", "json", "api", "post", "/api/2.1/jobs/run-now", "--json", json.dumps({"job_id": job_id})],
+            cwd=bundle,
+            profile=profile,
+            timeout=120,
+        )
+    )
+    run_id = started["run_id"]
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         run = json.loads(cli(["--output", "json", "api", "get", f"/api/2.1/jobs/runs/get?run_id={run_id}"], cwd=bundle, profile=profile, timeout=60))
@@ -70,6 +90,47 @@ def assert_no_rows(statement: str, *, warehouse: str, profile: str | None) -> No
         raise RuntimeError(f"Data integrity check failed: {statement}")
 
 
+def generated_table_names(bundle: Path) -> dict[str, set[str]]:
+    tables = {schema: set() for schema in SCHEMAS}
+    notebooks = bundle / "generated" / "notebooks"
+    for path in notebooks.rglob("*.py"):
+        if "/ddl/" not in path.as_posix().lower():
+            continue
+        source = path.read_text(encoding="utf-8")
+        ddl = re.search(r"# MAGIC # DDL for ([^.]+)\.([^\s]+)", source)
+        if ddl and ddl.group(1).lower() in tables:
+            tables[ddl.group(1).lower()].add(ddl.group(2).lower())
+    external_notebooks = bundle / "generated" / "pipelines" / "notebooks" / "external"
+    for path in external_notebooks.rglob("*.py"):
+        source = path.read_text(encoding="utf-8")
+        for name in re.findall(r'@dp\.table\(name=[\"\']([^\"\']+)[\"\']\)', source):
+            tables["raw"].add(name.lower())
+    entity_notebooks = bundle / "generated" / "pipelines" / "notebooks" / "entities"
+    zone_by_folder = {"010-stage": "stage", "020-core": "core", "030-curated": "curated"}
+    for path in entity_notebooks.rglob("*.py"):
+        schema = next(
+            (zone for folder, zone in zone_by_folder.items() if folder in {part.lower() for part in path.parts}),
+            None,
+        )
+        if not schema:
+            continue
+        source = path.read_text(encoding="utf-8")
+        for name in re.findall(r'@dp\.table\(name=[\"\']([^\"\']+)[\"\']\)', source):
+            tables[schema].add(name.lower())
+    external_pipelines = bundle / "generated" / "pipelines" / "external"
+    for path in external_pipelines.rglob("*.yml"):
+        source = path.read_text(encoding="utf-8")
+        for name in re.findall(r"^\s*destination_table:\s*([^\s]+)\s*$", source, re.MULTILINE):
+            tables["raw"].add(name.lower())
+    for schema, expected_count in SCHEMAS.items():
+        if len(tables[schema]) != expected_count:
+            raise RuntimeError(
+                f"Generated bundle has {len(tables[schema])} {schema} DDL notebooks; "
+                f"expected {expected_count}"
+            )
+    return tables
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target", default="all")
@@ -84,7 +145,10 @@ def main() -> None:
     if not args.profile and not (os.getenv("DATABRICKS_AUTH_TYPE") == "github-oidc" and os.getenv("DATABRICKS_HOST") and os.getenv("DATABRICKS_CLIENT_ID")):
         parser.error("Use --profile locally or configure GitHub Databricks OIDC variables")
     warehouse = json.loads(cli(["--output", "json", "api", "get", f"/api/2.0/sql/warehouses/{args.warehouse_id}"], cwd=ROOT, profile=args.profile, timeout=60))
-    if warehouse.get("warehouse_type") != "SERVERLESS":
+    if not (
+        warehouse.get("warehouse_type") == "SERVERLESS"
+        or warehouse.get("enable_serverless_compute") is True
+    ):
         parser.error("The configured SQL warehouse must be serverless")
     reports = []
     for name in selected:
@@ -96,13 +160,6 @@ def main() -> None:
         foreign = existing - set(SCHEMAS) - {"default", "information_schema"}
         if foreign:
             raise RuntimeError(f"Refusing reset of {catalog}; unexpected schemas: {sorted(foreign)}")
-        for schema, expected_count in SCHEMAS.items():
-            if schema not in existing:
-                continue
-            names = [row[1] for row in sql(f"SHOW TABLES IN `{catalog}`.`{schema}`", warehouse=args.warehouse_id, profile=args.profile)]
-            if len(names) > expected_count:
-                raise RuntimeError(f"Refusing reset: {catalog}.{schema} contains {len(names)} tables; expected at most {expected_count}")
-
         with tempfile.TemporaryDirectory(prefix=f"datam8-{name}-") as temporary:
             solution = Path(temporary) / "solution"
             shutil.copytree(ROOT, solution, ignore=shutil.ignore_patterns(".git", ".venv", "__pycache__", ".databricks", "generated", "e2e-test-reports"))
@@ -111,6 +168,17 @@ def main() -> None:
             cli(["validate", "--solution", str(descriptor)], cwd=solution, profile=None, timeout=300)
             cli(["generate", name, "--solution", str(descriptor), "--clean-output"], cwd=solution, profile=None, timeout=900)
             cli(["bundle", "validate", "--target", "e2e-serverless"], cwd=bundle, profile=args.profile, timeout=300)
+            expected_tables = generated_table_names(bundle)
+            for schema in existing & set(SCHEMAS):
+                names = {
+                    row[1].lower()
+                    for row in sql(f"SHOW TABLES IN `{catalog}`.`{schema}`", warehouse=args.warehouse_id, profile=args.profile)
+                }
+                unexpected = names - expected_tables[schema]
+                if unexpected:
+                    raise RuntimeError(
+                        f"Refusing reset: {catalog}.{schema} contains unexpected tables: {sorted(unexpected)}"
+                    )
             cli(["bundle", "deploy", "--target", "e2e-serverless"], cwd=bundle, profile=args.profile, timeout=900)
             for schema in existing & set(SCHEMAS):
                 sql(f"DROP SCHEMA `{catalog}`.`{schema}` CASCADE", warehouse=args.warehouse_id, profile=args.profile)

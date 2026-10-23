@@ -21,6 +21,19 @@ def run(command: list[str], *, cwd: Path) -> None:
     subprocess.run(command, cwd=cwd, check=True, env={**os.environ, "PYTHONUTF8": "1"})
 
 
+def check_generated_python(output: Path) -> int:
+    python_files = list(output.rglob("*.py"))
+    failures = []
+    for path in python_files:
+        try:
+            compile(path.read_text(encoding="utf-8"), str(path), "exec")
+        except SyntaxError as error:
+            failures.append(f"{path.relative_to(output)}:{error.lineno}: {error.msg}")
+    if failures:
+        raise RuntimeError("Generated Python syntax errors:\n" + "\n".join(failures))
+    return len(python_files)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target", default="all")
@@ -52,6 +65,7 @@ def main() -> None:
             output = copy / output_path
             if not output.is_dir() or not any(path.is_file() for path in output.rglob("*")):
                 raise RuntimeError(f"Target {name} generated no files at {output_path}")
+            python_count = check_generated_python(output)
             check_notebook_markdown_cells(output)
             if name == "databricks-lakeflow":
                 run(
@@ -64,7 +78,10 @@ def main() -> None:
                     ],
                     cwd=copy,
                 )
-            print(f"PASS: {name}: {sum(path.is_file() for path in output.rglob('*'))} files")
+            print(
+                f"PASS: {name}: {sum(path.is_file() for path in output.rglob('*'))} files, "
+                f"{python_count} Python files compile"
+            )
 
 
 if __name__ == "__main__":
