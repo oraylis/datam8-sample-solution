@@ -1,11 +1,6 @@
 name: Sample integration tests
 
 on:
-  push:
-    branches:
-      - codex/databricks-lakeflow
-    paths:
-      - .github/workflows/integration-tests.yml
   workflow_dispatch:
     inputs:
       target:
