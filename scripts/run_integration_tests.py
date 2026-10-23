@@ -51,10 +51,23 @@ def run_job(resource: str, *, bundle: Path, profile: str | None, timeout: int) -
         if state.get("life_cycle_state") in {"TERMINATED", "SKIPPED", "INTERNAL_ERROR"}:
             if state.get("result_state") != "SUCCESS":
                 raise RuntimeError(f"Job {resource} run {run_id} failed: {state}")
+            failed_tasks = [
+                task.get("task_key", "unknown")
+                for task in run.get("tasks", [])
+                if task.get("state", {}).get("result_state") != "SUCCESS"
+            ]
+            if failed_tasks:
+                raise RuntimeError(f"Job {resource} run {run_id} has non-success tasks: {failed_tasks}")
             return run.get("run_page_url", str(run_id))
         time.sleep(15)
     cli(["--output", "json", "api", "post", "/api/2.1/jobs/runs/cancel", "--json", json.dumps({"run_id": run_id})], cwd=bundle, profile=profile, timeout=60)
     raise TimeoutError(f"Job {resource} run {run_id} exceeded {timeout} seconds; cancellation requested")
+
+
+def assert_no_rows(statement: str, *, warehouse: str, profile: str | None) -> None:
+    rows = sql(statement, warehouse=warehouse, profile=profile)
+    if rows and int(rows[0][0]) != 0:
+        raise RuntimeError(f"Data integrity check failed: {statement}")
 
 
 def main() -> None:
@@ -70,6 +83,9 @@ def main() -> None:
         parser.error("Set --warehouse-id or DATABRICKS_SQL_WAREHOUSE_ID for catalog data checks")
     if not args.profile and not (os.getenv("DATABRICKS_AUTH_TYPE") == "github-oidc" and os.getenv("DATABRICKS_HOST") and os.getenv("DATABRICKS_CLIENT_ID")):
         parser.error("Use --profile locally or configure GitHub Databricks OIDC variables")
+    warehouse = json.loads(cli(["--output", "json", "api", "get", f"/api/2.0/sql/warehouses/{args.warehouse_id}"], cwd=ROOT, profile=args.profile, timeout=60))
+    if warehouse.get("warehouse_type") != "SERVERLESS":
+        parser.error("The configured SQL warehouse must be serverless")
     reports = []
     for name in selected:
         spec = TARGETS[name]
@@ -103,16 +119,34 @@ def main() -> None:
             for phase, timeout in (("create", 1800), ("daily", 2700), ("weekly", 2700)):
                 job_links[phase] = run_job(spec["jobs"][phase], bundle=bundle, profile=args.profile, timeout=timeout)
             counts = {}
+            tables_by_schema = {}
             for schema, expected_count in SCHEMAS.items():
                 tables = [row[1] for row in sql(f"SHOW TABLES IN `{catalog}`.`{schema}`", warehouse=args.warehouse_id, profile=args.profile)]
                 if len(tables) != expected_count:
                     raise RuntimeError(f"{catalog}.{schema}: expected {expected_count} tables, got {len(tables)}")
                 counts[schema] = {}
+                tables_by_schema[schema] = {table.lower(): table for table in tables}
                 for table in tables:
                     rows = int(sql(f"SELECT COUNT(*) FROM `{catalog}`.`{schema}`.`{table}`", warehouse=args.warehouse_id, profile=args.profile)[0][0])
                     if rows == 0:
                         raise RuntimeError(f"Empty table: {catalog}.{schema}.{table}")
                     counts[schema][table] = rows
+            curated = tables_by_schema["curated"]
+            required = {"dimcustomer", "dimdate", "factsalesorder"}
+            if not required <= curated.keys():
+                raise RuntimeError(f"Missing curated tables: {sorted(required - curated.keys())}")
+            customer, date, fact = (curated[key] for key in ("dimcustomer", "dimdate", "factsalesorder"))
+            dimcustomer = f"`{catalog}`.`curated`.`{customer}`"
+            dimdate = f"`{catalog}`.`curated`.`{date}`"
+            factsales = f"`{catalog}`.`curated`.`{fact}`"
+            assert_no_rows(f"SELECT CustomerSID FROM {dimcustomer} WHERE CustomerSID IS NULL GROUP BY CustomerSID HAVING COUNT(*) > 0", warehouse=args.warehouse_id, profile=args.profile)
+            assert_no_rows(f"SELECT CustomerSID FROM {dimcustomer} GROUP BY CustomerSID HAVING COUNT(*) > 1", warehouse=args.warehouse_id, profile=args.profile)
+            assert_no_rows(f"SELECT DateSID FROM {dimdate} WHERE DateSID IS NULL GROUP BY DateSID HAVING COUNT(*) > 0", warehouse=args.warehouse_id, profile=args.profile)
+            assert_no_rows(f"SELECT DateSID FROM {dimdate} GROUP BY DateSID HAVING COUNT(*) > 1", warehouse=args.warehouse_id, profile=args.profile)
+            assert_no_rows(f"SELECT DateID FROM {dimdate} GROUP BY DateID HAVING COUNT(*) > 1", warehouse=args.warehouse_id, profile=args.profile)
+            assert_no_rows(f"SELECT f.CustomerSID FROM {factsales} f LEFT ANTI JOIN {dimcustomer} d ON f.CustomerSID = d.CustomerSID", warehouse=args.warehouse_id, profile=args.profile)
+            assert_no_rows(f"SELECT f.ShipDateID FROM {factsales} f LEFT ANTI JOIN {dimdate} d ON f.ShipDateID = d.DateID WHERE f.ShipDateID IS NOT NULL", warehouse=args.warehouse_id, profile=args.profile)
+            assert_no_rows(f"SELECT CustomerID, AddressType FROM {dimcustomer} WHERE __IsCurrent GROUP BY CustomerID, AddressType HAVING COUNT(*) > 1", warehouse=args.warehouse_id, profile=args.profile)
             reports.append({"target": name, "catalog": catalog, "job_runs": job_links, "tables": counts, "result": "passed", "elapsed_seconds": round(time.monotonic() - started)})
 
     if len(reports) > 1:
