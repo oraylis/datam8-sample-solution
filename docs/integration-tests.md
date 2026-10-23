@@ -42,8 +42,9 @@ The test target configuration is in `tests/integration/targets.json`; jobs and
 catalog settings come from the existing generated bundles and their
 `bundle.targets.yml` files. The runner adds no jobs or notebooks to the bundles.
 It deploys their generated artifacts, runs the existing Create, Daily and
-Weekly jobs, then checks the expected schema and table counts and verifies that
-each table contains rows. Both targets use
+Weekly jobs, then checks the expected schema and table counts, nonempty tables,
+curated surrogate-key uniqueness, fact-to-dimension references, and the
+customer SCD2 current-row rule. Both targets use
 Unity Catalog Connections for source access. The committed sample model uses
 reserved placeholder endpoints. Provision or update the actual Connections
 separately from Key Vault, keeping hosts and credentials out of model files and

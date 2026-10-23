@@ -163,4 +163,18 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as error:
+        report_dir = ROOT / "Output/e2e-test-reports"
+        report_dir.mkdir(parents=True, exist_ok=True)
+        failure = {
+            "commit": os.getenv("GITHUB_SHA", "local"),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "result": "failed",
+            "error": f"{type(error).__name__}: {error}",
+        }
+        (report_dir / f"integration-failed-{datetime.now().strftime('%Y%m%d-%H%M%S')}.json").write_text(
+            json.dumps(failure, indent=2), encoding="utf-8"
+        )
+        raise
