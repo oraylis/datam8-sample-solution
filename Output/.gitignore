@@ -2,6 +2,7 @@
 
 # remove all files
 databricks-lake/generated
+databricks-lakeflow/generated
 powerbi-tabular/generated
 docs/
 
