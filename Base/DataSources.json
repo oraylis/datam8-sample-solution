@@ -24,20 +24,20 @@
         },
         {
             "extendedProperties": {
-                "storageAccount": "datam80adl",
-                "storagePath": "drop",
+                "storageAccount": "sample-storage",
+                "storagePath": "sample-drop",
                 "authenticationMethod": "AccountKey"
             },
             "name": "ExternalStorage",
-            "displayName": "datam80adl",
+            "displayName": "Sample Storage",
             "type": "LakeSource"
         },
         {
             "extendedProperties": {
-                "host": "aut0ora0dev.westeurope.cloudapp.azure.com",
+                "host": "oracle.example.invalid",
                 "port": 1521,
                 "connectionType": "Service",
-                "connection": "oratest2",
+                "connection": "ORCLPDB1",
                 "unityCatalogConnection": "datam8_sample_oracledev",
                 "user": "datam8"
             },

@@ -263,7 +263,7 @@ def check_lakeflow(model, output: Path) -> None:
     pipeline = LakeflowExternalPipelinePayload(oracle, model, oracle.entity.sources[0])
     sql = LakeflowExternalNotebookPayload(pipeline).remote_query_sql
     require(
-        "service_name => 'oratest2'" in sql and "database =>" not in sql,
+        "service_name => 'ORCLPDB1'" in sql and "database =>" not in sql,
         "Oracle remote_query options are wrong",
     )
 

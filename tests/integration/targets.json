@@ -1,0 +1,20 @@
+{
+  "databricks": {
+    "bundle_path": "Output/databricks-lake",
+    "catalog": "datam8_sample_test_lake",
+    "jobs": {
+      "create": "Create_All_Tables",
+      "daily": "Load_sales_daily",
+      "weekly": "Load_sales_weekly"
+    }
+  },
+  "databricks-lakeflow": {
+    "bundle_path": "Output/databricks-lakeflow",
+    "catalog": "datam8_sample_test_lakeflow",
+    "jobs": {
+      "create": "Lakeflow_Create_All_Tables",
+      "daily": "Lakeflow_Load_sales_daily",
+      "weekly": "Lakeflow_Load_sales_weekly"
+    }
+  }
+}

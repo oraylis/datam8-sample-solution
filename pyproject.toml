@@ -6,13 +6,14 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
   "datam8",
+  "PyYAML==6.0.3",
 ]
 
 [project.urls]
 Homepage = "https://github.com/oraylis/datam8-sample-solution"
 
 [tool.uv.sources]
-datam8 = { git = "https://github.com/oraylis/datam8-generator", tag = "v2.0.0-beta.1" }
+datam8 = { git = "https://github.com/oraylis/datam8-generator", rev = "7d378c92ef22d2824fd01eea0bf6f02fbfe93329" }
 
 [tool.ruff]
 line-length = 100
