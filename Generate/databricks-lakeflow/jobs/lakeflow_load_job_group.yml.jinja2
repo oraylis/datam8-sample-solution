@@ -53,6 +53,7 @@ resources:
 {%- endif %}
           pipeline_task:
             pipeline_id: ${resources.pipelines.{{ task.resource_key }}.id}
+            full_refresh: ${var.pipeline_full_refresh}
 {% endfor %}
 {% for task in data.entity_tasks %}
         - task_key: {{ task.task_key }}
@@ -65,6 +66,7 @@ resources:
 {%- if task.is_pipeline_task %}
           pipeline_task:
             pipeline_id: ${resources.pipelines.{{ task.resource_key }}.id}
+            full_refresh: ${var.pipeline_full_refresh}
 {%- else %}
           notebook_task:
             notebook_path: ${workspace.root_path}/${var.lakeflow_output_path}/notebooks/{{ task.notebook_path }}

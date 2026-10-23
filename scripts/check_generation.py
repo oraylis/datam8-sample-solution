@@ -12,6 +12,7 @@ import tempfile
 from pathlib import Path
 
 from check_lakeflow import check_notebook_markdown_cells
+from databricks_jobs import generated_resources, lifecycle_roots
 
 ROOT = Path(__file__).resolve().parents[1]
 DESCRIPTOR = ROOT / "ORAYLISDatabricksSample.dm8s"
@@ -67,6 +68,9 @@ def main() -> None:
                 raise RuntimeError(f"Target {name} generated no files at {output_path}")
             python_count = check_generated_python(output)
             check_notebook_markdown_cells(output)
+            if name in {"databricks", "databricks-lakeflow"}:
+                roots = lifecycle_roots(generated_resources(output.parent))
+                print(f"Lifecycle roots: {roots}")
             if name == "databricks-lakeflow":
                 run(
                     [

@@ -212,7 +212,7 @@ try:
 
     print("Result: %s" % str(result))
 except Exception as e:
-    print(f"Migration failed: {e}")
+    raise RuntimeError(f"Migration failed: {e}") from e
 
 table_instance.owner = owner
 

@@ -59,8 +59,9 @@ Pass `--warehouse-id ID` if the SQL warehouse ID is not set in
 The test target configuration is in `tests/integration/targets.json`; jobs and
 catalog settings come from the existing generated bundles and their
 `bundle.targets.yml` files. The runner adds no jobs or notebooks to the bundles.
-It deploys their generated artifacts, runs the existing Create, Daily and
-Weekly jobs, then checks the expected schema and table counts, nonempty tables,
+It deploys their generated artifacts, discovers the lifecycle roots from the
+bundle job graph, runs the Create roots followed by the Load roots, then checks
+the expected schema and table counts, nonempty tables,
 curated surrogate-key uniqueness, fact-to-dimension references, and the
 customer SCD2 current-row rule. Both targets use
 Unity Catalog Connections for source access. The committed sample model uses
@@ -69,8 +70,35 @@ separately from Key Vault, keeping hosts and credentials out of model files and
 logs.
 
 Do not run local and CI tests at the same time against shared catalogs. Reset is
-limited to the selected target's test catalog. Reports go to
+limited to the selected target's test catalog. All selected targets are attempted
+even when an earlier target fails. Reports include root and child run IDs,
+task results, pipeline update results, and deployment resource IDs. Reports go to
 `Output/e2e-test-reports/`, which is ignored by Git.
+
+### Bundle lifecycle contract
+
+Root jobs are jobs that no other bundle job references through `run_job_task`.
+Tag each root with `datam8_phase: create` or `datam8_phase: load`; an optional
+`validate` phase is also supported. The runner orders phases and discovers all
+child jobs from their references. Job names and the number of Daily, Weekly,
+or other job groups are not part of the test configuration. Cycles, references
+outside the bundle and untagged roots are rejected before deployment.
+
+Create has a 30-minute timeout, Load 90 minutes and an optional validation root
+30 minutes. Every required task and nested run must succeed. Disabled, skipped,
+failed and timed-out tasks fail the test even if a parent reports success.
+
+The `e2e-serverless` bundles use a fixed workspace path under the standard
+development service principal's directory, so local and GitHub executions use
+the same deployment state. Existing jobs, pipelines and schemas must already
+be bound in that state. The runner refuses to create a second deployment and
+checks that deployment preserves every resource ID. When moving an existing
+deployment, use `databricks bundle deployment bind KEY ID --target e2e-serverless`
+for its existing resources before running the test.
+
+The Lakeflow bundle exposes `pipeline_full_refresh` (default `false`). Its
+`e2e-serverless` target enables it so the Root Load also rebuilds ingestion
+state after the test tables have been reset.
 
 To add an integration target, add its descriptor entry, bundle configuration,
 and target-specific job/test configuration. Register it in the integration

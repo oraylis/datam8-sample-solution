@@ -26,6 +26,8 @@ jobs:
         with:
           python-version: "3.13"
       - run: uv sync --frozen
+      - name: Check bundle lifecycle orchestration
+        run: uv run python -m unittest discover -s tests -p test_databricks_jobs.py
       - name: Generate and check targets
         env:
           SELECTED_TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.target || 'all' }}

@@ -4,6 +4,12 @@ targets:
       catalog_name: datam8_sample_test_lakeflow
       lakeflow_schema_prefix: ""
       unpause_schedules: PAUSED
+      pipeline_full_refresh: true
     workspace:
       host: https://adb-7622639135174415.15.azuredatabricks.net
-      root_path: ~/.bundle/${bundle.name}/${bundle.target}
+      root_path: /Workspace/Users/bac1609c-a2ff-4ea1-a658-876a1ce5150d/.bundle/${bundle.name}/${bundle.target}
+    run_as:
+      service_principal_name: bac1609c-a2ff-4ea1-a658-876a1ce5150d
+    permissions:
+      - service_principal_name: bac1609c-a2ff-4ea1-a658-876a1ce5150d
+        level: CAN_MANAGE

@@ -3,6 +3,9 @@ resources:
     {{ data.job_key }}:
       name: ${var.job_name_prefix}{{ data.job_name }}
       max_concurrent_runs: 1
+      timeout_seconds: 1800
+      tags:
+        datam8_phase: create
       parameters:
         - name: env
           default: ${var.environment}

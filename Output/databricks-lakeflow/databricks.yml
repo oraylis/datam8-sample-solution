@@ -18,6 +18,9 @@ variables:
     default: ''
   unpause_schedules:
     default: PAUSED
+  pipeline_full_refresh:
+    description: Rebuild pipeline tables and ingestion state on each Load run
+    default: false
 targets:
   dev-personal:
     default: true
