@@ -160,12 +160,15 @@ class MetadataResolver:
 
     @lru_cache
     def _model_entity_by_id(self, entity_id: int) -> tuple[Any, Any] | None:
-        """Resolve a model entity by id via the central model API."""
-        try:
-            wrapped = self.model.get_model_entity_by_id(entity_id)
-        except Exception:  # noqa: BLE001 - not-found and parsing errors should not break generation
-            return None
-        return wrapped.locator, wrapped.entity
+        """Resolve a model entity by id from the loaded model index."""
+        return next(
+            (
+                (locator, wrapper.entity)
+                for locator, wrapper in self.model.modelEntities.items()
+                if getattr(wrapper.entity, "id", None) == entity_id
+            ),
+            None,
+        )
 
     @lru_cache
     def _folder_wrapper(self, folder_tuple: tuple[str, ...]) -> Any | None:
@@ -250,9 +253,9 @@ class MetadataResolver:
         if not job_value:
             return None
 
-        try:
-            job_entry = self.model.get_property_value("jobs", job_value).entity
-        except Exception:  # noqa: BLE001 - missing/invalid property value should not break generation
+        jobs, schedules, clusters = self._property_values_map
+        job_entry = jobs.get(job_value)
+        if job_entry is None:
             return None
 
         schedule_name = None
@@ -267,10 +270,7 @@ class MetadataResolver:
 
         schedule_entry = None
         if schedule_name:
-            try:
-                schedule_entry = self.model.get_property_value("schedules", schedule_name).entity
-            except Exception:  # noqa: BLE001 - schedule reference is optional
-                schedule_entry = None
+            schedule_entry = schedules.get(schedule_name)
         schedule_data = None
         if schedule_entry:
             schedule_data = {
@@ -281,10 +281,7 @@ class MetadataResolver:
 
         cluster_entry = None
         if cluster_name:
-            try:
-                cluster_entry = self.model.get_property_value("cluster", cluster_name).entity
-            except Exception:  # noqa: BLE001 - cluster reference is optional
-                cluster_entry = None
+            cluster_entry = clusters.get(cluster_name)
         cluster_data = None
         if cluster_entry:
             cluster_data = {
@@ -296,6 +293,8 @@ class MetadataResolver:
                 "spark_version": getattr(cluster_entry, "spark_version", None),
                 "autotermination_minutes": getattr(cluster_entry, "autotermination_minutes", None),
                 "variable_name": self.cluster_variable_name(cluster_name),
+                "serverless": bool(getattr(cluster_entry, "serverless", False)),
+                "environment_version": getattr(cluster_entry, "environment_version", "6"),
             }
 
         return {
@@ -1029,6 +1028,8 @@ class MetadataResolver:
                     "data_security_mode": _value_or_default(getattr(entry, "data_security_mode", None), "DATA_SECURITY_MODE_DEDICATED"),
                     "runtime_engine": _value_or_default(getattr(entry, "runtime_engine", None), "STANDARD"),
                     "variable_name": self.cluster_variable_name(name),
+                    "serverless": bool(getattr(entry, "serverless", False)),
+                    "environment_version": getattr(entry, "environment_version", "6"),
                     "is_default": bool(getattr(entry, "default", False)),
                 }
             )

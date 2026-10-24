@@ -16,7 +16,7 @@ variables:
 {%- if cluster.custom_tags %}
       custom_tags:
 {%- for key, value in cluster.custom_tags.items() %}
-        {{ key }}: {{ value }}
+        {{ key }}: {{ value | tojson }}
 {%- endfor %}
 {%- endif %}
 {%- endfor %}

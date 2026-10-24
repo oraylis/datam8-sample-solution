@@ -21,6 +21,12 @@ resources:
           level: "CAN_MANAGE_RUN"
         - group_name: ${var.permission_group_name}
           level: "CAN_MANAGE_RUN"
+{% if data.serverless %}
+      environments:
+        - environment_key: serverless
+          spec:
+            environment_version: "{{ data.environment_version }}"
+{% endif %}
 {%- if data.job_clusters %}
       job_clusters:
 {%- for cluster in data.job_clusters %}
@@ -37,5 +43,9 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+{% if data.serverless %}
+          environment_key: serverless
+{% elif data.default_job_cluster_key %}
           job_cluster_key: {{ data.default_job_cluster_key }}
+{% endif %}
 {% endfor %}

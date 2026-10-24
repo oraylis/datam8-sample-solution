@@ -178,7 +178,7 @@
       "kind": "function",
       "name": "transform_customer_dimension",
       "function": {
-        "source": "DimCustomer.py"
+        "source": "DimCustomer/DimCustomer.py"
       }
     }
   ],

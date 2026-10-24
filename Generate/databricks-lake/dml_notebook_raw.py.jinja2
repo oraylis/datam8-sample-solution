@@ -17,15 +17,6 @@ from pyspark.sql import functions as F  # noqa: F401
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC ## Initialize Extraction Framework
-
-# COMMAND ----------
-
-# MAGIC %run ../../../../../../utils/ExtractionFramework
-
-# COMMAND ----------
-
 dbutils.widgets.text("env", "dev", "Environment")
 dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka", "Catalog Name")
 dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
@@ -39,8 +30,6 @@ dbutils.widgets.text("job_run_id", "", "Job Run ID")
 # )
 #dbutils.widgets.text("sandbox", "_", "Sandbox")
 
-dbutils.widgets.text("keyvault_name", "aut0kvt0dev0campus", "Key Vault Name")
-
 # COMMAND ----------
 
 # Retrieve a job-level parameter (will use default if it doesn't exist)
@@ -50,8 +39,6 @@ owner = dbutils.widgets.get("owner")
 job_run_id = dbutils.widgets.get("job_run_id")
 # run_mode = dbutils.widgets.get("run_mode")
 # sandbox = dbutils.widgets.get("sandbox")
-
-keyvault_name = dbutils.widgets.get("keyvault_name")
 
 # static values
 zone = "{{ data.zone }}"
@@ -85,13 +72,16 @@ catalog.set_active()
 
 # COMMAND ----------
 
-# DBTITLE 1,Get connection values
-database_connectionstring = dbutils.secrets.get(scope=keyvault_name, key="{{ data.connection_secret }}")
+# DBTITLE 1,Resolve source query through the Unity Catalog connection
 source_location = {{ data.source_location | default("", true) | tojson }}
 extract_mode = ("{{ data.extract_mode or '' }}").lower()
-data_source_type = "{{ data.data_source_type or '' }}"
+connection_name = {{ data.connection_name | tojson }}
+remote_query_option = {{ data.remote_query_option | tojson }}
+remote_query_database = {{ data.remote_query_database | tojson }}
+remote_query_query = {{ (data.remote_query_query or "") | tojson }}
+remote_query_dbtable = {{ (data.remote_query_dbtable or "") | tojson }}
+source_filter = {{ (data.source_filter or "") | tojson }}
 column_renames = {{ data.column_renames | default([], true) | tojson }}
-delta_column_details = {{ data.delta_column_details | default([], true) | tojson }}
 target_columns = {{ data.target_columns | default([], true) | tojson }}
 
 # COMMAND ----------
@@ -117,23 +107,33 @@ print(f"Using delta value: {max_raw}")
 if not source_location:
     source_location = source_name
 
-SourceTable = ExtractionFramework(source_location, extract_mode, delta_column_details)
-extractSourceTable = SourceTable
-
-if not data_source_type:
-    raise ValueError(f"Data source type is missing for '{data_source}'.")
-
-extract_function = getattr(extractSourceTable, data_source_type, None)
-
-if extract_function is None:
-    raise AttributeError(
-        f"ExtractionFramework does not implement '{data_source_type}' for '{data_source}'."
+escaped_database = remote_query_database.replace("'", "''")
+if remote_query_dbtable:
+    escaped_table = remote_query_dbtable.replace("'", "''")
+    remote_query_sql = (
+        f"SELECT * FROM remote_query('{connection_name}', {remote_query_option} => "
+        f"'{escaped_database}', dbtable => '{escaped_table}')"
     )
-
-table_df = extract_function(
-    database_connectionstring
-    {% if data.extract_mode and data.extract_mode|lower == "delta" %}, max_raw{% endif %}
-)
+else:
+    if extract_mode == "delta":
+        delta_column = {{ (data.source_delta_column or data.delta_column or "") | tojson }}
+        if not delta_column:
+            raise ValueError("Delta extraction is missing its cursor column.")
+        where_keyword = " AND " if " where " in f" {remote_query_query.lower()} " else " WHERE "
+        remote_query_query += f"{where_keyword}[{delta_column}] > '{max_raw}'"
+    escaped_query = remote_query_query.replace("'", "''")
+    remote_query_sql = (
+        f"SELECT * FROM remote_query('{connection_name}', {remote_query_option} => "
+        f"'{escaped_database}', query => '{escaped_query}')"
+    )
+table_df = spark.sql(remote_query_sql)
+if source_filter:
+    table_df = table_df.filter(F.expr(source_filter))
+if extract_mode == "delta" and remote_query_dbtable:
+    delta_column = {{ (data.source_delta_column or data.delta_column or "") | tojson }}
+    if not delta_column:
+        raise ValueError("Delta extraction is missing its cursor column.")
+    table_df = table_df.filter(F.col(delta_column) > F.lit(max_raw))
 # COMMAND ----------
 
 # MAGIC %md

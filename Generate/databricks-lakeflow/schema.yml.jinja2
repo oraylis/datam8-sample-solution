@@ -1,0 +1,10 @@
+resources:
+  schemas:
+{%- for zone in data %}
+    {{ zone.resource_key }}:
+      name: {{ zone.name }}
+      catalog_name: ${var.catalog_name}
+  {%- if zone.comment %}
+      comment: {{ zone.comment | tojson }}
+  {%- endif %}
+{%- endfor %}

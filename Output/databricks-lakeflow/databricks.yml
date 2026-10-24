@@ -1,0 +1,43 @@
+bundle:
+  name: datam8_sample_lakeflow
+sync:
+  include:
+  - generated/**
+variables:
+  lakeflow_output_path:
+    description: Generated notebooks and runtime beneath the workspace file root
+    default: files/generated
+  catalog_name:
+    default: datam8_sample_test_lakeflow
+  lakeflow_schema_prefix:
+    description: Keeps Lakeflow tables separate from the existing Databricks target
+    default: ''
+  environment:
+    default: dev
+  job_name_prefix:
+    default: ''
+  unpause_schedules:
+    default: PAUSED
+  pipeline_full_refresh:
+    description: Rebuild pipeline tables and ingestion state on each Load run
+    default: false
+targets:
+  dev-personal:
+    default: true
+    variables:
+      job_name_prefix: '[dev ${workspace.current_user.short_name}] '
+    workspace:
+      root_path: ~/.bundle/${bundle.name}/${bundle.target}
+  prod:
+    mode: production
+    variables:
+      environment: prod
+    workspace:
+      root_path: /Shared/.bundle/${bundle.name}/${bundle.target}
+include:
+- bundle.targets.yml
+- generated/schemas/*.yml
+- generated/clusters/*.yml
+- generated/jobs/*.yml
+- generated/pipelines/external/*.yml
+- generated/pipelines/entities/*/*/*/*.yml

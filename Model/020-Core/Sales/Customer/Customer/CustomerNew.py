@@ -1,7 +1,7 @@
 from pyspark.sql import functions as F
 
-customer = spark.table("datam8_campus_dev_fka.stage.sales_customer_customer")
-customeraddress = spark.table("datam8_campus_dev_fka.stage.sales_customer_customeraddress")
+customer = spark.table(f"{catalog.name}.stage.Sales_Customer_Customer")
+customeraddress = spark.table(f"{catalog.name}.stage.Sales_Customer_CustomerAddress")
 
 business_function = (
     customer.alias("c")

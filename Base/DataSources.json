@@ -12,7 +12,8 @@
             "extendedProperties": {
                 "authMode": "sql_user",
                 "host": "localhost",
-                "database": "AdventureWorks",
+                "database": "adventureworks",
+                "unityCatalogConnection": "datam8_sample_adventureworks",
                 "username": "sa",
                 "password": "ref://sources/SQLServer/AdventureWorks",
                 "trust_server_certificate": true
@@ -23,20 +24,21 @@
         },
         {
             "extendedProperties": {
-                "storageAccount": "datam80adl",
-                "storagePath": "drop",
+                "storageAccount": "sample-storage",
+                "storagePath": "sample-drop",
                 "authenticationMethod": "AccountKey"
             },
             "name": "ExternalStorage",
-            "displayName": "datam80adl",
+            "displayName": "Sample Storage",
             "type": "LakeSource"
         },
         {
             "extendedProperties": {
-                "host": "datam80ora.westeurope.cloudapp.azure.com",
+                "host": "oracle.example.invalid",
                 "port": 1521,
                 "connectionType": "Service",
-                "connection": "datam8test",
+                "connection": "ORCLPDB1",
+                "unityCatalogConnection": "datam8_sample_oracledev",
                 "user": "datam8"
             },
             "name": "OracleDev",

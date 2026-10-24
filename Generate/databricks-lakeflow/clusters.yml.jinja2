@@ -1,0 +1,21 @@
+variables:
+{%- for cluster in data %}
+  {{ cluster.variable_name }}:
+    description: {{ cluster.display_name }}
+    type: complex
+    default:
+      spark_version: {{ cluster.spark_version }}
+      node_type_id: {{ cluster.node_type }}
+  {%- if cluster.num_workers is not none %}
+      num_workers: {{ cluster.num_workers }}
+  {%- endif %}
+      kind: CLASSIC_PREVIEW
+      data_security_mode: {{ cluster.data_security_mode }}
+      runtime_engine: {{ cluster.runtime_engine }}
+      custom_tags:
+        friendly_name: {{ cluster.display_name }}
+        workload_type: {{ cluster.workload_type }}
+  {%- for key, value in cluster.custom_tags.items() %}
+        {{ key }}: {{ value }}
+  {%- endfor %}
+{%- endfor %}
