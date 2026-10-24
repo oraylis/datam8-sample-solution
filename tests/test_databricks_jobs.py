@@ -47,6 +47,13 @@ class RootDiscoveryTests(unittest.TestCase):
 
 
 class ExecutionTests(unittest.TestCase):
+    def test_deployment_identity_matches_shared_service_principal(self):
+        from run_integration_tests import require_deployment_identity
+        configuration = {"run_as": {"service_principal_name": "test-sp"}}
+        require_deployment_identity(configuration, {"userName": "test-sp"})
+        with self.assertRaisesRegex(RuntimeError, "configured run_as"):
+            require_deployment_identity(configuration, {"userName": "user@example.invalid"})
+
     def test_existing_deployment_guard_rejects_unbound_and_removed_resources(self):
         with self.assertRaisesRegex(RuntimeError, "not bound"):
             require_existing_deployment({"jobs": {"existing": {}}}, {"jobs": {}})

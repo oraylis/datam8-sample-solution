@@ -44,17 +44,29 @@ Set `authentication_only=true` on a manual run to verify OIDC and Databricks
 identity access without deploying or resetting resources. This check does
 not count as a successful integration test.
 
-For local work, authenticate with `databricks auth login --profile
-oraylis-aut-dev` and run:
+Deployments use the standard service principal locally as well as in CI. After
+Azure CLI login with an identity allowed to read the Key Vault secrets, load
+the credentials into the process environment and run:
 
 ```powershell
-uv run python scripts/run_integration_tests.py --target databricks --profile oraylis-aut-dev
-uv run python scripts/run_integration_tests.py --target databricks-lakeflow --profile oraylis-aut-dev
-uv run python scripts/run_integration_tests.py --target all --profile oraylis-aut-dev
+$env:DATABRICKS_HOST = "https://adb-7622639135174415.15.azuredatabricks.net"
+$env:DATABRICKS_AUTH_TYPE = "azure-client-secret"
+$env:ARM_CLIENT_ID = az keyvault secret show --vault-name aut0kvt0dev0standard --name oraylis-automation-databricks-dev-client-id --query value -o tsv
+$env:ARM_TENANT_ID = az keyvault secret show --vault-name aut0kvt0dev0standard --name oraylis-automation-databricks-dev-tenant-id --query value -o tsv
+$env:ARM_CLIENT_SECRET = az keyvault secret show --vault-name aut0kvt0dev0standard --name oraylis-automation-databricks-dev-client-secret --query value -o tsv
+try {
+    uv run python scripts/run_integration_tests.py --target all --warehouse-id ae424851d8831b68
+} finally {
+    Remove-Item Env:ARM_CLIENT_SECRET
+}
 ```
 
 Pass `--warehouse-id ID` if the SQL warehouse ID is not set in
 `DATABRICKS_SQL_WAREHOUSE_ID`.
+Select a single target with `--target databricks` or `--target databricks-lakeflow`.
+An authenticated service-principal profile can instead be passed with `--profile`.
+The personal `oraylis-aut-dev` profile remains suitable for administrative setup;
+the runner rejects a different deployment identity before resetting any data.
 
 The test target configuration is in `tests/integration/targets.json`; jobs and
 catalog settings come from the existing generated bundles and their
@@ -95,6 +107,12 @@ be bound in that state. The runner refuses to create a second deployment and
 checks that deployment preserves every resource ID. When moving an existing
 deployment, use `databricks bundle deployment bind KEY ID --target e2e-serverless`
 for its existing resources before running the test.
+
+Provision the service principal as owner of the existing jobs once, using a
+workspace administrator. Existing pipelines retain their owner and grant the
+service principal `CAN_MANAGE`; their configured execution identity is the
+service principal. The Lakeflow bundle leaves those ACLs to provisioning,
+avoiding pipeline ownership changes during deployment.
 
 The Lakeflow bundle exposes `pipeline_full_refresh` (default `false`). Its
 `e2e-serverless` target enables it so the Root Load also rebuilds ingestion

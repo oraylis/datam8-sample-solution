@@ -10,6 +10,3 @@ targets:
       root_path: /Workspace/Users/bac1609c-a2ff-4ea1-a658-876a1ce5150d/.bundle/${bundle.name}/${bundle.target}
     run_as:
       service_principal_name: bac1609c-a2ff-4ea1-a658-876a1ce5150d
-    permissions:
-      - service_principal_name: bac1609c-a2ff-4ea1-a658-876a1ce5150d
-        level: CAN_MANAGE

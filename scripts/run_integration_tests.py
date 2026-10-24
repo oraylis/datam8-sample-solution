@@ -68,6 +68,13 @@ def require_existing_deployment(resources: dict, summary: dict) -> None:
                 raise RuntimeError(f"Existing bundle resource is not bound: {kind}.{key}; refusing to create a second deployment")
 
 
+def require_deployment_identity(configuration: dict, identity: dict) -> None:
+    expected = configuration.get("run_as", {}).get("service_principal_name")
+    actual = identity.get("applicationId") or identity.get("userName")
+    if not expected or actual != expected:
+        raise RuntimeError("Integration deployment must authenticate as the configured run_as service principal; use its OIDC or local service-principal credentials")
+
+
 def assert_no_rows(statement: str, *, warehouse: str, profile: str | None) -> None:
     rows = sql(statement, warehouse=warehouse, profile=profile)
     if rows:
@@ -130,7 +137,8 @@ def test_target(name, args, record):
         descriptor = solution / "ORAYLISDatabricksSample.dm8s"
         subprocess.run(["datam8", "validate", "--solution", str(descriptor)], cwd=solution, check=True, timeout=300)
         subprocess.run(["datam8", "generate", name, "--solution", str(descriptor), "--clean-output"], cwd=solution, check=True, timeout=900)
-        cli(["bundle", "validate", "--target", "e2e-serverless"], cwd=bundle, profile=args.profile, timeout=300)
+        configuration = json.loads(cli(["--output", "json", "bundle", "validate", "--target", "e2e-serverless"], cwd=bundle, profile=args.profile, timeout=300))
+        require_deployment_identity(configuration, api("GET", "/api/2.0/preview/scim/v2/Me", profile=args.profile))
         check_generated_python(bundle / "generated")
         resources = generated_resources(bundle)
         roots = lifecycle_roots(resources)
