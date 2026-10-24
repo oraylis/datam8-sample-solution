@@ -96,9 +96,19 @@ def execution_tree(api, run_id: int, *, check_pipelines: bool = True) -> dict:
             errors.append(f"Run {identifier}: {state}")
         if not run.get("tasks"):
             errors.append(f"Run {identifier} returned no tasks")
+        latest = {}
         for task in run.get("tasks", []):
+            key = task["task_key"]
+            rank = (task.get("attempt_number", 0), task.get("start_time", 0))
+            previous = latest.get(key)
+            if previous is None or rank > (previous.get("attempt_number", 0), previous.get("start_time", 0)):
+                latest[key] = task
+        for task in latest.values():
             task_state = task.get("state", {})
-            item = {"task_key": task.get("task_key"), "run_id": task.get("run_id"), "state": task_state}
+            item = {"task_key": task.get("task_key"), "run_id": task.get("run_id"), "state": task_state, "attempts": [
+                {"run_id": attempt.get("run_id"), "attempt_number": attempt.get("attempt_number", 0), "state": attempt.get("state", {})}
+                for attempt in run["tasks"] if attempt["task_key"] == task["task_key"]
+            ]}
             entry["tasks"].append(item)
             if task_state.get("result_state") != "SUCCESS":
                 errors.append(f"Run {identifier}, task {item['task_key']}: {task_state}")

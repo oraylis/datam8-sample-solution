@@ -72,6 +72,14 @@ class ExecutionTests(unittest.TestCase):
             return {"tasks": [task(1)], "next_page_token": "next page"}
         self.assertEqual([t["run_id"] for t in get_run(api, 10)["tasks"]], [1, 2])
 
+    def test_successful_retry_is_accepted_and_failed_attempt_is_reported(self):
+        first = task(11, "FAILED", task_key="retry", attempt_number=0)
+        second = task(12, task_key="retry", attempt_number=1)
+        tree = execution_tree(lambda method, path: run(1, tasks=[second, first]), 1)
+        self.assertEqual(tree["errors"], [])
+        self.assertEqual(tree["runs"][0]["tasks"][0]["run_id"], 12)
+        self.assertEqual(len(tree["runs"][0]["tasks"][0]["attempts"]), 2)
+
     def test_parent_success_does_not_hide_disabled_grandchild(self):
         responses = {
             "/api/2.2/jobs/runs/get?run_id=1": run(1, tasks=[task(11, run_job_task={"job_id": 2})]),
