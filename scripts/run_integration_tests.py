@@ -553,6 +553,16 @@ def require_deployment_identity(configuration: dict, identity: dict, environment
         raise RuntimeError("Bundle points at another workspace")
 
 
+def require_owned_classic_reset(actual, catalog, owner, call):
+    def inspect(key):
+        metadata = call("GET", "/api/2.1/unity-catalog/tables/" + quote(catalog + "." + key, safe="."))
+        if metadata.get("owner") != owner:
+            raise RuntimeError("Explicit reset refused: table is not owned by the selected run identity: " + key)
+    if actual:
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            list(pool.map(inspect, sorted(actual)))
+
+
 def require_local_user_identity(identity: dict, local_user: str | None) -> None:
     if local_user:
         actual_user = identity.get("userName")
@@ -906,6 +916,7 @@ def test_target(name, args, environment, record, resume_record=None):
             orphaned = reset_orphaned_dataset_tables(catalog, manifest, before, query, call)
             record({"reset_orphaned_dataset_tables": orphaned})
         if full and name == "databricks" and args.reset:
+            require_owned_classic_reset(actual, catalog, environment["run_principal"], call)
             for schema in reversed(SCHEMAS):
                 if schema in existing:
                     query(f"DROP SCHEMA {identifier(catalog)}.{identifier(schema)} CASCADE")
@@ -1010,6 +1021,7 @@ def test_target(name, args, environment, record, resume_record=None):
         unchanged = key not in changed_jobs and prior.get("asset_fingerprint") == fingerprints[key]
         if prior.get("result") == "passed" and unchanged and not prior.get("pending_create_repairs"):
             record({"reused_steps": {("repeat:" if repeat else "") + key: prior["root_run_id"]}})
+            print(f"REUSE {key} repeat={repeat} run={prior['root_run_id']}", flush=True)
             return
         prior_id = prior.get("root_run_id")
         rerun = None
@@ -1063,6 +1075,7 @@ def test_target(name, args, environment, record, resume_record=None):
                         raise RuntimeError("; ".join(tree["errors"]))
                     destination[key] = {**tree, "phase": phase, "result": "passed", "asset_fingerprint": fingerprints[key], "task_fingerprints": task_hashes}
                     record({"repeat_runs" if repeat else "runs": destination})
+                    print(f"RECONCILED {key} repeat={repeat} successful run={prior_id}", flush=True)
                     return
                 if not unchanged:
                     rerun = affected_tasks(

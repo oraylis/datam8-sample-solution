@@ -16,6 +16,12 @@ from integration_migration import refresh_datasets
 
 
 class IntegrationStateTests(unittest.TestCase):
+    def test_explicit_reset_rejects_foreign_ownership_even_for_an_expected_name(self):
+        from run_integration_tests import require_owned_classic_reset
+        with self.assertRaisesRegex(RuntimeError, "not owned"):
+            require_owned_classic_reset({"stage.customer"}, "sample", "run-sp", lambda *_: {"owner": "foreign"})
+        require_owned_classic_reset({"stage.customer"}, "sample", "run-sp", lambda *_: {"owner": "run-sp"})
+
     def test_selected_migration_refreshes_only_owned_datasets_in_dependency_order(self):
         manifest = {"datasets": [
             {"key": "raw.events", "pipeline": "ingest", "dependencies": []},
