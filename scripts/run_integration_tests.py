@@ -680,7 +680,7 @@ def check_catalog(call, catalog, environment):
 def validate_delta_cursors(manifest, environment, catalog, query):
     statements = []
     for dataset in manifest["datasets"]:
-        external = dataset.get("external", {})
+        external = dataset.get("external") or {}
         if external.get("extract_mode") != "delta":
             continue
         cursor = external.get("cursor_column")

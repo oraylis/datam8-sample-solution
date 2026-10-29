@@ -17,6 +17,19 @@ from integration_migration import refresh_datasets
 
 
 class IntegrationStateTests(unittest.TestCase):
+    def test_delta_cursor_validation_ignores_explicit_null_external_metadata(self):
+        from run_integration_tests import validate_delta_cursors
+        manifest = {"datasets": [
+            {"key": "stage.movements", "external": None},
+            {"key": "raw.movements", "columns": [{"name": "ModifiedAt", "type": "timestamp"}], "external": {
+                "extract_mode": "delta", "cursor_column": "modifiedat", "target_cursor_column": "ModifiedAt",
+                "connection_suffix": "postgresql", "location": "aw_warehouse.stock_movements", "database": "fixtures", "plugin": "postgresql",
+            }},
+        ]}
+        query = Mock(return_value=[["raw.movements", "true"]])
+        self.assertEqual(validate_delta_cursors(manifest, {"connection_prefix": "test_"}, "sample", query), 1)
+        self.assertIn("MAX(`ModifiedAt`)", query.call_args.args[0])
+
     def test_pipeline_diagnostics_use_supported_filter_and_keep_only_this_update(self):
         def api(method, path, body=None):
             if "/runs/get?" in path:
