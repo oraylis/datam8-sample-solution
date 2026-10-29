@@ -1157,7 +1157,6 @@ def test_target(name, args, environment, record, resume_record=None):
     comparison_manifest = json.loads((ROOT / "Output/databricks-lakeflow/generated/manifest.json").read_text()) if args.target == "all" else manifest
     canonical = {item["key"]: item for item in comparison_manifest["datasets"]}
     source_changes = {key: {"before": source_counts[key], "after": source_after[key]} for key in source_counts.keys() & source_after.keys() if source_counts[key] != source_after[key]}
-    repeat_status = "skipped_on_resume_to_avoid_replaying_successful_loads" if resume_record and resume_record.get("runs") else "passed"
     return {"result": "passed", "test_mode": "full", "data": data, "repeat_without_full_refresh": repeat_status, "full_data_acceptance": bool(args.verify_repeat and repeat_status == "passed"), "fingerprints": business_fingerprints(validation_query, catalog, manifest, canonical), "source_counts_after": source_after, "source_changes_during_run": source_changes}
 
 
