@@ -2,6 +2,11 @@ resources:
   jobs:
     {{ data.job_key }}:
       name: {{ ("[${var.environment}] " + data.job_name) | tojson }}
+      permissions:
+        - service_principal_name: ${var.deploy_service_principal}
+          level: IS_OWNER
+        - service_principal_name: ${var.run_as_service_principal}
+          level: CAN_MANAGE_RUN
       tags:
         platform: databricks-lake
       max_concurrent_runs: 1

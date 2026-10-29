@@ -35,8 +35,3 @@ include:
 - generated/schemas/*.yml
 - generated/jobs/*.yml
 - generated/pipelines/*.yml
-permissions:
-- service_principal_name: ${var.deploy_service_principal}
-  level: CAN_MANAGE
-- service_principal_name: ${var.run_as_service_principal}
-  level: CAN_RUN

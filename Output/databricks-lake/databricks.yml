@@ -28,8 +28,3 @@ variables:
     default: PAUSED
   notebook_path:
     default: files/generated/notebooks
-permissions:
-- service_principal_name: ${var.deploy_service_principal}
-  level: CAN_MANAGE
-- service_principal_name: ${var.run_as_service_principal}
-  level: CAN_RUN

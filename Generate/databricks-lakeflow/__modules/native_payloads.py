@@ -200,6 +200,10 @@ def native_resources(model, cache):
         definition = {
             "name": "[${var.environment}] Pipeline: " + job_display,
             "tags": {"platform": "databricks-lakeflow"},
+            "permissions": [
+                {"service_principal_name": "${var.deploy_service_principal}", "level": "IS_OWNER"},
+                {"service_principal_name": "${var.run_as_service_principal}", "level": "CAN_RUN"},
+            ],
             **job_compute(model, values[0].job),
             "edition": "ADVANCED",
             "channel": "CURRENT",
@@ -238,6 +242,10 @@ def native_resources(model, cache):
         definition = {
             "name": "[${var.environment}] Pipeline: Ingest " + job_display + " / " + connection_display,
             "tags": {"platform": "databricks-lakeflow"},
+            "permissions": [
+                {"service_principal_name": "${var.deploy_service_principal}", "level": "CAN_MANAGE"},
+                {"service_principal_name": "${var.run_as_service_principal}", "level": "CAN_RUN"},
+            ],
             **job_compute(model, items[0][0].job),
             "edition": "ADVANCED",
             "channel": "CURRENT",
@@ -259,6 +267,10 @@ def native_resources(model, cache):
         definition = {
             "name": "[${var.environment}] Load: " + job_display,
             "tags": {"platform": "databricks-lakeflow"},
+            "permissions": [
+                {"service_principal_name": "${var.deploy_service_principal}", "level": "IS_OWNER"},
+                {"service_principal_name": "${var.run_as_service_principal}", "level": "CAN_MANAGE_RUN"},
+            ],
             "max_concurrent_runs": 1,
             "timeout_seconds": 5400,
             "tasks": load_tasks(pipeline, datasets, full_refresh="${var.pipeline_full_refresh}"),
