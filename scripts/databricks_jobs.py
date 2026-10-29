@@ -246,7 +246,9 @@ def execute_root(
         receipt["repair_id"] = repair_id
         receipt["repaired_tasks"] = sorted(set(rerun_tasks or []))
     record(receipt)
+    print(f"MONITOR job={job_id} run={run_id} repair={repair_id} only={only_tasks or 'all'}", flush=True)
     deadline = time.monotonic() + timeout
+    last_progress = None
     while time.monotonic() < deadline:
         run = get_run(api, run_id, include_history=repair_id is not None)
         if repair_id is not None:
@@ -265,6 +267,13 @@ def execute_root(
             if tree["errors"]:
                 raise RuntimeError("; ".join(tree["errors"]))
             return tree
+        progress = {}
+        for task in run.get("tasks", []):
+            state = task.get("state", {}).get("result_state") or task.get("state", {}).get("life_cycle_state", "UNKNOWN")
+            progress[state] = progress.get(state, 0) + 1
+        if progress != last_progress:
+            print(f"PROGRESS run={run_id}: {progress}", flush=True)
+            last_progress = progress
         time.sleep(poll_seconds)
     api("POST", "/api/2.2/jobs/runs/cancel", {"run_id": run_id})
     tree = execution_tree(api, run_id, check_pipelines=False)

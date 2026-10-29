@@ -1243,7 +1243,9 @@ def main():
                     subprocess.run([sys.executable, "scripts/check_generation.py", "--target", name], cwd=ROOT, check=True)
         for name in selected:
             prior = previous_targets.get(name)
-            result = {**copy.deepcopy(prior or {}), "target": name, "catalog": environment["catalogs"][name], "result": "running"}
+            evidence_fields = {"runs", "repeat_runs", "job_fingerprints", "task_fingerprints", "fingerprint_version", "dataset_refreshes", "repeat_baseline_fingerprints", "asset_fingerprint"}
+            evidence = {key: copy.deepcopy(value) for key, value in (prior or {}).items() if key in evidence_fields}
+            result = {**evidence, "target": name, "catalog": environment["catalogs"][name], "result": "running", "started_at": datetime.now(timezone.utc).isoformat()}
             report["targets"].append(result)
             def record(value):
                 for key, item in value.items():
@@ -1257,6 +1259,8 @@ def main():
             except Exception as error:
                 record({"result": "failed", "error": sanitize(f"{type(error).__name__}: {error}")})
                 print(f"FAIL {name}: {sanitize(str(error))}", flush=True)
+            finally:
+                record({"finished_at": datetime.now(timezone.utc).isoformat()})
         successful = [item for item in report["targets"] if item["result"] == "passed"]
         if len(successful) > 1 and environment["test_mode"] == "full":
             report["comparison"] = "passed" if all(item["fingerprints"] == successful[0]["fingerprints"] for item in successful[1:]) else "failed"

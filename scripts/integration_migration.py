@@ -63,8 +63,13 @@ def refresh_datasets(selected, manifest, deployment, catalog, api, record, *, pr
             result = api("POST", "/api/2.0/pipelines/" + pipeline_id + "/updates", {"full_refresh_selection": selection})
             receipt.update(update_id=result["update_id"], result="running")
             record({"dataset_refreshes": receipts})
+            print(f"MIGRATION pipeline={key} update={receipt['update_id']} selection={selection}", flush=True)
         while time.monotonic() < deadline:
             update = api("GET", "/api/2.0/pipelines/" + pipeline_id + "/updates/" + receipt["update_id"])["update"]
+            if receipt.get("state") != update["state"]:
+                receipt["state"] = update["state"]
+                record({"dataset_refreshes": receipts})
+                print(f"MIGRATION update={receipt['update_id']}: {update['state']}", flush=True)
             if update["state"] in {"COMPLETED", "FAILED", "CANCELED"}:
                 receipt.update(result="passed" if update["state"] == "COMPLETED" else "failed", state=update["state"])
                 record({"dataset_refreshes": receipts})
