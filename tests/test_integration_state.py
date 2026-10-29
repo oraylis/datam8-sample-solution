@@ -3,6 +3,7 @@ import os
 import sys
 import tempfile
 import unittest
+from contextlib import ExitStack
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
@@ -16,6 +17,53 @@ from integration_migration import refresh_datasets
 
 
 class IntegrationStateTests(unittest.TestCase):
+    def test_resume_preserves_requested_and_unrequested_repeat_results(self):
+        import run_integration_tests as runner
+        manifest = {"lifecycle": ["load"], "target": "databricks-lakeflow", "execution_plan": {"load": [{"job": "daily", "depends_on": []}]}, "datasets": []}
+        resources = {"jobs": {"daily": {"tasks": []}}}
+        summary = {"jobs": {"daily": {"id": "7"}}}
+        environment = {"host": "https://workspace", "catalogs": {"databricks-lakeflow": "sample"}, "deployment_principal": "deploy", "run_principal": "run", "warehouse_id": "warehouse", "test_mode": "full"}
+        receipt = {"result": "passed", "root_run_id": 19, "asset_fingerprint": "same"}
+        previous = {"runs": {"daily": receipt}, "repeat_runs": {"daily": {**receipt, "root_run_id": 20}}, "job_fingerprints": {"daily": "same"}}
+        def api(method, path, body=None, **kwargs):
+            if path.endswith("/Me"):
+                return {"applicationId": "deploy"}
+            if "/jobs/get" in path:
+                return {"settings": {"run_as": {"service_principal_name": "run"}}}
+            raise AssertionError("Unexpected cloud call: " + path)
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / "bundle/generated").mkdir(parents=True)
+            (root / "bundle/generated/manifest.json").write_text(json.dumps(manifest))
+            config = {"run_as": {"service_principal_name": "run"}, "workspace": {"host": environment["host"], "file_path": "/files"}}
+            def cli(arguments, **kwargs):
+                return json.dumps({"applicationId": "deploy"} if arguments[-1].endswith("/Me") else config)
+            mocks = {"ROOT": root, "TARGETS": {"databricks-lakeflow": {"bundle_path": "bundle"}}}
+            with ExitStack() as stack:
+                for key, value in mocks.items():
+                    stack.enter_context(patch.object(runner, key, value))
+                for key, value in {
+                    "cli": Mock(side_effect=cli), "api": Mock(side_effect=api), "sql": Mock(return_value=[]),
+                    "check_catalog": Mock(), "generated_resources": Mock(return_value=resources),
+                    "required_assets": Mock(return_value=[]), "bundle_summary": Mock(return_value=summary),
+                    "check_active": Mock(), "deploy_bundle": Mock(return_value=summary),
+                    "reusable_source_preflight": Mock(return_value={"sample_counts": {}, "checked_at": "now"}),
+                    "job_fingerprints": Mock(return_value={"daily": "same"}), "task_fingerprints": Mock(return_value={"daily": {}}),
+                    "get_run": Mock(return_value={"state": {"life_cycle_state": "TERMINATED"}}),
+                    "validate_append_fixture": Mock(return_value="passed"), "validate_data": Mock(return_value={"counts": {}}),
+                    "business_fingerprints": Mock(return_value={"stage.events": {"rows": 2, "digest": "stable"}}),
+                    "source_preflight": Mock(return_value={}), "validate_delta_cursors": Mock(return_value=[]),
+                }.items():
+                    stack.enter_context(patch.object(runner, key, value))
+                execute = stack.enter_context(patch.object(runner, "execute_root"))
+                for requested, expected in [(False, "not_requested"), (True, "passed")]:
+                    with self.subTest(verify_repeat=requested):
+                        args = SimpleNamespace(profile=None, deployment_profile=None, validation_profile=None, local_user=None, environment="dev", target="databricks-lakeflow", reset=False, resume_full_refresh=False, force_lock=False, refresh_dataset=[], verify_repeat=requested)
+                        result = runner.test_target("databricks-lakeflow", args, environment, lambda _: None, resume_record=previous)
+                        self.assertEqual(result["repeat_without_full_refresh"], expected)
+                        self.assertEqual(result["full_data_acceptance"], requested)
+                execute.assert_not_called()
+
     def test_explicit_reset_rejects_foreign_ownership_even_for_an_expected_name(self):
         from run_integration_tests import require_owned_classic_reset
         with self.assertRaisesRegex(RuntimeError, "not owned"):
