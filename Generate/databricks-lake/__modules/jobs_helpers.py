@@ -66,6 +66,7 @@ class EntityJobInfo:
     dml_notebook: str
     raw_sources: list[dict[str, Any]]
     dependencies: set[int]
+    load_dependencies: set[int]
 
 
 @dataclass
@@ -73,7 +74,7 @@ class ModuleGroup:
     """
     Container holding all entities for a zone/product/module combination.
 
-    The grouping allows downstream steps to create both module-level jobs and zone aggregates.
+    Grouping keeps the model hierarchy intact while zone tasks are assembled.
     """
 
     zone_name: str
@@ -120,14 +121,13 @@ class JobsPlanner:
 
     # ------------------------------------------------------------------ public
     def build(self) -> dict[str, Any]:
-        """Return the complete create/load plan with module, zone, and orchestration jobs."""
+        """Return the complete create/load plan with zone and orchestration jobs."""
         modules = self._group_modules()
         create_plan = self._build_create_plan(modules)
         load_plan = self._build_load_plan(modules)
         return {
             "create_all": create_plan.get("create_all"),
             "create_zones": create_plan.get("create_zones", []),
-            "create_modules": create_plan.get("create_modules", []),
             "load_all": load_plan.get("load_all"),
             "load_jobs": load_plan.get("load_jobs", []),
         }
@@ -198,6 +198,7 @@ class JobsPlanner:
             dml_notebook = self._notebook_path(zone_folder, "dml", subfolders, f"{locator.entityName}.py")
             raw_sources = self.resolver.raw_sources(locator, wrapper.entity)
             dependencies = set(self.resolver.entity_dependencies(wrapper.entity))
+            load_dependencies = set(self.resolver.entity_load_dependencies(wrapper.entity))
 
             entities.append(
                 EntityJobInfo(
@@ -219,6 +220,7 @@ class JobsPlanner:
                     dml_notebook=dml_notebook,
                     raw_sources=raw_sources,
                     dependencies=dependencies,
+                    load_dependencies=load_dependencies,
                 )
             )
 
@@ -265,18 +267,18 @@ class JobsPlanner:
                         ),
                         raw_sources=[],
                         dependencies=set(),
+                        load_dependencies=set(),
                     )
                 )
         return entities
 
     # -------------------------------------------------------------- create plan
     def _build_create_plan(self, modules: dict[tuple[str, str, tuple[str, ...]], ModuleGroup]) -> dict[str, Any]:
-        """Derive module, zone, and orchestration create jobs for the generator."""
+        """Derive model-dependent entity tasks and the ordered zone creation job."""
         zone_map: dict[str, list[ModuleGroup]] = defaultdict(list)
         for module in modules.values():
             zone_map[module.zone_name].append(module)
 
-        create_modules: list[dict[str, Any]] = []
         create_zones: list[dict[str, Any]] = []
         create_all = self.resolver.job_definition("create_all") or {}
         create_cluster = create_all.get("cluster") or {}
@@ -293,67 +295,29 @@ class JobsPlanner:
 
             zone_modules.sort(key=lambda module: (module.product_display.lower(), module.module_display.lower()))
 
-            module_entries: list[tuple[ModuleGroup, str]] = []
-
+            zone_tasks: list[dict[str, Any]] = []
             for module in zone_modules:
-                job_key = self._module_job_key("Create", module.zone_name, module.product_dir, module.module_dirs)
-                tasks = []
-                entities = sorted(module.entities, key=lambda entity: entity.display_name.lower())
-                for entity in entities:
-                    tasks.append(
+                for entity in sorted(module.entities, key=lambda item: item.display_name.lower()):
+                    zone_tasks.append(
                         {
                             "task_key": self._task_key([entity.zone_name, entity.product_dir, *entity.module_dirs, entity.name]),
                             "notebook_path": entity.ddl_notebook,
                         }
                     )
 
-                output_path = Path(
-                    "jobs",
-                    module.zone_folder.lower(),
-                    module.product_dir,
-                    *module.module_dirs,
-                    f"{job_key}.yml",
-                )
-
-                create_modules.append(
-                    {
-                        "job_key": job_key,
-                        "job_name": f"Create {module.zone_display} {module.module_display}",
-                        "zone_name": module.zone_name,
-                        "zone_title": _zone_title(module.zone_name),
-                        "tasks": tasks,
-                        "cluster_variable": default_cluster_variable,
-                        "serverless": bool(create_cluster.get("serverless")),
-                        "environment_version": create_cluster.get("environment_version", "6"),
-                        "output_path": output_path,
-                    }
-                )
-                module_entries.append((module, job_key))
-
             zone_job_key = self._job_key(["Create", zone_name, "tables"])
             zone_folder_dir = zone_modules[0].zone_folder.lower()
             zone_output_path = Path("jobs", zone_folder_dir, f"Create_{_slug(zone_name)}.yml")
 
-            zone_tasks: list[dict[str, Any]] = []
-            previous_task: str | None = None
-            for _, module_job_key in module_entries:
-                depends_on = [previous_task] if previous_task else []
-                zone_tasks.append(
-                    {
-                        "task_key": module_job_key,
-                        "job_ref": module_job_key,
-                        "depends_on": depends_on,
-                    }
-                )
-                previous_task = module_job_key
-
             create_zones.append(
                 {
                     "job_key": zone_job_key,
-                    "job_name": f"Create {zone_name.title()} Tables",
+                    "job_name": f"Create {zone_modules[0].zone_display} Tables",
                     "zone_name": zone_name,
-                    "zone_modules": zone_modules,
                     "tasks": zone_tasks,
+                    "cluster_variable": default_cluster_variable,
+                    "serverless": bool(create_cluster.get("serverless")),
+                    "environment_version": create_cluster.get("environment_version", "6"),
                     "output_path": zone_output_path,
                 }
             )
@@ -361,19 +325,21 @@ class JobsPlanner:
         create_all = None
         if create_zones:
             tasks = []
-            previous = None
+            previous_zone_job = None
             for zone_job in create_zones:
                 task = {
                     "task_key": zone_job["job_key"],
                     "job_ref": zone_job["job_key"],
-                    "depends_on": [previous] if previous else [],
                 }
+                if previous_zone_job:
+                    task["depends_on"] = [previous_zone_job]
                 tasks.append(task)
-                previous = zone_job["job_key"]
+                previous_zone_job = zone_job["job_key"]
 
+            create_display = (self.resolver.job_definition("create_all") or {}).get("display_name", "Create All")
             create_all = {
                 "job_key": "Create_All_Tables",
-                "job_name": "Create All Tables",
+                "job_name": create_display,
                 "tasks": tasks,
                 "output_path": Path("jobs", "create_all_tables.yml"),
             }
@@ -381,29 +347,36 @@ class JobsPlanner:
         return {
             "create_all": create_all,
             "create_zones": create_zones,
-            "create_modules": create_modules,
         }
 
     # --------------------------------------------------------------- load plan
     def _build_load_plan(self, modules: dict[tuple[str, str, tuple[str, ...]], ModuleGroup]) -> dict[str, Any]:
-        """Create load jobs per job value and a chained orchestration job."""
+        """Build one layer-spanning load job per modeled jobs property value."""
+        all_entities = [entity for module in modules.values() for entity in module.entities if entity.job_value]
+        entity_map = {entity.entity_id: entity for entity in all_entities}
+        raw_owners: dict[str, str] = {}
+        for entity in all_entities:
+            if entity.zone_name != "stage":
+                continue
+            for raw_source in entity.raw_sources:
+                table_name = raw_source.get("table_name") or entity.name
+                raw_key = self._raw_notebook_path(entity, table_name)
+                owner = raw_owners.setdefault(raw_key, entity.job_value)
+                if owner != entity.job_value:
+                    raise ValueError(f"{raw_key}: external raw data is assigned to multiple model jobs; model the source in one job and reference its modeled dataset from other jobs")
         job_groups: dict[str, LoadJobGroup] = {}
+        for entity in all_entities:
+            group = job_groups.get(entity.job_value)
+            if group is None:
+                group = LoadJobGroup(job_value=entity.job_value, job_config=entity.job_config)
+                job_groups[entity.job_value] = group
+            group.entities.append(entity)
 
-        for module in modules.values():
-            for entity in module.entities:
-                if not entity.job_value:
-                    continue
-                group = job_groups.get(entity.job_value)
-                if group is None:
-                    group = LoadJobGroup(
-                        job_value=entity.job_value,
-                        job_config=entity.job_config,
-                    )
-                    job_groups[entity.job_value] = group
-                group.entities.append(entity)
-
+        job_keys = {
+            job_value: self._job_key(["Load", job_value])
+            for job_value in job_groups
+        }
         load_jobs: list[dict[str, Any]] = []
-
         for job_value in sorted(job_groups):
             group = job_groups[job_value]
             entities = group.entities
@@ -426,54 +399,24 @@ class JobsPlanner:
                 job_display=job_display,
                 entities=entities,
                 cluster_variable=cluster_variable,
+                entity_map=entity_map,
+                job_keys=job_keys,
             )
             if not job:
                 continue
             job["serverless"] = bool(cluster_data and cluster_data.get("serverless"))
             job["environment_version"] = (cluster_data or {}).get("environment_version", "6")
 
+            job["job_key"] = job_keys[job_value]
             job["schedule"] = (
-                {"cron_expression": cron_expression, "timezone_id": 'Europe/Amsterdam'}
-                if cron_expression
-                else None
+                {"cron_expression": cron_expression, "timezone_id": "Europe/Amsterdam"}
+                if cron_expression else None
             )
             job["output_path"] = Path("jobs", f"load_{_slug(job_value)}.yml")
+            job["upstream_job_dependencies"] = sorted(job["upstream_job_dependencies"])
             load_jobs.append(job)
 
-        load_all = None
-        if load_jobs:
-            tasks = []
-            previous = None
-            for job in load_jobs:
-                task_key = job["job_key"]
-                tasks.append(
-                    {
-                        "task_key": task_key,
-                        "job_ref": task_key,
-                        "depends_on": [previous] if previous else [],
-                    }
-                )
-                previous = task_key
-
-            cron_expression = next(
-                (job["schedule"]["cron_expression"] for job in load_jobs if job.get("schedule")),
-                None,
-            )
-
-            load_all = {
-                "job_key": "Load_All_Tables",
-                "job_name": "Load All Tables",
-                "schedule": (
-                    {"cron_expression": cron_expression, "timezone_id": 'Europe/Amsterdam'}
-                    if cron_expression
-                    else None
-                ),
-                "output_path": Path("jobs", "load_all_tables.yml"),
-                "tasks": tasks,
-            }
-
         return {
-            "load_all": load_all,
             "load_jobs": load_jobs,
         }
 
@@ -484,6 +427,8 @@ class JobsPlanner:
         job_display: str,
         entities: list[EntityJobInfo],
         cluster_variable: str | None,
+        entity_map: dict[int, EntityJobInfo],
+        job_keys: dict[str, str],
     ) -> dict[str, Any] | None:
         """Build the task graph for a specific job value, including raw prerequisites."""
         entity_task_keys: dict[int, str] = {}
@@ -500,6 +445,12 @@ class JobsPlanner:
         raw_task_lookup: dict[int, list[str]] = defaultdict(list)
         seen_raw_keys: set[str] = set()
 
+        upstream_job_values = {
+            entity_map[parent].job_value
+            for entity in entities
+            for parent in entity.load_dependencies
+            if parent in entity_map and entity_map[parent].job_value != job_value
+        }
         for entity in entities:
             if entity.zone_name != "stage":
                 continue
@@ -529,7 +480,7 @@ class JobsPlanner:
             task_key = entity_task_keys[entity.entity_id]
             dependency_keys = [
                 entity_task_keys[dep]
-                for dep in sorted(entity.dependencies)
+                for dep in sorted(entity.load_dependencies)
                 if dep in entity_task_keys
             ]
             depends_on = self._unique(
@@ -551,10 +502,11 @@ class JobsPlanner:
 
         return {
             "job_key": self._job_key(["Load", job_value]),
-            "job_name": f"Load {job_display}",
+            "job_name": job_display,
             "job_value": job_value,
             "cluster_variable": cluster_variable,
             "raw_tasks": raw_tasks,
+            "upstream_job_dependencies": {job_keys[value] for value in upstream_job_values},
             "entity_tasks": entity_tasks,
             "complete_dependencies": complete_dependencies,
         }
@@ -575,26 +527,6 @@ class JobsPlanner:
     def _job_key(self, parts: list[str]) -> str:
         """Compose a deterministic job key from the provided fragments."""
         return "_".join(_safe_name(part) for part in parts if part)
-
-    def _module_job_key(
-        self,
-        prefix: str,
-        zone_name: str,
-        product_dir: str,
-        module_dirs: tuple[str, ...],
-        job_value: str | None = None,
-    ) -> str:
-        """Return a modular job key including zone/product/module identifiers."""
-        parts = [prefix]
-        if job_value:
-            parts.append(job_value)
-        parts.append(zone_name)
-        parts.append(product_dir)
-        if module_dirs:
-            parts.extend(module_dirs)
-        else:
-            parts.append("General")
-        return self._job_key(parts)
 
     def _task_key(self, parts: list[str]) -> str:
         """Compute a unique task key derived from meaningful path fragments."""
@@ -629,7 +561,7 @@ class JobsPlanner:
         return result
 
     def _topological_sort(self, entities: list[EntityJobInfo]) -> list[EntityJobInfo]:
-        """Order entities so dependencies run first; fall back to alphabetical order if cyclic."""
+        """Order entities so dependencies run first; reject cyclic models."""
         if len(entities) <= 1:
             return entities
 
@@ -638,7 +570,7 @@ class JobsPlanner:
         adjacency = {entity.entity_id: set() for entity in entities}
 
         for entity in entities:
-            for dep in entity.dependencies:
+            for dep in entity.load_dependencies:
                 if dep in adjacency:
                     adjacency[dep].add(entity.entity_id)
                     indegree[entity.entity_id] += 1
@@ -661,5 +593,5 @@ class JobsPlanner:
                     ready.sort(key=lambda item: (item.zone_name, item.display_name.lower()))
 
         if len(ordered) != len(entities):
-            return sorted(entities, key=lambda entity: (entity.zone_name, entity.display_name.lower()))
+            raise ValueError("Cycle in modeled load dependencies")
         return ordered

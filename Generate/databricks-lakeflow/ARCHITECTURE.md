@@ -1,71 +1,109 @@
-# Lakeflow Target Architecture
+# Native Lakeflow Architecture
 
-The [target overview](README.md) describes generation and deployment. This target
-is isolated from the existing Databricks payloads, model metadata and bundle.
+## Generation
 
-## Payload Contracts
+[`dataset_plan.py`](__modules/dataset_plan.py) resolves properties and builds a
+single directed dataset graph. It rejects missing sources, cycles, incompatible
+dataset/write modes and unsupported streaming inputs before rendering.
+[`native_payloads.py`](__modules/native_payloads.py) groups this graph by the
+existing model `jobs` assignment, across Raw, Stage, Core and Curated schemas.
+It emits one Lakeflow pipeline for each model job/cadence, plus scheduled
+orchestration jobs, schemas, runtime files and the generation manifest. The
+pipeline source qualifies each dataset with its schema, so a pipeline can own
+and update connected datasets across layers. Layer boundaries alone do not
+create job-level barriers.
 
-- `payload.py` registers schema, cluster, notebook, runtime, pipeline and job payloads.
-- `payload_common.py` resolves zones, inherited properties, types, source mappings
-  and transformation paths. Missing optional folders are skipped independently of
-  the backend repository's lookup exception behavior.
-- `ddl_payloads.py` and `dml_payloads.py` generate modeled table notebooks including
-  identity metadata, SCD merges and dimension lookups.
-- `lakeflow_payloads.py` selects materialized overwrite entities, builds external
-  ingestion definitions and calculates dependencies within and between job groups.
-- Templates render prepared payload data. Runtime notebooks are copied through
-  `runtime_file.jinja2` and referenced relative to the generated notebook location.
+Cross-pipeline edges come from actual dataset dependencies. The graph must
+remain acyclic after grouping; otherwise generation reports the cycle instead
+of splitting work into order-dependent numeric waves. A shared external
+source must be assigned to exactly one model job. If different jobs claim the
+same raw table, generation fails and asks the model to place its source entity
+in one job and reference that modeled dataset from the others.
 
-When zones have an explicit `target`, that value controls selection. Otherwise
-the existing `raw`, `stage`, `core`, and `curated` zones are selected. Schema names
-use `targetName`; notebook folders use `localFolderName` when present. Both old
-and new cursor markers and table-property spellings are supported. Existing job
-groups and property values do not require renaming.
+Each orchestration job refreshes only its own model pipeline and managed
+ingestion pipelines. An upstream dataset assigned to another job is read from
+its existing state; its job is not nested into the downstream job. The manifest
+keeps cross-job dependencies so the local and CI runner executes each selected
+job once in dependency order and stops downstream execution after a failure.
+For this sample, the runner refreshes Sales (Daily) before Sales (Weekly),
+while the Sunday schedule remains an independent job schedule. There is no
+all-datasets job.
 
-Materialized entity pipelines are used only for overwrite entities without
-transformations, SCD0/SCD2 history or surrogate keys. Other entities receive
-DDL/DML notebooks. Full snapshots and managed ingestion retain source column
-names; downstream mappings are applied once. Managed ingestion is not assumed
-to provide synthetic extraction timestamps.
+Workspace names begin with `[dev]` or `[prod]`. Job names use
+`Load: <model job display name>`; pipeline names use
+`Pipeline: <model job display name>` so they cannot be confused with their
+orchestration jobs. Since each
+pipeline spans multiple schemas, no single layer name is appended. The target
+appears only in the `platform=databricks-lakeflow` tag. Managed ingestion
+pipelines use one pipeline per model job and UC connection and are tasks only
+in that model job. Their display names include both the model job display name
+and connection family.
 
-Transformation paths are normalized to basenames for generated function modules.
-An AST pass relocates recognized modeled table references inside string literals
-in copied scripts. Original model files and the existing target's output are
-unchanged. Expressions outside those literals are not rewritten.
+## Transformations and history
 
-## Verification
+[`pipeline.py.jinja2`](native/pipeline.py.jinja2) emits ordinary workspace Python
+files. Every public dataset is declared explicitly. Business functions remain
+DataFrame transformations; the generator rejects actions and imperative writes.
+Mappings and explicit dimension lookups are reused for projections. Lakeflow
+does not define `__file__` while evaluating these files, so runtime helpers are
+imported from the synchronized runtime path supplied through pipeline
+configuration rather than resolving paths from the Python module.
 
-The generation workflow checks two pinned backend/schema pairs:
+Snapshot-backed SCD2 entities receive an internal AUTO CDC streaming history
+and a public materialized view. SCD1 changes update the existing version; only
+the model's SCD2 columns create a new version. Technical load timestamps are not
+part of the history input. The public view computes surrogate keys using the
+canonical business-key values and native version beginning. No migration
+framework, classic DDL notebooks or custom Delta MERGE fallback is generated.
+Every modeled `write_mode=merge` uses AUTO CDC, including SCD1 entities without
+surrogate keys. A plain materialized view is reserved for `write_mode=overwrite`.
 
-| Backend | Schema submodule |
-| --- | --- |
-| `d53fd5561a254385412fb109585475cbba00287d` (existing dependency tag) | `e8c24f32971a9e4f1cd2b90526e213b209a91dd0` |
-| `3e3d89cdf404d1d4d2335c7736a85427f0f07931` (2.0.0 runtime) | `beaea1839810dcd535d87d0a973e67b8e9959e3e` |
+There is one Lakeflow surrogate rule rather than a model strategy selector.
+Databricks does not support identity columns on AUTO CDC targets and warns that
+materialized-view identities can be recomputed on updates. See the official
+[pipeline limitations](https://docs.databricks.com/aws/en/ldp/limitations).
+The classic target keeps Delta identity keys; cross-target checks compare
+business values and dimension business keys instead of generated identity values.
+The calendar's calculated DateSID alias avoids a second generated date key.
 
-With either runtime installed, run from the repository root:
+For append processing, the read is genuinely streaming. `write_mode=append`
+describes the output and the planner separately verifies the input dataset's
+append contract. It never infers a stream from a delta extraction watermark.
+No generic `stream_semantics` property is needed for the supported graph.
 
-```sh
-python scripts/check_lakeflow.py --baseline-ref main
-```
+## Source access and packaging
 
-The check creates disposable full solutions and runs real generation in fresh
-processes. It verifies notebook paths, Python/YAML syntax, job dependencies,
-source mappings, legacy/new delta markers, Oracle options, identity metadata,
-SCD2 generation, and dimension lookup contracts. It compares the existing target
-outputs with `main`; documentation generation timestamps are normalized.
+[`uc_sources.py`](../shared/uc_sources.py) is shared with the classic target.
+SQL Server, Oracle, MySQL and PostgreSQL reads use UC `remote_query`. HTTP uses
+only the UC connection proxy and its managed OAuth identity. The HTTP reader
+checks pagination cursors and totals, bounds retries and converts values to
+explicit Spark types. A failed page fails the entire dataset.
 
-The 2.0.0 runtime exposes an existing Power BI incompatibility on `main`:
-`relationships_payload` calls the removed `Model.get_model_entity_by_id` API.
-The check reports that specific baseline failure and verifies the candidate has
-the same failure and partial output. Other generation failures fail the check.
-The existing Power BI target is outside this change.
+The public model stores `.example.invalid` endpoints and `ref://sample/...`
+secret references. Environment-specific connection suffixes and database/service
+bindings live in [integration configuration](../../tests/integration/environments.json).
+Integration applies these non-secret bindings to the local solution through the
+CLI and restores its original metadata in a `finally` block. No temporary
+solution is used. Source plugins are installed locally from a checksummed lock;
+plugin files are Git-ignored.
 
-Run documentation checks with:
+Bundle resource YAML is included separately from synchronized Python files.
+[`bundle_assets.py`](../../scripts/bundle_assets.py) checks resource and `%run`
+references against explicit sync includes. Integration also checks the uploaded
+workspace paths, deployed pipeline compute against the model's cluster
+property, and run-as settings.
 
-```sh
-node --test scripts/check-docs.test.mjs
-node scripts/check-docs.mjs
-```
+## Safety and acceptance
 
-Generation checks are offline with respect to source databases and Databricks.
-Deployment and actual Spark/Delta execution require separate environment acceptance.
+Dev permits a controlled reset of its isolated sample catalogs and runs full
+Create, Load and data checks. Prod permits deployment and bounded source smoke
+queries only. It cannot run a reset or a full load through this runner.
+
+The runner rejects foreign catalog objects, mixed deployment bindings, active
+runs and unexpected resource replacement. A native reset refreshes only the
+owned pipeline graph; subsequent runs use no full refresh. All expected datasets
+come from generation manifests. Missing tasks, skipped required work, empty
+tables, key violations and incomplete HTTP responses fail acceptance.
+
+See the [integration guide](../../docs/integration-tests.md) for the current
+live-test status and commands. Generation success alone is not data acceptance.

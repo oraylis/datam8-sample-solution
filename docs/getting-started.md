@@ -43,32 +43,20 @@ for the model editors, relationships, sources and generation workflow.
 
 ## Option 2: Use the DataM8 CLI
 
-Use Python 3.12 or newer and install **DataM8 CLI 2.0.0** in a virtual environment.
-From your sample working directory:
-
-```sh
-python -m venv .venv
-```
-
-Activate it on Windows PowerShell:
+Use Python 3.13 or newer and uv. This sample pins the verified CLI 2.1.0
+source revision and model dependency in its project and lockfile.
+From the local sample checkout:
 
 ```powershell
-.\.venv\Scripts\Activate.ps1
+uv sync --frozen
+uv run python scripts/install_plugins.py
+uv run datam8 validate --solution ./ORAYLISDatabricksSample.dm8s
+uv run datam8 generate docs --solution ./ORAYLISDatabricksSample.dm8s
 ```
 
-Or on macOS/Linux:
-
-```sh
-source .venv/bin/activate
-```
-
-Install the CLI, validate the solution and generate its documentation:
-
-```sh
-python -m pip install "datam8==2.0.0"
-datam8 validate --solution ./ORAYLISDatabricksSample.dm8s
-datam8 generate docs --solution ./ORAYLISDatabricksSample.dm8s
-```
+The CLI operates directly on the persisted local solution. Installed plugins
+remain local dependencies. See [integration tests](integration-tests.md) for
+exact revisions, checksums, target selection and deployment commands.
 
 Check the exit codes, then open `Output/docs/index.md`. It should contain Customer
 and links to entity pages and the relationship diagram. Edit the model or templates

@@ -1,0 +1,128 @@
+{
+  "id": 4017,
+  "name": "PurchaseOrder",
+  "description": "AdventureWorks cross-system sample: PurchaseOrder",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "PurchaseOrderID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "dateAdded": "2026-10-26T14:03:07.627064Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "ProductID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:03:07.627206Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "SupplierID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:03:07.627287Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "WarehouseID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:03:07.627347Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "Quantity",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T14:03:07.627404Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "Status",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "dateAdded": "2026-10-26T14:03:07.627486Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T14:03:07.627558Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4006
+    }
+  ],
+  "transformations": [],
+  "relationships": [
+    {
+      "targetLocation": 4026,
+      "attributes": [
+        {
+          "sourceName": "ProductID",
+          "targetName": "ProductID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 4015,
+      "attributes": [
+        {
+          "sourceName": "SupplierID",
+          "targetName": "SupplierID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 4021,
+      "attributes": [
+        {
+          "sourceName": "WarehouseID",
+          "targetName": "WarehouseID"
+        }
+      ]
+    }
+  ]
+}

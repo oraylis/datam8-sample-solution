@@ -1,0 +1,194 @@
+{
+  "id": 4034,
+  "name": "FactShipment",
+  "description": "AdventureWorks cross-system sample: FactShipment",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "ShipmentID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "SalesOrderID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "CustomerID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "WarehouseID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "Carrier",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "TrackingNumber",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "Status",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "EstimatedDelivery",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "LatestEventAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 10,
+      "name": "LatestEventStatus",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 11,
+      "name": "EventCount",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 12,
+      "name": "CustomerSID",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T00:00:00Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4024
+    },
+    {
+      "sourceLocation": 4025
+    },
+    {
+      "sourceLocation": 3000
+    }
+  ],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "transform",
+      "function": {
+        "source": "FactShipment/transform.py"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "targetLocation": 4029,
+      "attributes": [
+        {
+          "sourceName": "WarehouseID",
+          "targetName": "WarehouseID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 3000,
+      "attributes": [
+        {
+          "sourceName": "CustomerSID",
+          "targetName": "CustomerSID"
+        }
+      ]
+    }
+  ]
+}

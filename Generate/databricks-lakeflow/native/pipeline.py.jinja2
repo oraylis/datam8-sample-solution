@@ -1,0 +1,106 @@
+# Native Lakeflow pipeline definitions (workspace Python file).
+import sys
+from types import SimpleNamespace
+from functools import reduce
+
+from pyspark import pipelines as dp
+from pyspark.sql import functions as F
+
+sys.path.insert(0, spark.conf.get("sample.runtime_path"))
+from uc_sources import read_database, read_http
+from dataset_frames import apply_dimension_lookups, project_dataset, try_cast_columns, validate_unique_keys
+
+catalog_name = spark.conf.get("catalog_name")
+connection_prefix = spark.conf.get("connection_prefix")
+catalog = SimpleNamespace(name=catalog_name)
+sample_date_start = spark.conf.get("sample.date_start", "2000-01-01")
+sample_date_end = spark.conf.get("sample.date_end", "2030-12-31")
+
+{% for dataset in data.datasets %}
+def input_{{ dataset.key | replace('.', '_') }}():
+{% if dataset.external %}
+{% if dataset.external.plugin == 'http_api' %}
+    return read_http(spark, connection_prefix + {{ dataset.external.connection_suffix | tojson }}, {{ dataset.external.location | tojson }}, {{ dataset.external_columns_repr | safe }})
+{% else %}
+    frame = read_database(spark, connection_prefix + {{ dataset.external.connection_suffix | tojson }}, {{ dataset.external.location | tojson }}, {{ (dataset.external.service_name if dataset.external.plugin == 'oracle' else dataset.external.database) | tojson }}, {{ dataset.external.plugin | tojson }})
+    return try_cast_columns(frame, {{ dataset.external_columns_repr | safe }})
+{% endif %}
+{% elif dataset.functions %}
+{% for step in dataset.transformation_steps %}
+{% if step.kind == 'function' %}
+{% set function = dataset.functions[step.function_index] %}
+{{ function | indent(4, true) | safe }}
+{% elif step.kind == 'lookup' %}
+    business_function = apply_dimension_lookups(business_function, {{ dataset.lookups | tojson }}, spark, catalog_name)
+{% endif %}
+{% endfor %}
+    return business_function
+{% else %}
+    frames = []
+{% for source in dataset.sources %}
+    frame = spark.{{ 'readStream' if dataset.kind == 'streaming_table' and (dataset.write_mode == 'append' or dataset.sequence_by) else 'read' }}.table(catalog_name + "." + {{ source.dataset | tojson }})
+{% if source.mapping %}
+    frame = frame.select(
+{% for mapping in source.mapping %}
+        F.col({{ mapping.source | tojson }}).alias({{ mapping.target | tojson }}),
+{% endfor %}
+    )
+{% endif %}
+    frames.append(frame)
+{% endfor %}
+    if not frames:
+        raise ValueError("Dataset has no input frames")
+    business_function = reduce(lambda left, right: left.unionByName(right, allowMissingColumns=True), frames)
+{% for step in dataset.transformation_steps %}
+{% if step.kind == 'lookup' %}
+    business_function = apply_dimension_lookups(business_function, {{ dataset.lookups | tojson }}, spark, catalog_name)
+{% endif %}
+{% endfor %}
+    return business_function
+{% endif %}
+
+{% if dataset.history_name or (dataset.kind == 'streaming_table' and dataset.write_mode == 'merge') %}
+@dp.temporary_view(name="__snapshot_{{ dataset.name }}")
+def snapshot_{{ dataset.key | replace('.', '_') }}():
+    frame = project_dataset(input_{{ dataset.key | replace('.', '_') }}(), {{ dataset.frame_spec_repr | safe }}, spark, catalog_name, include_surrogates=False, technical=False, apply_lookups=False)
+    return validate_unique_keys(frame, {{ dataset.keys | tojson }}, {{ dataset.key | tojson }}{% if dataset.sequence_by %}, {{ dataset.sequence_by | tojson }}{% endif %})
+
+dp.create_streaming_table(name={{ (dataset.history_name or dataset.qualified_name) | tojson }}, table_properties={"delta.enableChangeDataFeed": "true"}{% if dataset.history_name %}, private=True{% endif %})
+{% if dataset.sequence_by %}
+dp.create_auto_cdc_flow(
+    target={{ (dataset.history_name or dataset.qualified_name) | tojson }}, source="__snapshot_{{ dataset.name }}",
+    keys={{ dataset.keys | tojson }}, sequence_by=F.col({{ dataset.sequence_by | tojson }}),
+{% if dataset.delete_condition %}
+    apply_as_deletes=F.expr({{ dataset.delete_condition | tojson }}),
+{% endif %}
+{% else %}
+dp.create_auto_cdc_from_snapshot_flow(
+    target={{ (dataset.history_name or dataset.qualified_name) | tojson }}, source="__snapshot_{{ dataset.name }}",
+    keys={{ dataset.keys | tojson }},
+{% endif %}
+    stored_as_scd_type={{ 2 if dataset.scd2 else 1 }},
+{% if dataset.scd2 %}
+    track_history_column_list={{ dataset.scd2 | tojson }},
+{% endif %}
+)
+{% endif %}
+{% if dataset.kind == 'materialized_view' %}
+@dp.materialized_view(name={{ dataset.qualified_name | tojson }})
+{% elif dataset.write_mode == 'append' %}
+@dp.table(name={{ dataset.qualified_name | tojson }})
+{% endif %}
+{% if dataset.kind == 'materialized_view' or dataset.write_mode == 'append' %}
+def publish_{{ dataset.key | replace('.', '_') }}():
+{% if dataset.history_name %}
+    frame = spark.read.table(catalog_name + "." + {{ dataset.history_name | tojson }})
+{% else %}
+    frame = input_{{ dataset.key | replace('.', '_') }}()
+{% endif %}
+{% if dataset.external %}
+    return frame
+{% else %}
+    return project_dataset(frame, {{ dataset.frame_spec_repr | safe }}, spark, catalog_name, history={{ 'True' if dataset.scd2 else 'False' }}, apply_lookups=False)
+{% endif %}
+{% endif %}
+
+{% endfor %}

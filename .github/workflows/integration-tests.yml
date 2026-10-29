@@ -7,24 +7,31 @@ on:
         description: Integration target name, or all
         required: true
         default: all
-        type: string
-      authentication_only:
-        description: Verify the deployment identity without deploying or resetting data
+        type: choice
+        options:
+          - all
+          - databricks
+          - databricks-lakeflow
+      environment:
+        description: Integration environment
         required: true
-        default: false
-        type: boolean
+        default: dev
+        type: choice
+        options:
+          - dev
+          - prod
 
 permissions:
   contents: read
 
 concurrency:
-  group: sample-integration-environment
+  group: sample-integration-${{ inputs.environment }}
   cancel-in-progress: false
 
 jobs:
   integration:
     runs-on: ubuntu-24.04
-    environment: sample-integration
+    environment: sample-integration-${{ inputs.environment }}
     timeout-minutes: 360
     permissions:
       contents: read
@@ -37,11 +44,31 @@ jobs:
       DATABRICKS_SQL_WAREHOUSE_ID: ${{ vars.DATABRICKS_SQL_WAREHOUSE_ID }}
     steps:
       - uses: actions/checkout@v6
+      - name: Validate selection and GitHub environment
+        env:
+          SELECTED_TARGET: ${{ inputs.target }}
+          SELECTED_ENVIRONMENT: ${{ inputs.environment }}
+          EXPECTED_CONFIG: ${{ github.workspace }}/tests/integration/environments.json
+          ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
+          DATABRICKS_HOST: ${{ vars.DATABRICKS_HOST }}
+          DATABRICKS_SQL_WAREHOUSE_ID: ${{ vars.DATABRICKS_SQL_WAREHOUSE_ID }}
+        run: |
+          [[ "$SELECTED_TARGET" == all || "$SELECTED_TARGET" == databricks || "$SELECTED_TARGET" == databricks-lakeflow ]]
+          [[ "$SELECTED_ENVIRONMENT" == dev || "$SELECTED_ENVIRONMENT" == prod ]]
+          expected_host=$(jq -r --arg environment "$SELECTED_ENVIRONMENT" '.[$environment].host' "$EXPECTED_CONFIG")
+          expected_warehouse=$(jq -r --arg environment "$SELECTED_ENVIRONMENT" '.[$environment].warehouse_id' "$EXPECTED_CONFIG")
+          expected_client_id=$(jq -r --arg environment "$SELECTED_ENVIRONMENT" '.[$environment].deployment_principal' "$EXPECTED_CONFIG")
+          [[ -n "$expected_host" && "$DATABRICKS_HOST" == "$expected_host" ]] || { echo "::error::GitHub Environment sample-integration-$SELECTED_ENVIRONMENT must set DATABRICKS_HOST to $expected_host"; exit 1; }
+          [[ -n "$expected_warehouse" && "$DATABRICKS_SQL_WAREHOUSE_ID" == "$expected_warehouse" ]] || { echo "::error::GitHub Environment sample-integration-$SELECTED_ENVIRONMENT must set DATABRICKS_SQL_WAREHOUSE_ID to $expected_warehouse"; exit 1; }
+          [[ -n "$expected_client_id" && "$ARM_CLIENT_ID" == "$expected_client_id" ]] || { echo "::error::GitHub Environment sample-integration-$SELECTED_ENVIRONMENT must set ARM_CLIENT_ID to the configured deployment principal"; exit 1; }
+          [[ -n "${ARM_TENANT_ID:-}" ]] || { echo "::error::GitHub Environment sample-integration-$SELECTED_ENVIRONMENT must set ARM_TENANT_ID"; exit 1; }
       - uses: astral-sh/setup-uv@v6
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - uses: databricks/setup-cli@main
+      - run: uv sync --frozen
       - name: Sign in to Azure using OIDC
         uses: azure/login@v3
         with:
@@ -50,12 +77,11 @@ jobs:
           allow-no-subscriptions: true
       - name: Verify Databricks identity
         run: databricks current-user me
-      - run: uv sync --frozen
       - name: Run selected integration targets
-        if: ${{ github.event_name == 'workflow_dispatch' && !inputs.authentication_only }}
         env:
           SELECTED_TARGET: ${{ inputs.target }}
-        run: uv run python scripts/run_integration_tests.py --target "$SELECTED_TARGET"
+          SELECTED_ENVIRONMENT: ${{ inputs.environment }}
+        run: uv run python scripts/run_integration_tests.py --environment "$SELECTED_ENVIRONMENT" --target "$SELECTED_TARGET"
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v6

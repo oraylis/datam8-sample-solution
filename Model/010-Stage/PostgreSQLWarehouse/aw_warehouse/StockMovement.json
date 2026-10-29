@@ -1,0 +1,189 @@
+{
+  "id": 4012,
+  "name": "StockMovement",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "MovementID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:55.519798Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "ProductID",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:55.519860Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "WarehouseID",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:55.519884Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "SalesOrderID",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:55.519904Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "QuantityDelta",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:55.519921Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "Reason",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:55.519946Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:55.519968Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "append"
+    },
+    {
+      "property": "dataset_type",
+      "value": "streaming_table"
+    }
+  ],
+  "sources": [
+    {
+      "dataSource": "PostgreSQLWarehouse",
+      "sourceAlias": "StockMovement",
+      "sourceLocation": "\"aw_warehouse\".\"stock_movements\"",
+      "properties": [
+        {
+          "property": "extract_mode",
+          "value": "delta"
+        }
+      ],
+      "mapping": [
+        {
+          "sourceName": "movementid",
+          "targetName": "MovementID",
+          "sourceDataType": {
+            "type": "bigint",
+            "nullable": true,
+            "precision": 64,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "productid",
+          "targetName": "ProductID",
+          "sourceDataType": {
+            "type": "bigint",
+            "nullable": true,
+            "precision": 64,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "warehouseid",
+          "targetName": "WarehouseID",
+          "sourceDataType": {
+            "type": "bigint",
+            "nullable": true,
+            "precision": 64,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "salesorderid",
+          "targetName": "SalesOrderID",
+          "sourceDataType": {
+            "type": "bigint",
+            "nullable": true,
+            "precision": 64,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "quantitydelta",
+          "targetName": "QuantityDelta",
+          "sourceDataType": {
+            "type": "bigint",
+            "nullable": true,
+            "precision": 64,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "reason",
+          "targetName": "Reason",
+          "sourceDataType": {
+            "type": "character varying",
+            "nullable": true,
+            "charLen": 160
+          }
+        },
+        {
+          "sourceName": "modifiedat",
+          "targetName": "ModifiedAt",
+          "sourceDataType": {
+            "type": "timestamp with time zone",
+            "nullable": true
+          },
+          "properties": [
+            {
+              "property": "extract_column",
+              "value": "delta"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

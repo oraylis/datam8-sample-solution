@@ -58,4 +58,5 @@ your Power BI deployment workflow; reports can then use the shared semantic mode
 
 For setup, see [getting started](../../docs/getting-started.md) and
 [deployment preparation](../../docs/quickstart.md). For mapping rules, payloads
-and extension points, read [ARCHITECTURE.md](ARCHITECTURE.md).
+and extension points, read [ARCHITECTURE.md](ARCHITECTURE.md) and
+[properties](PROPERTIES.md).

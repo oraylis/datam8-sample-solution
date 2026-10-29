@@ -1,0 +1,10 @@
+{
+  "type": "folders",
+  "folders": [
+    {
+      "id": 9014,
+      "name": "shipments",
+      "path": "010-Stage/ShippingAPI/shipments"
+    }
+  ]
+}

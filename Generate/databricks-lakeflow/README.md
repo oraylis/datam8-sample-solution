@@ -1,79 +1,77 @@
 # Databricks Lakeflow Target
 
-This optional target adds Lakeflow ingestion and snapshot pipelines to the sample.
-It uses the existing Base and Model metadata. The default `databricks` target,
-its generated paths, and its deployment example remain available independently.
+This target publishes native Lakeflow materialized views and streaming tables.
+The classic notebook target remains independently deployable.
 
-## Generate
+Pipeline compute is selected by the `cluster` reference nested in each model
+`jobs` property. The sample currently uses the `extra_small` classic cluster for
+processing and managed-ingestion pipelines. Query-based connector support for
+classic pipeline compute is currently Beta in Databricks; Serverless remains an
+available model choice by setting the job's nested cluster value to `serverless`.
 
-Use the DataM8 app's generator selection or run:
-
-```sh
-datam8 generate databricks-lakeflow --solution ./ORAYLISDatabricksSample.dm8s
+```powershell
+uv run python scripts/check_generation.py --target databricks-lakeflow
 ```
 
-Output is written to `Output/databricks-lakeflow/generated` and is ignored by Git.
-The adjacent [bundle example](../../Output/databricks-lakeflow/databricks.yml)
-deploys only this target. Generated notebooks and runtime files are self-contained.
+Artifacts are generated locally into `Output/databricks-lakeflow/generated`.
+The adjacent [bundle](../../Output/databricks-lakeflow/databricks.yml) deploys
+these files to the selected Dev or Prod workspace. Generated files are ignored
+by Git and explicitly included in bundle synchronization.
 
-## Generated Processing
+Workspace display names start with `[dev]` or `[prod]`. A scheduled job uses
+`Load: <model job display name>`; its Lakeflow pipeline uses
+`Pipeline: <model job display name>`. Processing pipelines group datasets by
+the model's `jobs` assignment and span physical layer schemas. Managed
+ingestion is grouped by model job plus UC connection. Each load job refreshes
+only its own processing and ingestion pipelines. Cross-job dependencies stay
+in the manifest for ordered local/CI execution; a downstream job does not
+start its upstream job. Jobs and pipelines carry only the target tag
+`platform=databricks-lakeflow`.
 
-- External sources with `extract_mode=delta` use query-based Lakeflow Connect
-  ingestion. A single mapping must mark the cursor with `extract_mode=delta` or
-  the existing `extract_column=delta`. Source business keys are mapped back to
-  physical source column names.
-- Full and query sources use pipeline notebooks with `remote_query` and produce
-  materialized snapshots. SQL Server uses its configured database; Oracle uses
-  `service_name`, `service`, or the existing `connection` setting.
-- Simple modeled overwrite entities use Lakeflow materialized tables. Internal
-  sources are read as snapshots so updates are included.
-- Transformations, merges, history, surrogate keys, and append processing use
-  regular DDL/DML notebooks. SCD2 columns and current-record filters are retained.
-  Overwrite entities with surrogate keys use a merge that preserves matching
-  identities and deletes rows absent from the new snapshot.
-  Append directly from an external snapshot is rejected because it would replay
-  the entire snapshot on every run.
+In this sample, the local/CI runner updates the daily job before the weekly
+Sales job. The weekly cloud job refreshes only the weekly pipeline and reads
+the existing daily outputs; its Sunday 02:00 schedule does not invoke the daily
+job. Database tables use managed query-based ingestion grouped by model job
+and UC connection; views, custom queries and the shipping API use explicit UC
+snapshot readers. Each ingestion pipeline is a task only in its owning job.
+There is no Load All Tables job. Schedules come from the model job properties
+and remain paused by default.
 
-Raw landing tables retain physical source column names for both ingestion paths;
-the modeled load applies column mappings and calculations once. Notebook merges
-read the current landing snapshot on each run, rather than assuming managed
-ingestion creates the sample's synthetic extraction timestamps. History records
-changes visible at modeled load time, not every intermediate source change.
+## Model contract
 
-The target supports `full`, `query`, and query-based `delta` extraction. Gateway
-CDC ingestion requires a separate implementation and is rejected during generation.
+- `dataset_type` selects `materialized_view` or `streaming_table`. Entity settings
+  override the closest folder, then its parents. The sample sets it explicitly.
+- Source-level `extract_mode` selects `full`, `delta` or `query`. Delta requires
+  one source-mapping `extract_column=delta` cursor. A missing cursor is a
+  generation error.
+- `write_mode=append` requires a real append-only streaming input. An external
+  database or HTTP snapshot cannot become an append stream by changing this flag.
+- `write_mode=merge` always uses native AUTO CDC. It defaults to SCD1; only
+  attributes marked `SCD2` create historical versions. Full snapshots use
+  `create_auto_cdc_from_snapshot_flow`; ordered event feeds use
+  `create_auto_cdc_flow` with explicit sequencing and deletion metadata.
+- `StockMovement` is the sample's append-only path: the model assigns
+  `write_mode=append` in Stage and Core, and its PostgreSQL source is configured
+  for managed delta ingestion with `modifiedat` as the cursor. This models an
+  append-only source contract; it must be verified against the fixture before
+  treating updates or deletes as supported events.
+- Surrogate-key behavior is a target rule, with no strategy property. Classic
+  Delta notebooks retain identity columns. Native history targets cannot use
+  identity columns, so Lakeflow projects a deterministic signed 64-bit hash of
+  the canonical business key and history version. Acceptance rejects collisions.
+- The calendar has `DateID` as its stable key. `DateSID` is a calculated
+  compatibility alias defined using the existing attribute-expression contract.
 
-## Configure Deployment
+All five external source families use Unity Catalog connections. Credentials and
+hosts are absent from generated artifacts. HTTP snapshots use the shared UC
+proxy reader, with complete pagination and strict failure on partial responses.
 
-1. Configure your Databricks CLI profile or deployment environment. The example
-   contains no workspace URL or credentials.
-2. Create Unity Catalog connections named after the data source in lowercase,
-   for example `adventureworks` and `oracledev`, and grant the execution identity
-   the necessary connection and catalog permissions.
-3. Set `catalog_name` and review cluster variables and the `lf_` schema prefix.
-   Generated schemas use each zone's `targetName`, for example `lf_bronze`.
-   The personal development target adds your short user name to the prefix.
-4. From `Output/databricks-lakeflow`, validate the bundle in your environment,
-   deploy it, run **Lakeflow Create All Tables**, and then **Lakeflow Load All Tables**.
+The current sample has 22 Raw, 21 Stage, 15 Core and 11 Curated public objects.
+Internal history streaming tables are listed separately in `manifest.json`.
+The data products are MasterData, Sales, Procurement, Inventory, Commerce and
+Shipping; their names form part of the generated physical table names.
 
-`remote_query` requires a compatible Databricks runtime. The pipeline examples
-use the preview channel. See Databricks' [remote query reference](https://docs.databricks.com/aws/en/query-federation/remote-queries)
-and [query-based ingestion guide](https://docs.databricks.com/aws/en/ingestion/lakeflow-connect/query-based-pipeline)
-for connector requirements.
-
-Existing job names such as `sales_daily` and `sales_weekly` are preserved. A
-schedule is emitted only when the selected schedule value explicitly defines
-`quartz_cron_expression`; the old abbreviated `cron` example is not guessed.
-Schedules are paused by default. Per-run catalog/schema overrides must agree
-with deployed pipeline settings; pipeline destinations are deployment settings.
-
-Model transformation files remain unchanged. When copying functions, this target
-relocates recognized literal references to modeled tables to the chosen catalog,
-schema prefix, and zone `targetName`. Custom dynamically constructed references
-must use the notebook's `catalog_name` and `schema_prefix` themselves.
-
-Generated DDL refuses automatic identity-table rebuilds that could change existing
-surrogate keys. Schema changes on those tables require a manual migration that
-preserves key values. DDL errors propagate to the job.
-
-For contracts, scope and verification, see [ARCHITECTURE.md](ARCHITECTURE.md).
+See [architecture](ARCHITECTURE.md), [Lakeflow properties](PROPERTIES.md), and
+the [deployment guide](DEPLOYMENT.md) for environment-specific bindings. The
+[integration guide](../../docs/integration-tests.md) covers shared runner
+behavior and acceptance checks.

@@ -17,6 +17,7 @@ from pyspark.sql import functions as F  # noqa: F401
 
 # COMMAND ----------
 
+dbutils.widgets.text("connection_prefix", "sample_", "UC Connection Prefix")
 dbutils.widgets.text("env", "dev", "Environment")
 dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka", "Catalog Name")
 dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
@@ -76,11 +77,8 @@ catalog.set_active()
 source_location = {{ data.source_location | default("", true) | tojson }}
 extract_mode = ("{{ data.extract_mode or '' }}").lower()
 connection_name = {{ data.connection_name | tojson }}
-remote_query_option = {{ data.remote_query_option | tojson }}
+connection_name = dbutils.widgets.get("connection_prefix") + connection_name
 remote_query_database = {{ data.remote_query_database | tojson }}
-remote_query_query = {{ (data.remote_query_query or "") | tojson }}
-remote_query_dbtable = {{ (data.remote_query_dbtable or "") | tojson }}
-source_filter = {{ (data.source_filter or "") | tojson }}
 column_renames = {{ data.column_renames | default([], true) | tojson }}
 target_columns = {{ data.target_columns | default([], true) | tojson }}
 
@@ -107,32 +105,21 @@ print(f"Using delta value: {max_raw}")
 if not source_location:
     source_location = source_name
 
-escaped_database = remote_query_database.replace("'", "''")
-if remote_query_dbtable:
-    escaped_table = remote_query_dbtable.replace("'", "''")
-    remote_query_sql = (
-        f"SELECT * FROM remote_query('{connection_name}', {remote_query_option} => "
-        f"'{escaped_database}', dbtable => '{escaped_table}')"
-    )
-else:
-    if extract_mode == "delta":
-        delta_column = {{ (data.source_delta_column or data.delta_column or "") | tojson }}
-        if not delta_column:
-            raise ValueError("Delta extraction is missing its cursor column.")
-        where_keyword = " AND " if " where " in f" {remote_query_query.lower()} " else " WHERE "
-        remote_query_query += f"{where_keyword}[{delta_column}] > '{max_raw}'"
-    escaped_query = remote_query_query.replace("'", "''")
-    remote_query_sql = (
-        f"SELECT * FROM remote_query('{connection_name}', {remote_query_option} => "
-        f"'{escaped_database}', query => '{escaped_query}')"
-    )
-table_df = spark.sql(remote_query_sql)
-if source_filter:
-    table_df = table_df.filter(F.expr(source_filter))
-if extract_mode == "delta" and remote_query_dbtable:
+from pathlib import Path
+import sys
+notebook_folder = Path(dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get()).parent
+# DML notebooks are generated/notebooks/<zone>/dml/<product>/<module>/<entity>.
+sys.path.insert(0, str(Path("/Workspace") / notebook_folder.relative_to("/").parents[4] / "runtime"))
+from uc_sources import read_database, read_http
+{% if data.plugin == "http_api" %}
+table_df = read_http(spark, connection_name, source_location, {{ data.http_columns_repr | safe }})
+{% else %}
+table_df = read_database(spark, connection_name, source_location, remote_query_database, {{ data.plugin | tojson }})
+{% endif %}
+if extract_mode == "delta":
     delta_column = {{ (data.source_delta_column or data.delta_column or "") | tojson }}
     if not delta_column:
-        raise ValueError("Delta extraction is missing its cursor column.")
+        raise ValueError("Delta extraction is missing its cursor column")
     table_df = table_df.filter(F.col(delta_column) > F.lit(max_raw))
 # COMMAND ----------
 
@@ -159,7 +146,8 @@ for rename in column_renames:
     table_df = table_df.withColumnRenamed(source_column, target_column)
 
 if target_columns:
-    table_df = table_df.select(*(["__Year","__Month","__Day","__InsertTimestampUTC"] + target_columns))
+    target_types = {{ data.target_types | tojson }}
+    table_df = table_df.select("__Year", "__Month", "__Day", "__InsertTimestampUTC", *[F.col(name).cast(target_types[name]).alias(name) for name in target_columns])
 # COMMAND ----------
 
 # MAGIC %md

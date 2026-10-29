@@ -1,0 +1,60 @@
+{
+  "id": 4021,
+  "name": "Warehouse",
+  "description": "AdventureWorks cross-system sample: Warehouse",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "WarehouseID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "dateAdded": "2026-10-26T14:03:39.855245Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "Name",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "dateAdded": "2026-10-26T14:03:39.855312Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T14:03:39.855344Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4010
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

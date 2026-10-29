@@ -1,0 +1,101 @@
+{
+  "id": 4002,
+  "name": "Measure",
+  "displayName": "Measure",
+  "description": "",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "Total Sales",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true,
+        "precision": 18,
+        "scale": 4
+      },
+      "expression": "SUM('Sales Order'[TotalCosts])",
+      "expressionLanguage": "dax",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "Estimated Purchase Value",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true,
+        "precision": 18,
+        "scale": 4
+      },
+      "expression": "SUM('PurchaseOrder'[EstimatedPurchaseValue])",
+      "expressionLanguage": "dax",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "Available Quantity",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true,
+        "precision": 18,
+        "scale": 4
+      },
+      "expression": "SUM('InventorySnapshot'[AvailableQuantity])",
+      "expressionLanguage": "dax",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "Web Sessions",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true,
+        "precision": 18,
+        "scale": 4
+      },
+      "expression": "COUNTROWS('WebSession')",
+      "expressionLanguage": "dax",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "Returns",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true,
+        "precision": 18,
+        "scale": 4
+      },
+      "expression": "COUNTROWS('Return')",
+      "expressionLanguage": "dax",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "Shipments",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true,
+        "precision": 18,
+        "scale": 4
+      },
+      "expression": "COUNTROWS('Shipment')",
+      "expressionLanguage": "dax",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    }
+  ],
+  "sources": [],
+  "transformations": [],
+  "relationships": []
+}

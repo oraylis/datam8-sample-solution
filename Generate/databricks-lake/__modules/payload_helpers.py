@@ -6,6 +6,8 @@ by `payload.py` to prepare template input dictionaries.
 
 from __future__ import annotations
 
+import hashlib
+import re
 from typing import Any
 
 from metadata_utils import MetadataResolver
@@ -108,6 +110,73 @@ def _build_scd2_tracking_columns(resolver: MetadataResolver) -> list[dict[str, A
     ]
 
 
+def build_create_table_sql(
+    *,
+    zone: str,
+    full_table_name: str,
+    columns: list[dict[str, Any]],
+    partitions: list[str],
+    table_comment: str,
+    table_properties: dict[str, str],
+) -> str:
+    """Render the complete target DDL during generation for notebook review."""
+    def quote_identifier(value: str) -> str:
+        return "`" + value.replace("`", "``") + "`"
+
+    def quote_literal(value: str) -> str:
+        return "'" + value.replace("'", "''") + "'"
+
+    schema_identity_parts = []
+    for column in columns:
+        simple_type = re.sub(r"\s+", "", column["delta_type"].lower())
+        schema_identity_parts.append(f"{column['name']}:{simple_type}")
+    schema_identity_parts.extend(f"partition:{name}" for name in partitions)
+    schema_identity_parts.extend(
+        f"layout:{column['name']}:{column['metadata']['data_layout']}"
+        for column in columns
+        if column.get("metadata", {}).get("data_layout")
+    )
+    schema_version = hashlib.sha256("|".join(sorted(schema_identity_parts)).encode("utf-8")).hexdigest()[:10]
+
+    column_lines = []
+    primary_keys = []
+    for column in columns:
+        line = f"{quote_identifier(column['name'])} {column['delta_type']}"
+        metadata = column.get("metadata", {})
+        if metadata.get("surrogate_key"):
+            line += " GENERATED ALWAYS AS IDENTITY"
+            primary_keys.append(quote_identifier(column["name"]))
+        if not column["delta_nullable"]:
+            line += " NOT NULL"
+        if column.get("delta_comment"):
+            line += " COMMENT " + quote_literal(column["delta_comment"])
+        column_lines.append(line)
+
+    if primary_keys:
+        constraint_name = f"pk_{{catalog_name}}_{zone}_{full_table_name}_{schema_version}"
+        column_lines.append(
+            f"CONSTRAINT {quote_identifier(constraint_name)} PRIMARY KEY ({', '.join(primary_keys)}) RELY"
+        )
+
+    parts = [
+        f"CREATE TABLE IF NOT EXISTS `{{catalog_name}}`.{quote_identifier(zone)}.{quote_identifier(full_table_name)} (",
+        "  " + ",\n  ".join(column_lines),
+        ")",
+        "USING DELTA",
+    ]
+    if table_comment:
+        parts.append("COMMENT " + quote_literal(table_comment))
+    if partitions:
+        parts.append("CLUSTER BY (" + ", ".join(quote_identifier(name) for name in partitions) + ")")
+    if table_properties:
+        properties = ", ".join(
+            f"{quote_literal(key)}={quote_literal(value)}"
+            for key, value in sorted(table_properties.items())
+        )
+        parts.append("TBLPROPERTIES (" + properties + ")")
+    return "\n".join(parts) + ";"
+
+
 def _build_raw_table_tag_inputs(
     *,
     product_info: Any | None,
@@ -135,6 +204,8 @@ def _build_stage_sources(
     resolver: MetadataResolver,
     entity: Any,
     raw_sources: list[dict[str, Any]],
+    *,
+    cast_to_model: bool = False,
 ) -> list[dict[str, Any]]:
     """Create stage-source descriptors consumed by modeled DML template rendering."""
     stage_sources: list[dict[str, Any]] = []
@@ -145,7 +216,11 @@ def _build_stage_sources(
                 "data_source": raw_source["data_source"],
                 "raw_full_table": raw_source["raw_full_table"],
                 "source_zone": "raw",
-                "select_expressions": resolver.stage_select_expressions(entity, raw_source),
+                "select_expressions": resolver.stage_select_expressions(
+                    entity,
+                    raw_source,
+                    cast_to_model=cast_to_model,
+                ),
                 "properties": raw_source["properties"],
             }
         )

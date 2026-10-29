@@ -29,8 +29,6 @@ This target generates Databricks notebooks and bundle resources for:
 - `generate_cluster_resources` -> `clusters/clusters.yml.jinja2`
 - `generate_jobs_create_all` -> `jobs/create_all.yml.jinja2`
 - `generate_jobs_create_zones` -> `jobs/create_zone.yml.jinja2`
-- `generate_jobs_create_modules` -> `jobs/create_module.yml.jinja2`
-- `generate_jobs_load_all` -> `jobs/load_all.yml.jinja2`
 - `generate_jobs_load_groups` -> `jobs/load_job_group.yml.jinja2`
 
 ## Important Internal Contracts
@@ -38,7 +36,7 @@ This target generates Databricks notebooks and bundle resources for:
 - Product/module name fallback logic is centralized in `_resolve_product_module_context`.
 - Merge assignment and schema-column shaping must keep key names consumed by `dml_notebook.py.jinja2`.
 - Raw extraction mapping projection is centralized in `_raw_mapping_projection`.
-- Job planning shape comes from `JobsPlanner.build()` and is cached under `("databricks_jobs_plan",)`.
+- Job planning shape comes from `JobsPlanner.build()` and is cached under `("databricks_jobs_plan",)`. Load jobs group all assigned entities across layers by the resolved `jobs` property; model source references create task edges within that group and manifest dependencies across groups. A load job never invokes another load job.
 
 ## Template Style
 

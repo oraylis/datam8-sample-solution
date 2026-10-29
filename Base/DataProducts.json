@@ -1,41 +1,115 @@
 {
-    "type": "dataProducts",
-    "dataProducts": [
+  "type": "dataProducts",
+  "dataProducts": [
+    {
+      "name": "Sales",
+      "displayName": "Sales",
+      "dataModules": [
         {
-            "name": "Sales",
-            "displayName": "All Entities for Sales",
-            "dataModules": [
-                {
-                    "name": "Customer",
-                    "displayName": "Customer module"
-                },
-                {
-                    "name": "Product",
-                    "displayName": "Product module"
-                },
-                {
-                    "name": "Other",
-                    "displayName": "Other module"
-                },
-                {
-                    "name": "Order",
-                    "displayName": "Order module"
-                }
-            ]
+          "name": "Orders",
+          "displayName": "Orders"
+        }
+      ]
+    },
+    {
+      "name": "HR",
+      "displayName": "All Entities for Human Resources",
+      "dataModules": [
+        {
+          "name": "Employee",
+          "displayName": "Employee module"
         },
         {
-            "name": "HR",
-            "displayName": "All Entities for Human Resources",
-            "dataModules": [
-                {
-                    "name": "Employee",
-                    "displayName": "Employee module"
-                },
-                {
-                    "name": "Payroll",
-                    "displayName": "Payroll module"
-                }
-            ]
+          "name": "Payroll",
+          "displayName": "Payroll module"
         }
-    ]
+      ]
+    },
+    {
+      "name": "MasterData",
+      "displayName": "MasterData",
+      "dataModules": [
+        {
+          "name": "Customer",
+          "displayName": "Customer"
+        },
+        {
+          "name": "Product",
+          "displayName": "Product"
+        },
+        {
+          "name": "Address",
+          "displayName": "Address"
+        },
+        {
+          "name": "Calendar",
+          "displayName": "Calendar"
+        },
+        {
+          "name": "Reporting",
+          "displayName": "Reporting"
+        }
+      ]
+    },
+    {
+      "name": "Procurement",
+      "displayName": "Procurement",
+      "dataModules": [
+        {
+          "name": "Supplier",
+          "displayName": "Supplier"
+        },
+        {
+          "name": "Orders",
+          "displayName": "Orders"
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "displayName": "Inventory",
+      "dataModules": [
+        {
+          "name": "Warehouse",
+          "displayName": "Warehouse"
+        },
+        {
+          "name": "Stock",
+          "displayName": "Stock"
+        }
+      ]
+    },
+    {
+      "name": "Commerce",
+      "displayName": "Commerce",
+      "dataModules": [
+        {
+          "name": "Session",
+          "displayName": "Session"
+        },
+        {
+          "name": "Cart",
+          "displayName": "Cart"
+        },
+        {
+          "name": "Returns",
+          "displayName": "Returns"
+        }
+      ]
+    },
+    {
+      "name": "Shipping",
+      "displayName": "Shipping",
+      "dataModules": [
+        {
+          "name": "Shipment",
+          "displayName": "Shipment"
+        },
+        {
+          "name": "Tracking",
+          "displayName": "Tracking"
+        }
+      ]
+    }
+  ]
 }

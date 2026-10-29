@@ -1,76 +1,35 @@
 bundle:
   name: datam8_sample_lake
-
 include:
-  - bundle.targets.yml
-  - generated/schemas/*.yml
-  - generated/clusters/*.yml
-  - generated/jobs/*.yml
-  - generated/jobs/*/*.yml
-  - generated/jobs/*/*/*/*.yml
-
+- bundle.targets.yml
+- generated/schemas/*.yml
+- generated/clusters/*.yml
+- generated/jobs/*.yml
+- generated/jobs/*/*.yml
+- generated/jobs/*/*/*/*.yml
 sync:
   include:
-    - generated/**
-    - utils/**
-
+  - generated/**
+  - utils/**
 variables:
-  notebook_path:
-    default: files/generated/notebooks
-  catalog_name:
-    default: datam8_sample_test_lake
+  catalog_name: {}
   environment:
     default: dev
-  owner:
-    default: datam8_sample_dev_owner
+  owner: {}
+  deploy_service_principal: {}
+  run_as_service_principal: {}
+  connection_prefix:
+    default: sample_
+  date_start:
+    default: "2000-01-01"
+  date_end:
+    default: "2030-12-31"
   unpause_schedules:
     default: PAUSED
-  permission_group_name:
-    default: datam8_sample_dev_owner
-  run_as_service_principal:
-    description: Service principal retained for the established shared targets
-    default: 43af8bb2-e1f1-4e63-98eb-23dfb12d5189
-  datalake_name:
-    default: aut0adl0dev
-  datalake_container_name:
-    default: campus
-
-targets:
-  dev-personal:
-    mode: development
-    workspace:
-      host: https://adb-1451794858897186.6.azuredatabricks.net
-      root_path: ~/.bundle/${bundle.name}/${bundle.target}
-  dev:
-    presets:
-      name_prefix: "[${bundle.target}] "
-      pipelines_development: true
-      trigger_pause_status: PAUSED
-      jobs_max_concurrent_runs: 10
-      tags:
-        dev: ${bundle.target}
-    workspace:
-      host: https://adb-1451794858897186.6.azuredatabricks.net
-      root_path: /etl/${bundle.name}/${bundle.target}
-    run_as:
-      service_principal_name: ${var.run_as_service_principal}
-  prod:
-    mode: production
-    variables:
-      environment: prod
-      catalog_name: datam8_campus_prod
-      datalake_name: aut0adl0dev
-      datalake_container_name: campus
-      run_as_service_principal: 43af8bb2-e1f1-4e63-98eb-23dfb12d5189
-      unpause_schedules: UNPAUSED
-      permission_group_name: trainer
-    workspace:
-      host: https://adb-1451794858897186.6.azuredatabricks.net
-      root_path: /etl/${bundle.name}/${bundle.target}
-    run_as:
-      service_principal_name: ${var.run_as_service_principal}
-  e2e-serverless:
-    default: true
-    workspace:
-      host: https://adb-7622639135174415.15.azuredatabricks.net
-      root_path: ~/.bundle/${bundle.name}/${bundle.target}
+  notebook_path:
+    default: files/generated/notebooks
+permissions:
+- service_principal_name: ${var.deploy_service_principal}
+  level: CAN_MANAGE
+- service_principal_name: ${var.run_as_service_principal}
+  level: CAN_RUN

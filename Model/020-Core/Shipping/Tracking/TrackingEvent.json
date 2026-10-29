@@ -1,0 +1,84 @@
+{
+  "id": 4025,
+  "name": "TrackingEvent",
+  "description": "AdventureWorks cross-system sample: TrackingEvent",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "EventAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:04:07.767568Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "EventID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:04:07.767709Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:04:07.767834Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "SalesOrderID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:04:07.767886Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "Status",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:04:07.768008Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4014
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

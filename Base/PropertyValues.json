@@ -18,25 +18,21 @@
     {
       "name": "overwrite",
       "displayName": "overwrite",
-      "default": false,
       "property": "write_mode"
     },
     {
       "name": "delta",
       "displayName": "Delta",
-      "default": false,
       "property": "extract_column"
     },
     {
       "name": "delta",
       "displayName": "Delta",
-      "default": false,
       "property": "extract_mode"
     },
     {
       "name": "query",
       "displayName": "Query",
-      "default": false,
       "property": "extract_mode"
     },
     {
@@ -49,18 +45,18 @@
     {
       "name": "weekly",
       "displayName": "Weekly",
-      "default": false,
       "property": "schedules",
-      "cron": "1 0"
+      "cron": "0 0 2 ? * SUN"
     },
     {
       "name": "small",
       "displayName": "S",
-      "default": false,
       "property": "cluster",
       "node_type": "Standard_D4ds_v5",
       "num_workers": 4,
-      "workload_type": "job"
+      "workload_type": "job",
+      "spark_version": "18.x-scala2.13",
+      "data_security_mode": "DATA_SECURITY_MODE_STANDARD"
     },
     {
       "name": "extra_small",
@@ -69,12 +65,14 @@
       "property": "cluster",
       "node_type": "Standard_D4ds_v5",
       "num_workers": 2,
-      "workload_type": "job"
+      "workload_type": "job",
+      "spark_version": "18.x-scala2.13",
+      "data_security_mode": "DATA_SECURITY_MODE_STANDARD",
+      "driver_node_type": "Standard_D8ds_v5"
     },
     {
       "name": "sales_daily",
       "displayName": "Sales (Daily)",
-      "default": false,
       "property": "jobs",
       "properties": [
         {
@@ -83,14 +81,13 @@
         },
         {
           "property": "cluster",
-          "value": "serverless"
+          "value": "extra_small"
         }
       ]
     },
     {
       "name": "sales_weekly",
       "displayName": "Sales (Weekly)",
-      "default": false,
       "property": "jobs",
       "properties": [
         {
@@ -99,7 +96,7 @@
         },
         {
           "property": "cluster",
-          "value": "serverless"
+          "value": "extra_small"
         }
       ]
     },
@@ -134,7 +131,7 @@
       "properties": [
         {
           "property": "cluster",
-          "value": "serverless"
+          "value": "extra_small"
         }
       ]
     },
@@ -148,6 +145,49 @@
           "value": "serverless"
         }
       ]
+    },
+    {
+      "name": "append",
+      "displayName": "append",
+      "property": "write_mode"
+    },
+    {
+      "name": "full",
+      "displayName": "full",
+      "property": "extract_mode"
+    },
+    {
+      "name": "materialized_view",
+      "property": "dataset_type"
+    },
+    {
+      "name": "streaming_table",
+      "property": "dataset_type"
+    },
+    {
+      "name": "masterdata",
+      "displayName": "MasterData",
+      "property": "business_area"
+    },
+    {
+      "name": "procurement",
+      "displayName": "Procurement",
+      "property": "business_area"
+    },
+    {
+      "name": "inventory",
+      "displayName": "Inventory",
+      "property": "business_area"
+    },
+    {
+      "name": "commerce",
+      "displayName": "Commerce",
+      "property": "business_area"
+    },
+    {
+      "name": "shipping",
+      "displayName": "Shipping",
+      "property": "business_area"
     }
   ]
 }

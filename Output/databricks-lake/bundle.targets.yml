@@ -1,13 +1,33 @@
 targets:
-  e2e-serverless:
+  dev:
+    default: true
+    mode: production
     variables:
-      catalog_name: datam8_sample_test_lake
+      catalog_name: dm8_sample_dev_lake
+      environment: dev
+      owner: e2d1a9de-1e86-45bf-91c7-675f7e493425
+      deploy_service_principal: 98f791a9-70d7-4fda-9ac2-a6670d8b26e2
+      run_as_service_principal: e2d1a9de-1e86-45bf-91c7-675f7e493425
+      connection_prefix: dm8_sample_dev_
       unpause_schedules: PAUSED
     workspace:
-      host: https://adb-7622639135174415.15.azuredatabricks.net
-      root_path: /Workspace/Users/bac1609c-a2ff-4ea1-a658-876a1ce5150d/.bundle/${bundle.name}/${bundle.target}
+      host: https://adb-7405619058873076.16.azuredatabricks.net
+      root_path: /Workspace/Users/98f791a9-70d7-4fda-9ac2-a6670d8b26e2/.bundle/${bundle.name}/${bundle.target}
     run_as:
-      service_principal_name: bac1609c-a2ff-4ea1-a658-876a1ce5150d
-    permissions:
-      - service_principal_name: bac1609c-a2ff-4ea1-a658-876a1ce5150d
-        level: CAN_MANAGE
+      service_principal_name: e2d1a9de-1e86-45bf-91c7-675f7e493425
+  prod:
+    default: false
+    mode: production
+    variables:
+      catalog_name: dm8_sample_prod_lake
+      environment: prod
+      owner: cf4f5592-3e0f-4959-ab8f-0da132a47759
+      deploy_service_principal: 90508705-d7af-4efc-9445-11f340bf3e83
+      run_as_service_principal: cf4f5592-3e0f-4959-ab8f-0da132a47759
+      connection_prefix: dm8_sample_prod_
+      unpause_schedules: PAUSED
+    workspace:
+      host: https://adb-7405605063080000.0.azuredatabricks.net
+      root_path: /Workspace/Users/90508705-d7af-4efc-9445-11f340bf3e83/.bundle/${bundle.name}/${bundle.target}
+    run_as:
+      service_principal_name: cf4f5592-3e0f-4959-ab8f-0da132a47759

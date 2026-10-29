@@ -1,0 +1,124 @@
+{
+  "id": 4031,
+  "name": "FactInventorySnapshot",
+  "description": "AdventureWorks cross-system sample: FactInventorySnapshot",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "ProductID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "WarehouseID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "OnHand",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "Reserved",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "AvailableQuantity",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "SnapshotAsOfUTC",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4022
+    }
+  ],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "transform",
+      "function": {
+        "source": "FactInventorySnapshot/transform.py"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "targetLocation": 4027,
+      "attributes": [
+        {
+          "sourceName": "ProductID",
+          "targetName": "ProductID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 4029,
+      "attributes": [
+        {
+          "sourceName": "WarehouseID",
+          "targetName": "WarehouseID"
+        }
+      ]
+    }
+  ]
+}

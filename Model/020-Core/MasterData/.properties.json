@@ -1,0 +1,23 @@
+{
+  "type": "folders",
+  "folders": [
+    {
+      "id": 1513,
+      "name": "MasterData",
+      "properties": [
+        {
+          "property": "business_area",
+          "value": "masterdata"
+        },
+        {
+          "property": "jobs",
+          "value": "sales_daily"
+        },
+        {
+          "property": "write_mode",
+          "value": "merge"
+        }
+      ]
+    }
+  ]
+}

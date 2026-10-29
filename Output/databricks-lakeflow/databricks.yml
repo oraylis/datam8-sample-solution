@@ -4,40 +4,39 @@ sync:
   include:
   - generated/**
 variables:
-  lakeflow_output_path:
-    description: Generated notebooks and runtime beneath the workspace file root
-    default: files/generated
-  catalog_name:
-    default: datam8_sample_test_lakeflow
-  lakeflow_schema_prefix:
-    description: Keeps Lakeflow tables separate from the existing Databricks target
-    default: ''
+  catalog_name: {}
   environment:
     default: dev
-  job_name_prefix:
-    default: ''
+  owner: {}
+  deploy_service_principal: {}
+  run_as_service_principal: {}
+  connection_prefix:
+    default: sample_
+  sqlserver_connection: {}
+  oracle_connection: {}
+  mysql_connection: {}
+  postgresql_connection: {}
+  date_start:
+    default: "2000-01-01"
+  date_end:
+    default: "2030-12-31"
   unpause_schedules:
     default: PAUSED
+  lakeflow_output_path:
+    default: files/generated
+  lakeflow_schema_prefix:
+    default: ''
+  job_name_prefix:
+    default: ''
   pipeline_full_refresh:
-    description: Rebuild pipeline tables and ingestion state on each Load run
     default: false
-targets:
-  dev-personal:
-    default: true
-    variables:
-      job_name_prefix: '[dev ${workspace.current_user.short_name}] '
-    workspace:
-      root_path: ~/.bundle/${bundle.name}/${bundle.target}
-  prod:
-    mode: production
-    variables:
-      environment: prod
-    workspace:
-      root_path: /Shared/.bundle/${bundle.name}/${bundle.target}
 include:
 - bundle.targets.yml
 - generated/schemas/*.yml
-- generated/clusters/*.yml
 - generated/jobs/*.yml
-- generated/pipelines/external/*.yml
-- generated/pipelines/entities/*/*/*/*.yml
+- generated/pipelines/*.yml
+permissions:
+- service_principal_name: ${var.deploy_service_principal}
+  level: CAN_MANAGE
+- service_principal_name: ${var.run_as_service_principal}
+  level: CAN_RUN

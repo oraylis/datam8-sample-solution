@@ -1,0 +1,126 @@
+{
+  "id": 4023,
+  "name": "StockMovement",
+  "description": "AdventureWorks cross-system sample: StockMovement",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "MovementID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:55.519798Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "ProductID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:55.519860Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "WarehouseID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:55.519884Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "SalesOrderID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:55.519904Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "QuantityDelta",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:55.519921Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "Reason",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:55.519946Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:55.519968Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "append"
+    },
+    {
+      "property": "dataset_type",
+      "value": "streaming_table"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4012
+    }
+  ],
+  "transformations": [],
+  "relationships": [
+    {
+      "targetLocation": 4026,
+      "attributes": [
+        {
+          "sourceName": "ProductID",
+          "targetName": "ProductID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 4021,
+      "attributes": [
+        {
+          "sourceName": "WarehouseID",
+          "targetName": "WarehouseID"
+        }
+      ]
+    }
+  ]
+}

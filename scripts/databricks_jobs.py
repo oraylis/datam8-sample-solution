@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import re
 import time
+import re
 from urllib.parse import urlencode
 
 import yaml
@@ -24,48 +24,73 @@ def generated_resources(bundle) -> dict:
     return resources
 
 
-def lifecycle_roots(resources: dict) -> list[tuple[str, str]]:
-    """Select graph roots by semantic tags, independently of generated job names."""
+def execution_plan(resources: dict, manifest: dict, *, required_phases=("create", "load")) -> list[tuple[str, str]]:
+    """Resolve existing job entry points and their modeled cross-job DAG."""
     jobs = resources.get("jobs", {})
-    if not jobs:
-        raise ValueError("Bundle defines no jobs")
-    edges = {}
-    for key, job in jobs.items():
+    plan = manifest.get("execution_plan", {})
+    ordered = []
+    nested_jobs = {}
+    for key, definition in jobs.items():
         children = set()
-        for task in job.get("tasks", []):
+        for task in definition.get("tasks", []):
             nested = task.get("run_job_task")
-            if not nested:
-                continue
-            match = JOB_REFERENCE.fullmatch(str(nested.get("job_id", "")))
-            if not match or match[1] not in jobs:
-                raise ValueError(f"{key}: nested job must reference a job in this bundle")
-            children.add(match[1])
-        edges[key] = children
-    visited, pending = set(), set()
-
-    def visit(key):
-        if key in pending:
-            raise ValueError(f"Cycle in bundle job graph at {key}")
-        if key in visited:
-            return
-        pending.add(key)
-        for child in edges[key]:
-            visit(child)
-        pending.remove(key)
-        visited.add(key)
-
-    for key in jobs:
-        visit(key)
-    called = set().union(*edges.values())
-    phases = {}
-    for key in sorted(set(jobs) - called):
-        phase = jobs[key].get("tags", {}).get("datam8_phase")
-        if phase not in PHASE_TIMEOUTS:
-            raise ValueError(f"Root job {key} needs a supported datam8_phase tag")
-        phases.setdefault(phase, []).append(key)
-    if not {"create", "load"} <= phases.keys():
-        raise ValueError("Bundle needs create and load lifecycle roots")
-    return [(phase, key) for phase in PHASE_TIMEOUTS for key in phases.get(phase, [])]
+            if nested:
+                match = JOB_REFERENCE.fullmatch(str(nested.get("job_id", "")))
+                if not match or match[1] not in jobs:
+                    raise ValueError(f"{key}: nested job must reference a job in this bundle")
+                children.add(match[1])
+        nested_jobs[key] = children
+    create = plan.get("create")
+    if create:
+        key = create.get("job")
+        if key not in jobs or create.get("depends_on"):
+            raise ValueError("Create execution plan must reference one existing root job")
+        ordered.append(("create", key))
+        create_jobs, active = set(), set()
+        def visit_create(parent):
+            if parent in active:
+                raise ValueError("Cycle in nested create-job graph")
+            if parent in create_jobs:
+                return
+            active.add(parent)
+            for child in nested_jobs[parent]:
+                visit_create(child)
+            active.remove(parent)
+            create_jobs.add(parent)
+        visit_create(key)
+    else:
+        create_jobs = set()
+    load = plan.get("load", [])
+    if not isinstance(load, list) or not load:
+        raise ValueError("Load execution plan must list existing model jobs")
+    entries = {entry.get("job"): set(entry.get("depends_on", [])) for entry in load}
+    if None in entries or len(entries) != len(load):
+        raise ValueError("Load execution plan contains missing or duplicate jobs")
+    if set(entries) - jobs.keys():
+        raise ValueError("Load execution plan references a job outside this bundle")
+    if set(entries) & create_jobs:
+        raise ValueError("A job cannot be both a create task and a load entry point")
+    if any(dependencies - entries.keys() for dependencies in entries.values()):
+        raise ValueError("Load execution plan has a dependency outside the selected load jobs")
+    if manifest.get("target") == "databricks":
+        for key in entries:
+            if nested_jobs[key]:
+                raise ValueError(f"{key}: modeled load jobs must not invoke another load job")
+    resolved, pending = set(), set(entries)
+    while pending:
+        ready = [entry["job"] for entry in load if entry["job"] in pending and entries[entry["job"]] <= resolved]
+        if not ready:
+            raise ValueError("Cycle in load execution plan")
+        for key in ready:
+            ordered.append(("load", key))
+            resolved.add(key)
+            pending.remove(key)
+    phases = {phase for phase, _ in ordered}
+    if set(required_phases) - phases:
+        raise ValueError("Execution plan is missing required phases: " + ", ".join(sorted(set(required_phases) - phases)))
+    if set(jobs) != create_jobs | set(entries):
+        raise ValueError("Bundle contains jobs that are not represented in the manifest execution plan")
+    return ordered
 
 
 def get_run(api, run_id: int) -> dict:
@@ -141,9 +166,48 @@ def execution_tree(api, run_id: int, *, check_pipelines: bool = True) -> dict:
     return {"root_run_id": int(run_id), "runs": runs, "errors": errors}
 
 
-def execute_root(api, job_id: int, *, timeout: int, record, poll_seconds: int = 15) -> dict:
-    run_id = int(api("POST", "/api/2.2/jobs/run-now", {"job_id": int(job_id)})["run_id"])
-    record({"root_run_id": run_id, "job_id": int(job_id), "result": "running"})
+def execute_root(
+    api,
+    job_id: int,
+    *,
+    timeout: int,
+    record,
+    poll_seconds: int = 15,
+    repair_run_id: int | None = None,
+    rerun_tasks: list[str] | None = None,
+) -> dict:
+    if repair_run_id is None:
+        run_id = int(api("POST", "/api/2.2/jobs/run-now", {"job_id": int(job_id)})["run_id"])
+        repair_id = None
+    else:
+        if not rerun_tasks:
+            raise ValueError("A repaired job run must name at least one failed task")
+        history = api(
+            "GET",
+            "/api/2.2/jobs/runs/get?" + urlencode({"run_id": int(repair_run_id), "include_history": "true"}),
+        ).get("repair_history", [])
+        previous_repairs = [
+            item for item in history
+            if item.get("type") == "REPAIR" and item.get("id") is not None
+        ]
+        repair_request = {"run_id": int(repair_run_id), "rerun_tasks": sorted(set(rerun_tasks))}
+        if previous_repairs:
+            # The API returns repair history in chronological order, but the
+            # opaque repair IDs are not monotonic. Use the latest entry, not
+            # the numerically largest ID.
+            repair_request["latest_repair_id"] = int(previous_repairs[-1]["id"])
+        repair = api(
+            "POST",
+            "/api/2.2/jobs/runs/repair",
+            repair_request,
+        )
+        run_id = int(repair_run_id)
+        repair_id = repair.get("repair_id")
+    receipt = {"root_run_id": run_id, "job_id": int(job_id), "result": "running"}
+    if repair_id is not None:
+        receipt["repair_id"] = repair_id
+        receipt["repaired_tasks"] = sorted(set(rerun_tasks or []))
+    record(receipt)
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         run = get_run(api, run_id)

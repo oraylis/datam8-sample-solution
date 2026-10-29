@@ -21,6 +21,8 @@ from delta import DeltaTable  # noqa: F401
 
 # COMMAND ----------
 
+dbutils.widgets.text("date_start", "2000-01-01", "Calendar start")
+dbutils.widgets.text("date_end", "2030-12-31", "Calendar end")
 dbutils.widgets.text("env", "dev", "Environment")
 dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka", "Catalog Name")
 dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
@@ -38,6 +40,8 @@ dbutils.widgets.text("job_run_id", "", "Job Run ID")
 # COMMAND ----------
 
 # Retrieve a job-level parameter (will use default if it doesn't exist)
+sample_date_start = dbutils.widgets.get("date_start")
+sample_date_end = dbutils.widgets.get("date_end")
 env = dbutils.widgets.get("env")
 catalog_name = dbutils.widgets.get("catalog_name")
 owner = dbutils.widgets.get("owner")
@@ -275,7 +279,7 @@ staged_union = staged_updates.unionByName(staged_inserts)
 
 # COMMAND ----------
 
-{%- if merge_cfg.has_scd2_history %}
+{%- if merge_cfg and merge_cfg.has_scd2_history %}
 merge_builder = (
     target_table.alias("tgt")
     .merge(
@@ -385,6 +389,24 @@ functions = {}
 
 # COMMAND ----------
 
+{%- if transform.kind | default("function") == "model_source" %}
+business_function = (
+    spark.table(f"{catalog.name}.{{ transform.source_projection.zone }}.{{ transform.source_projection.full_table_name }}")
+    .selectExpr(
+        {%- for expr in transform.source_projection.select_expressions %}
+        "{{ expr | safe }}"{% if not loop.last %},{% endif %}
+        {%- endfor %}
+    )
+    .withColumns({
+        "__BusinessFunction": F.lit("{{ transform.key }}"),
+        "__InsertTimestampUTC": F.current_timestamp(),
+    })
+)
+functions["{{ transform.key }}"] = {"df": business_function}
+
+# COMMAND ----------
+{%- else %}
+
 functions["{{ transform.key }}"] = {
   "name": "{{ transform.name }}",
   "merge_type": "{{ transform.merge_type }}",
@@ -407,6 +429,7 @@ business_function = business_function.withColumns({  # noqa: F821
     "__InsertTimestampUTC": F.current_timestamp(),
 })
 functions["{{ transform.key }}"]["df"] = business_function  # noqa: F821
+{%- endif %}
 
 # COMMAND ----------
 
@@ -414,6 +437,7 @@ functions["{{ transform.key }}"]["df"] = business_function  # noqa: F821
 
 {%- if data.final_function_key %}
 final_df = functions["{{ data.final_function_key }}"]["df"]
+{%- endif %}
 
 # COMMAND ----------
 
@@ -574,6 +598,7 @@ staged_inserts = (
 )
 staged_union = staged_updates.unionByName(staged_inserts)
 {%- endif %}
+{%- endif %}
 
 # COMMAND ----------
 
@@ -582,6 +607,7 @@ staged_union = staged_updates.unionByName(staged_inserts)
 
 # COMMAND ----------
 
+{%- if merge_cfg and merge_cfg.enabled %}
 {%- if merge_cfg.has_scd2_history %}
 merge_builder = (
     target_table.alias("tgt")
@@ -671,7 +697,6 @@ if final_write_df.limit(1).count() > 0:
     final_write_df.write.saveAsTable(table_name_ref, mode="{{ data.spark_write_mode }}")
 else:
     print("No transformed rows to write; keeping the existing target table unchanged.")
-{%- endif %}
 {%- endif %}
 
 # COMMAND ----------

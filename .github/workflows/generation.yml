@@ -21,13 +21,22 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
+      - name: Validate target selection
+        env:
+          SELECTED_TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.target || 'all' }}
+        run: |
+          if [[ "$SELECTED_TARGET" != all ]] && ! jq -e --arg target "$SELECTED_TARGET" '.generatorTargets | any(.name == $target)' ORAYLISDatabricksSample.dm8s >/dev/null; then
+            available=$(jq -r '[.generatorTargets[].name] | join(", ")' ORAYLISDatabricksSample.dm8s)
+            echo "::error::Unknown target '$SELECTED_TARGET'. Available targets: $available"
+            exit 1
+          fi
       - uses: astral-sh/setup-uv@v6
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - run: uv sync --frozen
-      - name: Check bundle lifecycle orchestration
-        run: uv run python -m unittest discover -s tests -p test_databricks_jobs.py
+      - name: Run generator planning tests
+        run: uv run python -m unittest discover -s tests
       - name: Generate and check targets
         env:
           SELECTED_TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.target || 'all' }}

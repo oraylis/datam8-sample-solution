@@ -1,0 +1,129 @@
+{
+  "id": 4024,
+  "name": "Shipment",
+  "description": "AdventureWorks cross-system sample: Shipment",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "Carrier",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:04:01.364002Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "CustomerID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:04:01.364070Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "EstimatedDelivery",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T14:04:01.364095Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T14:04:01.364114Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "SalesOrderID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:04:01.364131Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "ShipmentID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "isBusinessKey": true,
+      "dateAdded": "2026-10-26T14:04:01.364147Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "Status",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:04:01.364163Z"
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "TrackingNumber",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:04:01.364178Z"
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "WarehouseID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:04:01.364195Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4013
+    }
+  ],
+  "transformations": [],
+  "relationships": [
+    {
+      "targetLocation": 4021,
+      "attributes": [
+        {
+          "sourceName": "WarehouseID",
+          "targetName": "WarehouseID"
+        }
+      ]
+    }
+  ]
+}

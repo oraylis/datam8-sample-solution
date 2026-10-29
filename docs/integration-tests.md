@@ -1,123 +1,171 @@
 # Generation and integration tests
 
-## Generate targets locally
+## Install the pinned tools
 
-Install Python 3.13 and uv, then from the repository root run:
+Use Python 3.13 or newer and uv in this checkout:
 
 ```powershell
 uv sync --frozen
-uv run python scripts/check_generation.py --target all
+uv run python scripts/install_plugins.py
 ```
 
-Select one target with `--target databricks`, `databricks-lakeflow`, `powerbi`,
-or `docs`. The script validates the solution and generates into a disposable
-copy, leaving repository output untouched. CI checks all targets for pull
-requests and pushes to `main`; manual runs accept the same target selection.
+The lockfile pins CLI commit `85ff50de3c7fc8e20abd4edd021d63df02c31b91`
+and model commit `002aa65f6f127f91d06c8dc0fc4ea50ce75616fc`.
+[plugins.lock.json](../plugins.lock.json) records the five metadata plugins from
+commit `5fec63282f0c94727031a5ebe15ed6e86247bb5b`, version 1.2.0, and their
+SHA-256 checksums. Only the lock is versioned; installed `Plugins/` files stay
+local. Local source import, metadata refresh and preview need these plugins, so
+local installation uses `DATAM8_PLUGINS_READ_TOKEN` or a plugin checkout passed
+with `--repository PATH`.
 
-## Databricks integration tests
-
-Integration tests are manually dispatched from GitHub Actions. Set `target` to
-`databricks`, `databricks-lakeflow`, or `all`. The `all` selection runs every
-registered Databricks integration target in sequence. CI requires a protected
-GitHub environment named `sample-integration`, with `DATABRICKS_HOST`,
-`ARM_CLIENT_ID`, `ARM_TENANT_ID`, and a serverless
-`DATABRICKS_SQL_WAREHOUSE_ID` variable. The workflow signs in through
-`azure/login` using OIDC, then the Databricks CLI uses that Azure CLI identity.
-Configure a federated credential on the Entra application with issuer
-`https://token.actions.githubusercontent.com`, audience
-`api://AzureADTokenExchange`, and subject
-`repo:oraylis/datam8-sample-solution:environment:sample-integration`.
-This trust is managed by the Entra application owner; no Databricks
-account federation policy is required.
-Grant that identity access to the workspace, catalogs, UC Connections, SQL
-warehouse and test bundles. Do not put tokens or passwords in repository
-variables.
-
-The shared development identity is `oraylis-automation-databricks-dev`.
-Its client ID, tenant ID and client secret are stored in
-`aut0kvt0dev0standard` under the same prefix with suffixes `-client-id`,
-`-tenant-id`, and `-client-secret`. GitHub uses OIDC and does not consume the
-client secret. Other local automation can use the secret in memory with
-Microsoft Entra service principal authentication.
-
-Set `authentication_only=true` on a manual run to verify OIDC and Databricks
-identity access without deploying or resetting resources. This check does
-not count as a successful integration test.
-
-Deployments use the standard service principal locally as well as in CI. After
-Azure CLI login with an identity allowed to read the Key Vault secrets, load
-the credentials into the process environment and run:
+## Generation
 
 ```powershell
-$env:DATABRICKS_HOST = "https://adb-7622639135174415.15.azuredatabricks.net"
-$env:DATABRICKS_AUTH_TYPE = "azure-client-secret"
-$env:ARM_CLIENT_ID = az keyvault secret show --vault-name aut0kvt0dev0standard --name oraylis-automation-databricks-dev-client-id --query value -o tsv
-$env:ARM_TENANT_ID = az keyvault secret show --vault-name aut0kvt0dev0standard --name oraylis-automation-databricks-dev-tenant-id --query value -o tsv
-$env:ARM_CLIENT_SECRET = az keyvault secret show --vault-name aut0kvt0dev0standard --name oraylis-automation-databricks-dev-client-secret --query value -o tsv
-try {
-    uv run python scripts/run_integration_tests.py --target all --warehouse-id ae424851d8831b68
-} finally {
-    Remove-Item Env:ARM_CLIENT_SECRET
-}
+uv run python scripts/check_generation.py --target all
+uv run python scripts/check_generation.py --target powerbi
 ```
 
-Pass `--warehouse-id ID` if the SQL warehouse ID is not set in
-`DATABRICKS_SQL_WAREHOUSE_ID`.
-Select a single target with `--target databricks` or `--target databricks-lakeflow`.
-An authenticated service-principal profile can instead be passed with `--profile`.
-The personal `oraylis-aut-dev` profile remains suitable for administrative setup;
-the runner rejects a different deployment identity before resetting any data.
+Generation reads target names and output paths from the solution descriptor.
+It validates the persisted local model, cleans each selected generated output,
+and runs every target in a separate CLI process. No solution copy is created.
+Unknown targets fail before generation; all selected failures are reported.
+Python syntax, task graphs, bundle assets, public source metadata and the native
+Lakeflow inventory are checked. CI runs all targets for PRs and pushes to `main`;
+manual execution accepts one target or `all`.
 
-The test target configuration is in `tests/integration/targets.json`; jobs and
-catalog settings come from the existing generated bundles and their
-`bundle.targets.yml` files. The runner adds no jobs or notebooks to the bundles.
-It deploys their generated artifacts, discovers the lifecycle roots from the
-bundle job graph, runs the Create roots followed by the Load roots, then checks
-the expected schema and table counts, nonempty tables,
-curated surrogate-key uniqueness, fact-to-dimension references, and the
-customer SCD2 current-row rule. Both targets use
-Unity Catalog Connections for source access. The committed sample model uses
-reserved placeholder endpoints. Provision or update the actual Connections
-separately from Key Vault, keeping hosts and credentials out of model files and
-logs.
+## Integration environments
 
-Do not run local and CI tests at the same time against shared catalogs. Reset is
-limited to the selected target's test catalog. All selected targets are attempted
-even when an earlier target fails. Reports include root and child run IDs,
-task results, pipeline update results, and deployment resource IDs. Reports go to
-`Output/e2e-test-reports/`, which is ignored by Git.
+The [environment configuration](../tests/integration/environments.json) contains
+non-secret workspace, identity, catalog, warehouse and source bindings. See the
+target guides for their workspace and catalog bindings: [Databricks Lake](../Generate/databricks-lake/DEPLOYMENT.md)
+and [Lakeflow](../Generate/databricks-lakeflow/DEPLOYMENT.md). The runner never
+cleans old workspaces.
 
-### Bundle lifecycle contract
+Deploy and run identities are distinct. The deployment service principal manages
+the bundle and must be allowed to use the run principal. Bundle-level permissions
+grant the run principal execution access to both pipelines and nested jobs.
+The run principal needs catalog/schema data privileges, `USE CONNECTION` on its
+five source connections and read access to uploaded workspace files. The deploy
+principal also needs the permissions used by preflight and data validation.
+Stopping the dedicated test warehouse requires `CAN_MANAGE`; its run identity
+needs only `CAN_USE`.
 
-Root jobs are jobs that no other bundle job references through `run_job_task`.
-Tag each root with `datam8_phase: create` or `datam8_phase: load`; an optional
-`validate` phase is also supported. The runner orders phases and discovers all
-child jobs from their references. Job names and the number of Daily, Weekly,
-or other job groups are not part of the test configuration. Cycles, references
-outside the bundle and untagged roots are rejected before deployment.
+The runner executes modeled load jobs in dependency order and retains each
+target's task results in its report. Target-specific naming and compute behavior
+is documented in each target guide. The SQL validation warehouse is serverless;
+an initially stopped warehouse is stopped again on completion or failure.
 
-Create has a 30-minute timeout, Load 90 minutes and an optional validation root
-30 minutes. Every required task and nested run must succeed. Disabled, skipped,
-failed and timed-out tasks fail the test even if a parent reports success.
+GitHub Actions uses the GitHub environment names `sample-integration-dev` and
+`sample-integration-prod`. Each must define `ARM_CLIENT_ID` matching that
+environment's `deployment_principal` in `environments.json`, `ARM_TENANT_ID`,
+`DATABRICKS_HOST`, and `DATABRICKS_SQL_WAREHOUSE_ID`. The host and warehouse are
+checked against the selected environment configuration before Azure login or
+deployment. Azure federated credentials must trust the matching GitHub
+environment subject, for example
+`repo:oraylis/datam8-sample-solution:environment:sample-integration-dev`.
 
-The `e2e-serverless` bundles use a fixed workspace path under the standard
-development service principal's directory, so local and GitHub executions use
-the same deployment state. Existing jobs, pipelines and schemas must already
-be bound in that state. The runner refuses to create a second deployment and
-checks that deployment preserves every resource ID. When moving an existing
-deployment, use `databricks bundle deployment bind KEY ID --target e2e-serverless`
-for its existing resources before running the test.
+GitHub generation and integration use the persisted source metadata and do not
+invoke connector plugins; no plugin token is required in Actions. The plugin
+lock and installer are for local source import, metadata refresh and preview.
+The previous
+`sample-integration` environment belongs to the legacy integration setup and is not
+used by the new Dev/Prod workflow.
 
-Provision the service principal as owner of the existing jobs once, using a
-workspace administrator. Existing pipelines retain their owner and grant the
-service principal `CAN_MANAGE`; their configured execution identity is the
-service principal. The Lakeflow bundle leaves those ACLs to provisioning,
-avoiding pipeline ownership changes during deployment.
+## UC connections and source access
 
-The Lakeflow bundle exposes `pipeline_full_refresh` (default `false`). Its
-`e2e-serverless` target enables it so the Root Load also rebuilds ingestion
-state after the test tables have been reset.
+Each environment shares five connections between its two targets:
+`dm8_sample_<environment>_sqlserver`, `_oracle`, `_mysql`, `_postgresql` and
+`_shipping_api`. Oracle uses TLS. HTTP uses OAuth M2M stored in UC; both endpoints
+are paginated through the UC proxy. There is no direct-credential fallback.
 
-To add an integration target, add its descriptor entry, bundle configuration,
-and target-specific job/test configuration. Register it in the integration
-target map only when its runner can check the complete target lifecycle.
+Infrastructure provisioning reads the Lab credentials from `kv-dm8-dev-weu-001`
+in memory and assigns environment-specific use privileges. Source secrets and
+hosts must not be copied into the sample. Its DataSources retain neutral
+`.example.invalid` endpoints, sample users and `ref://sample/...` references.
+Only non-secret database/service bindings are temporarily applied to this local
+solution through DataM8 CLI before generation and restored in `finally`.
+
+Start the Lab fixtures under the infrastructure project's bounded lease before
+running integration. Provisioning and Lab lifecycle belong to that project,
+not to generated notebooks. Use the current operator IP for the temporary SSH
+rule; no broader administrative network rule is needed. Verify the lease is
+stopped and its session rules removed after testing, including failures.
+
+## Local execution
+
+CI authenticates as the selected environment's deployment SP through OIDC.
+For a local Dev run, an explicitly supplied user UPN can be allowed; the script
+checks it against the workspace identity and still verifies the configured
+`run_as` principal. Prod does not allow the local-user override. Credentials
+remain in the local Databricks authentication session; no token or password
+belongs in a bundle, model, report, shell history or repository variable.
+
+```powershell
+uv run python scripts/run_integration_tests.py --environment dev --target all
+uv run python scripts/run_integration_tests.py --environment dev --target databricks-lakeflow
+uv run python scripts/run_integration_tests.py --environment prod --target databricks
+uv run python scripts/run_integration_tests.py --environment dev --target all --profile dm8-target-dev --local-user "your.name@company.com"
+```
+
+Use `--force-lock` only to recover a stale bundle lock. Before deploying, the
+runner still checks that none of the selected bundle's jobs or pipelines is
+active.
+
+A local profile can be supplied with `--profile NAME`. The runner verifies its
+actual deployment identity and selected host; a user login or the run SP cannot
+silently replace the deployment SP. Generate first when inspecting bundle files
+manually, then run Databricks commands from the selected target output folder
+with `--target dev` or `--target prod`.
+
+## Acceptance and reset
+
+Dev performs source preflight before any reset, validates and deploys the existing
+bundle, executes the classic Create root followed by each modeled Load job in
+dependency order; for Lakeflow it executes each modeled Load job once, with
+managed ingestion tasks completed before that job's processing pipeline. It
+checks complete execution trees, validates the data and repeats Load without
+full refresh. Job keys and cross-job dependencies come from the generated
+manifest rather than hardcoded names. Timeouts cancel remote work: Create 30 minutes, Load 90
+minutes and validation queries at most 30 minutes.
+
+Classic reset drops only validated, owned sample schemas. Native reset refreshes
+only the owned pipeline graph; subsequent updates do not use full refresh.
+Foreign objects, active runs, partially bound deployment states and unexpected
+resource replacement abort the test. Lakeflow event-log tables are considered
+owned only when their names match the IDs of the selected target's bound
+pipelines. Selecting one target changes only that target's cloud resources.
+
+Generation manifests define the 22 Raw, 21 Stage, 15 Core and 11 Curated public
+objects per target, plus explicitly owned internal history datasets. Validation
+checks object kinds, schemas, nonempty data, business and surrogate keys, history
+intervals, relationships, source extraction completeness and financial totals.
+Unchanged reloads must preserve business data and history version counts.
+When both targets run, normalized business contents are compared across them.
+Power BI exposes the six domains in one semantic model; explicit relationships
+must reference real consumer columns.
+
+Prod's scope is enforced by the runner: deployment and smoke checks only. It
+cannot execute full processing roots or reset tables through this entry point.
+A successful smoke run is recorded as smoke, never as full data acceptance.
+Skipped required tasks, partial API snapshots and empty modeled tables fail.
+Generation or authentication success alone does not satisfy acceptance.
+
+## Reports and diagnosis
+
+Reports are local, Git-ignored files beneath `Output/e2e-test-reports/`. CI uploads
+its generation and integration JSON reports as artifacts. They identify the
+revision, selected environment/targets, deployment and run identities, resource
+links, nested task outcomes and data checks. They contain no source credentials.
+
+Check the failing phase first: source preflight, binding/ownership, deployment,
+remote execution or data validation. Fix metadata via CLI and payloads/templates
+in their owning target, regenerate and rerun. Do not skip a required source or
+convert a failed task into success to obtain a green report.
+
+## Add an integration target
+
+Add its generation target to the descriptor. Register a supported implementation
+and bundle path in [targets.json](../tests/integration/targets.json); keep target
+selection validation ahead of mutations. Reuse the shared generation, report and
+lifecycle contracts while implementing platform-specific deployment and data
+checks. A new target must not weaken the environment's safety or test scope.

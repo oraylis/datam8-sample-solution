@@ -1,0 +1,200 @@
+{
+  "id": 4006,
+  "name": "PurchaseOrder",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "PurchaseOrderID",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": false,
+        "precision": 19,
+        "scale": 0
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:07.627064Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "ProductID",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true,
+        "precision": 19,
+        "scale": 0
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:07.627206Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "SupplierID",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true,
+        "precision": 19,
+        "scale": 0
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:07.627287Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "WarehouseID",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true,
+        "precision": 19,
+        "scale": 0
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:07.627347Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "Quantity",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": false,
+        "precision": 19,
+        "scale": 0
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:07.627404Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "Status",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:07.627486Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:07.627558Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "dataSource": "OracleProcurement",
+      "sourceAlias": "PurchaseOrder",
+      "sourceLocation": "\"AW_PROCUREMENT\".\"PURCHASE_ORDERS\"",
+      "properties": [
+        {
+          "property": "extract_mode",
+          "value": "delta"
+        }
+      ],
+      "mapping": [
+        {
+          "sourceName": "PURCHASEORDERID",
+          "targetName": "PurchaseOrderID",
+          "sourceDataType": {
+            "type": "NUMBER",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "PRODUCTID",
+          "targetName": "ProductID",
+          "sourceDataType": {
+            "type": "NUMBER",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "SUPPLIERID",
+          "targetName": "SupplierID",
+          "sourceDataType": {
+            "type": "NUMBER",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "WAREHOUSEID",
+          "targetName": "WarehouseID",
+          "sourceDataType": {
+            "type": "NUMBER",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "QUANTITY",
+          "targetName": "Quantity",
+          "sourceDataType": {
+            "type": "NUMBER",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "STATUS",
+          "targetName": "Status",
+          "sourceDataType": {
+            "type": "VARCHAR2",
+            "nullable": true,
+            "charLen": 160
+          }
+        },
+        {
+          "sourceName": "MODIFIEDAT",
+          "targetName": "ModifiedAt",
+          "sourceDataType": {
+            "type": "TIMESTAMP(6) WITH TIME ZONE",
+            "nullable": true,
+            "scale": 6
+          },
+          "properties": [
+            {
+              "property": "extract_column",
+              "value": "delta"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

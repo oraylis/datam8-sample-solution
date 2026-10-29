@@ -1,0 +1,112 @@
+{
+  "id": 4016,
+  "name": "ProductSupplier",
+  "description": "AdventureWorks cross-system sample: ProductSupplier",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "ProductID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "dateAdded": "2026-10-26T14:02:58.252533Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "SupplierID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "dateAdded": "2026-10-26T14:02:58.252707Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "UnitCost",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": false,
+        "precision": 18,
+        "scale": 4
+      },
+      "dateAdded": "2026-10-26T14:02:58.252801Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "CurrencyCode",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "dateAdded": "2026-10-26T14:02:58.252903Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "LeadTimeDays",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T14:02:58.252980Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T14:02:58.253079Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4005
+    }
+  ],
+  "transformations": [],
+  "relationships": [
+    {
+      "targetLocation": 4026,
+      "attributes": [
+        {
+          "sourceName": "ProductID",
+          "targetName": "ProductID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 4015,
+      "attributes": [
+        {
+          "sourceName": "SupplierID",
+          "targetName": "SupplierID"
+        }
+      ]
+    }
+  ]
+}

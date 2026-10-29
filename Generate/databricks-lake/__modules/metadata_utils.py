@@ -288,10 +288,10 @@ class MetadataResolver:
                 "name": cluster_name,
                 "display_name": _value_or_default(getattr(cluster_entry, "displayName", None), cluster_name),
                 "node_type": getattr(cluster_entry, "node_type", None),
+                "driver_node_type": getattr(cluster_entry, "driver_node_type", None),
                 "num_workers": getattr(cluster_entry, "num_workers", None),
                 "workload_type": getattr(cluster_entry, "workload_type", None),
                 "spark_version": getattr(cluster_entry, "spark_version", None),
-                "autotermination_minutes": getattr(cluster_entry, "autotermination_minutes", None),
                 "variable_name": self.cluster_variable_name(cluster_name),
                 "serverless": bool(getattr(cluster_entry, "serverless", False)),
                 "environment_version": getattr(cluster_entry, "environment_version", "6"),
@@ -471,7 +471,8 @@ class MetadataResolver:
             if canonical:
                 return canonical
 
-        return None
+        canonical = _normalize_canonical(source_type)
+        return canonical if canonical in self._canonical_to_target else None
 
     def iter_external_sources(self, entity) -> Iterable[tuple[Any, Any | None]]:
         """Yield external sources attached to a model entity."""
@@ -545,6 +546,7 @@ class MetadataResolver:
             "spark_type_expr": f'DataType.fromDDL("{ddl_type}")',
             "struct_nullable": nullable,
             "metadata_repr": metadata_repr,
+            "metadata": metadata,
             "delta_type": ddl_type,
             "delta_nullable": nullable,
             "delta_comment": comment,
@@ -1021,10 +1023,10 @@ class MetadataResolver:
                     "name": name,
                     "display_name": _value_or_default(getattr(entry, "displayName", None), name),
                     "node_type": _value_or_default(getattr(entry, "node_type", None), "Standard_D4ds_v5"),
+                    "driver_node_type": getattr(entry, "driver_node_type", None),
                     "num_workers": _value_or_default(getattr(entry, "num_workers", None), 2),
                     "workload_type": _value_or_default(getattr(entry, "workload_type", None), "job"),
                     "spark_version": _value_or_default(getattr(entry, "spark_version", None), "16.4.x-scala2.12"),
-                    "autotermination_minutes": _value_or_default(getattr(entry, "autotermination_minutes", None), 60),
                     "data_security_mode": _value_or_default(getattr(entry, "data_security_mode", None), "DATA_SECURITY_MODE_DEDICATED"),
                     "runtime_engine": _value_or_default(getattr(entry, "runtime_engine", None), "STANDARD"),
                     "variable_name": self.cluster_variable_name(name),
@@ -1286,6 +1288,16 @@ class MetadataResolver:
                 dependencies.add(source_location)
         return dependencies
 
+    def entity_load_dependencies(self, entity) -> set[int]:
+        """Return source and dimension-lookup entity IDs required before loading."""
+        dependencies = self.entity_dependencies(entity)
+        if self.has_lookup_dimensions(entity):
+            for relationship in getattr(entity, "relationships", []) or []:
+                target_location = getattr(relationship, "targetLocation", None)
+                if isinstance(target_location, int) and self._model_entity_by_id(target_location):
+                    dependencies.add(target_location)
+        return dependencies
+
     def entity_source_references(self, entity) -> list[dict[str, str]]:
         """
         Collect DM8L references to upstream modeled entities.
@@ -1320,6 +1332,54 @@ class MetadataResolver:
                 references.append({"dm8l": dm8l_path})
 
         return references
+
+    def model_source_projection(self, entity) -> list[dict[str, Any]]:
+        """Describe a single modeled source as a typed pass-through projection."""
+        projections: list[dict[str, Any]] = []
+        target_columns = {
+            column["name"]: column
+            for column in self.build_standard_columns(entity)
+        }
+        for source in getattr(entity, "sources", []) or []:
+            if getattr(source, "dataSource", None):
+                continue
+            resolved = self._resolve_model_entity_reference(
+                getattr(source, "sourceLocation", None)
+            )
+            if resolved is None:
+                continue
+            source_locator, source_entity = resolved
+            if not source_locator.folders:
+                continue
+            source_zone = self.zone_from_folder(source_locator.folders[0])
+            if source_zone is None:
+                continue
+            product = self.folder_info(tuple(source_locator.folders[:2])) if len(source_locator.folders) >= 2 else None
+            module = self.folder_info(tuple(source_locator.folders[:3])) if len(source_locator.folders) >= 3 else None
+            data_product = product.name if product else "UnknownProduct"
+            data_module = module.name if module else "General"
+            source_table = f"{data_product}_{data_module}_{source_entity.name}"
+            source_attributes = {
+                attribute.name for attribute in getattr(source_entity, "attributes", []) or []
+            }
+            expressions = []
+            for name, column in target_columns.items():
+                if name not in source_attributes:
+                    raise ValueError(
+                        f"Modeled source {source_table} is missing target attribute {name} "
+                        f"for entity {entity.name}."
+                    )
+                expressions.append(
+                    f"TRY_CAST(`{name}` AS {column['delta_type']}) AS `{name}`"
+                )
+            projections.append(
+                {
+                    "zone": source_zone.name,
+                    "full_table_name": source_table,
+                    "select_expressions": expressions,
+                }
+            )
+        return projections
 
     def collect_transformations(self, locator, entity) -> list[dict[str, Any]]:
         """Return function-based transformation metadata for the entity."""
@@ -1363,15 +1423,35 @@ class MetadataResolver:
             )
         return transformations
 
-    def stage_select_expressions(self, entity, raw_source: dict[str, Any]) -> list[str]:
+    def stage_select_expressions(
+        self,
+        entity,
+        raw_source: dict[str, Any],
+        *,
+        cast_to_model: bool = False,
+    ) -> list[str]:
         """Build selectExpr expressions for stage entities fed from raw sources."""
         expressions: list[str] = []
         for attribute in getattr(entity, "attributes", []):
             # Calculated columns (with expressions) are materialized later in the notebook.
             if getattr(attribute, "expression", None):
                 continue
-            # Raw tables already use the modeled/target column names, so select them directly.
-            expressions.append(f"`{attribute.name}`")
+            # External sources use a source-native raw schema. Reapply the target
+            # model type at the Raw → Stage boundary without failing the whole task
+            # on an individual malformed value.
+            if cast_to_model:
+                column = self.build_column_from_canonical(
+                    name=attribute.name,
+                    canonical=attribute.dataType.type,
+                    nullable=True,
+                    comment=None,
+                    data_type_model=attribute.dataType,
+                )
+                expressions.append(
+                    f"TRY_CAST(`{attribute.name}` AS {column['delta_type']}) AS `{attribute.name}`"
+                )
+            else:
+                expressions.append(f"`{attribute.name}`")
 
         source_label = (
             raw_source.get("source_alias")

@@ -1,0 +1,200 @@
+{
+  "id": 4013,
+  "name": "Shipment",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "Carrier",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:04:01.364002Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "CustomerID",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:04:01.364070Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "EstimatedDelivery",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T14:04:01.364095Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T14:04:01.364114Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "SalesOrderID",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:04:01.364131Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "ShipmentID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "isBusinessKey": true,
+      "dateAdded": "2026-10-26T14:04:01.364147Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "Status",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:04:01.364163Z"
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "TrackingNumber",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:04:01.364178Z"
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "WarehouseID",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:04:01.364195Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "dataSource": "ShippingAPI",
+      "sourceAlias": "Shipment",
+      "sourceLocation": "shipments",
+      "properties": [
+        {
+          "property": "extract_mode",
+          "value": "full"
+        }
+      ],
+      "mapping": [
+        {
+          "sourceName": "Carrier",
+          "targetName": "Carrier",
+          "sourceDataType": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        {
+          "sourceName": "CustomerID",
+          "targetName": "CustomerID",
+          "sourceDataType": {
+            "type": "long",
+            "nullable": true
+          }
+        },
+        {
+          "sourceName": "EstimatedDelivery",
+          "targetName": "EstimatedDelivery",
+          "sourceDataType": {
+            "type": "datetime",
+            "nullable": true
+          }
+        },
+        {
+          "sourceName": "ModifiedAt",
+          "targetName": "ModifiedAt",
+          "sourceDataType": {
+            "type": "datetime",
+            "nullable": true
+          }
+        },
+        {
+          "sourceName": "SalesOrderID",
+          "targetName": "SalesOrderID",
+          "sourceDataType": {
+            "type": "long",
+            "nullable": true
+          }
+        },
+        {
+          "sourceName": "ShipmentID",
+          "targetName": "ShipmentID",
+          "sourceDataType": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        {
+          "sourceName": "Status",
+          "targetName": "Status",
+          "sourceDataType": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        {
+          "sourceName": "TrackingNumber",
+          "targetName": "TrackingNumber",
+          "sourceDataType": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        {
+          "sourceName": "WarehouseID",
+          "targetName": "WarehouseID",
+          "sourceDataType": {
+            "type": "long",
+            "nullable": true
+          }
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

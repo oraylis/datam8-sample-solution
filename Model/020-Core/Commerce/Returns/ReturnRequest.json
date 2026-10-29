@@ -1,0 +1,121 @@
+{
+  "id": 4020,
+  "name": "ReturnRequest",
+  "description": "AdventureWorks cross-system sample: ReturnRequest",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "ReturnID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "dateAdded": "2026-10-26T14:03:31.464192Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "SalesOrderID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:03:31.464275Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "SalesOrderDetailID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:03:31.464314Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "ProductID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:03:31.464346Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "Quantity",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T14:03:31.464374Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "Reason",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "dateAdded": "2026-10-26T14:03:31.464414Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "Status",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "dateAdded": "2026-10-26T14:03:31.464443Z"
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T14:03:31.464481Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4009
+    }
+  ],
+  "transformations": [],
+  "relationships": [
+    {
+      "targetLocation": 4026,
+      "attributes": [
+        {
+          "sourceName": "ProductID",
+          "targetName": "ProductID"
+        }
+      ]
+    }
+  ]
+}
