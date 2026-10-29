@@ -169,11 +169,12 @@ def execution_tree(api, run_id: int, *, check_pipelines: bool = True, only_tasks
                         errors.append(f"Pipeline {pipeline_id} update {update['update_id']}: {update.get('state')}")
                     if task_state.get("result_state") == "FAILED":
                         try:
-                            query = urlencode({"filter": "level='ERROR' AND origin.update_id='" + update["update_id"] + "'", "max_results": 10})
+                            query = urlencode({"filter": "level='ERROR'", "max_results": 100})
                             events = api("GET", f"/api/2.0/pipelines/{pipeline_id}/events?" + query).get("events", [])
+                            events = [event for event in events if event.get("origin", {}).get("update_id") == update["update_id"]]
                             item["pipeline_errors"] = [
                                 exception.get("message", event.get("message"))
-                                for event in events for exception in event.get("error", {}).get("exceptions", [])
+                                for event in events for exception in (event.get("error", {}).get("exceptions") or [{}])
                             ]
                         except RuntimeError as error:
                             item["pipeline_diagnostics_error"] = str(error)

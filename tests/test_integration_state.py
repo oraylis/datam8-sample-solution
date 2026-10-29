@@ -9,7 +9,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from databricks_jobs import execute_root
+from databricks_jobs import execute_root, execution_tree
 from integration_auth import AzureOidcSession, sanitize
 from integration_state import PhaseBudget, affected_tasks, job_fingerprints
 from prepare_resume import prepare
@@ -17,6 +17,20 @@ from integration_migration import refresh_datasets
 
 
 class IntegrationStateTests(unittest.TestCase):
+    def test_pipeline_diagnostics_use_supported_filter_and_keep_only_this_update(self):
+        def api(method, path, body=None):
+            if "/runs/get?" in path:
+                return {"state": {"result_state": "FAILED"}, "tasks": [{"task_key": "refresh", "start_time": 10, "end_time": 20, "state": {"result_state": "FAILED"}, "pipeline_task": {"pipeline_id": "p"}}]}
+            if path.endswith("/updates"):
+                return {"updates": [{"update_id": "current", "creation_time": 15, "state": "FAILED"}]}
+            self.assertNotIn("origin.update_id", path)
+            return {"events": [
+                {"origin": {"update_id": "old"}, "message": "unrelated failure"},
+                {"origin": {"update_id": "current"}, "message": "current failure"},
+            ]}
+        tree = execution_tree(api, 1)
+        self.assertEqual(tree["runs"][0]["tasks"][0]["pipeline_errors"], ["current failure"])
+
     def test_resume_preserves_requested_and_unrequested_repeat_results(self):
         import run_integration_tests as runner
         manifest = {"lifecycle": ["load"], "target": "databricks-lakeflow", "execution_plan": {"load": [{"job": "daily", "depends_on": []}]}, "datasets": []}
