@@ -17,6 +17,41 @@ from integration_migration import refresh_datasets
 
 
 class IntegrationStateTests(unittest.TestCase):
+    def test_interrupted_artifact_retains_evidence_for_targets_not_reached(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            header = {"environment": "dev", "test_mode": "full", "selected_targets": ["a", "b"]}
+            (root / "resume.json").write_text(json.dumps({**header, "targets": [{"target": "a", "runs": {"old": 1}}, {"target": "b", "runs": {"saved": 2}}]}))
+            for reached in [[], [{"target": "a", "runs": {"current": 3}}]]:
+                (root / "integration-dev-new.json").write_text(json.dumps({**header, "targets": reached}))
+                prepare(root, root / "selected.json")
+                targets = {item["target"]: item for item in json.loads((root / "selected.json").read_text())["targets"]}
+                self.assertEqual(targets["b"]["runs"], {"saved": 2})
+                self.assertEqual(targets["a"]["runs"], {"current": 3} if reached else {"old": 1})
+
+    def test_asset_fingerprints_ignore_platform_default_path_ordering(self):
+        import builtins
+        import integration_state
+        with tempfile.TemporaryDirectory() as folder:
+            bundle = Path(folder)
+            names = ["CustomerAddress.py", "Customer_functions/CustomerNew.py"]
+            for name in names:
+                path = bundle / "generated/notebooks" / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(name)
+            resources = {"jobs": {"daily": {"tasks": [
+                {"task_key": str(index), "notebook_task": {"notebook_path": "${var.notebook_path}/" + name}}
+                for index, name in enumerate(names)
+            ]}}}
+            results = []
+            for casefold in [False, True]:
+                def platform_sorted(values, **kwargs):
+                    kwargs.setdefault("key", lambda value: str(value).casefold() if casefold else str(value))
+                    return builtins.sorted(values, **kwargs)
+                with patch.object(integration_state, "sorted", platform_sorted, create=True):
+                    results.append(job_fingerprints(bundle, resources))
+            self.assertEqual(results[0], results[1])
+
     def test_delta_cursor_validation_ignores_explicit_null_external_metadata(self):
         from run_integration_tests import validate_delta_cursors
         manifest = {"datasets": [

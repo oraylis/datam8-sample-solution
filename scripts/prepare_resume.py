@@ -14,11 +14,19 @@ def prepare(source, destination):
     candidates = []
     for path in source.glob("integration-*.json"):
         report = json.loads(path.read_text(encoding="utf-8-sig"))
-        if report.get("environment") and report.get("targets"):
+        if report.get("environment") and "targets" in report:
             candidates.append((path.name, report))
     if not candidates:
         raise ValueError("Artifact contains no integration report")
     report = sorted(candidates, key=lambda item: item[0])[-1][1]
+    embedded = source / "resume.json"
+    if embedded.exists():
+        previous = json.loads(embedded.read_text(encoding="utf-8-sig"))
+        if previous.get("environment") == report["environment"] and previous.get("test_mode") == report.get("test_mode"):
+            present = {item.get("target") for item in report["targets"] if isinstance(item, dict)}
+            for item in previous.get("targets", []):
+                if isinstance(item, dict) and item.get("target") in report.get("selected_targets", []) and item["target"] not in present:
+                    report["targets"].append(item)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(sanitize(report), indent=2) + "\n", encoding="utf-8")
     cache = source / ("source-preflight-" + report["environment"] + ".json")

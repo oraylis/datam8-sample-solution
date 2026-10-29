@@ -22,7 +22,7 @@ def semantic_json(value, field=""):
 
 
 def job_fingerprints(bundle, resources, *, keys=None):
-    configuration_files = [bundle / "databricks.yml", bundle / "bundle.targets.yml", *sorted((bundle / "generated/clusters").glob("*.yml"))]
+    configuration_files = [bundle / "databricks.yml", bundle / "bundle.targets.yml", *sorted((bundle / "generated/clusters").glob("*.yml"), key=lambda path: path.name)]
     config = b"".join(path.read_text(encoding="utf-8").encode() for path in configuration_files if path.exists())
     results = {}
 
@@ -68,7 +68,7 @@ def job_fingerprints(bundle, resources, *, keys=None):
                 if dep not in paths:
                     paths.add(dep)
                     pending.append(dep)
-        for path in sorted(paths):
+        for path in sorted(paths, key=lambda item: item.relative_to(bundle).as_posix()):
             digest.update(path.relative_to(bundle).as_posix().encode() + b"\0" + path.read_text(encoding="utf-8").encode())
         results[key] = digest.hexdigest()
         return results[key]

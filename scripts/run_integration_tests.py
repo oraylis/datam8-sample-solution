@@ -806,7 +806,7 @@ def test_target(name, args, environment, record, resume_record=None):
     if not old_fingerprints and resume_record and resume_record.get("asset_fingerprint") == asset_fingerprint:
         old_fingerprints = fingerprints
     record({"job_fingerprints": fingerprints})
-    record({"fingerprint_version": 2})
+    record({"fingerprint_version": 3})
     task_hashes = task_fingerprints(bundle, resources)
     record({"task_fingerprints": task_hashes})
     evidence = {}
@@ -1199,8 +1199,10 @@ def main():
         if not set(selected).issubset(previous.get("selected_targets", [])):
             parser.error("--resume-report does not include every selected target")
         previous_targets = {item["target"]: item for item in previous.get("targets", [])}
-        if any(name not in previous_targets for name in selected):
-            parser.error("--resume-report is missing a selected target record")
+        # Targets not reached before interruption have no new receipt. Reuse
+        # embedded evidence when available, otherwise execute them normally.
+        for name in selected:
+            previous_targets.setdefault(name, {})
     if args.resume_full_refresh and (
         not args.resume_report
         or args.environment != "dev"
