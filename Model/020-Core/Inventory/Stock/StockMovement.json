@@ -11,7 +11,6 @@
         "type": "long",
         "nullable": false
       },
-      "isBusinessKey": true,
       "expressionLanguage": "sql",
       "dateAdded": "2026-10-26T14:03:55.519798Z"
     },
@@ -90,11 +89,11 @@
     },
     {
       "property": "write_mode",
-      "value": "append"
+      "value": "overwrite"
     },
     {
       "property": "dataset_type",
-      "value": "streaming_table"
+      "value": "materialized_view"
     }
   ],
   "sources": [

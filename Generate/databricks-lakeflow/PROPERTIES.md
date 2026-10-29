@@ -1,5 +1,18 @@
 # Properties: Databricks Lakeflow
 
+## StockMovement: Delta plus append without a business key
+
+The external source uses `extract_mode=delta`; its mapping marks `ModifiedAt`
+with `extract_column=delta`. Raw ingestion emits `scd_type=APPEND_ONLY` without
+primary keys, and managed ingestion persists cursor progress. Stage uses
+`write_mode=append` with a streaming read and no business key. A later cursor value
+appends a row even with the same MovementID. The cursor must increase monotonically;
+late values at or below the processed high-water mark are not ingested.
+
+Core uses `write_mode=overwrite` as a materialized view of the complete Stage
+contents. Merge ingestion continues to use `SCD_TYPE_1` and requires modeled keys.
+An unchanged repeat must preserve Stage and Core business contents.
+
 ## Where to set properties
 
 - **Entity:** add a `properties` array to the entity JSON.
@@ -36,10 +49,9 @@ in the model job property.
 | Attribute `attribute_type=SK` | Attribute property. | Marks a surrogate key. Lakeflow derives deterministic `BIGINT` keys from the business key and version start; it does not use identity columns. |
 | `data_retention`, `business_area`, `tags`, `table_properties`, `data_layout`, `enable_type_widening`, `column_mapping_mode`, `target`, attribute `sensitive` | Entity, folder, attribute, or zone according to the property's model scope. | **No effect in the current Lakeflow generator.** It does not emit these table/column tags or Delta table properties. |
 
-The sample's explicit append example is `StockMovement`: its Stage and Core
-entities use `write_mode=append` and `dataset_type=streaming_table`; the source
-uses managed PostgreSQL delta ingestion with `modifiedat` as its cursor. This
-assumes the source is append-only. Managed delta ingestion tracks a cursor, but
-does not by itself prove that source rows are immutable or that hard deletes
-are represented. Confirm that contract against the fixture before relying on
-append semantics.
+The sample's explicit append example is `StockMovement`: Stage uses
+`write_mode=append` and `dataset_type=streaming_table` without a BK. Its source
+uses managed PostgreSQL `APPEND_ONLY` ingestion with `modifiedat` as the cursor.
+Updates with a later cursor append another observed version. Core uses
+`write_mode=overwrite` and `dataset_type=materialized_view`. Hard deletes and
+changes below the processed cursor are not represented by this sample contract.

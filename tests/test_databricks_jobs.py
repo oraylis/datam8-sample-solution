@@ -9,7 +9,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from databricks_jobs import execute_root, execution_plan, execution_tree, get_run
-from run_integration_tests import assert_no_rows, check_active, deploy_bundle, drop_stale_pipeline_event_logs, ingestion_destination_tables, is_classic_archive_object, is_lakeflow_internal_object, pipeline_event_log_objects, pipeline_materialization_objects, require_existing_deployment, reset_classic_migration_failures, reset_orphaned_dataset_tables, retire_legacy_ingestion_pipelines, reusable_source_preflight, save_source_preflight, selected_deployment_args, sql, stale_pipeline_event_log_objects
+from run_integration_tests import assert_no_rows, check_active, deploy_bundle, drop_stale_pipeline_event_logs, ingestion_destination_tables, is_lakeflow_internal_object, pipeline_event_log_objects, pipeline_materialization_objects, require_existing_deployment, reset_orphaned_dataset_tables, retire_legacy_ingestion_pipelines, reusable_source_preflight, save_source_preflight, selected_deployment_args, sql, stale_pipeline_event_log_objects
 
 
 def job(children=()):
@@ -28,47 +28,6 @@ def task(identifier, result="SUCCESS", **kwargs):
 
 
 class ExecutionPlanTests(unittest.TestCase):
-    def test_resume_resets_only_owned_tables_with_proven_identity_migration_errors(self):
-        root_run = {"tasks": [{"task_key": "Create_core_tables", "child_run_id": 99}]}
-        manifest = {"datasets": [
-            {"key": "core.masterdata_address_address", "zone": "core"},
-            {"key": "core.masterdata_customer_customeraddress", "zone": "core"},
-            {"key": "core.inventory_stock_inventory", "zone": "core"},
-        ]}
-        calls = []
-
-        def call(method, path):
-            calls.append((method, path))
-            if path.endswith("run_id=99"):
-                return {"tasks": [
-                    {"task_key": "core_masterdata_address_address", "run_id": 11, "state": {"result_state": "FAILED"}},
-                    {"task_key": "core_masterdata_customer_customeraddress", "run_id": 12, "state": {"result_state": "FAILED"}},
-                    {"task_key": "core_inventory_stock_inventory", "run_id": 13, "attempt_number": 0, "state": {"result_state": "FAILED"}},
-                    {"task_key": "core_inventory_stock_inventory", "run_id": 14, "attempt_number": 1, "state": {"result_state": "SUCCESS"}},
-                ]}
-            if "run_id=11" in path:
-                return {"error": "DELTA_IDENTITY_COLUMNS_EXPLICIT_INSERT_NOT_SUPPORTED"}
-            if "run_id=12" in path:
-                return {"error": "permission denied"}
-            if "/unity-catalog/tables/" in path:
-                return {"owner": "run-sp"}
-            return {"error": "source query failed"}
-
-        statements = []
-
-        def query(statement):
-            statements.append(statement)
-            if statement.startswith("SELECT table_name"):
-                return [["masterdata_address_address_1793260128"]]
-            return []
-
-        reset = reset_classic_migration_failures(root_run, manifest, "sample_dev", "run-sp", call, query)
-        self.assertEqual(reset, ["core.masterdata_address_address_1793260128"])
-        self.assertEqual(len(calls), 4)
-        self.assertEqual(len(statements), 2)
-        self.assertIn("LOWER(table_name)", statements[0])
-        self.assertIn("DROP TABLE `sample_dev`.`core`.`masterdata_address_address_1793260128`", statements[-1])
-
     def test_bound_lakeflow_deployment_selects_jobs_and_schemas_without_pipeline_acl_changes(self):
         resources = {"jobs": {"daily": {}, "weekly": {}}, "pipelines": {"daily_pipeline": {}}, "schemas": {"raw": {}}}
         before = {"jobs": {"daily": {"id": 1}, "weekly": {"id": 2}}, "pipelines": {"daily_pipeline": {"id": "pipeline"}}, "schemas": {"raw": {"id": "sample.raw"}}}
@@ -282,12 +241,6 @@ class ExecutionTests(unittest.TestCase):
         self.assertFalse(is_lakeflow_internal_object("stage.__materialization_mat_62baad33_2742_4796_8097_9e1114d9fdc2_unrelated_1", manifest))
         self.assertFalse(is_lakeflow_internal_object("stage.__staging_not-a-uuid_masterdata_customer_customer", manifest))
 
-    def test_classic_schema_archive_is_limited_to_manifest_tables_and_epoch_suffixes(self):
-        manifest = {"datasets": [{"zone": "raw", "name": "sales_orders_salesorderheader"}]}
-        self.assertTrue(is_classic_archive_object("raw.sales_orders_salesorderheader_1793088290", manifest))
-        self.assertFalse(is_classic_archive_object("raw.unrelated_1793088290", manifest))
-        self.assertFalse(is_classic_archive_object("raw.sales_orders_salesorderheader_backup", manifest))
-
     def test_active_job_guard_batches_workspace_run_checks(self):
         calls = []
         def api(method, path):
@@ -438,10 +391,13 @@ class ExecutionTests(unittest.TestCase):
     def test_execute_root_repairs_only_selected_failed_tasks(self):
         calls = []
         completed = run(90, tasks=[task(91, task_key="refresh_sales_daily", attempt_number=1)])
+        completed["repair_history"] = [{"id": 2, "type": "REPAIR", "end_time": 100}]
 
         def api(method, path, body=None):
             calls.append((method, path, body))
             if path == "/api/2.2/jobs/runs/get?run_id=90&include_history=true":
+                if any(item[1] == "/api/2.2/jobs/runs/repair" for item in calls):
+                    return completed
                 return {"repair_history": [
                     {"type": "ORIGINAL"},
                     {"type": "REPAIR", "id": 900},
@@ -509,7 +465,7 @@ class ExecutionTests(unittest.TestCase):
                 return {"run_job_output": {"run_id": 2}}
             identifier = int(path.split("run_id=")[1])
             return {"state": {"life_cycle_state": "RUNNING"}, "tasks": [task(11, run_job_task={"job_id": 2})] if identifier == 1 else [task(21)]}
-        with patch("databricks_jobs.time.monotonic", side_effect=[0, 2]):
+        with patch("databricks_jobs.time.monotonic", side_effect=[0, 2, 3, 124]):
             with self.assertRaises(TimeoutError):
                 execute_root(api, 90, timeout=1, record=lambda value: None)
         self.assertEqual(cancellations, [1, 2])

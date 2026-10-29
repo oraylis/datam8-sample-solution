@@ -120,7 +120,10 @@ if extract_mode == "delta":
     delta_column = {{ (data.source_delta_column or data.delta_column or "") | tojson }}
     if not delta_column:
         raise ValueError("Delta extraction is missing its cursor column")
-    table_df = table_df.filter(F.col(delta_column) > F.lit(max_raw))
+    cursor_type = table_df.schema[delta_column].dataType
+    table_df = table_df.filter(F.col(delta_column) > F.lit(max_raw).cast(cursor_type))
+    # Inspect the scan's pushed predicates before any source action executes.
+    table_df.explain(mode="formatted")
 # COMMAND ----------
 
 # MAGIC %md
@@ -155,14 +158,15 @@ if target_columns:
 
 # COMMAND ----------
 
-(
-    table_df.write
-    .mode(write_mode)
-    .saveAsTable(f"{catalog_name}.{zone}.{full_table_name}")
-)
+table_df = table_df.persist()
+try:
+    # Materialize the external read once for both metrics and the write.
+    record_count = table_df.count()
+    table_df.write.mode(write_mode).saveAsTable(f"{catalog_name}.{zone}.{full_table_name}")
+finally:
+    table_df.unpersist()
 
 # COMMAND ----------
 
 # DBTITLE 1,Update extraction status
-record_count = table_df.count()
 print(f"Extracted {record_count} records in extraction")

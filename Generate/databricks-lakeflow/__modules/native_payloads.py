@@ -223,7 +223,12 @@ def native_resources(model, cache):
         connection_variable = "${var." + ("shipping_api" if plugin == "http_api" else plugin) + "_connection}"
         objects = []
         for dataset, spec in items:
-            table_configuration = {"primary_keys": spec["primary_keys"], "scd_type": "SCD_TYPE_1", "include_columns": spec["include_columns"]}
+            table_configuration = {
+                "scd_type": "APPEND_ONLY" if dataset.write_mode == "append" else "SCD_TYPE_1",
+                "include_columns": spec["include_columns"],
+            }
+            if dataset.write_mode != "append":
+                table_configuration["primary_keys"] = spec["primary_keys"]
             if spec["extract_mode"] == "delta":
                 table_configuration["query_based_connector_config"] = {"cursor_columns": [spec["cursor_column"]]}
             source = {
@@ -242,10 +247,7 @@ def native_resources(model, cache):
         definition = {
             "name": "[${var.environment}] Pipeline: Ingest " + job_display + " / " + connection_display,
             "tags": {"platform": "databricks-lakeflow"},
-            "permissions": [
-                {"service_principal_name": "${var.deploy_service_principal}", "level": "CAN_MANAGE"},
-                {"service_principal_name": "${var.run_as_service_principal}", "level": "CAN_RUN"},
-            ],
+            "permissions": "${var.ingestion_permissions}",
             **job_compute(model, items[0][0].job),
             "edition": "ADVANCED",
             "channel": "CURRENT",

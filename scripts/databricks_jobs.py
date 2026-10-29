@@ -93,19 +93,22 @@ def execution_plan(resources: dict, manifest: dict, *, required_phases=("create"
     return ordered
 
 
-def get_run(api, run_id: int) -> dict:
-    result = api("GET", "/api/2.2/jobs/runs/get?" + urlencode({"run_id": run_id}))
+def get_run(api, run_id: int, *, include_history=False) -> dict:
+    parameters = {"run_id": run_id}
+    if include_history:
+        parameters["include_history"] = "true"
+    result = api("GET", "/api/2.2/jobs/runs/get?" + urlencode(parameters))
     tasks = list(result.get("tasks", []))
     page = result.get("next_page_token")
     while page:
-        more = api("GET", "/api/2.2/jobs/runs/get?" + urlencode({"run_id": run_id, "page_token": page}))
+        more = api("GET", "/api/2.2/jobs/runs/get?" + urlencode({**parameters, "page_token": page}))
         tasks.extend(more.get("tasks", []))
         page = more.get("next_page_token")
     result["tasks"] = tasks
     return result
 
 
-def execution_tree(api, run_id: int, *, check_pipelines: bool = True) -> dict:
+def execution_tree(api, run_id: int, *, check_pipelines: bool = True, only_tasks=None) -> dict:
     """Collect child runs through task output, never by job-name matching."""
     runs, errors, seen = [], [], set()
 
@@ -135,6 +138,9 @@ def execution_tree(api, run_id: int, *, check_pipelines: bool = True) -> dict:
                 for attempt in run["tasks"] if attempt["task_key"] == task["task_key"]
             ]}
             entry["tasks"].append(item)
+            if identifier == run_id and only_tasks and task["task_key"] not in only_tasks:
+                item["excluded"] = True
+                continue
             if task_state.get("result_state") != "SUCCESS":
                 errors.append(f"Run {identifier}, task {item['task_key']}: {task_state}")
             if "run_job_task" in task and task.get("run_id"):
@@ -150,7 +156,7 @@ def execution_tree(api, run_id: int, *, check_pipelines: bool = True) -> dict:
                     visit(int(child))
                 elif task_state.get("result_state") == "SUCCESS":
                     errors.append(f"Successful nested task {item['task_key']} has no child run ID")
-            if check_pipelines and "pipeline_task" in task and task_state.get("result_state") == "SUCCESS":
+            if check_pipelines and "pipeline_task" in task and task_state.get("result_state") in {"SUCCESS", "FAILED"}:
                 pipeline_id = task["pipeline_task"]["pipeline_id"]
                 updates = api("GET", f"/api/2.0/pipelines/{pipeline_id}/updates").get("updates", [])
                 matching = [update for update in updates if task.get("start_time", 0) <= update.get("creation_time", 0) <= task.get("end_time", 0)]
@@ -161,6 +167,18 @@ def execution_tree(api, run_id: int, *, check_pipelines: bool = True) -> dict:
                     item["pipeline_update"] = {"pipeline_id": pipeline_id, "update_id": update["update_id"], "state": update.get("state")}
                     if update.get("state") != "COMPLETED":
                         errors.append(f"Pipeline {pipeline_id} update {update['update_id']}: {update.get('state')}")
+                    if task_state.get("result_state") == "FAILED":
+                        try:
+                            query = urlencode({"filter": "level='ERROR' AND origin.update_id='" + update["update_id"] + "'", "max_results": 10})
+                            events = api("GET", f"/api/2.0/pipelines/{pipeline_id}/events?" + query).get("events", [])
+                            item["pipeline_errors"] = [
+                                exception.get("message", event.get("message"))
+                                for event in events for exception in event.get("error", {}).get("exceptions", [])
+                            ]
+                        except RuntimeError as error:
+                            item["pipeline_diagnostics_error"] = str(error)
+        if identifier == run_id and only_tasks and set(only_tasks) - latest.keys():
+            errors.append("Selected tasks are missing from the remote run")
 
     visit(int(run_id))
     return {"root_run_id": int(run_id), "runs": runs, "errors": errors}
@@ -175,17 +193,35 @@ def execute_root(
     poll_seconds: int = 15,
     repair_run_id: int | None = None,
     rerun_tasks: list[str] | None = None,
+    resume_run_id: int | None = None,
+    idempotency_token: str | None = None,
+    resume_repair_id: int | None = None,
+    only_tasks: list[str] | None = None,
 ) -> dict:
-    if repair_run_id is None:
-        run_id = int(api("POST", "/api/2.2/jobs/run-now", {"job_id": int(job_id)})["run_id"])
+    if resume_run_id is not None:
+        run_id = int(resume_run_id)
+        existing = get_run(api, run_id)
+        if existing.get("job_id", job_id) != int(job_id):
+            raise ValueError("Resume run belongs to another job")
+        repair_id = resume_repair_id
+    elif repair_run_id is None:
+        request = {"job_id": int(job_id)}
+        if idempotency_token:
+            request["idempotency_token"] = idempotency_token
+        if only_tasks:
+            request["only"] = sorted(set(only_tasks))
+        run_id = int(api("POST", "/api/2.2/jobs/run-now", request)["run_id"])
         repair_id = None
     else:
         if not rerun_tasks:
             raise ValueError("A repaired job run must name at least one failed task")
-        history = api(
+        previous = api(
             "GET",
             "/api/2.2/jobs/runs/get?" + urlencode({"run_id": int(repair_run_id), "include_history": "true"}),
-        ).get("repair_history", [])
+        )
+        if previous.get("job_id", job_id) != int(job_id):
+            raise ValueError("Repair run belongs to another job")
+        history = previous.get("repair_history", [])
         previous_repairs = [
             item for item in history
             if item.get("type") == "REPAIR" and item.get("id") is not None
@@ -204,16 +240,27 @@ def execute_root(
         run_id = int(repair_run_id)
         repair_id = repair.get("repair_id")
     receipt = {"root_run_id": run_id, "job_id": int(job_id), "result": "running"}
+    if only_tasks:
+        receipt["only_tasks"] = sorted(set(only_tasks))
     if repair_id is not None:
         receipt["repair_id"] = repair_id
         receipt["repaired_tasks"] = sorted(set(rerun_tasks or []))
     record(receipt)
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        run = get_run(api, run_id)
+        run = get_run(api, run_id, include_history=repair_id is not None)
+        if repair_id is not None:
+            repair = next((item for item in run.get("repair_history", []) if item.get("id") == repair_id), None)
+            if repair is None or not repair.get("end_time"):
+                time.sleep(poll_seconds)
+                continue
         if run.get("state", {}).get("life_cycle_state") in TERMINAL:
-            tree = execution_tree(api, run_id)
+            tree = execution_tree(api, run_id, only_tasks=only_tasks)
+            if only_tasks:
+                tree["only_tasks"] = sorted(set(only_tasks))
             tree["result"] = "failed" if tree["errors"] else "passed"
+            if repair_id is not None:
+                tree["repair_id"] = repair_id
             record(tree)
             if tree["errors"]:
                 raise RuntimeError("; ".join(tree["errors"]))
@@ -224,6 +271,17 @@ def execute_root(
     for run in reversed(tree["runs"]):
         if run["run_id"] != run_id and run["state"].get("life_cycle_state") not in TERMINAL:
             api("POST", "/api/2.2/jobs/runs/cancel", {"run_id": run["run_id"]})
+    cancellation_deadline = time.monotonic() + 120
+    confirmed = False
+    while time.monotonic() < cancellation_deadline:
+        if all(get_run(api, run["run_id"]).get("state", {}).get("life_cycle_state") in TERMINAL for run in tree["runs"]):
+            confirmed = True
+            break
+        time.sleep(min(5, poll_seconds))
     tree["result"] = "timed_out"
+    if confirmed:
+        tree = execution_tree(api, run_id, check_pipelines=False, only_tasks=only_tasks)
+        tree["result"] = "timed_out"
+    tree["cancellation"] = "confirmed" if confirmed else "pending"
     record(tree)
-    raise TimeoutError(f"Root run {run_id} exceeded {timeout}s; cancellation requested for active runs")
+    raise TimeoutError(f"Root run {run_id} exceeded {timeout}s; cancellation {tree['cancellation']} for active runs")

@@ -16,11 +16,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import quote, urlencode
 
-from check_generation import check_generated_python
 from bundle_assets import required_assets
 from solution_bindings import source_bindings
-from validate_sample_data import validate_data, business_fingerprints, table, identifier
-from databricks_jobs import PHASE_TIMEOUTS, execute_root, execution_plan, generated_resources
+from validate_sample_data import validate_data, validate_append_fixture, business_fingerprints, table, identifier
+from databricks_jobs import execute_root, execution_plan, generated_resources, get_run, execution_tree
+from integration_auth import SESSION, sanitize
+from integration_state import PhaseBudget, job_fingerprints, task_fingerprints, affected_tasks
+from integration_migration import refresh_datasets
+from contextlib import contextmanager
+import uuid
+import copy
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT_DIR = ROOT / "Output/e2e-test-reports"
@@ -28,6 +33,8 @@ TARGETS = json.loads((ROOT / "tests/integration/targets.json").read_text(encodin
 ENVIRONMENTS = json.loads((ROOT / "tests/integration/environments.json").read_text(encoding="utf-8"))
 SCHEMAS = ("raw", "stage", "core", "curated")
 SOURCE_PREFLIGHT_TTL_SECONDS = 2 * 60 * 60
+sys.path.insert(0, str(ROOT / "Generate/shared"))
+from uc_sources import database_query
 
 
 def generated_fingerprint(bundle: Path) -> str:
@@ -43,10 +50,12 @@ def generated_fingerprint(bundle: Path) -> str:
 
 
 def cli(args: list[str], *, cwd: Path, profile: str | None, timeout: int = 3600) -> str:
+    if profile is None:
+        SESSION.ensure()
     command = ["databricks"] + (["--profile", profile] if profile else []) + args
     result = subprocess.run(command, cwd=cwd, capture_output=True, text=True, timeout=timeout, env=cli_environment(profile))
     if result.returncode:
-        raise RuntimeError(f"Databricks command failed: {' '.join(args)}\n{result.stderr}")
+        raise RuntimeError(sanitize(f"Databricks command failed: {' '.join(args)}\n{result.stderr}"))
     return result.stdout
 
 
@@ -485,8 +494,8 @@ def is_lakeflow_internal_object(qualified_name: str, manifest: dict) -> bool:
         names = {dataset["name"]}
         helper = dataset.get("helper")
         if helper:
-            helper_schema, _, helper_name = helper.partition(".")
-            if not helper_schema:
+            helper_schema, separator, helper_name = helper.partition(".")
+            if not separator:
                 helper_schema, helper_name = schema, helper
             if helper_schema == schema:
                 names.add(helper_name)
@@ -497,27 +506,6 @@ def is_lakeflow_internal_object(qualified_name: str, manifest: dict) -> bool:
                 return True
             if re.fullmatch(r"__materialization_mat_" + uuid + "_" + re.escape(object_name) + r"_1", name):
                 return True
-    return False
-
-
-def is_classic_archive_object(qualified_name: str, manifest: dict) -> bool:
-    """Recognize versioned backups created by the classic DDL migration helper."""
-    schema, separator, name = qualified_name.partition(".")
-    if not separator:
-        return False
-    for dataset in manifest.get("datasets", []):
-        if dataset.get("zone") != schema:
-            continue
-        names = {dataset["name"]}
-        helper = dataset.get("helper")
-        if helper:
-            helper_schema, _, helper_name = helper.partition(".")
-            if not helper_schema:
-                helper_schema, helper_name = schema, helper
-            if helper_schema == schema:
-                names.add(helper_name)
-        if any(re.fullmatch(re.escape(base) + r"_\d{10}", name, re.IGNORECASE) for base in names):
-            return True
     return False
 
 
@@ -579,8 +567,6 @@ def assert_no_rows(statement: str, *, warehouse: str, profile: str | None) -> No
 
 
 def source_preflight(manifest, environment, query, call, *, smoke):
-    sys.path.insert(0, str(ROOT / "Generate/shared"))
-    from uc_sources import database_query
     counts, tested = {}, set()
     database_checks = []
     for dataset in manifest["datasets"]:
@@ -624,9 +610,8 @@ def source_preflight(manifest, environment, query, call, *, smoke):
 
 
 def source_preflight_signature(manifest, environment):
-    inventory = [
+    inventory = sorted([
         {
-            "key": dataset["key"],
             "plugin": dataset["external"]["plugin"],
             "connection_suffix": dataset["external"]["connection_suffix"],
             "location": dataset["external"]["location"],
@@ -635,7 +620,7 @@ def source_preflight_signature(manifest, environment):
         }
         for dataset in manifest.get("datasets", [])
         if dataset.get("external")
-    ]
+    ], key=lambda item: json.dumps(item, sort_keys=True))
     binding = {
         "host": environment["host"],
         "connection_prefix": environment["connection_prefix"],
@@ -682,68 +667,30 @@ def check_catalog(call, catalog, environment):
     return catalog_definition
 
 
-def reset_classic_migration_failures(root_run, manifest, catalog, run_principal, call, query):
-    """Clear owned model tables and archives left by failed classic identity migrations."""
-    datasets_by_task = {
-        item["key"].replace(".", "_"): item
-        for item in manifest.get("datasets", [])
-        if item.get("zone") in SCHEMAS and not item.get("managed_ingestion")
-    }
-    # Create-All delegates each zone to a child job. The leaf notebook failures
-    # (and their diagnostic output) live in those child runs, not in a `runs`
-    # list on the Create-All run itself.
-    task_groups = [root_run]
-    for parent_task in root_run.get("tasks", []):
-        child_run_id = parent_task.get("child_run_id")
-        if child_run_id:
-            task_groups.append(call("GET", "/api/2.2/jobs/runs/get?" + urlencode({"run_id": child_run_id})))
-
-    reset = []
-    for run in task_groups:
-        latest_tasks = {}
-        for position, task in enumerate(run.get("tasks", [])):
-            key = task.get("task_key")
-            if not key:
-                continue
-            previous = latest_tasks.get(key)
-            ordering = (task.get("attempt_number", 0), position)
-            if previous is None or ordering > previous[0]:
-                latest_tasks[key] = (ordering, task)
-        for _, task in latest_tasks.values():
-            if task.get("state", {}).get("result_state") != "FAILED" or not task.get("run_id"):
-                continue
-            dataset = datasets_by_task.get(task.get("task_key"))
-            if not dataset:
-                continue
-            output = call("GET", "/api/2.2/jobs/runs/get-output?" + urlencode({"run_id": task["run_id"]}))
-            error = output.get("error", "")
-            if not any(marker in error for marker in (
-                "DELTA_IDENTITY_COLUMNS_EXPLICIT_INSERT_NOT_SUPPORTED",
-                "CONSTRAINT_ALREADY_EXISTS_IN_SCHEMA",
-            )):
-                continue
-            key = dataset["key"]
-            schema, table_name = key.split(".", 1)
-            names = query(
-                f"SELECT table_name FROM {identifier(catalog)}.information_schema.tables "
-                f"WHERE LOWER(table_schema) = '{schema.lower()}' "
-                f"AND (LOWER(table_name) = '{table_name.lower()}' "
-                f"OR LOWER(table_name) RLIKE '^{re.escape(table_name.lower())}_[0-9]{{10}}$')"
-            )
-            expected_names = {row[0] for row in names}
-            for candidate in sorted(expected_names):
-                metadata = call(
-                    "GET",
-                    "/api/2.1/unity-catalog/tables/" + quote(f"{catalog}.{schema}.{candidate}", safe="."),
-                )
-                if metadata.get("owner") != run_principal:
-                    raise RuntimeError("Failed migration table is not owned by the selected test run identity: " + f"{schema}.{candidate}")
-                query(f"DROP TABLE {identifier(catalog)}.{identifier(schema)}.{identifier(candidate)}")
-                reset.append(f"{schema}.{candidate}")
-    return sorted(set(reset))
+def validate_delta_cursors(manifest, environment, catalog, query):
+    statements = []
+    for dataset in manifest["datasets"]:
+        external = dataset.get("external", {})
+        if external.get("extract_mode") != "delta":
+            continue
+        cursor = external.get("cursor_column")
+        target_cursor = external.get("target_cursor_column", cursor)
+        if not cursor or not target_cursor:
+            raise ValueError("Delta validation requires manifest cursor metadata: " + dataset["key"])
+        dtype = next(column["type"] for column in dataset["columns"] if column["name"].casefold() == target_cursor.casefold())
+        connection = environment["connection_prefix"] + external["connection_suffix"]
+        source, predicate = database_query(connection, external["location"], external["service_name"] if external["plugin"] == "oracle" else external["database"], external["plugin"])
+        where = " WHERE " + predicate if predicate else ""
+        raw_max = "(SELECT MAX(" + identifier(target_cursor) + ") FROM " + table(catalog, dataset["key"]) + ")"
+        source_max = "(SELECT MAX(CAST(" + identifier(cursor) + " AS " + dtype + ")) FROM (" + source + ") source" + where + ")"
+        statements.append("SELECT '" + dataset["key"] + "' AS dataset, " + raw_max + " <=> " + source_max + " AS cursor_complete")
+    failures = [key for key, complete in query(" UNION ALL ".join(statements)) if str(complete).lower() != "true"] if statements else []
+    if failures:
+        raise RuntimeError("Source cursor advanced beyond the extracted delta or extraction is incomplete: " + ", ".join(failures))
+    return len(statements)
 
 
-def check_active(call, summary, bundle: Path, profile: str | None, *, allowed_missing_pipeline_ids=()):
+def check_active(call, summary, bundle: Path, profile: str | None, *, allowed_missing_pipeline_ids=(), resume_run_ids=(), resume_pipeline_ids=()):
     sample_job_ids = {int(job["id"]) for job in summary.get("jobs", {}).values() if job.get("id")}
     page = None
     while True:
@@ -751,7 +698,7 @@ def check_active(call, summary, bundle: Path, profile: str | None, *, allowed_mi
         if page:
             query["page_token"] = page
         response = call("GET", "/api/2.2/jobs/runs/list?" + urlencode(query))
-        if any(int(run.get("job_id", -1)) in sample_job_ids for run in response.get("runs", [])):
+        if any(int(run.get("job_id", -1)) in sample_job_ids and int(run.get("run_id", -1)) not in resume_run_ids for run in response.get("runs", [])):
             raise RuntimeError("An existing sample job is running; refusing concurrent integration")
         page = response.get("next_page_token")
         if not page:
@@ -782,11 +729,29 @@ def check_active(call, summary, bundle: Path, profile: str | None, *, allowed_mi
             states = list(pool.map(get_state, missing))
         state_by_id.update({str(pipeline_id): state for pipeline_id, state in states})
     allowed_missing = {str(pipeline_id) for pipeline_id in allowed_missing_pipeline_ids}
-    if any(state_by_id.get(str(pipeline_id)) not in {"IDLE", "FAILED"} and not (str(pipeline_id) in allowed_missing and state_by_id.get(str(pipeline_id)) == "DELETED") for pipeline_id in pipeline_ids):
+    if any(state_by_id.get(str(pipeline_id)) not in {"IDLE", "FAILED"} and str(pipeline_id) not in resume_pipeline_ids and not (str(pipeline_id) in allowed_missing and state_by_id.get(str(pipeline_id)) == "DELETED") for pipeline_id in pipeline_ids):
         raise RuntimeError("An existing sample pipeline is active")
 
 
+@contextmanager
+def reported_step(record, name):
+    state = {"started_at": datetime.now(timezone.utc).isoformat(), "result": "running"}
+    record({"steps": {name: state}})
+    print("START " + name, flush=True)
+    try:
+        yield
+        state["result"] = "passed"
+    except Exception as error:
+        state.update(result="failed", error=sanitize(str(error)))
+        raise
+    finally:
+        state["finished_at"] = datetime.now(timezone.utc).isoformat()
+        record({"steps": {name: state}})
+        print(state["result"].upper() + " " + name, flush=True)
+
+
 def test_target(name, args, environment, record, resume_record=None):
+    SESSION.ensure(force=True)
     bundle = ROOT / TARGETS[name]["bundle_path"]
     catalog = environment["catalogs"][name]
     deployment_profile = args.deployment_profile or args.profile
@@ -810,309 +775,363 @@ def test_target(name, args, environment, record, resume_record=None):
     manifest = json.loads((bundle / "generated/manifest.json").read_text())
     asset_fingerprint = generated_fingerprint(bundle)
     record({"asset_fingerprint": asset_fingerprint})
-    if resume_record and resume_record.get("asset_fingerprint") != asset_fingerprint:
-        # Retain successful source preflight evidence, but never reuse job
-        # results against different generated assets.
-        resume_record = {key: value for key, value in resume_record.items() if key != "runs"}
     source_manifest = manifest
     # Check source reachability once per unchanged environment/target inventory;
     # reuse that pass for two hours while the bounded demo environment is up.
     # Resume reports can be older than the source-preflight TTL. Reuse only the
     # signed cache file, which validates both freshness and the current bindings.
-    source_cache = reusable_source_preflight(REPORT_DIR, args.environment, source_manifest, environment)
-    if source_cache:
-        source_counts = source_cache["sample_counts"]
-        source_preflight_status = "passed_cached"
-    else:
-        source_counts = source_preflight(source_manifest, environment, query, call, smoke=True)
-        source_cache = save_source_preflight(REPORT_DIR, args.environment, source_manifest, environment, source_counts)
-        source_preflight_status = "passed"
-    record({"source_preflight": source_preflight_status, "source_preflight_at": source_cache["checked_at"], "source_counts_before": source_counts, "deployment_principal": deployment_identity.get("applicationId") or deployment_identity.get("userName"), "operator_principal": runtime_identity.get("userName") or runtime_identity.get("applicationId"), "validation_principal": validation_identity.get("userName") or validation_identity.get("applicationId"), "run_principal": environment["run_principal"]})
+    with reported_step(record, "source_preflight"):
+        source_cache = reusable_source_preflight(REPORT_DIR, args.environment, source_manifest, environment)
+        if source_cache:
+            source_counts = source_cache["sample_counts"]
+            source_preflight_status = "passed_cached"
+        else:
+            source_counts = source_preflight(source_manifest, environment, query, call, smoke=True)
+            source_cache = save_source_preflight(REPORT_DIR, args.environment, source_manifest, environment, source_counts)
+            source_preflight_status = "passed"
+        record({"source_preflight": source_preflight_status, "source_preflight_at": source_cache["checked_at"], "source_counts_before": source_counts, "deployment_principal": deployment_identity.get("applicationId") or deployment_identity.get("userName"), "operator_principal": runtime_identity.get("userName") or runtime_identity.get("applicationId"), "validation_principal": validation_identity.get("userName") or validation_identity.get("applicationId"), "run_principal": environment["run_principal"]})
     resources = generated_resources(bundle)
+    fingerprints = job_fingerprints(bundle, resources)
+    old_fingerprints = (resume_record or {}).get("job_fingerprints", {})
+    if not old_fingerprints and resume_record and resume_record.get("asset_fingerprint") == asset_fingerprint:
+        old_fingerprints = fingerprints
+    record({"job_fingerprints": fingerprints})
+    record({"fingerprint_version": 2})
+    task_hashes = task_fingerprints(bundle, resources)
+    record({"task_fingerprints": task_hashes})
+    evidence = {}
+    for section in ("runs", "repeat_runs"):
+        evidence[section] = copy.deepcopy((resume_record or {}).get(section, {}))
+        for key, receipt in evidence[section].items():
+            receipt.setdefault("asset_fingerprint", old_fingerprints.get(key, "unverified"))
+            receipt.setdefault("task_fingerprints", (resume_record or {}).get("task_fingerprints", {}))
+        record({section: evidence[section]})
     assets = required_assets(bundle)
     roots = execution_plan(resources, manifest, required_phases=manifest["lifecycle"])
-    before = bundle_summary(bundle, deployment_profile, args.environment)
-    expected_stale = {("jobs", "load_all_tables")} if name == "databricks-lakeflow" else set()
-    if name == "databricks-lakeflow":
-        expected_stale.update(("pipelines", key) for key in (
-            "ingest_mysql", "ingest_oracle", "ingest_postgresql", "ingest_sqlserver",
-        ))
-    if name == "databricks":
-        obsolete_create_keys = {
-            key for key in before.get("jobs", {})
-            if key not in resources.get("jobs", {})
-            and re.fullmatch(r"Create_(?:raw|stage|core|curated)_.+", key)
-        }
-        expected_stale.update(("jobs", key) for key in obsolete_create_keys)
-        obsolete_layer_load_keys = {
-            key for key in before.get("jobs", {})
-            if key not in resources.get("jobs", {})
-            and re.fullmatch(r"Load_.+_(?:raw|stage|core|curated)_\d+", key, re.IGNORECASE)
-        }
-        expected_stale.update(("jobs", key) for key in obsolete_layer_load_keys)
-    stale_found = set()
-    for kind, values in before.items():
-        unexpected = set(values) - set(resources.get(kind, {}))
-        allowed = {key for stale_kind, key in expected_stale if stale_kind == kind}
-        if unexpected - allowed:
-            raise RuntimeError("Unexpected resource in bundle state; refusing replacement")
-        stale_found.update((kind, key) for key in unexpected)
-    if stale_found != expected_stale.intersection({(kind, key) for kind, values in before.items() for key in values}):
-        raise RuntimeError("Unexpected stale bundle resources; refusing deletion")
-    if any(not before.get(kind, {}).get(key, {}).get("id") for kind, key in stale_found):
-        raise RuntimeError("An obsolete bundle resource is not bound to this deployment")
-    previously_bound = [
-        (kind, key)
-        for kind, values in resources.items()
-        for key in values
-        if before.get(kind, {}).get(key, {}).get("id")
-    ]
-    selected_stale_pipeline_ids = {
-        str(before.get("pipelines", {}).get(key, {}).get("id"))
-        for kind, key in expected_stale
-        if kind == "pipelines" and before.get("pipelines", {}).get(key, {}).get("id")
-    }
-    check_active(call, before, bundle, args.profile, allowed_missing_pipeline_ids=selected_stale_pipeline_ids)
-    existing = {row[0] for row in query(f"SHOW SCHEMAS IN {identifier(catalog)}")}
-    if existing - set(SCHEMAS) - {"default", "information_schema"}:
-        raise RuntimeError("Foreign schemas found in sample catalog")
-    expected = {item["key"] for item in manifest["datasets"]}
-    expected.update(item["helper"] if "." in item["helper"] else item["zone"] + "." + item["helper"] for item in manifest["datasets"] if item.get("helper"))
-    expected.update(pipeline_event_log_objects(resources, before))
-    expected.update(stale_pipeline_event_log_objects(expected_stale, before))
-    expected.update(pipeline_materialization_objects(resources, before, manifest))
-    actual = {schema + "." + name for schema, name in query(f"SELECT table_schema,table_name FROM {identifier(catalog)}.information_schema.tables WHERE table_schema IN ('raw','stage','core','curated')")}
-    owned_legacy, unowned = classify_owned_legacy_objects(actual, expected, name, environment, before, call)
-    foreign = {
-        item for item in unowned
-        if not is_lakeflow_internal_object(item, manifest)
-        and not (name == "databricks" and is_classic_archive_object(item, manifest))
-    }
-    if foreign:
-        raise RuntimeError("Objects in the selected test catalog cannot be proven to belong to this target: " + str(sorted(foreign)))
-    if owned_legacy:
-        record({"retained_owned_legacy_objects": sorted(owned_legacy)})
-    if not previously_bound and actual:
-        raise RuntimeError("Unbound initial deployment must use an empty sample catalog")
-    for object_kind, schema_column in (("routines", "routine_schema"), ("volumes", "volume_schema")):
-        if query(f"SELECT 1 FROM {identifier(catalog)}.information_schema.{object_kind} WHERE {schema_column} IN ('raw','stage','core','curated') LIMIT 1"):
-            raise RuntimeError("Foreign routines or volumes found in sample catalog")
-    full = environment["test_mode"] == "full"
-    native_reset = name == "databricks-lakeflow" and full and bool(actual) and resume_record is None
-    resume_full_refresh = bool(
-        (args.resume_full_refresh or resume_record and "reset_orphaned_dataset_tables" in resume_record)
-        and not any(
-            run.get("phase") == "load" and run.get("result") == "passed"
-            for run in resume_record.get("runs", {}).values()
-        )
-    )
-    needs_disable_full_refresh = native_reset or resume_full_refresh
-    if name == "databricks-lakeflow" and not full and any(kind == "pipelines" for kind, _ in stale_found):
-        raise RuntimeError("Legacy connection-wide ingestion pipelines require the controlled Dev reset before job-scoped deployment")
-    if native_reset:
-        retired = retire_legacy_ingestion_pipelines(stale_found, before, catalog, manifest, call)
-        record({"retired_legacy_ingestion_pipelines": retired})
-        event_logs = drop_stale_pipeline_event_logs(stale_found, before, actual, catalog, query)
-        record({"dropped_retired_pipeline_event_logs": event_logs})
-        orphaned = reset_orphaned_dataset_tables(catalog, manifest, before, query, call)
-        record({"reset_orphaned_dataset_tables": orphaned})
-    if full and name == "databricks" and resume_record is None:
-        for schema in reversed(SCHEMAS):
-            if schema in existing:
-                query(f"DROP SCHEMA {identifier(catalog)}.{identifier(schema)} CASCADE")
-    after = deploy_bundle(
-        name,
-        resources,
-        before,
-        bundle,
-        args.profile,
-        deployment_profile,
-        args.environment,
-        full_refresh=native_reset or resume_full_refresh,
-        force_lock=args.force_lock,
-        local_user=args.local_user,
-    )
-    require_existing_deployment(resources, after)
-    for kind, values in before.items():
-        for key, value in values.items():
-            if (kind, key) in stale_found:
-                continue
-            if value.get("id") and after.get(kind, {}).get(key, {}).get("id") != value["id"]:
-                raise RuntimeError(f"Deployment replaced existing sample resource {kind}.{key}")
-    for key, job in after.get("jobs", {}).items():
-        settings = call("GET", "/api/2.2/jobs/get?job_id=" + str(job["id"]))["settings"]
-        if settings.get("run_as", {}).get("service_principal_name") != environment["run_principal"]:
-            raise RuntimeError("Deployed job has unexpected run_as: " + key)
+    with reported_step(record, "inventory_and_reset"):
+        before = bundle_summary(bundle, deployment_profile, args.environment)
+        expected_stale = {("jobs", "load_all_tables")} if name == "databricks-lakeflow" else set()
+        if name == "databricks-lakeflow":
+            expected_stale.update(("pipelines", key) for key in (
+                "ingest_mysql", "ingest_oracle", "ingest_postgresql", "ingest_sqlserver",
+            ))
         if name == "databricks":
-            expected_job = resources.get("jobs", {}).get(key, {})
-            declared_clusters = {
-                cluster.get("job_cluster_key")
-                for cluster in expected_job.get("job_clusters", [])
+            obsolete_create_keys = {
+                key for key in before.get("jobs", {})
+                if key not in resources.get("jobs", {})
+                and re.fullmatch(r"Create_(?:raw|stage|core|curated)_.+", key)
             }
-            deployed_clusters = {
-                cluster.get("job_cluster_key")
-                for cluster in settings.get("job_clusters", [])
+            expected_stale.update(("jobs", key) for key in obsolete_create_keys)
+            obsolete_layer_load_keys = {
+                key for key in before.get("jobs", {})
+                if key not in resources.get("jobs", {})
+                and re.fullmatch(r"Load_.+_(?:raw|stage|core|curated)_\d+", key, re.IGNORECASE)
             }
-            if declared_clusters != deployed_clusters:
-                raise RuntimeError("Deployed job clusters differ from the bundle definition: " + key)
-            for task in settings.get("tasks", []):
-                if not task.get("notebook_task"):
+            expected_stale.update(("jobs", key) for key in obsolete_layer_load_keys)
+        stale_found = set()
+        for kind, values in before.items():
+            unexpected = set(values) - set(resources.get(kind, {}))
+            allowed = {key for stale_kind, key in expected_stale if stale_kind == kind}
+            if unexpected - allowed:
+                raise RuntimeError("Unexpected resource in bundle state; refusing replacement")
+            stale_found.update((kind, key) for key in unexpected)
+        if stale_found != expected_stale.intersection({(kind, key) for kind, values in before.items() for key in values}):
+            raise RuntimeError("Unexpected stale bundle resources; refusing deletion")
+        if any(not before.get(kind, {}).get(key, {}).get("id") for kind, key in stale_found):
+            raise RuntimeError("An obsolete bundle resource is not bound to this deployment")
+        previously_bound = [
+            (kind, key)
+            for kind, values in resources.items()
+            for key in values
+            if before.get(kind, {}).get(key, {}).get("id")
+        ]
+        selected_stale_pipeline_ids = {
+            str(before.get("pipelines", {}).get(key, {}).get("id"))
+            for kind, key in expected_stale
+            if kind == "pipelines" and before.get("pipelines", {}).get(key, {}).get("id")
+        }
+        known_runs = {int(run["root_run_id"]) for section in ("runs", "repeat_runs") for run in (resume_record or {}).get(section, {}).values() if run.get("root_run_id")}
+        for run in (resume_record or {}).get("runs", {}).values():
+            known_runs.update(int(item["root_run_id"]) for item in run.get("supplemental_runs", {}).values() if item.get("root_run_id"))
+            known_runs.update(int(item["receipt"]["root_run_id"]) for item in run.get("pending_create_repairs", {}).values() if item.get("receipt", {}).get("root_run_id"))
+        known_pipeline_ids = set()
+        for run_identifier in list(known_runs):
+            remote = get_run(call, run_identifier)
+            if remote.get("state", {}).get("life_cycle_state") not in {"TERMINATED", "SKIPPED", "INTERNAL_ERROR"}:
+                known_pipeline_ids.update(task["pipeline_task"]["pipeline_id"] for task in remote.get("tasks", []) if task.get("pipeline_task"))
+            for old in (resume_record or {}).get("runs", {}).values():
+                known_runs.update(int(item["run_id"]) for item in old.get("runs", []))
+        check_active(call, before, bundle, args.profile, allowed_missing_pipeline_ids=selected_stale_pipeline_ids, resume_run_ids=known_runs, resume_pipeline_ids=known_pipeline_ids)
+        existing = {row[0] for row in query(f"SHOW SCHEMAS IN {identifier(catalog)}")}
+        if existing - set(SCHEMAS) - {"default", "information_schema"}:
+            raise RuntimeError("Foreign schemas found in sample catalog")
+        expected = {item["key"] for item in manifest["datasets"]}
+        expected.update(item["helper"] if "." in item["helper"] else item["zone"] + "." + item["helper"] for item in manifest["datasets"] if item.get("helper"))
+        expected.update(pipeline_event_log_objects(resources, before))
+        expected.update(stale_pipeline_event_log_objects(expected_stale, before))
+        expected.update(pipeline_materialization_objects(resources, before, manifest))
+        actual = {schema + "." + name for schema, name in query(f"SELECT table_schema,table_name FROM {identifier(catalog)}.information_schema.tables WHERE table_schema IN ('raw','stage','core','curated')")}
+        internal = {item for item in actual if is_lakeflow_internal_object(item, manifest) and any(
+            str(pipeline.get("id", "")).replace("-", "_") in item
+            for pipeline in before.get("pipelines", {}).values() if pipeline.get("id")
+        )} if name == "databricks-lakeflow" else set()
+        owned_legacy, unowned = classify_owned_legacy_objects(actual - internal, expected, name, environment, before, call)
+        foreign = unowned
+        if foreign:
+            raise RuntimeError("Objects in the selected test catalog cannot be proven to belong to this target: " + str(sorted(foreign)))
+        if owned_legacy:
+            record({"retained_owned_legacy_objects": sorted(owned_legacy)})
+        if not previously_bound and actual:
+            raise RuntimeError("Unbound initial deployment must use an empty sample catalog")
+        for object_kind, schema_column in (("routines", "routine_schema"), ("volumes", "volume_schema")):
+            if query(f"SELECT 1 FROM {identifier(catalog)}.information_schema.{object_kind} WHERE {schema_column} IN ('raw','stage','core','curated') LIMIT 1"):
+                raise RuntimeError("Foreign routines or volumes found in sample catalog")
+        full = environment["test_mode"] == "full"
+        native_reset = name == "databricks-lakeflow" and full and bool(actual) and args.reset
+        resume_full_refresh = bool(
+            (args.resume_full_refresh or resume_record and "reset_orphaned_dataset_tables" in resume_record)
+            and not any(
+                run.get("phase") == "load" and run.get("result") == "passed"
+                for run in resume_record.get("runs", {}).values()
+            )
+        )
+        needs_disable_full_refresh = native_reset or resume_full_refresh
+        if name == "databricks-lakeflow" and not full and any(kind == "pipelines" for kind, _ in stale_found):
+            raise RuntimeError("Legacy connection-wide ingestion pipelines require the controlled Dev reset before job-scoped deployment")
+        if native_reset:
+            retired = retire_legacy_ingestion_pipelines(stale_found, before, catalog, manifest, call)
+            record({"retired_legacy_ingestion_pipelines": retired})
+            event_logs = drop_stale_pipeline_event_logs(stale_found, before, actual, catalog, query)
+            record({"dropped_retired_pipeline_event_logs": event_logs})
+            orphaned = reset_orphaned_dataset_tables(catalog, manifest, before, query, call)
+            record({"reset_orphaned_dataset_tables": orphaned})
+        if full and name == "databricks" and args.reset:
+            for schema in reversed(SCHEMAS):
+                if schema in existing:
+                    query(f"DROP SCHEMA {identifier(catalog)}.{identifier(schema)} CASCADE")
+    with reported_step(record, "deployment_and_assets"):
+        after = deploy_bundle(
+            name,
+            resources,
+            before,
+            bundle,
+            args.profile,
+            deployment_profile,
+            args.environment,
+            full_refresh=native_reset or resume_full_refresh,
+            force_lock=args.force_lock,
+            local_user=args.local_user,
+        )
+        require_existing_deployment(resources, after)
+        for kind, values in before.items():
+            for key, value in values.items():
+                if (kind, key) in stale_found:
                     continue
-                cluster_key = task.get("job_cluster_key")
-                if not cluster_key or cluster_key not in deployed_clusters:
-                    raise RuntimeError("Notebook task is not assigned to its modeled job cluster: " + key)
-                if task.get("new_cluster") or task.get("existing_cluster_id"):
-                    raise RuntimeError("Notebook task bypasses the job-level cluster property: " + key)
-    for pipeline_key, pipeline in after.get("pipelines", {}).items():
-        state = call("GET", "/api/2.0/pipelines/" + pipeline["id"])
-        expected_pipeline = resources.get("pipelines", {}).get(pipeline_key, {})
-        expected_clusters = expected_pipeline.get("clusters", [])
-        actual_spec = state.get("spec", {})
-        if expected_clusters:
-            actual_clusters = {
-                cluster.get("label"): cluster
-                for cluster in actual_spec.get("clusters", [])
-            }
-            for expected_cluster in expected_clusters:
-                actual_cluster = actual_clusters.get(expected_cluster.get("label"))
-                if not actual_cluster or any(
-                    actual_cluster.get(field) != expected_cluster.get(field)
-                    for field in ("node_type_id", "num_workers", "driver_node_type_id", "policy_id")
-                    if field in expected_cluster
-                ):
-                    raise RuntimeError("Deployed pipeline compute differs from its model job cluster: " + pipeline_key)
-            if actual_spec.get("serverless"):
-                raise RuntimeError("Pipeline has serverless enabled despite a classic model cluster: " + pipeline_key)
-        elif expected_pipeline.get("serverless") and not actual_spec.get("serverless"):
-            raise RuntimeError("Pipeline should use serverless compute: " + pipeline_key)
-        if state.get("run_as_user_name") != environment["run_principal"]:
-            raise RuntimeError("Deployed pipeline has an unexpected execution identity")
-    def verify_asset(asset):
-        remote = config["workspace"]["file_path"].rstrip("/") + "/" + asset
-        if remote.endswith(".py") and (bundle / asset).read_text(encoding="utf-8").startswith("# Databricks notebook source"):
-            remote = remote[:-3]
-        call("GET", "/api/2.0/workspace/get-status?" + urlencode({"path": remote}))
+                if value.get("id") and after.get(kind, {}).get(key, {}).get("id") != value["id"]:
+                    raise RuntimeError(f"Deployment replaced existing sample resource {kind}.{key}")
+        for key, job in after.get("jobs", {}).items():
+            settings = call("GET", "/api/2.2/jobs/get?job_id=" + str(job["id"]))["settings"]
+            if settings.get("run_as", {}).get("service_principal_name") != environment["run_principal"]:
+                raise RuntimeError("Deployed job has unexpected run_as: " + key)
+            if name == "databricks":
+                expected_job = resources.get("jobs", {}).get(key, {})
+                declared_clusters = {
+                    cluster.get("job_cluster_key")
+                    for cluster in expected_job.get("job_clusters", [])
+                }
+                deployed_clusters = {
+                    cluster.get("job_cluster_key")
+                    for cluster in settings.get("job_clusters", [])
+                }
+                if declared_clusters != deployed_clusters:
+                    raise RuntimeError("Deployed job clusters differ from the bundle definition: " + key)
+                for task in settings.get("tasks", []):
+                    if not task.get("notebook_task"):
+                        continue
+                    cluster_key = task.get("job_cluster_key")
+                    if not cluster_key or cluster_key not in deployed_clusters:
+                        raise RuntimeError("Notebook task is not assigned to its modeled job cluster: " + key)
+                    if task.get("new_cluster") or task.get("existing_cluster_id"):
+                        raise RuntimeError("Notebook task bypasses the job-level cluster property: " + key)
+        for pipeline_key, pipeline in after.get("pipelines", {}).items():
+            state = call("GET", "/api/2.0/pipelines/" + pipeline["id"])
+            expected_pipeline = resources.get("pipelines", {}).get(pipeline_key, {})
+            expected_clusters = expected_pipeline.get("clusters", [])
+            actual_spec = state.get("spec", {})
+            if expected_clusters:
+                actual_clusters = {
+                    cluster.get("label"): cluster
+                    for cluster in actual_spec.get("clusters", [])
+                }
+                for expected_cluster in expected_clusters:
+                    actual_cluster = actual_clusters.get(expected_cluster.get("label"))
+                    if not actual_cluster or any(
+                        actual_cluster.get(field) != expected_cluster.get(field)
+                        for field in ("node_type_id", "num_workers", "driver_node_type_id", "policy_id")
+                        if field in expected_cluster
+                    ):
+                        raise RuntimeError("Deployed pipeline compute differs from its model job cluster: " + pipeline_key)
+                if actual_spec.get("serverless"):
+                    raise RuntimeError("Pipeline has serverless enabled despite a classic model cluster: " + pipeline_key)
+            elif expected_pipeline.get("serverless") and not actual_spec.get("serverless"):
+                raise RuntimeError("Pipeline should use serverless compute: " + pipeline_key)
+            if state.get("run_as_user_name") != environment["run_principal"]:
+                raise RuntimeError("Deployed pipeline has an unexpected execution identity")
+        def verify_asset(asset):
+            remote = config["workspace"]["file_path"].rstrip("/") + "/" + asset
+            if remote.endswith(".py") and (bundle / asset).read_text(encoding="utf-8").startswith("# Databricks notebook source"):
+                remote = remote[:-3]
+            call("GET", "/api/2.0/workspace/get-status?" + urlencode({"path": remote}))
 
-    # Workspace status is a read-only check for each synced file. Bound
-    # concurrency keeps the verification quick without flooding the API.
-    with ThreadPoolExecutor(max_workers=8) as pool:
-        list(pool.map(verify_asset, assets))
-    record({"deployment": "passed", "resources": after, "asset_count": len(assets), "roots": roots})
+        # Workspace status is a read-only check for each synced file. Bound
+        # concurrency keeps the verification quick without flooding the API.
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            list(pool.map(verify_asset, assets))
+        record({"deployment": "passed", "resources": after, "asset_count": len(assets), "roots": roots})
     if not full:
         return {"result": "passed", "test_mode": "deployment-and-source-smoke", "full_data_acceptance": False}
-    runs = dict((resume_record or {}).get("runs", {}))
-    phase_deadlines = {}
-    for phase, key in roots:
-        prior_run = runs.get(key, {})
-        if prior_run.get("result") == "passed" or prior_run.get("state", {}).get("result_state") == "SUCCESS":
-            continue
-        phase_deadlines.setdefault(phase, time.monotonic() + PHASE_TIMEOUTS[phase])
-        remaining = int(phase_deadlines[phase] - time.monotonic())
-        if remaining <= 0:
-            raise TimeoutError(f"The {phase} phase exceeded its {PHASE_TIMEOUTS[phase] // 60}-minute budget")
+    runs = evidence["runs"]
+    repeat_runs = evidence["repeat_runs"]
+    budget = PhaseBudget()
+    if args.refresh_dataset:
+        with reported_step(record, "selected_dataset_migration"), budget.measure("load"):
+            refresh_datasets(args.refresh_dataset, manifest, after, catalog, call, record,
+                             previous=(resume_record or {}).get("dataset_refreshes"), timeout=budget.remaining("load"))
+    changed_jobs = {key for _, key in roots if runs.get(key, {}).get("asset_fingerprint") != fingerprints[key]}
+    dependencies = {entry["job"]: set(entry.get("depends_on", [])) for entry in manifest["execution_plan"].get("load", [])}
+    while True:
+        downstream = {key for key, parents in dependencies.items() if parents & changed_jobs}
+        if downstream <= changed_jobs:
+            break
+        changed_jobs |= downstream
+
+    def run_step(phase, key, destination, *, repeat=False):
+        prior = destination.get(key, {})
+        unchanged = key not in changed_jobs and prior.get("asset_fingerprint") == fingerprints[key]
+        if prior.get("result") == "passed" and unchanged and not prior.get("pending_create_repairs"):
+            record({"reused_steps": {("repeat:" if repeat else "") + key: prior["root_run_id"]}})
+            return
+        prior_id = prior.get("root_run_id")
+        rerun = None
+        if prior_id:
+            remote = get_run(call, prior_id)
+            if phase == "create" and (prior.get("pending_create_repairs") or prior.get("result") == "passed" and not unchanged):
+                pending = prior.get("pending_create_repairs", {})
+                if not pending:
+                    old_root = next(item for item in prior["runs"] if item["run_id"] == prior_id)
+                    for task in resources["jobs"][key]["tasks"]:
+                        reference = task.get("run_job_task", {}).get("job_id", "")
+                        match = re.fullmatch(r"\$\{resources.jobs.([^.]+).id\}", reference)
+                        if not match:
+                            raise RuntimeError("Create repair requires the manifest's existing nested zone jobs")
+                        child = match[1]
+                        changes = affected_tasks(resources["jobs"][child], task_hashes[child], prior.get("task_fingerprints", {}).get(child, {}))
+                        if changes:
+                            old_task = next(item for item in old_root["tasks"] if item["task_key"] == task["task_key"])
+                            pending[child] = {"run_id": old_task["child_run_id"], "tasks": changes}
+                destination[key] = {**prior, "result": "running", "pending_create_repairs": pending}
+                supplemental = destination[key].setdefault("supplemental_runs", {})
+                record({"runs": destination})
+                for child, repair in list(pending.items()):
+                    def child_receipt(value):
+                        repair["receipt"] = value
+                        record({"runs": destination})
+                    previous_receipt = repair.get("receipt", {})
+                    if previous_receipt.get("result") != "passed":
+                        with reported_step(record, "create_repair:" + child), budget.measure("create"):
+                            failed = previous_receipt.get("result") == "failed"
+                            execute_root(call, int(after["jobs"][child]["id"]), timeout=budget.remaining("create"), record=child_receipt,
+                                         repair_run_id=previous_receipt["root_run_id"] if failed else None,
+                                         rerun_tasks=[task["task_key"] for run in previous_receipt.get("runs", []) for task in run.get("tasks", []) if not task.get("excluded") and task.get("state", {}).get("result_state") != "SUCCESS"] if failed else None,
+                                         resume_run_id=previous_receipt.get("root_run_id") if previous_receipt and not failed else None,
+                                         resume_repair_id=previous_receipt.get("repair_id"),
+                                         only_tasks=repair["tasks"],
+                                         idempotency_token=hashlib.sha256(json.dumps([args.execution_id, name, key, child, fingerprints[child]]).encode()).hexdigest())
+                    supplemental[child] = repair["receipt"]
+                    del pending[child]
+                    record({"runs": destination, "phase_seconds": budget.consumed})
+                tree = execution_tree(call, prior_id)
+                if tree["errors"]:
+                    raise RuntimeError("; ".join(tree["errors"]))
+                destination[key] = {**tree, "phase": phase, "result": "passed", "asset_fingerprint": fingerprints[key], "task_fingerprints": task_hashes, "supplemental_runs": supplemental}
+                record({"runs": destination})
+                return
+            if remote.get("state", {}).get("life_cycle_state") in {"TERMINATED", "SKIPPED", "INTERNAL_ERROR"}:
+                if unchanged and remote.get("state", {}).get("result_state") == "SUCCESS":
+                    tree = execution_tree(call, prior_id)
+                    if tree["errors"]:
+                        raise RuntimeError("; ".join(tree["errors"]))
+                    destination[key] = {**tree, "phase": phase, "result": "passed", "asset_fingerprint": fingerprints[key], "task_fingerprints": task_hashes}
+                    record({"repeat_runs" if repeat else "runs": destination})
+                    return
+                if not unchanged:
+                    rerun = affected_tasks(
+                        resources["jobs"][key], task_hashes[key],
+                        prior.get("task_fingerprints", {}).get(key, {}),
+                    )
+                    if not rerun:
+                        rerun = [task["task_key"] for task in resources["jobs"][key]["tasks"]]
+                else:
+                    rerun = [task["task_key"] for task in remote.get("tasks", []) if task.get("state", {}).get("result_state") != "SUCCESS"]
         def receipt(value):
-            runs[key] = {"phase": phase, **value}
-            record({"runs": runs})
-        prior_root_id = prior_run.get("root_run_id")
-        prior_root = next(
-            (item for item in prior_run.get("runs", []) if item.get("run_id") == prior_root_id),
-            None,
-        )
-        failed_tasks = sorted({
-            task["task_key"]
-            for task in (prior_root or {}).get("tasks", [])
-            if task.get("state", {}).get("result_state") != "SUCCESS"
-        })
-        if name == "databricks" and phase == "create" and prior_run:
-            reset_schemas = {
-                item.split(".", 1)[0]
-                for item in prior_run.get("reset_classic_migration_tables", [])
-                if "." in item
-            }
-            if "raw" in reset_schemas:
-                failed_tasks.append("Create_raw_tables")
-            if "stage" in reset_schemas:
-                failed_tasks.append("Create_stage_tables")
-            if "core" in reset_schemas:
-                failed_tasks.append("Create_core_tables")
-            if "curated" in reset_schemas:
-                failed_tasks.append("Create_curated_tables")
-            failed_tasks = sorted(set(failed_tasks))
-        if (
-            name == "databricks"
-            and args.environment == "dev"
-            and phase == "create"
-            and failed_tasks
-            and prior_root
-        ):
-            reset_query = lambda statement: sql(
-                statement,
-                warehouse=environment["warehouse_id"],
-                profile=validation_profile,
-            )
-            reset_tables = reset_classic_migration_failures(
-                prior_root,
-                manifest,
-                catalog,
-                environment["run_principal"],
-                call,
-                reset_query,
-            )
-            if reset_tables:
-                record({"reset_classic_migration_tables": reset_tables})
-        execute_root(
-            call,
-            int(after["jobs"][key]["id"]),
-            timeout=remaining,
-            record=receipt,
-            repair_run_id=prior_root_id if failed_tasks else None,
-            rerun_tasks=failed_tasks or None,
-        )
+            destination[key] = {"phase": phase, "asset_fingerprint": fingerprints[key], "task_fingerprints": task_hashes, **value}
+            record({"repeat_runs" if repeat else "runs": destination})
+        token = hashlib.sha256(json.dumps([args.execution_id, name, key, repeat, fingerprints[key]]).encode()).hexdigest()
+        with reported_step(record, ("repeat:" if repeat else phase + ":") + key):
+            try:
+                with budget.measure(phase):
+                    execute_root(
+                        call, int(after["jobs"][key]["id"]), timeout=budget.remaining(phase),
+                        record=receipt, repair_run_id=prior_id if rerun else None,
+                        rerun_tasks=rerun,
+                        resume_run_id=prior_id if prior_id and not rerun else None,
+                        resume_repair_id=prior.get("repair_id"),
+                        idempotency_token=token,
+                    )
+            finally:
+                record({"phase_seconds": budget.consumed})
+
+    for phase, key in roots:
+        run_step(phase, key, runs)
         if needs_disable_full_refresh:
-            # All subsequent updates must run without full refresh.
             after = deploy_bundle(
-                name,
-                resources,
-                before,
-                bundle,
-                args.profile,
-                deployment_profile,
-                args.environment,
-                full_refresh=False,
-                force_lock=args.force_lock,
+                name, resources, before, bundle, args.profile, deployment_profile,
+                args.environment, full_refresh=False, force_lock=args.force_lock,
                 local_user=args.local_user,
             )
-    validation_deadline = time.monotonic() + PHASE_TIMEOUTS["validate"]
+            needs_disable_full_refresh = False
+
     def validation_query(statement):
-        remaining = int(validation_deadline - time.monotonic())
-        if remaining <= 0:
-            raise TimeoutError("The validation phase exceeded its 30-minute budget")
-        return sql(statement, warehouse=environment["warehouse_id"], profile=args.validation_profile or args.profile, timeout=remaining)
-    data = validate_data(validation_query, catalog, manifest)
-    record({"data": data})
-    if resume_record is None or not resume_record.get("runs"):
-        baseline = business_fingerprints(validation_query, catalog, manifest)
+        try:
+            with budget.measure("validate"):
+                return sql(statement, warehouse=environment["warehouse_id"], profile=validation_profile, timeout=budget.remaining("validate"))
+        finally:
+            record({"phase_seconds": budget.consumed})
+    with reported_step(record, "data_validation"):
+        record({"append_fixture": validate_append_fixture(validation_query)})
+        data = validate_data(validation_query, catalog, manifest)
+        record({"data": data})
+    repeat_status = "not_requested"
+    if args.verify_repeat:
+        repeat_status = "running"
+        record({"repeat_without_full_refresh": repeat_status})
+        baseline = (resume_record or {}).get("repeat_baseline_fingerprints") if not changed_jobs else None
+        baseline = baseline or business_fingerprints(validation_query, catalog, manifest)
         record({"repeat_baseline_fingerprints": baseline})
         for phase, key in roots:
             if phase == "load":
-                execute_root(call, int(after["jobs"][key]["id"]), timeout=PHASE_TIMEOUTS[phase], record=lambda value: record({"repeat_run": {"resource": key, **value}}))
+                run_step(phase, key, repeat_runs, repeat=True)
         repeated = business_fingerprints(validation_query, catalog, manifest)
         record({"repeat_fingerprints": repeated})
         if baseline != repeated:
-            changed = {
-                key: {"before": baseline.get(key), "after": repeated.get(key)}
-                for key in baseline.keys() | repeated.keys()
-                if baseline.get(key) != repeated.get(key)
-            }
-            record({"repeat_fingerprint_changes": changed})
-            raise RuntimeError(
-                "Unchanged reload altered business data or history versions: "
-                + ", ".join(sorted(changed))
-            )
+            changed = {key: {"before": baseline.get(key), "after": repeated.get(key)} for key in baseline.keys() | repeated.keys() if baseline.get(key) != repeated.get(key)}
+            record({"repeat_without_full_refresh": "failed", "repeat_fingerprint_changes": changed})
+            raise RuntimeError("Unchanged reload altered business data or history versions: " + ", ".join(sorted(changed)))
         data = validate_data(validation_query, catalog, manifest)
-    else:
-        record({"repeat_without_full_refresh": "skipped_on_resume_to_avoid_replaying_successful_loads"})
+        repeat_status = "passed"
+    record({"repeat_without_full_refresh": repeat_status, "phase_seconds": budget.consumed})
     source_after = source_preflight(source_manifest, environment, validation_query, call, smoke=False)
+    record({"delta_cursor_checks": validate_delta_cursors(source_manifest, environment, catalog, validation_query)})
     for key, count in source_after.items():
         raw_count = data["counts"].get(key)
         item = next((entry for entry in manifest["datasets"] if entry["key"] == key), None)
@@ -1126,7 +1145,7 @@ def test_target(name, args, environment, record, resume_record=None):
     canonical = {item["key"]: item for item in comparison_manifest["datasets"]}
     source_changes = {key: {"before": source_counts[key], "after": source_after[key]} for key in source_counts.keys() & source_after.keys() if source_counts[key] != source_after[key]}
     repeat_status = "skipped_on_resume_to_avoid_replaying_successful_loads" if resume_record and resume_record.get("runs") else "passed"
-    return {"result": "passed", "test_mode": "full", "data": data, "repeat_without_full_refresh": repeat_status, "fingerprints": business_fingerprints(validation_query, catalog, manifest, canonical), "source_counts_after": source_after, "source_changes_during_run": source_changes}
+    return {"result": "passed", "test_mode": "full", "data": data, "repeat_without_full_refresh": repeat_status, "full_data_acceptance": bool(args.verify_repeat and repeat_status == "passed"), "fingerprints": business_fingerprints(validation_query, catalog, manifest, canonical), "source_counts_after": source_after, "source_changes_during_run": source_changes}
 
 
 def main():
@@ -1138,9 +1157,18 @@ def main():
     parser.add_argument("--validation-profile", help="Optional Databricks CLI profile used for table data validation; must be the environment's run service principal")
     parser.add_argument("--local-user", help="Allow this exact user identity for a local Dev run; CI and Prod must use the deployment service principal")
     parser.add_argument("--force-lock", action="store_true", help="Force a stale bundle lock after the runner confirms no selected-target job or pipeline is active")
+    parser.add_argument("--verify-repeat", action="store_true", help="Explicitly repeat Load jobs and verify unchanged business data and history")
+    parser.add_argument("--reset", action="store_true", help="Explicitly reset owned Dev data before a fresh test; incompatible with resume")
+    parser.add_argument("--refresh-dataset", action="append", default=[], help="Explicitly full-refresh one manifest dataset during a Dev Lakeflow resume migration (repeatable)")
     parser.add_argument("--resume-report", type=Path, help="Resume failed or unrun work from a previous full Dev report without resetting successful target state")
     parser.add_argument("--resume-full-refresh", action="store_true", help="Run retried Lakeflow pipeline tasks as full refreshes after source or schema changes")
     args = parser.parse_args()
+    if args.reset and (args.environment != "dev" or args.resume_report):
+        parser.error("--reset requires a fresh Dev run without --resume-report")
+    if args.verify_repeat and args.environment != "dev":
+        parser.error("--verify-repeat is only supported by the full Dev suite")
+    if args.refresh_dataset and (args.environment != "dev" or args.target != "databricks-lakeflow" or not args.resume_report):
+        parser.error("--refresh-dataset requires an explicit Dev resume for databricks-lakeflow")
     selected = list(TARGETS) if args.target == "all" else [args.target]
     if any(name not in TARGETS for name in selected):
         parser.error("Unsupported integration target; available: " + ", ".join(TARGETS))
@@ -1173,65 +1201,83 @@ def main():
     report_dir.mkdir(parents=True, exist_ok=True)
     report_path = report_dir / f"integration-{args.environment}-{datetime.now().strftime('%Y%m%d-%H%M%S')}.json"
     report = {"commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(), "environment": args.environment, "selected_targets": selected, "test_mode": environment["test_mode"], "targets": [], "result": "running"}
+    args.execution_id = previous.get("execution_id", str(uuid.uuid4())) if args.resume_report else str(uuid.uuid4())
+    report.update(schema_version=2, execution_id=args.execution_id, verify_repeat=args.verify_repeat, reset=args.reset)
     if args.resume_report:
         report["resumed_from"] = str(args.resume_report.resolve())
     def save():
-        report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    warehouse = api("GET", "/api/2.0/sql/warehouses/" + environment["warehouse_id"], profile=args.profile)
-    if not warehouse.get("enable_serverless_compute"):
-        raise RuntimeError("Integration requires a serverless warehouse")
-    restart_warehouse = warehouse.get("state") == "STOPPED"
-    if restart_warehouse:
-        api("POST", "/api/2.0/sql/warehouses/" + environment["warehouse_id"] + "/start", {}, profile=args.profile)
-        deadline = time.monotonic() + 300
-        while True:
-            warehouse = api("GET", "/api/2.0/sql/warehouses/" + environment["warehouse_id"], profile=args.profile)
-            if warehouse.get("state") == "RUNNING":
-                break
-            if time.monotonic() >= deadline:
-                api("POST", "/api/2.0/sql/warehouses/" + environment["warehouse_id"] + "/stop", {}, profile=args.profile)
-                raise TimeoutError("Serverless SQL warehouse did not start within five minutes")
-            time.sleep(5)
+        temporary = report_path.with_suffix(".tmp")
+        temporary.write_text(json.dumps(sanitize(report), indent=2) + "\n", encoding="utf-8")
+        temporary.replace(report_path)
+    def global_record(value):
+        for key, item in value.items():
+            if key == "steps":
+                report.setdefault(key, {}).update(item)
+            else:
+                report[key] = item
+        save()
+    save()
+    restart_warehouse = False
     try:
+        with reported_step(global_record, "authentication_and_warehouse"):
+            SESSION.ensure(force=True)
+            warehouse = api("GET", "/api/2.0/sql/warehouses/" + environment["warehouse_id"], profile=args.profile)
+            if not warehouse.get("enable_serverless_compute"):
+                raise RuntimeError("Integration requires a serverless warehouse")
+            restart_warehouse = warehouse.get("state") == "STOPPED"
+            if restart_warehouse:
+                api("POST", "/api/2.0/sql/warehouses/" + environment["warehouse_id"] + "/start", {}, profile=args.profile)
+                deadline = time.monotonic() + 300
+                while True:
+                    warehouse = api("GET", "/api/2.0/sql/warehouses/" + environment["warehouse_id"], profile=args.profile)
+                    if warehouse.get("state") == "RUNNING":
+                        break
+                    if time.monotonic() >= deadline:
+                        api("POST", "/api/2.0/sql/warehouses/" + environment["warehouse_id"] + "/stop", {}, profile=args.profile)
+                        raise TimeoutError("Serverless SQL warehouse did not start within five minutes")
+                    time.sleep(5)
         with source_bindings(environment):
             generation_targets = selected
             for name in generation_targets:
-                subprocess.run([sys.executable, "scripts/check_generation.py", "--target", name], cwd=ROOT, check=True)
-            for name in selected:
-                prior = previous_targets.get(name)
-                bundle = ROOT / TARGETS[name]["bundle_path"]
-                if (
-                    prior
-                    and prior.get("result") == "passed"
-                    and prior.get("asset_fingerprint") == generated_fingerprint(bundle)
-                ):
-                    report["targets"].append(prior)
-                    print(f"SKIP {name}: previous report already passed", flush=True)
-                    continue
-                result = {"target": name, "catalog": environment["catalogs"][name], "result": "running"}
-                report["targets"].append(result)
-                def record(value):
-                    result.update(value)
-                    save()
-                try:
-                    record(test_target(name, args, environment, record, resume_record=prior))
-                except Exception as error:
-                    record({"result": "failed", "error": f"{type(error).__name__}: {error}"})
-                    print(f"FAIL {name}: {error}", flush=True)
-            successful = [item for item in report["targets"] if item["result"] == "passed"]
-            if len(successful) > 1 and environment["test_mode"] == "full":
-                report["comparison"] = "passed" if all(item["fingerprints"] == successful[0]["fingerprints"] for item in successful[1:]) else "failed"
-            report["result"] = "passed" if len(successful) == len(selected) and report.get("comparison") != "failed" else "failed"
+                with reported_step(global_record, "generation:" + name):
+                    subprocess.run([sys.executable, "scripts/check_generation.py", "--target", name], cwd=ROOT, check=True)
+        for name in selected:
+            prior = previous_targets.get(name)
+            result = {**copy.deepcopy(prior or {}), "target": name, "catalog": environment["catalogs"][name], "result": "running"}
+            report["targets"].append(result)
+            def record(value):
+                for key, item in value.items():
+                    if key in {"steps", "reused_steps"}:
+                        result.setdefault(key, {}).update(item)
+                    else:
+                        result[key] = item
+                save()
+            try:
+                record(test_target(name, args, environment, record, resume_record=prior))
+            except Exception as error:
+                record({"result": "failed", "error": sanitize(f"{type(error).__name__}: {error}")})
+                print(f"FAIL {name}: {sanitize(str(error))}", flush=True)
+        successful = [item for item in report["targets"] if item["result"] == "passed"]
+        if len(successful) > 1 and environment["test_mode"] == "full":
+            report["comparison"] = "passed" if all(item["fingerprints"] == successful[0]["fingerprints"] for item in successful[1:]) else "failed"
+        report["result"] = "passed" if len(successful) == len(selected) and report.get("comparison") != "failed" else "failed"
+    except Exception as error:
+        report.update(result="failed", error=sanitize(str(error)))
     finally:
-        if restart_warehouse:
-            api("POST", "/api/2.0/sql/warehouses/" + environment["warehouse_id"] + "/stop", {}, profile=args.profile)
-            deadline = time.monotonic() + 300
-            while time.monotonic() < deadline:
-                if api("GET", "/api/2.0/sql/warehouses/" + environment["warehouse_id"], profile=args.profile).get("state") == "STOPPED":
-                    break
-                time.sleep(5)
-            else:
-                raise TimeoutError("Serverless SQL warehouse did not stop within five minutes")
+        save()
+        try:
+            if restart_warehouse:
+                api("POST", "/api/2.0/sql/warehouses/" + environment["warehouse_id"] + "/stop", {}, profile=args.profile)
+                deadline = time.monotonic() + 300
+                while time.monotonic() < deadline:
+                    if api("GET", "/api/2.0/sql/warehouses/" + environment["warehouse_id"], profile=args.profile).get("state") == "STOPPED":
+                        break
+                    time.sleep(5)
+                else:
+                    raise TimeoutError("Serverless SQL warehouse did not stop within five minutes")
+        except Exception as error:
+            report.update(result="failed", cleanup_error=sanitize(str(error)))
+        report["finished_at"] = datetime.now(timezone.utc).isoformat()
         save()
     print(f"Integration {report['result']}: {report_path}", flush=True)
     if report["result"] != "passed":

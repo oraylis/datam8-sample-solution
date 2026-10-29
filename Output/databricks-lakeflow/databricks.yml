@@ -10,6 +10,14 @@ variables:
   owner: {}
   deploy_service_principal: {}
   run_as_service_principal: {}
+  ingestion_permissions:
+    description: Explicit ingestion ACL, preserving existing UC pipeline ownership
+    type: complex
+    default:
+    - service_principal_name: ${var.deploy_service_principal}
+      level: IS_OWNER
+    - service_principal_name: ${var.run_as_service_principal}
+      level: CAN_RUN
   connection_prefix:
     default: sample_
   sqlserver_connection: {}

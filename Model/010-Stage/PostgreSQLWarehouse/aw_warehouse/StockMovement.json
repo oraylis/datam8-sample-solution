@@ -10,7 +10,6 @@
         "type": "long",
         "nullable": false
       },
-      "isBusinessKey": true,
       "expressionLanguage": "sql",
       "dateAdded": "2026-10-26T14:03:55.519798Z"
     },

@@ -1,5 +1,54 @@
 # Generation and integration tests
 
+## Runner order and repeat selection
+
+1. Validate environment and identity, save the report, and start the SQL warehouse
+   only when initially stopped.
+2. Apply non-secret bindings through the CLI, generate each selected target once,
+   and restore the original model bindings on every exit.
+3. Check source families with bounded reads and both API endpoints with pagination.
+   Database smoke checks use `LIMIT 1`. Both targets reuse a normalized source
+   inventory result for two hours. Full source counts occur at final validation.
+4. Inspect selected bundle bindings, active runs and owned objects. Known Lakeflow
+   internal tables must match the manifest and a bound pipeline ID.
+5. Deploy and verify assets, compute and execution identities.
+6. Run the existing classic Create root, then Load jobs in manifest dependency
+   order. Its four nested zone jobs are child runs of one root launch. Lakeflow
+   has Load jobs only. No additional test jobs are created.
+7. Validate data, history, relationships and totals. Repeat Load only when
+   `--verify-repeat` is selected; record every repeat in `repeat_runs`.
+8. Reconcile extraction completeness, compare targets, save the final result,
+   and stop an initially stopped warehouse. Cleanup errors are reported separately.
+
+Default local and GitHub integration runs load once; `verify_repeat` defaults to
+false. Explicit repeat acceptance and local resume use:
+
+```powershell
+uv run python scripts/run_integration_tests.py --environment dev --target all --verify-repeat
+uv run python scripts/run_integration_tests.py --environment dev --target all --verify-repeat --resume-report Output/e2e-test-reports/previous.json
+```
+
+GitHub's optional `resume_run_id` downloads the prior report artifact. Resume
+reconciles stored remote run IDs, reuses unchanged success evidence, repairs
+affected tasks and invalidates downstream jobs. New starts use stable idempotency
+tokens to correlate a lost response. An unrequested repeat is `not_requested`,
+never passed. Full repeat acceptance requires that suite and all data checks.
+
+For a one-time migration from locally verified runs, the selected GitHub
+environment can temporarily supply `INTEGRATION_RESUME_EVIDENCE` (gzip-compressed,
+base64-encoded sanitized report JSON, maximum one MiB unpacked). This uses the
+same fingerprint and environment checks as file-based resume. Remove that variable
+after the first CI report exists and use `resume_run_id` for subsequent retries.
+Resume always rechecks the target and its data; it reuses job execution evidence.
+
+Entra OIDC is renewed before each target and at most every thirty minutes during
+long runs. Renewal is serialized; mutation API calls are never blindly retried.
+Diagnostics and artifacts redact credentials, including GitHub's OIDC request
+credential. Cleanup cannot discard the primary failure or leave a running result.
+
+Extraction examples live in the [classic properties guide](../Generate/databricks-lake/PROPERTIES.md)
+and [Lakeflow properties guide](../Generate/databricks-lakeflow/PROPERTIES.md).
+
 ## Install the pinned tools
 
 Use Python 3.13 or newer and uv in this checkout:
@@ -123,12 +172,13 @@ Dev performs source preflight before any reset, validates and deploys the existi
 bundle, executes the classic Create root followed by each modeled Load job in
 dependency order; for Lakeflow it executes each modeled Load job once, with
 managed ingestion tasks completed before that job's processing pipeline. It
-checks complete execution trees, validates the data and repeats Load without
-full refresh. Job keys and cross-job dependencies come from the generated
+checks complete execution trees and validates data. Load is repeated only with
+`--verify-repeat`; Create is not repeated for that check. Job keys and cross-job dependencies come from the generated
 manifest rather than hardcoded names. Timeouts cancel remote work: Create 30 minutes, Load 90
 minutes and validation queries at most 30 minutes.
 
-Classic reset drops only validated, owned sample schemas. Native reset refreshes
+Reset requires explicit `--reset` on a fresh Dev run and cannot be combined with
+`--resume-report`. Classic reset drops only validated, owned sample schemas. Native reset refreshes
 only the owned pipeline graph; subsequent updates do not use full refresh.
 Foreign objects, active runs, partially bound deployment states and unexpected
 resource replacement abort the test. Lakeflow event-log tables are considered

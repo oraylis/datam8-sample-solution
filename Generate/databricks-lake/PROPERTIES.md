@@ -1,5 +1,19 @@
 # Properties: Databricks Lake
 
+## StockMovement: Delta plus append without a business key
+
+The external source uses `extract_mode=delta`; its mapping marks `ModifiedAt`
+with `extract_column=delta`. Values must increase monotonically. Raw applies a
+typed cursor filter before its first action and prints the scan plan for pushdown
+inspection. The filtered read is materialized once for counting and writing.
+
+Stage uses `write_mode=append` without a business key and consumes newly inserted
+Raw batches using its existing technical watermark. A later ModifiedAt appends
+another row even with the same MovementID. Late values at or below the processed
+cursor are outside this sample's contract. Core uses `write_mode=overwrite`, reads
+the complete accumulated Stage snapshot and replaces its prior contents.
+Extraction settings do not implicitly filter a modeled Core source.
+
 ## Where to set properties
 
 - **Entity:** add a `properties` array to the entity JSON.

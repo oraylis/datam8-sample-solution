@@ -38,6 +38,31 @@ def normalize_type(value):
     return {"integer": "int", "long": "bigint", "short": "smallint", "bit": "boolean", "datetime": "timestamp"}.get(value, value)
 
 
+def validate_append_fixture(query):
+    """Read-only warehouse fixture for a monotonic cursor, with repeated event IDs."""
+    rows = query("""WITH initial AS (
+        SELECT * FROM VALUES (1,10),(2,20) AS t(MovementID,ModifiedAt)
+    ), unchanged_delta AS (
+        SELECT * FROM initial WHERE ModifiedAt > (SELECT MAX(ModifiedAt) FROM initial)
+    ), inserted_delta AS (
+        SELECT * FROM VALUES (3,30) AS t(MovementID,ModifiedAt)
+        WHERE ModifiedAt > (SELECT MAX(ModifiedAt) FROM initial)
+    ), after_insert AS (
+        SELECT * FROM initial UNION ALL SELECT * FROM inserted_delta
+    ), changed_delta AS (
+        SELECT * FROM VALUES (1,40) AS t(MovementID,ModifiedAt)
+        WHERE ModifiedAt > (SELECT MAX(ModifiedAt) FROM after_insert)
+    ), accumulated_stage AS (
+        SELECT * FROM after_insert UNION ALL SELECT * FROM changed_delta
+    ), overwrite_core AS (SELECT * FROM accumulated_stage)
+    SELECT (SELECT COUNT(*) FROM initial), (SELECT COUNT(*) FROM unchanged_delta),
+        (SELECT COUNT(*) FROM inserted_delta), (SELECT COUNT(*) FROM changed_delta),
+        COUNT(*), SUM(CASE WHEN MovementID=1 THEN 1 ELSE 0 END) FROM overwrite_core""")
+    if not rows or [int(value) for value in rows[0]] != [2, 0, 1, 1, 4, 2]:
+        raise ValueError("Delta/append fixture failed; repeated MovementID must be allowed only with a later cursor")
+    return "passed"
+
+
 def validate_data(query, catalog, manifest, *, date_start="2000-01-01", date_end="2030-12-31"):
     datasets = manifest["datasets"]
     known = {item["key"]: item for item in datasets}

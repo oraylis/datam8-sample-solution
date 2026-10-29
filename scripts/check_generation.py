@@ -69,6 +69,13 @@ def main() -> None:
                 roots = execution_plan(resources, manifest, required_phases=manifest["lifecycle"])
                 platform = {"databricks": "databricks-lake", "databricks-lakeflow": "databricks-lakeflow"}[name]
                 if name == "databricks":
+                    stock_core = (output / "notebooks/020-Core/dml/Inventory/Stock/StockMovement.py").read_text()
+                    stock_stage = (output / "notebooks/010-Stage/dml/PostgreSQLWarehouse/aw_warehouse/StockMovement.py").read_text()
+                    if 'mode="overwrite"' not in stock_core or 'mode="append"' not in stock_stage or 'latest_snapshot_key_cols = []' not in stock_stage:
+                        raise RuntimeError("StockMovement must append Stage without BK and overwrite the complete Core snapshot")
+                    raw = (output / "notebooks/raw/dml/PostgreSQLWarehouse/aw_warehouse/StockMovement.py").read_text()
+                    if '.cast(cursor_type)' not in raw or raw.count('record_count = table_df.count()') != 1 or 'finally:\n    table_df.unpersist()' not in raw:
+                        raise RuntimeError("Delta extraction must use a typed cursor and materialize its source once")
                     ddl_notebooks = [
                         path for path in (output / "notebooks").rglob("*.py")
                         if "/ddl/" in path.as_posix()

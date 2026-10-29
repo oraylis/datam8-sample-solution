@@ -49,10 +49,10 @@ def check_output(output: Path):
         if path.stem == "pipeline_sales_daily":
             if 'spark.readStream.table(catalog_name + "." + "raw.postgresqlwarehouse_aw_warehouse_stockmovement")' not in source:
                 raise AssertionError("StockMovement Stage must use a streaming read from its append-only raw source")
-            if 'spark.readStream.table(catalog_name + "." + "stage.postgresqlwarehouse_aw_warehouse_stockmovement")' not in source:
-                raise AssertionError("StockMovement Core must use a streaming read from its append-only Stage table")
-            if '@dp.table(name="stage.postgresqlwarehouse_aw_warehouse_stockmovement")' not in source or '@dp.table(name="core.inventory_stock_stockmovement")' not in source:
-                raise AssertionError("StockMovement Stage and Core must publish append streaming tables")
+            if 'spark.read.table(catalog_name + "." + "stage.postgresqlwarehouse_aw_warehouse_stockmovement")' not in source:
+                raise AssertionError("StockMovement Core must read the complete Stage snapshot")
+            if '@dp.table(name="stage.postgresqlwarehouse_aw_warehouse_stockmovement")' not in source or '@dp.materialized_view(name="core.inventory_stock_stockmovement")' not in source:
+                raise AssertionError("StockMovement must publish an append Stage and an overwrite Core MV")
         if path.stem == "pipeline_sales_weekly":
             function_position = source.find("business_function = spark.sql(")
             lookup_position = source.find("business_function = apply_dimension_lookups(")
@@ -80,6 +80,14 @@ def check_output(output: Path):
                 if private is not True:
                     raise AssertionError("AUTO CDC history helpers must remain private to their pipeline: " + path.name)
     expected_pipelines = {item["pipeline"] for item in datasets}
+    resources = generated_resources(output.parent)
+    stock = next(item for item in datasets if item["key"] == "raw.postgresqlwarehouse_aw_warehouse_stockmovement")
+    if stock["keys"] or stock["write_mode"] != "append":
+        raise AssertionError("StockMovement ingestion must support append without a business key")
+    postgres = resources["pipelines"][stock["pipeline"]]["ingestion_definition"]["objects"]
+    config = next(item["table"]["table_configuration"] for item in postgres if item["table"]["destination_table"] == stock["name"])
+    if config.get("scd_type") != "APPEND_ONLY" or "primary_keys" in config:
+        raise AssertionError("StockMovement must use native APPEND_ONLY ingestion without primary keys")
     expected_python_pipelines = {item["pipeline"] for item in datasets if not item.get("managed_ingestion")}
     if {path.stem for path in pipelines} != expected_python_pipelines:
         raise AssertionError("Model pipeline files must use stable model-job keys")

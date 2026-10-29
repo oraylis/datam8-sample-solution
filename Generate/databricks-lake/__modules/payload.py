@@ -524,6 +524,8 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 write_mode = "append"
 
             mapping_entries = raw_source.get("mapping_entries", [])
+            if extract_mode == "delta" and (not raw_source.get("delta_column") or not raw_source.get("source_delta_column")):
+                raise ValueError(f"{full_table_name}: delta extraction requires a mapped extract_column=delta cursor")
             mapping_projection = _raw_mapping_projection(
                 mapping_entries,
                 resolver=resolver,
@@ -834,6 +836,11 @@ def generation_manifest(model: Model, cache: Cache) -> Sequence[IPayload]:
             settings = data_source.extendedProperties or {}
             extract_mode = next((reference.value for reference in external.properties or [] if reference.property == "extract_mode"), "full")
             external_spec = {"source": data_source.name, "plugin": plugin, "connection_suffix": settings.get("unityCatalogConnection", plugin), "location": external.sourceLocation, "database": settings.get("database"), "service_name": settings.get("service_name"), "extract_mode": extract_mode}
+            cursors = [mapping for mapping in external.mapping or [] if any(ref.property == "extract_column" and ref.value == "delta" for ref in mapping.properties or [])]
+            if extract_mode == "delta":
+                if len(cursors) != 1:
+                    raise ValueError(f"{raw_key}: delta extraction requires exactly one mapped cursor")
+                external_spec.update(cursor_column=cursors[0].sourceName, target_cursor_column=cursors[0].targetName)
             if raw_key in datasets and datasets[raw_key].get("model_job") != model_job:
                 raise ValueError(f"{raw_key}: external raw data is assigned to multiple model jobs; model the source in one job and reference its modeled dataset from other jobs")
             datasets[raw_key] = {"key": raw_key, "zone": "raw", "name": raw["full_table_name"].lower(), "kind": "delta_table", "model_job": model_job, "external": external_spec,

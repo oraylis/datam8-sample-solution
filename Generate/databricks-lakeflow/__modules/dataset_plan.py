@@ -297,7 +297,7 @@ def build_plan(model):
                         "cursor_column": cursor,
                         "extract_mode": extract_mode,
                     }
-                    if not external["managed_ingestion"]["primary_keys"]:
+                    if dataset.write_mode != "append" and not external["managed_ingestion"]["primary_keys"]:
                         raise ValueError(f"{key}: managed query-based ingestion requires mapped business keys")
                 if source_key in datasets:
                     if datasets[source_key].external != external:

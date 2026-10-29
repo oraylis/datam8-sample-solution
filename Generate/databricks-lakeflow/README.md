@@ -50,11 +50,11 @@ and remain paused by default.
   attributes marked `SCD2` create historical versions. Full snapshots use
   `create_auto_cdc_from_snapshot_flow`; ordered event feeds use
   `create_auto_cdc_flow` with explicit sequencing and deletion metadata.
-- `StockMovement` is the sample's append-only path: the model assigns
-  `write_mode=append` in Stage and Core, and its PostgreSQL source is configured
-  for managed delta ingestion with `modifiedat` as the cursor. This models an
-  append-only source contract; it must be verified against the fixture before
-  treating updates or deletes as supported events.
+- `StockMovement` demonstrates append without a business key in Stage, with
+  PostgreSQL delta extraction using `modifiedat`. Raw ingestion uses `APPEND_ONLY`:
+  an observed change with a later cursor becomes another appended row. Core uses
+  `overwrite` as a materialized view of the accumulated Stage contents. This
+  example does not interpret hard deletes or reconstruct changes below the cursor.
 - Surrogate-key behavior is a target rule, with no strategy property. Classic
   Delta notebooks retain identity columns. Native history targets cannot use
   identity columns, so Lakeflow projects a deterministic signed 64-bit hash of
