@@ -1,0 +1,210 @@
+{
+  "id": 4009,
+  "name": "ReturnRequest",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "ReturnID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:31.464192Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "SalesOrderID",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:31.464275Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "SalesOrderDetailID",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:31.464314Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "ProductID",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:31.464346Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "Quantity",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:31.464374Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "Reason",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:31.464414Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "Status",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:31.464443Z"
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:31.464481Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "dataSource": "MySQLWebshop",
+      "sourceAlias": "ReturnRequest",
+      "sourceLocation": "`aw_webshop`.`return_requests`",
+      "properties": [
+        {
+          "property": "extract_mode",
+          "value": "delta"
+        }
+      ],
+      "mapping": [
+        {
+          "sourceName": "ReturnID",
+          "targetName": "ReturnID",
+          "sourceDataType": {
+            "type": "bigint",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "SalesOrderID",
+          "targetName": "SalesOrderID",
+          "sourceDataType": {
+            "type": "bigint",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "SalesOrderDetailID",
+          "targetName": "SalesOrderDetailID",
+          "sourceDataType": {
+            "type": "bigint",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "ProductID",
+          "targetName": "ProductID",
+          "sourceDataType": {
+            "type": "bigint",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "Quantity",
+          "targetName": "Quantity",
+          "sourceDataType": {
+            "type": "bigint",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "Reason",
+          "targetName": "Reason",
+          "sourceDataType": {
+            "type": "varchar",
+            "nullable": true,
+            "charLen": 160
+          }
+        },
+        {
+          "sourceName": "Status",
+          "targetName": "Status",
+          "sourceDataType": {
+            "type": "varchar",
+            "nullable": true,
+            "charLen": 160
+          }
+        },
+        {
+          "sourceName": "ModifiedAt",
+          "targetName": "ModifiedAt",
+          "sourceDataType": {
+            "type": "datetime",
+            "nullable": true
+          },
+          "properties": [
+            {
+              "property": "extract_column",
+              "value": "delta"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

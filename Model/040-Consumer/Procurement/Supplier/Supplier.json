@@ -1,0 +1,68 @@
+{
+  "id": 4035,
+  "name": "Supplier",
+  "displayName": "Supplier",
+  "description": "Cross-system sample: Supplier",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "SupplierID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "dateAdded": "2026-10-26T14:02:49.027256Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "SupplierName",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "dateAdded": "2026-10-26T14:02:49.027423Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "CountryCode",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "dateAdded": "2026-10-26T14:02:49.027512Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "target",
+      "value": "power-bi"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4028,
+      "mapping": [
+        {
+          "sourceName": "SupplierID",
+          "targetName": "SupplierID"
+        },
+        {
+          "sourceName": "SupplierName",
+          "targetName": "SupplierName"
+        },
+        {
+          "sourceName": "CountryCode",
+          "targetName": "CountryCode"
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

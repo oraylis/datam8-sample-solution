@@ -1,0 +1,105 @@
+{
+  "id": 4010,
+  "name": "Warehouse",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "WarehouseID",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:39.855245Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "Name",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:39.855312Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:39.855344Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "dataSource": "PostgreSQLWarehouse",
+      "sourceAlias": "Warehouse",
+      "sourceLocation": "\"aw_warehouse\".\"warehouses\"",
+      "properties": [
+        {
+          "property": "extract_mode",
+          "value": "delta"
+        }
+      ],
+      "mapping": [
+        {
+          "sourceName": "warehouseid",
+          "targetName": "WarehouseID",
+          "sourceDataType": {
+            "type": "bigint",
+            "nullable": true,
+            "precision": 64,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "name",
+          "targetName": "Name",
+          "sourceDataType": {
+            "type": "character varying",
+            "nullable": true,
+            "charLen": 160
+          }
+        },
+        {
+          "sourceName": "modifiedat",
+          "targetName": "ModifiedAt",
+          "sourceDataType": {
+            "type": "timestamp with time zone",
+            "nullable": true
+          },
+          "properties": [
+            {
+              "property": "extract_column",
+              "value": "delta"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

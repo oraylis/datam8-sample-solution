@@ -1,0 +1,23 @@
+{
+  "type": "folders",
+  "folders": [
+    {
+      "id": 2527,
+      "name": "Commerce",
+      "properties": [
+        {
+          "property": "business_area",
+          "value": "commerce"
+        },
+        {
+          "property": "jobs",
+          "value": "sales_weekly"
+        },
+        {
+          "property": "write_mode",
+          "value": "merge"
+        }
+      ]
+    }
+  ]
+}

@@ -1,18 +1,24 @@
 [project]
 name = "datam8-sample-solution"
-version = "2.0.0-beta.1"
-description = "Add your description here"
+version = "2.1.0"
+description = "Portable DataM8 multi-source sample solution"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
   "datam8",
+  "PyYAML==6.0.3",
+  "pyodbc==5.3.0",
+  "PyMySQL==1.2.3",
+  "psycopg[binary]==3.3.6",
+  "certifi==2026.10.23",
+  "oracledb==26.0.1",
 ]
 
 [project.urls]
 Homepage = "https://github.com/oraylis/datam8-sample-solution"
 
 [tool.uv.sources]
-datam8 = { git = "https://github.com/oraylis/datam8-generator", tag = "v2.0.0-beta.1" }
+datam8 = { git = "https://github.com/oraylis/datam8-cli", rev = "85ff50de3c7fc8e20abd4edd021d63df02c31b91" }
 
 [tool.ruff]
 line-length = 100

@@ -244,9 +244,9 @@ def _build_partition_lines(model: Model, table: TableDefinition, entity: Any) ->
             continue
 
         try:
-            referenced = model.get_model_entity_by_id(source_location)
-        except Exception:  # noqa: BLE001 - fallback on missing references
-            continue
+            referenced = model.modelEntities.get_by_id(source_location)
+        except KeyError as error:
+            raise ValueError(f"Missing consumer source entity {source_location}") from error
 
         target_locator = referenced.locator
         # Skip relationships to other consumer entities – they are handled separately.
@@ -254,14 +254,14 @@ def _build_partition_lines(model: Model, table: TableDefinition, entity: Any) ->
             continue
 
         schema_name = _extract_schema_name(target_locator)
-        object_name = _to_object_name(referenced.entity.name)
+        object_name = "_".join([*target_locator.folders[1:], referenced.entity.name]).lower()
 
         return [
             "let",
             "    Source = Databricks.Catalogs(DBW_Hostname, DBW_HTTP_Path, [Catalog=null, Database=null, EnableAutomaticProxyDiscovery=null]),",
             '    Database = Source{[Name=DBW_Catalog,Kind="Database"]}[Data],',
             f'    Schema = Database{{[Name="{schema_name}",Kind="Schema"]}}[Data],',
-            f'    View = Schema{{[Name="{object_name}",Kind="Table"]}}[Data]',
+            f'    View = Schema{{[Name="{object_name}"]}}[Data]',
             "in",
             "    View",
         ]
@@ -323,11 +323,11 @@ def _collect_consumer_tables(model: Model) -> list[TableDefinition]:
             expression = getattr(attribute, "expression", None)
             expression_language = getattr(attribute, "expressionLanguage", None)
 
-            if expression and str(expression_language).lower() == "dax":
+            if expression and str(getattr(expression_language, "value", expression_language)).lower() == "dax":
                 measure = MeasureDefinition(
                     name=attribute.displayName or attribute.name,
                     expression=expression,
-                    format_string="#,##0" if attribute.dataType.type.lower() in {"long", "int", "double", "decimal"} else None,
+                    format_string="#,##0.0000" if attribute.dataType.type.lower() == "decimal" else "#,##0" if attribute.dataType.type.lower() in {"long", "int", "double"} else None,
                 )
                 table.measures.append(measure)
                 continue
@@ -384,7 +384,7 @@ def _collect_relationships(model: Model, tables: list[TableDefinition]) -> list[
     seen: set[tuple[str, str, str, str]] = set()
 
     for table in tables:
-        entity = model.get_model_entity_by_id(table.entity_id).entity
+        entity = model.modelEntities.get_by_id(table.entity_id).entity
 
         explicit_relationships = getattr(entity, "relationships", []) or []
         explicit_target_ids: set[int] = set()
@@ -393,12 +393,7 @@ def _collect_relationships(model: Model, tables: list[TableDefinition]) -> list[
 
             target_table = _resolve_relationship_target(target_location, table_by_id, table_by_path)
             if not target_table:
-                logger.debug(
-                    "Unable to resolve target table for relationship on %s (target=%s)",
-                    table.name,
-                    target_location,
-                )
-                continue
+                raise ValueError(f"{table.name}: explicit relationship target cannot be resolved: {target_location}")
 
             explicit_target_ids.add(target_table.entity_id)
 
@@ -412,6 +407,8 @@ def _collect_relationships(model: Model, tables: list[TableDefinition]) -> list[
 
                 from_column = _resolve_column(table, source_name)
                 to_column = _resolve_column(target_table, target_name)
+                if from_column is None or to_column is None:
+                    raise ValueError(f"{table.name} -> {target_table.name}: explicit relationship column cannot be resolved ({source_name} -> {target_name})")
 
                 from_column_name = from_column.name if from_column else source_name
                 to_column_name = to_column.name if to_column else target_name
@@ -508,14 +505,7 @@ def _detect_database_name(tables: Sequence[TableDefinition]) -> str:
     if not names:
         return DEFAULT_DATABASE_NAME
 
-    if len(names) > 1:
-        logger.warning(
-            "Multiple consumer data products detected (%s); using '%s' for Power BI database name.",
-            ", ".join(names),
-            names[0],
-        )
-
-    return names[0]
+    return names[0] if len(names) == 1 else DEFAULT_DATABASE_NAME
 
 
 @register_payload("database.tmdl.jinja2", order=0)

@@ -92,11 +92,10 @@ catalog.set_active()
 
 # DBTITLE 1,Define schema
 table_name = f"{catalog_name}.{zone}.{full_table_name}"
-table_comment = {{ data.table_comment | tojson }}
 
 schema = StructType([
 {%- for column in data.columns %}
-    StructField("{{ column.name }}", {{ column.spark_type_expr }}, {{ "True" if column.struct_nullable else "False" }}{% if column.metadata_repr %}, metadata={{ column.metadata_repr }}{% endif %}),
+    StructField("{{ column.name }}", {{ column.spark_type_expr | safe }}, {{ "True" if column.struct_nullable else "False" }}{% if column.metadata_repr %}, metadata={{ column.metadata_repr | safe }}{% endif %}),
 {%- endfor %}
 ])
 
@@ -115,70 +114,17 @@ partitions = []
 
 # COMMAND ----------
 
-# DBTITLE 1,Define table properties
-tblproperties_parts = {
-{%- for key, value in data.table_properties.items() %}
-    "{{ key }}": "{{ value | replace('"', '\\"') }}",
-{%- endfor %}
-}
-
-tblproperties_sql = ', '.join([f"'{key}'='{value}'" for key, value in tblproperties_parts.items()])
-tblproperties_sql = f"TBLPROPERTIES ({tblproperties_sql})" if tblproperties_sql else ""
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC ## Create or migrate table
 
 # COMMAND ----------
 
-# DBTITLE 1,Build & execute SQL Statement
-table_base = table_name.replace(".", "_")
-col_lines, pk_cols, fk_constraints = [], [], []
-
-# Build column definitions
-for f in schema.fields:
-    md = getattr(f, "metadata", {}) or {}
-    col = f"`{f.name}` {f.dataType.simpleString().upper()}"
-    if md.get("surrogate_key"): col += " GENERATED ALWAYS AS IDENTITY" # Flag as Identity column if it's a surrogate key
-    if not f.nullable: col += " NOT NULL" # Add NOT NULL if column is non-nullable
-    if md.get("comment"): col += f" COMMENT '{md['comment']}'" # Add COMMENT for column if available
-    if md.get("surrogate_key"): pk_cols.append(f"`{f.name}`")
-    if md.get("foreign_key"):
-        ref_table = md.get("foreign_key_table")
-        if ref_table:
-            constraint_name = f"fk_{table_base}"
-            fk_constraints.append(
-                f"CONSTRAINT `{constraint_name}` "
-                f"FOREIGN KEY (`{f.name}`) REFERENCES {catalog.name}.{ref_table} RELY"
-            )
-    col_lines.append(col)
-
-# Add a table-level primary key constraint if surrogate_key fields exist
-if pk_cols:
-    col_lines.append(f"CONSTRAINT `pk_{table_base}` PRIMARY KEY ({', '.join(pk_cols)}) RELY")
-
-# Add table-level foreign key constraints (if exist)
-col_lines.extend(fk_constraints)
-
-# Start CREATE TABLE statement
-parts = [f"CREATE TABLE IF NOT EXISTS {table_name} (", "  " + ",\n  ".join(col_lines), ")", "USING DELTA"]
-
-# Optional: add table comment
-if table_comment: parts.append(f"COMMENT '{table_comment}'")
-
-# Add CLUSTER BY if partitions are defined
-if partitions:
-    part_str = ", ".join(f"`{p}`" for p in partitions)
-    parts.append(f"CLUSTER BY ({part_str})")
-
-# Add TBLPROPERTIES if provided
-if tblproperties_sql: parts.append(tblproperties_sql)
-
-create_sql = "\n".join(parts) + ";"
+# DBTITLE 1,Generated CREATE TABLE statement
+create_sql = """{{ data.create_sql }}""".replace("{catalog_name}", catalog_name)
 print(create_sql)
 
 # Execute SQL statement
+table_existed = spark.catalog.tableExists(table_name)
 spark.sql(create_sql)
 
 # COMMAND ----------
@@ -203,16 +149,19 @@ refactored_columns = [
 table_instance = Table(f"{zone}.{full_table_name}", catalog)
 
 try:
-    result = table_instance.migrate_schema(
-        ddl=create_sql,
-        schema=schema,
-        refactored_columns=refactored_columns,
-        new_partitions=partitions,
-    )
+    if table_existed:
+        result = table_instance.migrate_schema(
+            ddl=create_sql,
+            schema=schema,
+            refactored_columns=refactored_columns,
+            new_partitions=partitions,
+        )
+    else:
+        result = 2  # A newly created table already has the target schema.
 
     print("Result: %s" % str(result))
 except Exception as e:
-    print(f"Migration failed: {e}")
+    raise RuntimeError(f"Migration failed: {e}") from e
 
 table_instance.owner = owner
 
@@ -225,9 +174,9 @@ table_instance.owner = owner
 
 # DBTITLE 1,Set table & column tags
 # table attributes
-table_instance.set_table_tags({{ data.table_tags_repr }})
+table_instance.set_table_tags({{ data.table_tags_repr | safe }})
 
 # column attributes
 {%- for column in data.column_tags %}
-table_instance.set_column_tags("{{ column.column }}", {{ column.tags_repr }})
+table_instance.set_column_tags("{{ column.column }}", {{ column.tags_repr | safe }})
 {%- endfor %}

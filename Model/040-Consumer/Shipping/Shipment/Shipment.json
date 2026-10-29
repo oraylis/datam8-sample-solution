@@ -1,0 +1,222 @@
+{
+  "id": 4038,
+  "name": "Shipment",
+  "displayName": "Shipment",
+  "description": "Cross-system sample: Shipment",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "ShipmentID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "SalesOrderID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "CustomerID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "WarehouseID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "Carrier",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "TrackingNumber",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "Status",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "EstimatedDelivery",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "LatestEventAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 10,
+      "name": "LatestEventStatus",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 11,
+      "name": "EventCount",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 12,
+      "name": "CustomerSID",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T00:00:00Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "target",
+      "value": "power-bi"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4034,
+      "mapping": [
+        {
+          "sourceName": "ShipmentID",
+          "targetName": "ShipmentID"
+        },
+        {
+          "sourceName": "SalesOrderID",
+          "targetName": "SalesOrderID"
+        },
+        {
+          "sourceName": "CustomerID",
+          "targetName": "CustomerID"
+        },
+        {
+          "sourceName": "WarehouseID",
+          "targetName": "WarehouseID"
+        },
+        {
+          "sourceName": "Carrier",
+          "targetName": "Carrier"
+        },
+        {
+          "sourceName": "TrackingNumber",
+          "targetName": "TrackingNumber"
+        },
+        {
+          "sourceName": "Status",
+          "targetName": "Status"
+        },
+        {
+          "sourceName": "EstimatedDelivery",
+          "targetName": "EstimatedDelivery"
+        },
+        {
+          "sourceName": "LatestEventAt",
+          "targetName": "LatestEventAt"
+        },
+        {
+          "sourceName": "LatestEventStatus",
+          "targetName": "LatestEventStatus"
+        },
+        {
+          "sourceName": "EventCount",
+          "targetName": "EventCount"
+        },
+        {
+          "sourceName": "CustomerSID",
+          "targetName": "CustomerSID"
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": [
+    {
+      "targetLocation": 4039,
+      "attributes": [
+        {
+          "sourceName": "WarehouseID",
+          "targetName": "WarehouseID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 4000,
+      "attributes": [
+        {
+          "sourceName": "CustomerSID",
+          "targetName": "CustomerSID"
+        }
+      ]
+    }
+  ]
+}

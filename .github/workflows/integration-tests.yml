@@ -1,0 +1,126 @@
+name: Sample integration tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Integration target name, or all
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - databricks
+          - databricks-lakeflow
+      environment:
+        description: Integration environment
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - prod
+      verify_repeat:
+        description: Repeat Load jobs and verify unchanged data
+        type: boolean
+        default: false
+      reset:
+        description: Explicitly reset owned Dev data (fresh runs only)
+        type: boolean
+        default: false
+      resume_run_id:
+        description: Previous integration workflow run with resume reports
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sample-integration-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  integration:
+    runs-on: ubuntu-24.04
+    environment: sample-integration-${{ inputs.environment }}
+    timeout-minutes: 360
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    env:
+      DATABRICKS_AUTH_TYPE: azure-cli
+      DATABRICKS_HOST: ${{ vars.DATABRICKS_HOST }}
+      ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
+      DATABRICKS_SQL_WAREHOUSE_ID: ${{ vars.DATABRICKS_SQL_WAREHOUSE_ID }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validate selection and GitHub environment
+        env:
+          SELECTED_TARGET: ${{ inputs.target }}
+          SELECTED_ENVIRONMENT: ${{ inputs.environment }}
+          EXPECTED_CONFIG: ${{ github.workspace }}/tests/integration/environments.json
+          ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
+          DATABRICKS_HOST: ${{ vars.DATABRICKS_HOST }}
+          DATABRICKS_SQL_WAREHOUSE_ID: ${{ vars.DATABRICKS_SQL_WAREHOUSE_ID }}
+        run: |
+          [[ "$SELECTED_TARGET" == all || "$SELECTED_TARGET" == databricks || "$SELECTED_TARGET" == databricks-lakeflow ]]
+          [[ "$SELECTED_ENVIRONMENT" == dev || "$SELECTED_ENVIRONMENT" == prod ]]
+          expected_host=$(jq -r --arg environment "$SELECTED_ENVIRONMENT" '.[$environment].host' "$EXPECTED_CONFIG")
+          expected_warehouse=$(jq -r --arg environment "$SELECTED_ENVIRONMENT" '.[$environment].warehouse_id' "$EXPECTED_CONFIG")
+          expected_client_id=$(jq -r --arg environment "$SELECTED_ENVIRONMENT" '.[$environment].deployment_principal' "$EXPECTED_CONFIG")
+          [[ -n "$expected_host" && "$DATABRICKS_HOST" == "$expected_host" ]] || { echo "::error::GitHub Environment sample-integration-$SELECTED_ENVIRONMENT must set DATABRICKS_HOST to $expected_host"; exit 1; }
+          [[ -n "$expected_warehouse" && "$DATABRICKS_SQL_WAREHOUSE_ID" == "$expected_warehouse" ]] || { echo "::error::GitHub Environment sample-integration-$SELECTED_ENVIRONMENT must set DATABRICKS_SQL_WAREHOUSE_ID to $expected_warehouse"; exit 1; }
+          [[ -n "$expected_client_id" && "$ARM_CLIENT_ID" == "$expected_client_id" ]] || { echo "::error::GitHub Environment sample-integration-$SELECTED_ENVIRONMENT must set ARM_CLIENT_ID to the configured deployment principal"; exit 1; }
+          [[ -n "${ARM_TENANT_ID:-}" ]] || { echo "::error::GitHub Environment sample-integration-$SELECTED_ENVIRONMENT must set ARM_TENANT_ID"; exit 1; }
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - uses: databricks/setup-cli@main
+      - run: uv sync --frozen
+      - name: Download resume evidence
+        if: inputs.resume_run_id != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESUME_RUN_ID: ${{ inputs.resume_run_id }}
+        run: |
+          [[ "$RESUME_RUN_ID" =~ ^[0-9]+$ ]]
+          gh run download "$RESUME_RUN_ID" --repo "$GITHUB_REPOSITORY" --name integration-test-reports --dir resume-reports
+          uv run python scripts/prepare_resume.py resume-reports Output/e2e-test-reports/resume.json
+      - name: Prepare operator-verified local resume evidence
+        if: inputs.resume_run_id == '' && vars.INTEGRATION_RESUME_EVIDENCE != ''
+        env:
+          INTEGRATION_RESUME_EVIDENCE: ${{ vars.INTEGRATION_RESUME_EVIDENCE }}
+        run: uv run python scripts/prepare_resume.py --from-environment Output/e2e-test-reports/resume.json
+      - name: Sign in to Azure using OIDC
+        uses: azure/login@v3
+        with:
+          client-id: ${{ vars.ARM_CLIENT_ID }}
+          tenant-id: ${{ vars.ARM_TENANT_ID }}
+          allow-no-subscriptions: true
+      - name: Verify Databricks identity
+        run: databricks current-user me
+      - name: Run selected integration targets
+        env:
+          SELECTED_TARGET: ${{ inputs.target }}
+          SELECTED_ENVIRONMENT: ${{ inputs.environment }}
+          VERIFY_REPEAT: ${{ inputs.verify_repeat }}
+          RESET_DATA: ${{ inputs.reset }}
+          RESUME_RUN_ID: ${{ inputs.resume_run_id }}
+        run: |
+          args=(--environment "$SELECTED_ENVIRONMENT" --target "$SELECTED_TARGET")
+          if [[ "$VERIFY_REPEAT" == true ]]; then args+=(--verify-repeat); fi
+          if [[ "$RESET_DATA" == true ]]; then args+=(--reset); fi
+          if [[ -f Output/e2e-test-reports/resume.json ]]; then args+=(--resume-report Output/e2e-test-reports/resume.json); fi
+          uv run python -u scripts/run_integration_tests.py "${args[@]}"
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: integration-test-reports
+          path: Output/e2e-test-reports/
+          if-no-files-found: ignore

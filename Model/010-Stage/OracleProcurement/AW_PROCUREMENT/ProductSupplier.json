@@ -1,0 +1,178 @@
+{
+  "id": 4005,
+  "name": "ProductSupplier",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "ProductID",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": false,
+        "precision": 19,
+        "scale": 0
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:02:58.252533Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "SupplierID",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": false,
+        "precision": 19,
+        "scale": 0
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:02:58.252707Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "UnitCost",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": false,
+        "precision": 18,
+        "scale": 4
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:02:58.252801Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "CurrencyCode",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:02:58.252903Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "LeadTimeDays",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": false,
+        "precision": 19,
+        "scale": 0
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:02:58.252980Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:02:58.253079Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "dataSource": "OracleProcurement",
+      "sourceAlias": "ProductSupplier",
+      "sourceLocation": "\"AW_PROCUREMENT\".\"PRODUCT_SUPPLIERS\"",
+      "properties": [
+        {
+          "property": "extract_mode",
+          "value": "delta"
+        }
+      ],
+      "mapping": [
+        {
+          "sourceName": "PRODUCTID",
+          "targetName": "ProductID",
+          "sourceDataType": {
+            "type": "NUMBER",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "SUPPLIERID",
+          "targetName": "SupplierID",
+          "sourceDataType": {
+            "type": "NUMBER",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "UNITCOST",
+          "targetName": "UnitCost",
+          "sourceDataType": {
+            "type": "NUMBER",
+            "nullable": true,
+            "precision": 18,
+            "scale": 4
+          }
+        },
+        {
+          "sourceName": "CURRENCYCODE",
+          "targetName": "CurrencyCode",
+          "sourceDataType": {
+            "type": "VARCHAR2",
+            "nullable": true,
+            "charLen": 160
+          }
+        },
+        {
+          "sourceName": "LEADTIMEDAYS",
+          "targetName": "LeadTimeDays",
+          "sourceDataType": {
+            "type": "NUMBER",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "MODIFIEDAT",
+          "targetName": "ModifiedAt",
+          "sourceDataType": {
+            "type": "TIMESTAMP(6) WITH TIME ZONE",
+            "nullable": true,
+            "scale": 6
+          },
+          "properties": [
+            {
+              "property": "extract_column",
+              "value": "delta"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

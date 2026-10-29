@@ -1,0 +1,24 @@
+{
+  "type": "folders",
+  "folders": [
+    {
+      "id": 9005,
+      "name": "ShippingAPI",
+      "path": "010-Stage/ShippingAPI",
+      "properties": [
+        {
+          "property": "jobs",
+          "value": "sales_daily"
+        },
+        {
+          "property": "enable_type_widening",
+          "value": "true"
+        },
+        {
+          "property": "column_mapping_mode",
+          "value": "name"
+        }
+      ]
+    }
+  ]
+}

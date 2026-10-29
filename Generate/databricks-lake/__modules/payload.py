@@ -34,6 +34,7 @@ from payload_helpers import (
     _build_scd2_tracking_columns,
     _build_stage_sources,
     _build_technical_columns,
+    build_create_table_sql,
     _raw_mapping_projection,
     _resolve_product_module_context,
     _schema_columns,
@@ -145,6 +146,16 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         column_tags = collect_column_tags(entity)
         refactored_columns = collect_refactored_columns(entity)
         zone_folder_name = resolver.zone_folder_name(zone_meta)
+        full_table_name = f"{data_product_name}_{data_module_name}_{entity.name}"
+        table_comment = entity.description or ""
+        create_sql = build_create_table_sql(
+            zone=zone_meta.name,
+            full_table_name=full_table_name,
+            columns=columns,
+            partitions=partitions,
+            table_comment=table_comment,
+            table_properties=table_properties,
+        )
         payloads.append(
             BasePayload(
                 data={
@@ -153,9 +164,10 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                     "data_product": data_product_name,
                     "data_module": data_module_name,
                     "table_name": entity.name,
-                    "full_table_name": f"{data_product_name}_{data_module_name}_{entity.name}",
-                    "table_comment": entity.description or "",
+                    "full_table_name": full_table_name,
+                    "table_comment": table_comment,
                     "columns": columns,
+                    "create_sql": create_sql,
                     "has_scd2_history": bool(history_config.get("scd2")),
                     "imports": imports,
                     "partitions": partitions,
@@ -223,6 +235,15 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
 
             table_properties = build_delta_table_properties(table_properties_input)
             table_tags_output = format_table_tag_values(table_display_tags)
+            table_comment = entity.description or ""
+            create_sql = build_create_table_sql(
+                zone=raw_zone.name,
+                full_table_name=full_table_name,
+                columns=raw_columns,
+                partitions=["__Year", "__Month", "__Day", "__InsertTimestampUTC"],
+                table_comment=table_comment,
+                table_properties=table_properties,
+            )
 
             payloads.append(
                 BasePayload(
@@ -236,9 +257,10 @@ def generate_raw_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                         "data_module": data_module_name,
                         "table_name": raw_name,
                         "source_name": source_alias,
-                        "table_comment": entity.description or "",
+                        "table_comment": table_comment,
                         "full_table_name": full_table_name,
                         "columns": raw_columns,
+                        "create_sql": create_sql,
                         "imports": raw_imports,
                         "partitions": ["__Year", "__Month", "__Day", "__InsertTimestampUTC"],
                         "table_tags_repr": repr(table_tags_output),
@@ -305,11 +327,35 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
         surrogate_key_column_set = set(surrogate_key_columns)
 
         raw_sources = resolver.raw_sources(locator, entity)
-        stage_sources = _build_stage_sources(resolver, entity, raw_sources)
+        stage_sources = _build_stage_sources(
+            resolver,
+            entity,
+            raw_sources,
+            cast_to_model=has_external_source,
+        )
 
         transformations = resolver.collect_transformations(locator, entity)
         cache_key = (locator_payload_key, tuple(locator.folders), locator.entityName)
         cache.set(cache_key, transformations)
+
+        execution_transformations = transformations
+        model_sources = []
+        if not transformations and not stage_sources:
+            model_sources = resolver.model_source_projection(entity)
+            if len(model_sources) > 1:
+                raise ValueError(
+                    f"Entity {entity.name} has multiple modeled sources but no transformation; "
+                    "define an explicit function to combine them."
+                )
+            if model_sources:
+                execution_transformations = [
+                    {
+                        "key": "__model_source_projection",
+                        "name": "Modeled source projection",
+                        "kind": "model_source",
+                        "source_projection": model_sources[0],
+                    }
+                ]
 
         lookup_dimensions_enabled = resolver.has_lookup_dimensions(entity)
         dimension_lookups = (
@@ -324,6 +370,8 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             source_mode = "transformation"
         elif stage_sources:
             source_mode = "raw_delta"
+        elif model_sources:
+            source_mode = "transformation"
 
         write_mode = resolver.write_mode(entity, product_info, module_info, default="overwrite")
         spark_write_mode = {"overwrite": "overwrite", "append": "append"}.get(write_mode, "overwrite")
@@ -387,7 +435,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             "merge_condition": merge_condition_flat,
         }
         raw_merge_config = merge_config if merge_enabled and stage_sources else None
-        final_merge_config = merge_config if merge_enabled and transformations else None
+        final_merge_config = merge_config if merge_enabled and (transformations or model_sources) else None
 
         data = {
             "zone": zone_meta.name,
@@ -401,8 +449,9 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             "spark_write_mode": spark_write_mode,
             "source_mode": source_mode,
             "raw_sources": stage_sources,
-            "transformations": transformations,
-            "final_function_key": transformations[-1]["key"] if transformations else None,
+            "transformations": execution_transformations,
+            "model_sources": model_sources,
+            "final_function_key": execution_transformations[-1]["key"] if execution_transformations else None,
             "business_keys": business_keys,
             "non_business_columns": non_business_columns,
             "attribute_columns": attribute_names,
@@ -468,43 +517,52 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             source_alias = raw_source.get("source_alias") or raw_name
             properties = raw_source.get("properties", {})
             data_source_entry = resolver.data_sources.get(data_source_name)
-            driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
-            if getattr(data_source_entry, "type", None) == "SynapseDataSource":
-                driver = "com.databricks.spark.sqldw"
-
             extract_mode = properties.get("extract_mode")
-            if extract_mode == "overwrite":
+            if extract_mode in {"overwrite", "full", "query"}:
                 write_mode = "overwrite"
             else:
                 write_mode = "append"
 
             mapping_entries = raw_source.get("mapping_entries", [])
+            if extract_mode == "delta" and (not raw_source.get("delta_column") or not raw_source.get("source_delta_column")):
+                raise ValueError(f"{full_table_name}: delta extraction requires a mapped extract_column=delta cursor")
             mapping_projection = _raw_mapping_projection(
                 mapping_entries,
                 resolver=resolver,
                 data_source_name=data_source_name,
             )
-            data_source_type = raw_source.get("source_type") or getattr(data_source_entry, "type", None)
+            source_type = next((item.entity for item in model.dataSourceTypes.values() if item.entity.name == data_source_entry.type), None)
+            plugin = getattr(source_type, "pluginId", None)
+            if plugin not in {"sqlserver", "oracle", "mysql", "postgresql", "http_api"}:
+                raise ValueError(f"Unsupported UC source plugin for {data_source_name}: {plugin}")
+            extended = data_source_entry.extendedProperties or {}
+            connection_name = extended.get("unityCatalogConnection", plugin)
+            remote_database = extended.get("service_name") if plugin == "oracle" else extended.get("database")
+            if plugin != "http_api" and not remote_database:
+                raise ValueError(f"Data source {data_source_name} requires a database/service binding")
+            external = next(source for source in entity.sources if getattr(source, "dataSource", None) == data_source_name and str(source.sourceLocation) == str(raw_source["source_location"]))
+            raw_columns = resolver.build_raw_columns(entity, external)
+            by_name = {column["name"]: column["delta_type"] for column in raw_columns if not column["name"].startswith("__")}
+            http_columns = [{"name": entry["source"], "type": by_name[entry["target"]], "nullable": True} for entry in mapping_entries if entry.get("source") and entry.get("target") in by_name]
+
 
             data = {
                 "zone": raw_zone.name,
                 "zone_display": raw_zone.display_name,
                 "data_source": data_source_name,
                 "data_source_display": getattr(data_source_entry, "displayName", None) or data_source_name,
-                "data_source_type": data_source_type,
                 "source_name": source_alias,
                 "full_table_name": full_table_name,
                 "write_mode": write_mode,
                 "source_location": raw_source.get("source_location"),
+                "connection_name": connection_name,
+                "plugin": plugin,
+                "remote_query_database": remote_database or "",
+                "http_columns_repr": repr(http_columns),
+                "target_types": by_name,
                 "extract_mode": extract_mode,
-                "driver": driver,
-                "connection_secret": f"datasource-{data_source_name}-connectionstring",
-                "mapping": raw_source.get("mapping"),
-                "mapping_entries": mapping_entries,
-                "select_columns": mapping_projection["select_columns"],
                 "target_columns": mapping_projection["target_columns"],
                 "column_renames": mapping_projection["column_renames"],
-                "delta_column_details": mapping_projection["delta_column_details"] or None,
                 "delta_column": raw_source.get("delta_column"),
                 "source_delta_column": raw_source.get("source_delta_column"),
             }
@@ -616,16 +674,18 @@ def generate_cluster_resources(model: Model, cache: Cache) -> Sequence[IPayload]
 
     cluster_entries: list[dict[str, Any]] = []
     for cluster in clusters:
+        if cluster.get("serverless"):
+            continue
         variable_name = cluster.get("variable_name")
         if not variable_name:
             continue
         custom_tags: dict[str, str] = {}
         display_name = cluster.get("display_name")
         if display_name:
-            custom_tags["friendly_name"] = repr(display_name)
+            custom_tags["friendly_name"] = display_name
         workload_type = cluster.get("workload_type")
         if workload_type:
-            custom_tags["workload_type"] = repr(workload_type)
+            custom_tags["workload_type"] = workload_type
 
         cluster_entries.append(
             {
@@ -633,8 +693,8 @@ def generate_cluster_resources(model: Model, cache: Cache) -> Sequence[IPayload]
                 "description": f"Cluster settings for {cluster.get('name', variable_name)}",
                 "spark_version": cluster.get("spark_version", "13.3.x-scala2.12"),
                 "node_type": cluster.get("node_type", "Standard_D4ds_v5"),
+                "driver_node_type": cluster.get("driver_node_type"),
                 "num_workers": cluster.get("num_workers"),
-                "autotermination_minutes": cluster.get("autotermination_minutes", 60),
                 "data_security_mode": cluster.get("data_security_mode", "STANDARD"),
                 "runtime_engine": cluster.get("runtime_engine", "STANDARD"),
                 "custom_tags": custom_tags or None,
@@ -669,6 +729,8 @@ def _prepare_job_data(job: dict[str, Any], **extra: Any) -> dict[str, Any]:
     """Create template payload data while stripping non-template fields."""
     data = {k: v for k, v in job.items() if k != "output_path"}
     data.update(extra)
+    data.setdefault("job_clusters", [])
+    data.setdefault("default_job_cluster_key", None)
     return data
 
 
@@ -700,42 +762,24 @@ def generate_jobs_create_all(model: Model, cache: Cache) -> Sequence[IPayload]:
 
 @register_payload("jobs/create_zone.yml.jinja2")
 def generate_jobs_create_zones(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Emit one create job per zone, each chaining its module jobs."""
-    plan = _get_jobs_plan(model, cache)
-    payloads: list[IPayload] = []
-    for job in plan.get("create_zones", []):
-        data = _prepare_job_data(job)
-        payloads.append(BasePayload(data=data, output_path=job["output_path"]))
-    return payloads
-
-
-@register_payload("jobs/create_module.yml.jinja2")
-def generate_jobs_create_modules(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Emit concrete create jobs with notebook tasks for every module group."""
+    """Emit one create job per zone with independent entity DDL tasks."""
     plan = _get_jobs_plan(model, cache)
     payloads: list[IPayload] = []
     resolver = MetadataResolver(model)
-    default_cluster = resolver.default_cluster_variable_name()
-    for job in plan.get("create_modules", []):
+    create_all = resolver.job_definition("create_all") or {}
+    create_cluster = create_all.get("cluster") or {}
+    default_cluster = None if create_cluster.get("serverless") else create_cluster.get("variable_name")
+    if not create_cluster:
+        default_cluster = resolver.default_cluster_variable_name()
+    for job in plan.get("create_zones", []):
         data = _prepare_job_data(job)
-        if not data.get("tasks"):
-            continue
         if not data.get("cluster_variable"):
             data["cluster_variable"] = default_cluster
+        data["serverless"] = bool(create_cluster.get("serverless"))
+        data["environment_version"] = create_cluster.get("environment_version", "6")
         _assign_job_clusters(data, [data.get("cluster_variable")])
         payloads.append(BasePayload(data=data, output_path=job["output_path"]))
     return payloads
-
-
-@register_payload("jobs/load_all.yml.jinja2")
-def generate_jobs_load_all(model: Model, cache: Cache) -> Sequence[IPayload]:
-    """Emit a single orchestration job that chains all load job groups."""
-    plan = _get_jobs_plan(model, cache)
-    job = plan.get("load_all")
-    if not job:
-        return []
-    data = _prepare_job_data(job)
-    return [BasePayload(data=data, output_path=job["output_path"])]
 
 
 @register_payload("jobs/load_job_group.yml.jinja2")
@@ -748,3 +792,69 @@ def generate_jobs_load_groups(model: Model, cache: Cache) -> Sequence[IPayload]:
         _assign_job_clusters(data, [data.get("cluster_variable")])
         payloads.append(BasePayload(data=data, output_path=job["output_path"]))
     return payloads
+
+
+@register_payload("runtime_file.jinja2")
+def shared_source_runtime(model: Model, cache: Cache) -> Sequence[IPayload]:
+    source = Path(__file__).resolve().parents[2] / "shared" / "uc_sources.py"
+    return [BasePayload(data={"content": source.read_text(encoding="utf-8")}, output_path=Path("runtime", "uc_sources.py"))]
+
+
+@register_payload("runtime_file.jinja2", order=5)
+def generation_manifest(model: Model, cache: Cache) -> Sequence[IPayload]:
+    import json
+    resolver = MetadataResolver(model)
+    names = {}
+    wrappers = []
+    for locator, wrapper in model.modelEntities.items():
+        if not locator.folders:
+            continue
+        zone = resolver.zone_from_folder(locator.folders[0])
+        if zone is None or zone.name not in MODELLED_ZONES:
+            continue
+        name = "_".join([*locator.folders[1:], wrapper.entity.name]).lower()
+        names[wrapper.entity.id] = zone.name + "." + name
+        wrappers.append((locator, wrapper))
+    datasets = {}
+    for locator, wrapper in wrappers:
+        entity = wrapper.entity
+        key = names[entity.id]
+        zone, name = key.split(".", 1)
+        model_job = resolver.resolve_property(locator, entity, "jobs")
+        columns = [{"name": col["name"], "type": col["delta_type"], "nullable": col["delta_nullable"]} for col in resolver.build_standard_columns(entity)]
+        datasets[key] = {"key": key, "zone": zone, "name": name, "kind": "delta_table", "entity_name": entity.name, "model_job": model_job, "columns": columns,
+                         "keys": [item.name for item in entity.attributes if item.isBusinessKey],
+                         "scd2": resolver.history_configuration(entity)["scd2"],
+                         "surrogates": [item.name for item in entity.attributes if attribute_property_equals(item, "attribute_type", "SK")],
+                         "relationships": [{"dataset": names[item.targetLocation], "attributes": [{"source": pair.sourceName, "target": pair.targetName} for pair in item.attributes]} for item in entity.relationships or [] if item.targetLocation in names], "helper": None}
+        for external, _ in resolver.iter_external_sources(entity):
+            raw = resolver.raw_table_identifiers(locator, external)
+            raw_key = "raw." + raw["full_table_name"].lower()
+            data_source = resolver.data_sources[external.dataSource]
+            source_type = next(item.entity for item in model.dataSourceTypes.values() if item.entity.name == data_source.type)
+            plugin = source_type.pluginId
+            settings = data_source.extendedProperties or {}
+            extract_mode = next((reference.value for reference in external.properties or [] if reference.property == "extract_mode"), "full")
+            external_spec = {"source": data_source.name, "plugin": plugin, "connection_suffix": settings.get("unityCatalogConnection", plugin), "location": external.sourceLocation, "database": settings.get("database"), "service_name": settings.get("service_name"), "extract_mode": extract_mode}
+            cursors = [mapping for mapping in external.mapping or [] if any(ref.property == "extract_column" and ref.value == "delta" for ref in mapping.properties or [])]
+            if extract_mode == "delta":
+                if len(cursors) != 1:
+                    raise ValueError(f"{raw_key}: delta extraction requires exactly one mapped cursor")
+                external_spec.update(cursor_column=cursors[0].sourceName, target_cursor_column=cursors[0].targetName)
+            if raw_key in datasets and datasets[raw_key].get("model_job") != model_job:
+                raise ValueError(f"{raw_key}: external raw data is assigned to multiple model jobs; model the source in one job and reference its modeled dataset from other jobs")
+            datasets[raw_key] = {"key": raw_key, "zone": "raw", "name": raw["full_table_name"].lower(), "kind": "delta_table", "model_job": model_job, "external": external_spec,
+                                 "columns": [{"name": col["name"], "type": col["delta_type"], "nullable": col["delta_nullable"]} for col in resolver.build_raw_columns(entity, external) if not col["name"].startswith("__")],
+                                 "keys": [], "scd2": [], "surrogates": [], "relationships": [], "helper": None}
+    jobs_plan = _get_jobs_plan(model, cache)
+    create_job = jobs_plan.get("create_all")
+    load_jobs = jobs_plan.get("load_jobs", [])
+    execution_plan = {
+        "create": {"job": create_job["job_key"], "depends_on": []} if create_job else None,
+        "load": [
+            {"job": job["job_key"], "model_job": job["job_value"], "depends_on": job["upstream_job_dependencies"]}
+            for job in load_jobs
+        ],
+    }
+    manifest = {"target": "databricks", "lifecycle": [phase for phase, value in execution_plan.items() if value], "execution_plan": execution_plan, "datasets": list(datasets.values())}
+    return [BasePayload(data={"content": json.dumps(manifest, indent=2) + "\n"}, output_path=Path("manifest.json"))]

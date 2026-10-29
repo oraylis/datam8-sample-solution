@@ -1,0 +1,129 @@
+{
+  "id": 4004,
+  "name": "Supplier",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "SupplierID",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": false,
+        "precision": 19,
+        "scale": 0
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:02:49.027256Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "SupplierName",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:02:49.027423Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "CountryCode",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:02:49.027512Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:02:49.027595Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "dataSource": "OracleProcurement",
+      "sourceAlias": "Supplier",
+      "sourceLocation": "\"AW_PROCUREMENT\".\"SUPPLIERS\"",
+      "properties": [
+        {
+          "property": "extract_mode",
+          "value": "delta"
+        }
+      ],
+      "mapping": [
+        {
+          "sourceName": "SUPPLIERID",
+          "targetName": "SupplierID",
+          "sourceDataType": {
+            "type": "NUMBER",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "SUPPLIERNAME",
+          "targetName": "SupplierName",
+          "sourceDataType": {
+            "type": "VARCHAR2",
+            "nullable": true,
+            "charLen": 160
+          }
+        },
+        {
+          "sourceName": "COUNTRYCODE",
+          "targetName": "CountryCode",
+          "sourceDataType": {
+            "type": "VARCHAR2",
+            "nullable": true,
+            "charLen": 160
+          }
+        },
+        {
+          "sourceName": "MODIFIEDAT",
+          "targetName": "ModifiedAt",
+          "sourceDataType": {
+            "type": "TIMESTAMP(6) WITH TIME ZONE",
+            "nullable": true,
+            "scale": 6
+          },
+          "properties": [
+            {
+              "property": "extract_column",
+              "value": "delta"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

@@ -8,19 +8,19 @@
     },
     {
       "name": "stage",
-      "targetName": "bronze",
+      "targetName": "stage",
       "displayName": "Staging Data Layer",
       "localFolderName": "010-Stage"
     },
     {
       "name": "core",
-      "targetName": "silver",
+      "targetName": "core",
       "displayName": "Core Business Layer",
       "localFolderName": "020-Core"
     },
     {
       "name": "curated",
-      "targetName": "gold",
+      "targetName": "curated",
       "displayName": "Curated Analytics Layer",
       "localFolderName": "030-Curated"
     },
@@ -30,10 +30,10 @@
       "displayName": "Consumer Tabular Layer",
       "localFolderName": "040-Consumer",
       "properties": [
-          {
-              "property": "target",
-              "value": "power-bi"
-          }
+        {
+          "property": "target",
+          "value": "power-bi"
+        }
       ]
     }
   ]

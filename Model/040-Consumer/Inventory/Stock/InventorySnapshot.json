@@ -1,0 +1,134 @@
+{
+  "id": 4040,
+  "name": "InventorySnapshot",
+  "displayName": "InventorySnapshot",
+  "description": "Cross-system sample: InventorySnapshot",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "ProductID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "WarehouseID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "OnHand",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "Reserved",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "AvailableQuantity",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "SnapshotAsOfUTC",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "target",
+      "value": "power-bi"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4031,
+      "mapping": [
+        {
+          "sourceName": "ProductID",
+          "targetName": "ProductID"
+        },
+        {
+          "sourceName": "WarehouseID",
+          "targetName": "WarehouseID"
+        },
+        {
+          "sourceName": "OnHand",
+          "targetName": "OnHand"
+        },
+        {
+          "sourceName": "Reserved",
+          "targetName": "Reserved"
+        },
+        {
+          "sourceName": "AvailableQuantity",
+          "targetName": "AvailableQuantity"
+        },
+        {
+          "sourceName": "SnapshotAsOfUTC",
+          "targetName": "SnapshotAsOfUTC"
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": [
+    {
+      "targetLocation": 4037,
+      "attributes": [
+        {
+          "sourceName": "ProductID",
+          "targetName": "ProductID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 4039,
+      "attributes": [
+        {
+          "sourceName": "WarehouseID",
+          "targetName": "WarehouseID"
+        }
+      ]
+    }
+  ]
+}

@@ -3,61 +3,78 @@
   "properties": [
     {
       "name": "jobs",
-      "displayName": "jobs",
+      "displayName": "Jobs",
       "schema_": "./jobs.json",
       "scopes": [
         {
-          "type": "entity",
-          "singleUsage": false,
-          "mandatory": false
+          "type": "entity"
+        },
+        {
+          "type": "folder"
         }
       ]
     },
     {
       "name": "schedules",
-      "displayName": "schedules",
+      "displayName": "Schedules",
       "schema_": "./schedules.json",
       "scopes": [
         {
-          "type": "none"
+          "type": "properties",
+          "singleUsage": false
         }
       ]
     },
     {
       "name": "cluster",
-      "displayName": "cluster",
+      "displayName": "Cluster",
       "schema_": "./cluster.json",
       "scopes": [
         {
-          "type": "none"
+          "type": "properties",
+          "singleUsage": false
         }
       ]
     },
     {
       "name": "tags",
-      "displayName": "tags",
+      "displayName": "Tags",
       "schema_": "./tags.json",
-      "scopes": []
+      "scopes": [
+        {
+          "type": "entity",
+          "singleUsage": false
+        },
+        {
+          "type": "folder",
+          "singleUsage": false
+        }
+      ]
     },
     {
       "name": "write_mode",
-      "displayName": "write mode",
+      "displayName": "Write Mode",
       "schema_": "./write_mode.json",
       "scopes": [
         {
           "type": "entity",
           "mandatory": true
+        },
+        {
+          "type": "folder"
         }
       ]
     },
     {
       "name": "data_retention",
-      "displayName": "data retention",
+      "displayName": "Data Retention",
       "schema_": "./data_retention.json",
       "scopes": [
         {
-          "type": "entity",
-          "mandatory": false
+          "type": "entity"
+        },
+        {
+          "type": "folder"
         }
       ]
     },
@@ -65,6 +82,9 @@
       "name": "business_area",
       "displayName": "Business Area",
       "scopes": [
+        {
+          "type": "entity"
+        },
         {
           "type": "folder"
         }
@@ -76,6 +96,77 @@
       "scopes": [
         {
           "type": "zone"
+        }
+      ]
+    },
+    {
+      "name": "extract_mode",
+      "displayName": "Extract Mode",
+      "scopes": [
+        {
+          "type": "entity",
+          "singleUsage": false
+        }
+      ]
+    },
+    {
+      "name": "table_properties",
+      "displayName": "Table Properties",
+      "scopes": [
+        {
+          "type": "entity",
+          "singleUsage": false
+        },
+        {
+          "type": "folder",
+          "singleUsage": false
+        }
+      ]
+    },
+    {
+      "name": "data_layout",
+      "displayName": "Data Layout",
+      "schema_": "",
+      "scopes": [
+        {
+          "type": "entity",
+          "singleUsage": false
+        }
+      ]
+    },
+    {
+      "name": "dataset_type",
+      "displayName": "dataset_type",
+      "scopes": [
+        {
+          "type": "entity"
+        },
+        {
+          "type": "folder"
+        }
+      ]
+    },
+    {
+      "name": "sequence_by",
+      "displayName": "sequence_by",
+      "scopes": [
+        {
+          "type": "entity"
+        },
+        {
+          "type": "folder"
+        }
+      ]
+    },
+    {
+      "name": "delete_condition",
+      "displayName": "delete_condition",
+      "scopes": [
+        {
+          "type": "entity"
+        },
+        {
+          "type": "folder"
         }
       ]
     }

@@ -1,46 +1,92 @@
 {
-    "type": "dataSources",
-    "dataSources": [
-        {
-            "extendedProperties": {
-                "path": "."
-            },
-            "name": "TestCsvFile",
-            "type": "CsvFile"
-        },
-        {
-            "extendedProperties": {
-                "authMode": "sql_user",
-                "host": "localhost",
-                "database": "AdventureWorks",
-                "username": "sa",
-                "password": "ref://sources/SQLServer/AdventureWorks",
-                "trust_server_certificate": true
-            },
-            "name": "AdventureWorks",
-            "displayName": "Adventure Works Demo Database",
-            "type": "SQLServer"
-        },
-        {
-            "extendedProperties": {
-                "storageAccount": "datam80adl",
-                "storagePath": "drop",
-                "authenticationMethod": "AccountKey"
-            },
-            "name": "ExternalStorage",
-            "displayName": "datam80adl",
-            "type": "LakeSource"
-        },
-        {
-            "extendedProperties": {
-                "host": "datam80ora.westeurope.cloudapp.azure.com",
-                "port": 1521,
-                "connectionType": "Service",
-                "connection": "datam8test",
-                "user": "datam8"
-            },
-            "name": "OracleDev",
-            "type": "OracleDataSource"
-        }
-    ]
+  "type": "dataSources",
+  "dataSources": [
+    {
+      "name": "TestCsvFile",
+      "type": "CsvFile",
+      "extendedProperties": {
+        "path": "."
+      }
+    },
+    {
+      "name": "AdventureWorks",
+      "displayName": "Adventure Works Demo Database",
+      "type": "SQLServer",
+      "extendedProperties": {
+        "host": "sqlserver.example.invalid",
+        "port": 1433,
+        "username": "sample_reader",
+        "password": "ref://sample/AdventureWorks/password",
+        "authMode": "sql_user",
+        "unityCatalogConnection": "sqlserver",
+        "database": "adventureworks",
+        "encrypt": true,
+        "trust_server_certificate": false
+      }
+    },
+    {
+      "name": "ExternalStorage",
+      "displayName": "Sample Storage",
+      "type": "LakeSource",
+      "extendedProperties": {
+        "storageAccount": "sample-storage",
+        "storagePath": "sample-drop",
+        "authenticationMethod": "AccountKey"
+      }
+    },
+    {
+      "name": "OracleProcurement",
+      "type": "Oracle",
+      "extendedProperties": {
+        "host": "oracle.example.invalid",
+        "port": 2484,
+        "username": "sample_reader",
+        "password": "ref://sample/OracleProcurement/password",
+        "authMode": "password",
+        "unityCatalogConnection": "oracle",
+        "service_name": "FREEPDB1",
+        "protocol": "tcps"
+      }
+    },
+    {
+      "name": "MySQLWebshop",
+      "type": "MySQL",
+      "extendedProperties": {
+        "host": "mysql.example.invalid",
+        "port": 3306,
+        "username": "sample_reader",
+        "password": "ref://sample/MySQLWebshop/password",
+        "authMode": "password",
+        "unityCatalogConnection": "mysql",
+        "database": "aw_webshop"
+      }
+    },
+    {
+      "name": "PostgreSQLWarehouse",
+      "type": "PostgreSQL",
+      "extendedProperties": {
+        "host": "postgresql.example.invalid",
+        "port": 5432,
+        "username": "sample_reader",
+        "password": "ref://sample/PostgreSQLWarehouse/password",
+        "authMode": "password",
+        "unityCatalogConnection": "postgresql",
+        "database": "fixtures",
+        "sslmode": "verify-full"
+      }
+    },
+    {
+      "name": "ShippingAPI",
+      "type": "HTTPAPI",
+      "extendedProperties": {
+        "authMode": "oauth2_client_credentials",
+        "base_url": "https://api.example.invalid/oauth",
+        "token_url": "https://api.example.invalid/token",
+        "client_id": "sample-client",
+        "client_secret": "ref://sample/ShippingAPI/client_secret",
+        "pagination_mode": "cursor",
+        "unityCatalogConnection": "shipping_api"
+      }
+    }
+  ]
 }

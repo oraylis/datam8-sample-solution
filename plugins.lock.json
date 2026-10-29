@@ -1,0 +1,46 @@
+{
+  "repository": "https://github.com/oraylis/datam8-plugins",
+  "commit": "5fec63282f0c94727031a5ebe15ed6e86247bb5b",
+  "plugins": [
+    {
+      "id": "sqlserver",
+      "version": "1.2.0",
+      "sha256": {
+        "plugin.json": "d59d3c622209d01ace0a21ffeff4ae18384f483fb75d4b06dc0ca4ffebbe13e2",
+        "plugin.py": "d69f44b96795f65f4fb47674e4d8e6447d6c3504cc1684f6b0c024b3234a0490"
+      }
+    },
+    {
+      "id": "oracle",
+      "version": "1.2.0",
+      "sha256": {
+        "plugin.json": "ac4a9cce83a48d19d7318d745e613c65f46a5070fd4a6d1d6d94c94cc9ff7561",
+        "plugin.py": "6e1e1a1bbbdcdd3cb5634ebff262438fc2479e12d22df37e2d0203a03b210ccc"
+      }
+    },
+    {
+      "id": "mysql",
+      "version": "1.2.0",
+      "sha256": {
+        "plugin.json": "26b540d98ed82babc86a1a74b7f998ba8635a7ffdd80656085a2b04f7b4a6da5",
+        "plugin.py": "96fa50062ba6803a23826121e32bfdb31356faccb5fd1f4163768e8a5a7f362c"
+      }
+    },
+    {
+      "id": "postgresql",
+      "version": "1.2.0",
+      "sha256": {
+        "plugin.json": "46d466550ec5f2d1ccb49e66f39f024e07ee2b9e117fb9f63b61a50125d0c49d",
+        "plugin.py": "64132e03d06eff0647a62e001671a3faa2674b637286f12b84ca5ca987a6558e"
+      }
+    },
+    {
+      "id": "http_api",
+      "version": "1.2.0",
+      "sha256": {
+        "plugin.json": "d160122df4f8c7386e35ee405b175d3451f0eab624ca4dcdb82c1ba3062928eb",
+        "plugin.py": "1865eb9cfe62e623407bb1270d92b8083febcc85cd0ac48e28986ec86d598d0f"
+      }
+    }
+  ]
+}

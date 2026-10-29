@@ -1,0 +1,119 @@
+{
+  "id": 4019,
+  "name": "CartItem",
+  "description": "AdventureWorks cross-system sample: CartItem",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "CartItemID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "dateAdded": "2026-10-26T14:03:23.448177Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "SessionID",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "dateAdded": "2026-10-26T14:03:23.448250Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "CustomerID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:03:23.448279Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "ProductID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:03:23.448301Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "Quantity",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T14:03:23.448320Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "Purchased",
+      "attributeType": "Generic Bit",
+      "dataType": {
+        "type": "bit",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T14:03:23.448345Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T14:03:23.448370Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4008
+    }
+  ],
+  "transformations": [],
+  "relationships": [
+    {
+      "targetLocation": 4026,
+      "attributes": [
+        {
+          "sourceName": "ProductID",
+          "targetName": "ProductID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 4018,
+      "attributes": [
+        {
+          "sourceName": "SessionID",
+          "targetName": "SessionID"
+        }
+      ]
+    }
+  ]
+}

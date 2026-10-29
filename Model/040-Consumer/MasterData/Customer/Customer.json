@@ -1,0 +1,195 @@
+{
+  "id": 4000,
+  "name": "Customer",
+  "displayName": "Customer",
+  "description": "Cross-system sample: Customer",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "CustomerSID",
+      "description": "Customer surrogate key",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "refactorNames": [
+        "_CustomerSID"
+      ],
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "CustomerID",
+      "description": "Original customer identifier",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "DisplayName",
+      "description": "Customer display name",
+      "attributeType": "Name",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "refactorNames": [
+        "CustomerName"
+      ],
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "FirstName",
+      "description": "Customer first name",
+      "attributeType": "Name",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "LastName",
+      "description": "Customer last name",
+      "attributeType": "Name",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "AddressType",
+      "description": "Type of customer address (Home, Business, etc.)",
+      "attributeType": "Text",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "refactorNames": [],
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "Address",
+      "description": "Full address line",
+      "attributeType": "Text",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "refactorNames": [],
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "PostalCode",
+      "description": "Address postal code",
+      "attributeType": "Text",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "CityName",
+      "description": "Address city name",
+      "attributeType": "Name",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 10,
+      "name": "CountryName",
+      "description": "Address country name",
+      "attributeType": "Name",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "refactorNames": [
+        "CountryRegionName"
+      ],
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "target",
+      "value": "power-bi"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 3000,
+      "mapping": [
+        {
+          "sourceName": "CustomerSID",
+          "targetName": "CustomerSID"
+        },
+        {
+          "sourceName": "CustomerID",
+          "targetName": "CustomerID"
+        },
+        {
+          "sourceName": "DisplayName",
+          "targetName": "DisplayName"
+        },
+        {
+          "sourceName": "FirstName",
+          "targetName": "FirstName"
+        },
+        {
+          "sourceName": "LastName",
+          "targetName": "LastName"
+        },
+        {
+          "sourceName": "AddressType",
+          "targetName": "AddressType"
+        },
+        {
+          "sourceName": "Address",
+          "targetName": "Address"
+        },
+        {
+          "sourceName": "PostalCode",
+          "targetName": "PostalCode"
+        },
+        {
+          "sourceName": "CityName",
+          "targetName": "CityName"
+        },
+        {
+          "sourceName": "CountryName",
+          "targetName": "CountryName"
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

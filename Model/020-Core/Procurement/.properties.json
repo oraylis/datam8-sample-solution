@@ -1,0 +1,23 @@
+{
+  "type": "folders",
+  "folders": [
+    {
+      "id": 1647,
+      "name": "Procurement",
+      "properties": [
+        {
+          "property": "business_area",
+          "value": "procurement"
+        },
+        {
+          "property": "jobs",
+          "value": "sales_daily"
+        },
+        {
+          "property": "write_mode",
+          "value": "merge"
+        }
+      ]
+    }
+  ]
+}

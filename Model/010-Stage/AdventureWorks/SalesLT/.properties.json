@@ -1,0 +1,10 @@
+{
+  "type": "folders",
+  "folders": [
+    {
+      "id": 9010,
+      "name": "SalesLT",
+      "path": "010-Stage/AdventureWorks/SalesLT"
+    }
+  ]
+}
