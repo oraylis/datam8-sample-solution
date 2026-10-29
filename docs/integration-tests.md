@@ -153,8 +153,12 @@ belongs in a bundle, model, report, shell history or repository variable.
 uv run python scripts/run_integration_tests.py --environment dev --target all
 uv run python scripts/run_integration_tests.py --environment dev --target databricks-lakeflow
 uv run python scripts/run_integration_tests.py --environment prod --target databricks
-uv run python scripts/run_integration_tests.py --environment dev --target all --profile dm8-target-dev --local-user "your.name@company.com"
+uv run python scripts/run_integration_tests.py --environment dev --target all --profile dm8-target-dev --deployment-profile dm8-deploy-dev --local-user "your.name@company.com"
 ```
+
+For the user-session example, replace `dm8-deploy-dev` with a local profile
+authenticated as the configured deployment SP. The user profile runs validation;
+the separate deployment profile manages the existing bundle.
 
 Use `--force-lock` only to recover a stale bundle lock. Before deploying, the
 runner still checks that none of the selected bundle's jobs or pipelines is
@@ -180,6 +184,11 @@ minutes and validation queries at most 30 minutes.
 Reset requires explicit `--reset` on a fresh Dev run and cannot be combined with
 `--resume-report`. Classic reset drops only validated, owned sample schemas. Native reset refreshes
 only the owned pipeline graph; subsequent updates do not use full refresh.
+An explicit Dev Lakeflow migration can instead select individual manifest
+datasets with repeated `--refresh-dataset schema.table` arguments together with
+`--target databricks-lakeflow --resume-report ...`. The runner verifies each
+dataset's bound pipeline and refreshes only that selection in dependency order.
+It records update IDs and resumes completed updates without restarting them.
 Foreign objects, active runs, partially bound deployment states and unexpected
 resource replacement abort the test. Lakeflow event-log tables are considered
 owned only when their names match the IDs of the selected target's bound
