@@ -1,0 +1,172 @@
+{
+  "id": 4030,
+  "name": "FactPurchaseOrder",
+  "description": "AdventureWorks cross-system sample: FactPurchaseOrder",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "PurchaseOrderID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "ProductID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "SupplierID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "WarehouseID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "Quantity",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "Status",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "UnitCost",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true,
+        "precision": 18,
+        "scale": 4
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "CurrencyCode",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "EstimatedPurchaseValue",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true,
+        "precision": 18,
+        "scale": 4
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4017
+    },
+    {
+      "sourceLocation": 4016
+    }
+  ],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "kind": "function",
+      "name": "transform",
+      "function": {
+        "source": "FactPurchaseOrder/transform.py"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "targetLocation": 4027,
+      "attributes": [
+        {
+          "sourceName": "ProductID",
+          "targetName": "ProductID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 4028,
+      "attributes": [
+        {
+          "sourceName": "SupplierID",
+          "targetName": "SupplierID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 4029,
+      "attributes": [
+        {
+          "sourceName": "WarehouseID",
+          "targetName": "WarehouseID"
+        }
+      ]
+    }
+  ]
+}

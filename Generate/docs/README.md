@@ -51,4 +51,4 @@ reference or including it in your project's documentation.
 Generation reads the local metadata, so this is a useful first target to try when
 exploring the sample. For setup, see [getting started](../../docs/getting-started.md).
 For the documentation builder, templates and extension points, read
-[ARCHITECTURE.md](ARCHITECTURE.md).
+[ARCHITECTURE.md](ARCHITECTURE.md) and [properties](PROPERTIES.md).

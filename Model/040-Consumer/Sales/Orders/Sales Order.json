@@ -1,0 +1,94 @@
+{
+  "id": 4001,
+  "name": "Sales Order",
+  "displayName": "Sales Order",
+  "description": "Cross-system sample: Sales Order",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "CustomerSID",
+      "description": "Customer surrogate key",
+      "attributeType": "SID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "ShipDateID",
+      "description": "Ship date as integer",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "isBusinessKey": true,
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "TotalCosts",
+      "description": "Costs of sales orders",
+      "attributeType": "Currency",
+      "dataType": {
+        "type": "decimal",
+        "nullable": false,
+        "precision": 18,
+        "scale": 4
+      },
+      "dateModified": "2025-07-23T01:01:01Z",
+      "dateAdded": "2025-01-01T01:01:01Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "target",
+      "value": "power-bi"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 3001,
+      "mapping": [
+        {
+          "sourceName": "CustomerSID",
+          "targetName": "CustomerSID"
+        },
+        {
+          "sourceName": "ShipDateID",
+          "targetName": "ShipDateID"
+        },
+        {
+          "sourceName": "TotalCosts",
+          "targetName": "TotalCosts"
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": [
+    {
+      "targetLocation": 4000,
+      "attributes": [
+        {
+          "sourceName": "CustomerSID",
+          "targetName": "CustomerSID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 4003,
+      "attributes": [
+        {
+          "sourceName": "ShipDateID",
+          "targetName": "DateID"
+        }
+      ]
+    }
+  ]
+}

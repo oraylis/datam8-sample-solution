@@ -1,0 +1,133 @@
+{
+  "id": 4014,
+  "name": "TrackingEvent",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "EventAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:04:07.767568Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "EventID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:04:07.767709Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:04:07.767834Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "SalesOrderID",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:04:07.767886Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "Status",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:04:07.768008Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "dataSource": "ShippingAPI",
+      "sourceAlias": "TrackingEvent",
+      "sourceLocation": "tracking_events",
+      "properties": [
+        {
+          "property": "extract_mode",
+          "value": "full"
+        }
+      ],
+      "mapping": [
+        {
+          "sourceName": "occurredAt",
+          "targetName": "EventAt",
+          "sourceDataType": {
+            "type": "datetime",
+            "nullable": true
+          }
+        },
+        {
+          "sourceName": "trackingEventId",
+          "targetName": "EventID",
+          "sourceDataType": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        {
+          "sourceName": "ModifiedAt",
+          "targetName": "ModifiedAt",
+          "sourceDataType": {
+            "type": "datetime",
+            "nullable": true
+          }
+        },
+        {
+          "sourceName": "salesOrderId",
+          "targetName": "SalesOrderID",
+          "sourceDataType": {
+            "type": "long",
+            "nullable": true
+          }
+        },
+        {
+          "sourceName": "eventType",
+          "targetName": "Status",
+          "sourceDataType": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

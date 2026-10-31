@@ -1,11 +1,24 @@
 resources:
   jobs:
     {{ data.job_key }}:
-      name: {{ data.job_name }}
+      name: {{ ("[${var.environment}] " + data.job_name) | tojson }}
+      permissions:
+        - service_principal_name: ${var.deploy_service_principal}
+          level: IS_OWNER
+        - service_principal_name: ${var.run_as_service_principal}
+          level: CAN_MANAGE_RUN
+      tags:
+        platform: databricks-lake
       max_concurrent_runs: 1
       parameters:
         - name: environment
           default: ${var.environment}
+        - name: date_start
+          default: ${var.date_start}
+        - name: date_end
+          default: ${var.date_end}
+        - name: connection_prefix
+          default: ${var.connection_prefix}
         - name: catalog_name
           default: ${var.catalog_name}
         - name: owner
@@ -16,11 +29,12 @@ resources:
           default: "{{ '{{job.name}}' }}"
         - name: job_run_id
           default: "{{ '{{job.run_id}}' }}"
-      permissions:
-        - service_principal_name: ${var.run_as_service_principal}
-          level: "CAN_MANAGE_RUN"
-        - group_name: ${var.permission_group_name}
-          level: "CAN_MANAGE_RUN"
+{% if data.serverless %}
+      environments:
+        - environment_key: serverless
+          spec:
+            environment_version: "{{ data.environment_version }}"
+{% endif %}
 {%- if data.job_clusters %}
       job_clusters:
 {%- for cluster in data.job_clusters %}
@@ -43,10 +57,11 @@ resources:
               target_zone: {{ data.job_value }}
 {% endif %}
             source: WORKSPACE
+{% if data.serverless %}
+          environment_key: serverless
+{% elif data.default_job_cluster_key %}
           job_cluster_key: {{ data.default_job_cluster_key }}
-          libraries:
-            - maven:
-                coordinates: com.oracle.database.jdbc:ojdbc10:19.29.0.0
+{% endif %}
 {% for task in data.raw_tasks %}
         - task_key: {{ task.task_key }}
 {%- if task.depends_on %}
@@ -61,7 +76,11 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+{% if data.serverless %}
+          environment_key: serverless
+{% elif task.job_cluster_key or data.default_job_cluster_key %}
           job_cluster_key: {{ task.job_cluster_key or data.default_job_cluster_key }}
+{% endif %}
 {% endfor %}
 {% for task in data.entity_tasks %}
         - task_key: {{ task.task_key }}
@@ -77,7 +96,11 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
             source: WORKSPACE
+{% if data.serverless %}
+          environment_key: serverless
+{% elif task.job_cluster_key or data.default_job_cluster_key %}
           job_cluster_key: {{ task.job_cluster_key or data.default_job_cluster_key }}
+{% endif %}
 {% endfor %}
 {% if data.complete_dependencies %}
         - task_key: Complete_Load
@@ -89,5 +112,9 @@ resources:
           notebook_task:
             notebook_path: ${workspace.root_path}/files/utils/Complete_Load
             source: WORKSPACE
+{% if data.serverless %}
+          environment_key: serverless
+{% elif data.default_job_cluster_key %}
           job_cluster_key: {{ data.default_job_cluster_key }}
+{% endif %}
 {% endif %}

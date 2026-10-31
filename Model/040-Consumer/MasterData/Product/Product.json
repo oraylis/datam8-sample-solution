@@ -1,0 +1,126 @@
+{
+  "id": 4037,
+  "name": "Product",
+  "displayName": "Product",
+  "description": "Cross-system sample: Product",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "ProductID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "ProductName",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "ProductNumber",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "CategoryName",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "ModelName",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "StandardCost",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true,
+        "precision": 18,
+        "scale": 4
+      },
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "ListPrice",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true,
+        "precision": 18,
+        "scale": 4
+      },
+      "dateAdded": "2026-10-26T00:00:00Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "target",
+      "value": "power-bi"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4027,
+      "mapping": [
+        {
+          "sourceName": "ProductID",
+          "targetName": "ProductID"
+        },
+        {
+          "sourceName": "ProductName",
+          "targetName": "ProductName"
+        },
+        {
+          "sourceName": "ProductNumber",
+          "targetName": "ProductNumber"
+        },
+        {
+          "sourceName": "CategoryName",
+          "targetName": "CategoryName"
+        },
+        {
+          "sourceName": "ModelName",
+          "targetName": "ModelName"
+        },
+        {
+          "sourceName": "StandardCost",
+          "targetName": "StandardCost"
+        },
+        {
+          "sourceName": "ListPrice",
+          "targetName": "ListPrice"
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

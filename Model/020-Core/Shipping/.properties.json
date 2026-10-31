@@ -1,0 +1,23 @@
+{
+  "type": "folders",
+  "folders": [
+    {
+      "id": 2080,
+      "name": "Shipping",
+      "properties": [
+        {
+          "property": "business_area",
+          "value": "shipping"
+        },
+        {
+          "property": "jobs",
+          "value": "sales_daily"
+        },
+        {
+          "property": "write_mode",
+          "value": "merge"
+        }
+      ]
+    }
+  ]
+}

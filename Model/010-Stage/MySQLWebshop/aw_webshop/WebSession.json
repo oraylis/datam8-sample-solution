@@ -1,0 +1,147 @@
+{
+  "id": 4007,
+  "name": "WebSession",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "SessionID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:15.608575Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "CustomerID",
+      "attributeType": "Generic Long",
+      "dataType": {
+        "type": "long",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:15.608730Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "Channel",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:15.608813Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "Device",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:15.608879Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T14:03:15.608965Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "dataSource": "MySQLWebshop",
+      "sourceAlias": "WebSession",
+      "sourceLocation": "`aw_webshop`.`web_sessions`",
+      "properties": [
+        {
+          "property": "extract_mode",
+          "value": "delta"
+        }
+      ],
+      "mapping": [
+        {
+          "sourceName": "SessionID",
+          "targetName": "SessionID",
+          "sourceDataType": {
+            "type": "varchar",
+            "nullable": true,
+            "charLen": 160
+          }
+        },
+        {
+          "sourceName": "CustomerID",
+          "targetName": "CustomerID",
+          "sourceDataType": {
+            "type": "bigint",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          }
+        },
+        {
+          "sourceName": "Channel",
+          "targetName": "Channel",
+          "sourceDataType": {
+            "type": "varchar",
+            "nullable": true,
+            "charLen": 160
+          }
+        },
+        {
+          "sourceName": "Device",
+          "targetName": "Device",
+          "sourceDataType": {
+            "type": "varchar",
+            "nullable": true,
+            "charLen": 160
+          }
+        },
+        {
+          "sourceName": "ModifiedAt",
+          "targetName": "ModifiedAt",
+          "sourceDataType": {
+            "type": "datetime",
+            "nullable": true
+          },
+          "properties": [
+            {
+              "property": "extract_column",
+              "value": "delta"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

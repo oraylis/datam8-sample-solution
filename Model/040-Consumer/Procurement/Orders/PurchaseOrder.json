@@ -1,0 +1,191 @@
+{
+  "id": 4036,
+  "name": "PurchaseOrder",
+  "displayName": "PurchaseOrder",
+  "description": "Cross-system sample: PurchaseOrder",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "PurchaseOrderID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "long",
+        "nullable": false
+      },
+      "isBusinessKey": true,
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "ProductID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "SupplierID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "WarehouseID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "Quantity",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 6,
+      "name": "Status",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 7,
+      "name": "UnitCost",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true,
+        "precision": 18,
+        "scale": 4
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 8,
+      "name": "CurrencyCode",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 9,
+      "name": "EstimatedPurchaseValue",
+      "attributeType": "Generic Decimal",
+      "dataType": {
+        "type": "decimal",
+        "nullable": true,
+        "precision": 18,
+        "scale": 4
+      },
+      "expressionLanguage": "sql",
+      "dateAdded": "2026-10-26T00:00:00Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "target",
+      "value": "power-bi"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4030,
+      "mapping": [
+        {
+          "sourceName": "PurchaseOrderID",
+          "targetName": "PurchaseOrderID"
+        },
+        {
+          "sourceName": "ProductID",
+          "targetName": "ProductID"
+        },
+        {
+          "sourceName": "SupplierID",
+          "targetName": "SupplierID"
+        },
+        {
+          "sourceName": "WarehouseID",
+          "targetName": "WarehouseID"
+        },
+        {
+          "sourceName": "Quantity",
+          "targetName": "Quantity"
+        },
+        {
+          "sourceName": "Status",
+          "targetName": "Status"
+        },
+        {
+          "sourceName": "UnitCost",
+          "targetName": "UnitCost"
+        },
+        {
+          "sourceName": "CurrencyCode",
+          "targetName": "CurrencyCode"
+        },
+        {
+          "sourceName": "EstimatedPurchaseValue",
+          "targetName": "EstimatedPurchaseValue"
+        }
+      ]
+    }
+  ],
+  "transformations": [],
+  "relationships": [
+    {
+      "targetLocation": 4037,
+      "attributes": [
+        {
+          "sourceName": "ProductID",
+          "targetName": "ProductID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 4035,
+      "attributes": [
+        {
+          "sourceName": "SupplierID",
+          "targetName": "SupplierID"
+        }
+      ]
+    },
+    {
+      "targetLocation": 4039,
+      "attributes": [
+        {
+          "sourceName": "WarehouseID",
+          "targetName": "WarehouseID"
+        }
+      ]
+    }
+  ]
+}

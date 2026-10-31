@@ -38,7 +38,11 @@ Raw notebooks are derived from the external sources.
 ## Notebooks and table behavior
 
 - **DDL notebooks** define Delta tables from entity attributes and their metadata,
-  including comments, tags and history-related columns where configured.
+  including comments, tags and history-related columns where configured. Their
+  `Generated CREATE TABLE statement` cell contains the complete SQL rendered
+  from the model, so users can review the table definition before it runs. The
+  selected catalog is substituted at runtime because it comes from the bundle
+  environment; the notebook prints the exact SQL it executes.
 - **Raw extraction notebooks** read the modeled external sources and write the
   landing tables. Source properties select extraction and write behavior.
 - **DML notebooks** apply mappings and transformations, then write the modeled
@@ -59,17 +63,20 @@ recurring data loads:
 
 | Job | Purpose |
 | --- | --- |
-| **Create All Tables** | Invoke the generated zone-level creation jobs in layer order |
-| **Zone creation jobs** | Invoke the product/module creation jobs for that zone |
-| **Product/module creation jobs** | Run the DDL notebooks belonging to that group |
-| **Load groups** | Group entities by their modeled job assignment, extract required Raw sources and run DML notebooks according to modeled dependencies |
-| **Load All Tables** | Chain the configured load groups into a complete load cycle |
+| **Create All** | Invoke one creation job per zone in modeled layer dependency order |
+| **Zone creation jobs** | Run all DDL notebooks for that zone as parallel tasks |
+| **Load jobs** | Generate exactly one job per distinct modeled `jobs` value. Each job contains its assigned entities across all layers, extracts required Raw sources, and runs DML notebooks according to modeled dependencies. |
 
-A load group starts with `Start_Load`, runs its extraction and entity tasks, and
-finishes with `Complete_Load`. The task graph carries dependencies between modeled
-entities. Schedules and compute settings come from job/cluster metadata and the
-bundle configuration. Use a load group for a focused run or **Load All Tables**
-for the combined cycle.
+Each load job starts with `Start_Load`, runs its extraction and entity tasks, and
+finishes with `Complete_Load`. Source references become task dependencies;
+relationships used by `lookup_dimensions` also gate the dependent entity task.
+Cross-job dependencies remain in the generated execution manifest. A load job
+does not start another model job or process its entities; it reads the existing
+upstream data. The local and CI integration runner runs every selected model
+job once in dependency order and stops before downstream jobs if a prerequisite
+fails. A manually started downstream job expects its upstream data to be current.
+Schedule and compute settings come from the modeled job values and bundle
+configuration.
 
 ## Generated layout
 
@@ -87,16 +94,21 @@ Output/databricks-lake/
     schemas/schema.yml
     clusters/clusters.yml
     jobs/create_all_tables.yml
-    jobs/<zone>/...                       # Zone and product/module creation jobs
-    jobs/load_<group>.yml
-    jobs/load_all_tables.yml
+    jobs/<zone>/Create_<zone>.yml          # One parallel DDL task group per zone
+    jobs/load_<jobs-value>.yml
 ```
+
+The sample therefore generates `load_sales_daily.yml` and
+`load_sales_weekly.yml`, not separate load jobs for each layer. See the
+[property reference](PROPERTIES.md) for configuring job
+assignments and the other target-specific properties.
 
 The exact notebook subdirectories follow the model's folder hierarchy. Cluster
 settings are emitted when cluster metadata is configured. The existing
 [bundle entry point](../../Output/databricks-lake/databricks.yml) includes the
 generated resources and the shared `utils` directory. Maintain those deployment
-files alongside the generated output.
+files alongside the generated output. See [deployment and integration](DEPLOYMENT.md)
+for the configured test environments and local run command.
 
 ## Generate and use the result
 

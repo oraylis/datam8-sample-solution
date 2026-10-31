@@ -1,281 +1,1074 @@
 {
-    "type": "dataSourceTypes",
-    "dataSourceTypes": [
+  "type": "dataSourceTypes",
+  "dataSourceTypes": [
+    {
+      "name": "CsvFile",
+      "displayName": "testfile",
+      "dataTypeMapping": [
         {
-            "name": "CsvFile",
-            "displayName": "testfile",
-            "connectionProperties": [
-                {
-                    "name": "protocol",
-                    "required": false,
-                    "default": "file",
-                    "type": "string"
-                },
-                {
-                    "name": "path",
-                    "required": true,
-                    "type": "string"
-                }
-            ],
-            "authModes": [
-                {
-                    "name": "no_auth",
-                    "displayName": "No Auth / Anonymous",
-                    "required": [
-                        "protocol",
-                        "path"
-                    ]
-                }
-            ],
-            "dataTypeMapping": [
-                {
-                    "sourceType": "number",
-                    "targetType": "decimal"
-                },
-                {
-                    "sourceType": "string",
-                    "targetType": "string"
-                }
-            ]
+          "sourceType": "number",
+          "targetType": "decimal"
         },
         {
-            "name": "SQLServer",
-            "displayName": "SQL Database",
-            "description": "Traditional SQL database connection",
-            "connectionProperties": [
-                {
-                    "name": "authMode",
-                    "required": true,
-                    "type": "string"
-                },
-                {
-                    "name": "host",
-                    "required": true,
-                    "type": "string"
-                },
-                {
-                    "name": "database",
-                    "required": true,
-                    "type": "string"
-                },
-                {
-                    "name": "port",
-                    "required": true,
-                    "default": 1433,
-                    "type": "number"
-                },
-                {
-                    "name": "username",
-                    "required": false,
-                    "type": "string"
-                },
-                {
-                    "name": "password",
-                    "required": false,
-                    "type": "secret"
-                },
-                {
-                    "name": "trust_server_certificate",
-                    "description": "Trust unverifyable certificates, e.g. self-signed",
-                    "required": false,
-                    "type": "boolean"
-                },
-                {
-                    "name": "trust_server_certificate_ca",
-                    "description": "Path to a root cat to verifiy the server certificate against",
-                    "required": false,
-                    "type": "boolean"
-                },
-                {
-                    "name": "encrypt",
-                    "description": "Activates SSL encryption",
-                    "required": false,
-                    "default": true,
-                    "type": "boolean"
-                },
-                {
-                    "name": "trusted_connection",
-                    "description": "Enables Windows Authentication",
-                    "required": false,
-                    "type": "boolean"
-                }
-            ],
-            "authModes": [
-                {
-                    "name": "sql_user",
-                    "displayName": "Username / Password",
-                    "required": [
-                        "username",
-                        "password"
-                    ],
-                    "optional": [
-                        "trust_server_certificate",
-                        "trust_server_certificate_ca",
-                        "encrypt"
-                    ]
-                },
-                {
-                    "name": "windows",
-                    "displayName": "Windows Authentication",
-                    "required": [
-                        "trusted_connection"
-                    ],
-                    "optional": [
-                        "trust_server_certificate",
-                        "trust_server_certificate_ca",
-                        "encrypt"
-                    ]
-                }
-            ],
-            "dataTypeMapping": [
-                {
-                    "sourceType": "bigint",
-                    "targetType": "long"
-                },
-                {
-                    "sourceType": "binary",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "bit",
-                    "targetType": "boolean"
-                },
-                {
-                    "sourceType": "char",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "date",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "datetime",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "datetime2",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "datetimeoffset",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "decimal",
-                    "targetType": "decimal"
-                },
-                {
-                    "sourceType": "float",
-                    "targetType": "double"
-                },
-                {
-                    "sourceType": "image",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "int",
-                    "targetType": "int"
-                },
-                {
-                    "sourceType": "money",
-                    "targetType": "decimal"
-                },
-                {
-                    "sourceType": "nchar",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "ntext",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "numeric",
-                    "targetType": "decimal"
-                },
-                {
-                    "sourceType": "nvarchar",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "real",
-                    "targetType": "double"
-                },
-                {
-                    "sourceType": "smalldatetime",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "smallint",
-                    "targetType": "int"
-                },
-                {
-                    "sourceType": "smallmoney",
-                    "targetType": "decimal"
-                },
-                {
-                    "sourceType": "text",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "time",
-                    "targetType": "datetime"
-                },
-                {
-                    "sourceType": "timestamp",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "tinyint",
-                    "targetType": "int"
-                },
-                {
-                    "sourceType": "uniqueidentifier",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "varbinary",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "varchar",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "xml",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "sql_variant",
-                    "targetType": "string"
-                }
-            ]
-        },
-        {
-            "name": "AzureDataLake",
-            "displayName": "Data Lake Source",
-            "description": "Data lake file-based source",
-            "connectionProperties": [
-                {
-                    "name": "storageAccount",
-                    "required": true,
-                    "type": "string"
-                }
-            ],
-            "authModes": [],
-            "dataTypeMapping": [
-                {
-                    "sourceType": "string",
-                    "targetType": "string"
-                },
-                {
-                    "sourceType": "long",
-                    "targetType": "bigint"
-                },
-                {
-                    "sourceType": "timestamp",
-                    "targetType": "timestamp"
-                }
-            ]
+          "sourceType": "string",
+          "targetType": "string"
         }
-    ]
+      ],
+      "connectionProperties": [
+        {
+          "name": "protocol",
+          "required": false,
+          "type": "string",
+          "default": "file"
+        },
+        {
+          "name": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "authModes": [
+        {
+          "name": "no_auth",
+          "displayName": "No Auth / Anonymous",
+          "required": [
+            "protocol",
+            "path"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SQLServer",
+      "displayName": "SQL Database",
+      "description": "Traditional SQL database connection",
+      "dataTypeMapping": [
+        {
+          "sourceType": "bigint",
+          "targetType": "long"
+        },
+        {
+          "sourceType": "binary",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "bit",
+          "targetType": "bit"
+        },
+        {
+          "sourceType": "char",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "date",
+          "targetType": "date"
+        },
+        {
+          "sourceType": "datetime",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "datetime2",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "datetimeoffset",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "decimal",
+          "targetType": "decimal"
+        },
+        {
+          "sourceType": "float",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "image",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "int",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "money",
+          "targetType": "money"
+        },
+        {
+          "sourceType": "nchar",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "ntext",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "numeric",
+          "targetType": "decimal"
+        },
+        {
+          "sourceType": "nvarchar",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "real",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "smalldatetime",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "smallint",
+          "targetType": "short"
+        },
+        {
+          "sourceType": "smallmoney",
+          "targetType": "money"
+        },
+        {
+          "sourceType": "text",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "time",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "timestamp",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "tinyint",
+          "targetType": "byte"
+        },
+        {
+          "sourceType": "uniqueidentifier",
+          "targetType": "uniqueidentifier"
+        },
+        {
+          "sourceType": "varbinary",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "varchar",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "xml",
+          "targetType": "string"
+        }
+      ],
+      "pluginId": "sqlserver",
+      "connectionProperties": [
+        {
+          "name": "authMode",
+          "displayName": "authMode",
+          "required": true,
+          "type": "string",
+          "default": "sql_user"
+        },
+        {
+          "name": "host",
+          "displayName": "host",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "database",
+          "displayName": "database",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "port",
+          "displayName": "port",
+          "required": false,
+          "type": "number",
+          "default": 1433
+        },
+        {
+          "name": "username",
+          "displayName": "username",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "password",
+          "displayName": "password",
+          "required": false,
+          "type": "secret"
+        },
+        {
+          "name": "encrypt",
+          "displayName": "encrypt",
+          "required": false,
+          "description": "Enable encrypted transport",
+          "type": "boolean",
+          "default": true
+        },
+        {
+          "name": "trusted_connection",
+          "displayName": "trusted_connection",
+          "required": false,
+          "description": "Use Windows authentication",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "workspace_url",
+          "displayName": "workspace_url",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "warehouse_id",
+          "displayName": "warehouse_id",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "uc_connection_name",
+          "displayName": "uc_connection_name",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "token",
+          "displayName": "token",
+          "required": false,
+          "type": "secret"
+        },
+        {
+          "name": "client_id",
+          "displayName": "client_id",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "client_secret",
+          "displayName": "client_secret",
+          "required": false,
+          "type": "secret"
+        },
+        {
+          "name": "auth_scope",
+          "displayName": "auth_scope",
+          "required": false,
+          "type": "string",
+          "default": "all-apis"
+        }
+      ],
+      "authModes": [
+        {
+          "name": "sql_user",
+          "displayName": "Username / Password",
+          "required": [
+            "authMode",
+            "host",
+            "database",
+            "port",
+            "username",
+            "password"
+          ],
+          "optional": [
+            "encrypt"
+          ]
+        },
+        {
+          "name": "windows",
+          "displayName": "Windows",
+          "required": [
+            "authMode",
+            "host",
+            "database",
+            "port",
+            "trusted_connection"
+          ],
+          "optional": [
+            "encrypt"
+          ]
+        },
+        {
+          "name": "databricks_pat",
+          "displayName": "Databricks (PAT)",
+          "required": [
+            "authMode",
+            "database",
+            "workspace_url",
+            "warehouse_id",
+            "uc_connection_name",
+            "token"
+          ],
+          "optional": []
+        },
+        {
+          "name": "databricks_oauth",
+          "displayName": "Databricks (OAuth Client Credentials)",
+          "required": [
+            "authMode",
+            "database",
+            "workspace_url",
+            "warehouse_id",
+            "uc_connection_name",
+            "client_id",
+            "client_secret"
+          ],
+          "optional": [
+            "auth_scope"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AzureDataLake",
+      "displayName": "Data Lake Source",
+      "description": "Data lake file-based source",
+      "dataTypeMapping": [
+        {
+          "sourceType": "string",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "long",
+          "targetType": "bigint"
+        },
+        {
+          "sourceType": "timestamp",
+          "targetType": "timestamp"
+        }
+      ],
+      "connectionProperties": [
+        {
+          "name": "storageAccount",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "authModes": []
+    },
+    {
+      "name": "Oracle",
+      "dataTypeMapping": [
+        {
+          "sourceType": "BINARY_DOUBLE",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "BINARY_FLOAT",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "BLOB",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "CHAR",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "CLOB",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "DATE",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "FLOAT",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "LONG",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "NCHAR",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "NCLOB",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "NUMBER",
+          "targetType": "decimal"
+        },
+        {
+          "sourceType": "NVARCHAR2",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "RAW",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "TIMESTAMP",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "TIMESTAMP(6)",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "TIMESTAMP(6) WITH TIME ZONE",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "TIMESTAMP(6) WITH LOCAL TIME ZONE",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "VARCHAR2",
+          "targetType": "string"
+        }
+      ],
+      "pluginId": "oracle",
+      "connectionProperties": [
+        {
+          "name": "authMode",
+          "displayName": "authMode",
+          "required": true,
+          "type": "string",
+          "default": "password"
+        },
+        {
+          "name": "host",
+          "displayName": "host",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "service_name",
+          "displayName": "service_name",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "port",
+          "displayName": "port",
+          "required": true,
+          "type": "number",
+          "default": 1521
+        },
+        {
+          "name": "username",
+          "displayName": "username",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "password",
+          "displayName": "password",
+          "required": false,
+          "type": "secret"
+        },
+        {
+          "name": "wallet_path",
+          "displayName": "wallet_path",
+          "required": false,
+          "description": "Optional Oracle wallet path",
+          "type": "string"
+        },
+        {
+          "name": "protocol",
+          "displayName": "protocol",
+          "required": false,
+          "description": "tcp or tcps; TCPS verifies the server certificate and hostname",
+          "type": "string",
+          "default": "tcp"
+        }
+      ],
+      "authModes": [
+        {
+          "name": "password",
+          "displayName": "Username / Password",
+          "required": [
+            "authMode",
+            "host",
+            "service_name",
+            "port",
+            "username",
+            "password"
+          ],
+          "optional": [
+            "wallet_path",
+            "protocol"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MySQL",
+      "dataTypeMapping": [
+        {
+          "sourceType": "bigint",
+          "targetType": "long"
+        },
+        {
+          "sourceType": "binary",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "bit",
+          "targetType": "bit"
+        },
+        {
+          "sourceType": "blob",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "boolean",
+          "targetType": "bit"
+        },
+        {
+          "sourceType": "char",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "date",
+          "targetType": "date"
+        },
+        {
+          "sourceType": "datetime",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "decimal",
+          "targetType": "decimal"
+        },
+        {
+          "sourceType": "double",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "float",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "int",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "integer",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "json",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "longblob",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "longtext",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "mediumint",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "mediumtext",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "smallint",
+          "targetType": "short"
+        },
+        {
+          "sourceType": "text",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "time",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "timestamp",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "tinyint",
+          "targetType": "byte"
+        },
+        {
+          "sourceType": "varbinary",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "varchar",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "year",
+          "targetType": "int"
+        }
+      ],
+      "pluginId": "mysql",
+      "connectionProperties": [
+        {
+          "name": "authMode",
+          "displayName": "authMode",
+          "required": true,
+          "type": "string",
+          "default": "password"
+        },
+        {
+          "name": "host",
+          "displayName": "host",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "database",
+          "displayName": "database",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "port",
+          "displayName": "port",
+          "required": true,
+          "type": "number",
+          "default": 3306
+        },
+        {
+          "name": "username",
+          "displayName": "username",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "password",
+          "displayName": "password",
+          "required": false,
+          "type": "secret"
+        },
+        {
+          "name": "ssl_disabled",
+          "displayName": "ssl_disabled",
+          "required": false,
+          "description": "Disable TLS for legacy endpoints",
+          "type": "boolean",
+          "default": false
+        }
+      ],
+      "authModes": [
+        {
+          "name": "password",
+          "displayName": "Username / Password",
+          "required": [
+            "authMode",
+            "host",
+            "database",
+            "port",
+            "username",
+            "password"
+          ],
+          "optional": [
+            "ssl_disabled"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PostgreSQL",
+      "dataTypeMapping": [
+        {
+          "sourceType": "bigint",
+          "targetType": "long"
+        },
+        {
+          "sourceType": "bigserial",
+          "targetType": "long"
+        },
+        {
+          "sourceType": "bit",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "boolean",
+          "targetType": "bit"
+        },
+        {
+          "sourceType": "bytea",
+          "targetType": "binary"
+        },
+        {
+          "sourceType": "character",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "character varying",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "date",
+          "targetType": "date"
+        },
+        {
+          "sourceType": "double precision",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "integer",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "interval",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "json",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "jsonb",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "numeric",
+          "targetType": "decimal"
+        },
+        {
+          "sourceType": "real",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "smallint",
+          "targetType": "short"
+        },
+        {
+          "sourceType": "text",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "time without time zone",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "time with time zone",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "timestamp without time zone",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "timestamp with time zone",
+          "targetType": "datetime"
+        },
+        {
+          "sourceType": "uuid",
+          "targetType": "uniqueidentifier"
+        }
+      ],
+      "pluginId": "postgresql",
+      "connectionProperties": [
+        {
+          "name": "authMode",
+          "displayName": "authMode",
+          "required": true,
+          "type": "string",
+          "default": "password"
+        },
+        {
+          "name": "host",
+          "displayName": "host",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "database",
+          "displayName": "database",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "port",
+          "displayName": "port",
+          "required": true,
+          "type": "number",
+          "default": 5432
+        },
+        {
+          "name": "username",
+          "displayName": "username",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "password",
+          "displayName": "password",
+          "required": false,
+          "type": "secret"
+        },
+        {
+          "name": "sslmode",
+          "displayName": "sslmode",
+          "required": false,
+          "description": "SSL mode",
+          "type": "string",
+          "default": "prefer"
+        }
+      ],
+      "authModes": [
+        {
+          "name": "password",
+          "displayName": "Username / Password",
+          "required": [
+            "authMode",
+            "host",
+            "database",
+            "port",
+            "username",
+            "password"
+          ],
+          "optional": [
+            "sslmode"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HTTPAPI",
+      "dataTypeMapping": [
+        {
+          "sourceType": "string",
+          "targetType": "string"
+        },
+        {
+          "sourceType": "int",
+          "targetType": "int"
+        },
+        {
+          "sourceType": "long",
+          "targetType": "long"
+        },
+        {
+          "sourceType": "double",
+          "targetType": "double"
+        },
+        {
+          "sourceType": "decimal",
+          "targetType": "decimal"
+        },
+        {
+          "sourceType": "boolean",
+          "targetType": "bit"
+        },
+        {
+          "sourceType": "timestamp",
+          "targetType": "datetime"
+        }
+      ],
+      "pluginId": "http_api",
+      "connectionProperties": [
+        {
+          "name": "authMode",
+          "displayName": "authMode",
+          "required": true,
+          "type": "string",
+          "default": "none"
+        },
+        {
+          "name": "base_url",
+          "displayName": "base_url",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "api_key",
+          "displayName": "api_key",
+          "required": false,
+          "type": "secret"
+        },
+        {
+          "name": "api_key_header",
+          "displayName": "api_key_header",
+          "required": false,
+          "type": "string",
+          "default": "X-API-Key"
+        },
+        {
+          "name": "username",
+          "displayName": "username",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "password",
+          "displayName": "password",
+          "required": false,
+          "type": "secret"
+        },
+        {
+          "name": "bearer_token",
+          "displayName": "bearer_token",
+          "required": false,
+          "type": "secret"
+        },
+        {
+          "name": "token_url",
+          "displayName": "token_url",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "client_id",
+          "displayName": "client_id",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "client_secret",
+          "displayName": "client_secret",
+          "required": false,
+          "type": "secret"
+        },
+        {
+          "name": "auth_scope",
+          "displayName": "auth_scope",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "timeout_seconds",
+          "displayName": "timeout_seconds",
+          "required": false,
+          "description": "Request timeout in seconds",
+          "type": "number",
+          "default": 30
+        },
+        {
+          "name": "schema_endpoint",
+          "displayName": "schema_endpoint",
+          "required": false,
+          "description": "Endpoint for schema metadata",
+          "type": "string",
+          "default": "/schema"
+        },
+        {
+          "name": "pagination_mode",
+          "displayName": "pagination_mode",
+          "required": false,
+          "description": "none or cursor; cursor follows next_cursor responses",
+          "type": "string",
+          "default": "none"
+        },
+        {
+          "name": "page_size",
+          "displayName": "page_size",
+          "required": false,
+          "description": "Requested cursor page size",
+          "type": "number",
+          "default": 100
+        },
+        {
+          "name": "max_pages",
+          "displayName": "max_pages",
+          "required": false,
+          "description": "Fail rather than silently truncate after this many pages",
+          "type": "number",
+          "default": 1000
+        },
+        {
+          "name": "modified_since",
+          "displayName": "modified_since",
+          "required": false,
+          "description": "Optional source-supported change timestamp",
+          "type": "string"
+        }
+      ],
+      "authModes": [
+        {
+          "name": "none",
+          "displayName": "No Auth",
+          "required": [
+            "authMode",
+            "base_url"
+          ],
+          "optional": [
+            "timeout_seconds",
+            "pagination_mode",
+            "page_size",
+            "max_pages",
+            "modified_since"
+          ]
+        },
+        {
+          "name": "api_key_header",
+          "displayName": "API Key Header",
+          "required": [
+            "authMode",
+            "base_url",
+            "api_key",
+            "api_key_header"
+          ],
+          "optional": [
+            "timeout_seconds",
+            "pagination_mode",
+            "page_size",
+            "max_pages",
+            "modified_since"
+          ]
+        },
+        {
+          "name": "basic",
+          "displayName": "Basic Auth",
+          "required": [
+            "authMode",
+            "base_url",
+            "username",
+            "password"
+          ],
+          "optional": [
+            "timeout_seconds",
+            "pagination_mode",
+            "page_size",
+            "max_pages",
+            "modified_since"
+          ]
+        },
+        {
+          "name": "bearer_static",
+          "displayName": "Bearer Token",
+          "required": [
+            "authMode",
+            "base_url",
+            "bearer_token"
+          ],
+          "optional": [
+            "timeout_seconds",
+            "pagination_mode",
+            "page_size",
+            "max_pages",
+            "modified_since"
+          ]
+        },
+        {
+          "name": "oauth2_client_credentials",
+          "displayName": "OAuth2 Client Credentials",
+          "required": [
+            "authMode",
+            "base_url",
+            "token_url",
+            "client_id",
+            "client_secret"
+          ],
+          "optional": [
+            "auth_scope",
+            "timeout_seconds",
+            "pagination_mode",
+            "page_size",
+            "max_pages",
+            "modified_since"
+          ]
+        }
+      ]
+    }
+  ]
 }

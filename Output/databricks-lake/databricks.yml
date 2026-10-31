@@ -1,94 +1,30 @@
-# This is a Databricks asset bundle definition for automation_smaple_solution.
-# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
 bundle:
-  name: automation_sample_solution
-
+  name: datam8_sample_lake
 include:
-  - generated/schemas/*.yml
-  - generated/clusters/*.yml
-  - generated/jobs/*.yml  # top-level
-  - generated/jobs/*/*.yml  # layer-level
-  - generated/jobs/*/*/*/*.yml  # product/module-level
-
+- bundle.targets.yml
+- generated/schemas/*.yml
+- generated/clusters/*.yml
+- generated/jobs/*.yml
+- generated/jobs/*/*.yml
+- generated/jobs/*/*/*/*.yml
 sync:
   include:
-    - utils/
-
-# all defaults are preset with dev values
+  - generated/**
+  - utils/**
 variables:
-  notebook_path:
-    description: Location of the notebooks within the bundle
-    default: 'files/generated/notebooks'
-  catalog_name:
-    description: The name of the unity catalog
-    default: datam8_campus_dev_fka
+  catalog_name: {}
   environment:
-    description: The logical environment
     default: dev
-  owner:
-    description: The default owner of all created databricks objects
-    default: teilnehmer
-  run_as_service_principal:
-    description: The service principal id used to run all jobs
-    default: 43af8bb2-e1f1-4e63-98eb-23dfb12d5189
-  datalake_name:
-    description: The storage account name
-    default: aut0adl0dev
-  datalake_container_name:
-    description: The storage account container name
-    default: campus
+  owner: {}
+  deploy_service_principal: {}
+  run_as_service_principal: {}
+  connection_prefix:
+    default: sample_
+  date_start:
+    default: "2000-01-01"
+  date_end:
+    default: "2030-12-31"
   unpause_schedules:
-    description: Override the default schedule status
     default: PAUSED
-  permission_group_name:
-      description: Group name for generell permissions on cluster and jobs
-      default: teilnehmer
-
-targets:
-  # The 'dev' target, used for development. This is the default.
-  dev-personal:
-    # We use 'mode: development' to indicate this is a personal development copy:
-    # - Deployed resources get prefixed with '[dev my_user_name]'
-    # - Any job schedules and triggers are paused by default
-    # - The 'development' mode is used for Delta Live Tables pipelines
-    mode: development
-    default: true
-    workspace:
-      host: https://adb-1451794858897186.6.azuredatabricks.net
-      root_path: ~/.bundle/${bundle.name}/${bundle.target}
-
-  dev:
-    presets:
-      name_prefix: "[${bundle.target}] "      # prefix all resource names with testing_
-      pipelines_development: true  # set development to true for pipelines
-      trigger_pause_status: PAUSED # set pause_status to PAUSED for all triggers and schedules
-      jobs_max_concurrent_runs: 10 # set max_concurrent runs to 10 for all jobs
-      tags:
-        dev: ${bundle.target}
-    workspace:
-      host: https://adb-1451794858897186.6.azuredatabricks.net
-      root_path: /etl/${bundle.name}/${bundle.target}
-    run_as:
-      service_principal_name: ${var.run_as_service_principal}
-
-  # INFO: add more targets if necessary
-
-  # The 'prod' target, used for production deployments.
-  prod:
-    # We use 'mode: production' to indicate this is a production deployment.
-    # Doing so enables strict verification of the settings below.
-    mode: production
-    variables:
-      environment: prod
-      catalog_name: datam8_campus_prod
-      datalake_name: aut0adl0dev
-      datalake_container_name: campus
-      run_as_service_principal: 43af8bb2-e1f1-4e63-98eb-23dfb12d5189
-      unpause_schedules: UNPAUSED
-      permission_group_name: trainer
-    workspace:
-      host: https://adb-1451794858897186.6.azuredatabricks.net
-      root_path: /etl/${bundle.name}/${bundle.target}
-    run_as:
-      service_principal_name: ${var.run_as_service_principal}
-
+  notebook_path:
+    default: files/generated/notebooks

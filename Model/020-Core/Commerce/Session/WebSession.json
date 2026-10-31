@@ -1,0 +1,82 @@
+{
+  "id": 4018,
+  "name": "WebSession",
+  "description": "AdventureWorks cross-system sample: WebSession",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "SessionID",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "isBusinessKey": true,
+      "dateAdded": "2026-10-26T14:03:15.608575Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "CustomerID",
+      "attributeType": "Generic Int",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "dateAdded": "2026-10-26T14:03:15.608730Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "Channel",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "dateAdded": "2026-10-26T14:03:15.608813Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "Device",
+      "attributeType": "Generic String",
+      "dataType": {
+        "type": "string",
+        "nullable": true,
+        "charLen": 160
+      },
+      "dateAdded": "2026-10-26T14:03:15.608879Z"
+    },
+    {
+      "ordinalNumber": 5,
+      "name": "ModifiedAt",
+      "attributeType": "Generic Datetime",
+      "dataType": {
+        "type": "datetime",
+        "nullable": false
+      },
+      "dateAdded": "2026-10-26T14:03:15.608965Z"
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    },
+    {
+      "property": "dataset_type",
+      "value": "materialized_view"
+    }
+  ],
+  "sources": [
+    {
+      "sourceLocation": 4007
+    }
+  ],
+  "transformations": [],
+  "relationships": []
+}

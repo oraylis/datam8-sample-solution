@@ -1,0 +1,70 @@
+{
+  "dev": {
+    "host": "https://adb-7405619058873076.16.azuredatabricks.net",
+    "workspace_id": 7405619058873076,
+    "warehouse_id": "825b17d829cbed30",
+    "deployment_principal": "98f791a9-70d7-4fda-9ac2-a6670d8b26e2",
+    "run_principal": "e2d1a9de-1e86-45bf-91c7-675f7e493425",
+    "test_mode": "full",
+    "connection_prefix": "dm8_sample_dev_",
+    "source_bindings": {
+      "AdventureWorks": {
+        "connection_suffix": "sqlserver",
+        "database": "adventureworks"
+      },
+      "OracleProcurement": {
+        "connection_suffix": "oracle",
+        "service_name": "FREEPDB1"
+      },
+      "MySQLWebshop": {
+        "connection_suffix": "mysql",
+        "database": "aw_webshop"
+      },
+      "PostgreSQLWarehouse": {
+        "connection_suffix": "postgresql",
+        "database": "fixtures"
+      },
+      "ShippingAPI": {
+        "connection_suffix": "shipping_api"
+      }
+    },
+    "catalogs": {
+      "databricks": "dm8_sample_dev_lake",
+      "databricks-lakeflow": "dm8_sample_dev_lakeflow"
+    }
+  },
+  "prod": {
+    "host": "https://adb-7405605063080000.0.azuredatabricks.net",
+    "workspace_id": 7405605063080000,
+    "warehouse_id": "ec27803655fa68c7",
+    "deployment_principal": "90508705-d7af-4efc-9445-11f340bf3e83",
+    "run_principal": "cf4f5592-3e0f-4959-ab8f-0da132a47759",
+    "test_mode": "smoke",
+    "connection_prefix": "dm8_sample_prod_",
+    "source_bindings": {
+      "AdventureWorks": {
+        "connection_suffix": "sqlserver",
+        "database": "adventureworks"
+      },
+      "OracleProcurement": {
+        "connection_suffix": "oracle",
+        "service_name": "FREEPDB1"
+      },
+      "MySQLWebshop": {
+        "connection_suffix": "mysql",
+        "database": "aw_webshop"
+      },
+      "PostgreSQLWarehouse": {
+        "connection_suffix": "postgresql",
+        "database": "fixtures"
+      },
+      "ShippingAPI": {
+        "connection_suffix": "shipping_api"
+      }
+    },
+    "catalogs": {
+      "databricks": "dm8_sample_prod_lake",
+      "databricks-lakeflow": "dm8_sample_prod_lakeflow"
+    }
+  }
+}
