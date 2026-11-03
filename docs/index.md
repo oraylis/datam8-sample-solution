@@ -13,6 +13,7 @@ Start with **DataM8 app 2.0.0**, which bundles the generator, or install
 - [Template and payload development](template-development.md)
 - [Optional deployment preparation](quickstart.md)
 - [Integration tests, repeat checks and resume](integration-tests.md)
+- [Table migration framework and real-table tests](migration-framework.md)
 - [Documentation handoff](documentation-handoff.md)
 - [Central user handbook](https://github.com/oraylis/datam8/blob/codex/documentation-v2/docs/user-guide/README.md)
 

@@ -1,0 +1,41 @@
+# Deliberately available only in the configured Dev target, without a schedule.
+targets:
+  dev:
+    resources:
+      jobs:
+        Migration_Framework_Recovery:
+          name: '[dev] Migration Test Baseline Recovery'
+          max_concurrent_runs: 1
+          tags:
+            platform: databricks-lake
+          parameters:
+            - name: recovery_input
+              default: '{}'
+          tasks:
+            - task_key: recovery
+              notebook_task:
+                notebook_path: ${workspace.file_path}/utils/Test_MigrationRecovery
+                base_parameters:
+                  recovery_input: '{{job.parameters.recovery_input}}'
+        Migration_Framework_Tests:
+          name: '[dev] Migration Framework Tests'
+          max_concurrent_runs: 1
+          tags:
+            platform: databricks-lake
+          parameters:
+            - name: scenarios
+              default: '*'
+            - name: cleanup_backups
+              default: '[]'
+          job_clusters:
+            - job_cluster_key: migration_tests
+              new_cluster: ${var.cluster_extra_small}
+          tasks:
+            - task_key: migration_tests
+              job_cluster_key: migration_tests
+              timeout_seconds: 21600
+              notebook_task:
+                notebook_path: ${workspace.file_path}/utils/Test_MigrationFramework
+                base_parameters:
+                  scenarios: '{{job.parameters.scenarios}}'
+                  cleanup_backups: '{{job.parameters.cleanup_backups}}'

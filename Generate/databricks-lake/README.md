@@ -1,5 +1,8 @@
 # Databricks Target
 
+For schema evolution, structured migration results and Dev acceptance tests, see
+the [table migration framework](../../docs/migration-framework.md).
+
 Build a metadata-driven lakehouse on Databricks: source ingestion, layered Delta
 tables, transformation notebooks and jobs that create and load those tables.
 Instead of writing each notebook and job definition by hand, describe entities,

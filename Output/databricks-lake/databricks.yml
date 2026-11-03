@@ -2,6 +2,7 @@ bundle:
   name: datam8_sample_lake
 include:
 - bundle.targets.yml
+- migration-tests.yml
 - generated/schemas/*.yml
 - generated/clusters/*.yml
 - generated/jobs/*.yml

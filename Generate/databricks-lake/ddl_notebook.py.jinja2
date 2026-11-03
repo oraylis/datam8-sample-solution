@@ -119,11 +119,10 @@ partitions = []
 # COMMAND ----------
 
 # DBTITLE 1,Generated CREATE TABLE statement
-create_sql = """{{ data.create_sql }}""".replace("{catalog_name}", catalog_name)
+create_sql = {{ data.create_sql | tojson }}.replace("{catalog_name}", catalog_name)
 print(create_sql)
 
 # Execute SQL statement
-table_existed = spark.catalog.tableExists(table_name)
 spark.sql(create_sql)
 
 # COMMAND ----------
@@ -147,35 +146,22 @@ refactored_columns = [
 # DBTITLE 1,Call migrate_schema method
 table_instance = Table(f"{zone}.{full_table_name}", catalog)
 
-try:
-    if table_existed:
-        result = table_instance.migrate_schema(
-            ddl=create_sql,
-            schema=schema,
-            refactored_columns=refactored_columns,
-            new_partitions=partitions,
-        )
-    else:
-        result = 2  # A newly created table already has the target schema.
-
-    print("Result: %s" % str(result))
-except Exception as e:
-    raise RuntimeError(f"Migration failed: {e}") from e
-
-table_instance.owner = owner
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Tags
-
-# COMMAND ----------
-
-# DBTITLE 1,Set table & column tags
-# table attributes
-table_instance.set_table_tags({{ data.table_tags_repr | safe }})
-
-# column attributes
+target_metadata = {
+    "owner": owner,
+    "table_tags": {{ data.table_tags_repr | safe }},
+    "column_tags": {
 {%- for column in data.column_tags %}
-table_instance.set_column_tags("{{ column.column }}", {{ column.tags_repr | safe }})
+        {{ column.column | tojson }}: {{ column.tags_repr | safe }},
 {%- endfor %}
+    },
+}
+
+result = table_instance.migrate_schema(
+    ddl=create_sql,
+    schema=schema,
+    refactored_columns=refactored_columns,
+    new_partitions=partitions,
+    target_metadata=target_metadata,
+)
+
+print("Result: %s" % str(result))

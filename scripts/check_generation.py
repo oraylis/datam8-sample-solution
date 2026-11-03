@@ -86,9 +86,13 @@ def main() -> None:
                         notebook = path.read_text(encoding="utf-8")
                         if (
                             "# DBTITLE 1,Generated CREATE TABLE statement" not in notebook
-                            or 'create_sql = """CREATE TABLE IF NOT EXISTS' not in notebook
+                            or 'create_sql = "CREATE TABLE IF NOT EXISTS' not in notebook
                             or "print(create_sql)" not in notebook
                             or "spark.sql(create_sql)" not in notebook
+                            or "target_metadata=target_metadata" not in notebook
+                            or "table_instance.owner =" in notebook
+                            or "table_instance.set_table_tags(" in notebook
+                            or "table_instance.set_column_tags(" in notebook
                             or "col_lines" in notebook
                         ):
                             raise RuntimeError(

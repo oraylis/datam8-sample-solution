@@ -124,7 +124,7 @@ def build_create_table_sql(
         return "`" + value.replace("`", "``") + "`"
 
     def quote_literal(value: str) -> str:
-        return "'" + value.replace("'", "''") + "'"
+        return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
 
     schema_identity_parts = []
     for column in columns:

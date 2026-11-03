@@ -35,7 +35,7 @@ class DdlGenerationTests(unittest.TestCase):
 
         self.assertIn("CREATE TABLE IF NOT EXISTS `{catalog_name}`.`stage`.`masterdata_customer_customer`", statement)
         self.assertIn("`CustomerSID` BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL", statement)
-        self.assertIn("COMMENT 'Customer''s display name'", statement)
+        self.assertIn("COMMENT 'Customer\\'s display name'", statement)
         self.assertIn("PRIMARY KEY (`CustomerSID`) RELY", statement)
         self.assertIn("CLUSTER BY (`CustomerID`)", statement)
         self.assertIn("TBLPROPERTIES ('delta.columnMapping.mode'='name')", statement)
