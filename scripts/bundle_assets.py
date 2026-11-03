@@ -1,4 +1,4 @@
-"""Check referenced local assets against a bundle's explicit sync selection."""
+"""Check generated local assets without environment-specific bundle files."""
 from pathlib import Path
 import fnmatch
 import re
@@ -9,7 +9,7 @@ from databricks_jobs import generated_resources
 
 
 def required_assets(bundle: Path):
-    configuration = yaml.safe_load((bundle / "databricks.yml").read_text())
+    configuration = {"variables": {"notebook_path": {"default": "files/generated/notebooks"}}, "sync": {"include": ["generated/**", "utils/**"]}}
     variables = {key: value.get("default") for key, value in configuration.get("variables", {}).items()}
     required = set()
 

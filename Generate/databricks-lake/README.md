@@ -105,7 +105,7 @@ assignments and the other target-specific properties.
 
 The exact notebook subdirectories follow the model's folder hierarchy. Cluster
 settings are emitted when cluster metadata is configured. The existing
-[bundle entry point](../../Output/databricks-lake/databricks.yml) includes the
+[bundle entry point](https://github.com/oraylis/datam8-solutions/tree/main/deployment) includes the
 generated resources and the shared `utils` directory. Maintain those deployment
 files alongside the generated output. See [deployment and integration](DEPLOYMENT.md)
 for the configured test environments and local run command.

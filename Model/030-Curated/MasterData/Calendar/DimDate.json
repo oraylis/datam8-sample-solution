@@ -81,10 +81,6 @@
     {
       "property": "write_mode",
       "value": "overwrite"
-    },
-    {
-      "property": "dataset_type",
-      "value": "materialized_view"
     }
   ],
   "sources": [],

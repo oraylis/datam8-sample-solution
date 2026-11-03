@@ -113,10 +113,6 @@
     {
       "property": "data_retention",
       "value": "7_days"
-    },
-    {
-      "property": "dataset_type",
-      "value": "materialized_view"
     }
   ],
   "sources": [

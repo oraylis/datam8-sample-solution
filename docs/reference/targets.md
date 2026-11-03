@@ -1,20 +1,12 @@
 # Configured Targets and Output Paths
 
-The [solution descriptor](../../ORAYLISDatabricksSample.dm8s) defines four targets.
-Names select CLI targets; template directory names and generated subdirectories
-are separate concepts.
+The solution descriptor contains exactly three generate-only targets.
 
-| Target | Template source | Configured output root | What you can build | Architecture |
-| --- | --- | --- | --- | --- |
-| databricks | `Generate/databricks-lake` | `Output/databricks-lake/generated` | [Layered lakehouse with notebooks and jobs](../../Generate/databricks-lake/README.md) | [Implementation](../../Generate/databricks-lake/ARCHITECTURE.md) |
-| databricks-lakeflow | `Generate/databricks-lakeflow` | `Output/databricks-lakeflow/generated` | [Lakeflow ingestion and modeled processing](../../Generate/databricks-lakeflow/README.md) | [Implementation](../../Generate/databricks-lakeflow/ARCHITECTURE.md) |
-| powerbi | `Generate/powerbi-tabular` | `Output/powerbi-tabular/generated` | [Semantic model with tables, relationships and measures](../../Generate/powerbi-tabular/README.md) | [Implementation](../../Generate/powerbi-tabular/ARCHITECTURE.md) |
-| docs | `Generate/docs` | `Output/docs` | [Model catalog, entity pages and relationship diagram](../../Generate/docs/README.md) | [Implementation](../../Generate/docs/ARCHITECTURE.md) |
+| Target | Template source | Configured output root |
+| --- | --- | --- |
+| databricks | `Generate/databricks-lake` | `Output/databricks-lake/generated` |
+| powerbi | `Generate/powerbi-tabular` | `Output/powerbi-tabular/generated` |
+| docs | `Generate/docs` | `Output/docs` |
 
-Payload `output_path` is resolved beneath that root. Inspect the payload and real
-output before assuming where a deployable notebook, bundle or TMDL file is located.
-Only docs generation and validation were checked for this baseline in this update.
-Databricks/Power BI generation and deployment require their own acceptance.
-
-Target property interpretation belongs in each architecture document. Field
-constraints belong in schemas; CLI/API behavior belongs in the backend.
+Lakeflow and all deployment/integration operations moved to the private
+[Solutions repository](https://github.com/oraylis/datam8-solutions).

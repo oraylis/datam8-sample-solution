@@ -1,5 +1,3 @@
-# DataM8 Sample Development
+# Working rules
 
-Use [AGENTS.md](AGENTS.md) for ownership, fixtures and verification requirements.
-Read [getting started](docs/getting-started.md) for the current CLI workflow and
-[template development](docs/template-development.md) for target work.
+Read [AGENTS.md](AGENTS.md). This public sample is generate-only. The two migration branches await manual review before any tests or deployment work.

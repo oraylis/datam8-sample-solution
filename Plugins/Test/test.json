@@ -1,8 +1,0 @@
-{
-    "id": "test",
-    "version": "0.1.0",
-    "entryPoint": "Test/test.py:Test",
-    "capabilities": [
-        "uiSchema"
-    ]
-}
