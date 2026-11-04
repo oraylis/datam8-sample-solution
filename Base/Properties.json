@@ -133,42 +133,6 @@
           "singleUsage": false
         }
       ]
-    },
-    {
-      "name": "dataset_type",
-      "displayName": "dataset_type",
-      "scopes": [
-        {
-          "type": "entity"
-        },
-        {
-          "type": "folder"
-        }
-      ]
-    },
-    {
-      "name": "sequence_by",
-      "displayName": "sequence_by",
-      "scopes": [
-        {
-          "type": "entity"
-        },
-        {
-          "type": "folder"
-        }
-      ]
-    },
-    {
-      "name": "delete_condition",
-      "displayName": "delete_condition",
-      "scopes": [
-        {
-          "type": "entity"
-        },
-        {
-          "type": "folder"
-        }
-      ]
     }
   ]
 }

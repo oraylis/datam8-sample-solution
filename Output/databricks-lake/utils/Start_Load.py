@@ -25,8 +25,8 @@ import datetime
 # COMMAND ----------
 
 dbutils.widgets.text("env", "dev", "Environment")
-dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka", "Catalog Name")
-dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
+dbutils.widgets.text("catalog_name", "example_catalog", "Catalog Name")
+dbutils.widgets.text("owner", "example_owner", "Owner")
 
 dbutils.widgets.text("job_name", "", "Job Name")
 dbutils.widgets.text("job_run_id", "", "Job Run ID")

@@ -10,4 +10,5 @@ __pycache__
 .vs
 
 # Installed source plugins remain local dependencies.
-Plugins/
+Plugins/*
+!Plugins/.gitkeep

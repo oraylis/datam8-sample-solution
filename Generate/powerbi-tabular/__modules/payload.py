@@ -558,7 +558,7 @@ def expressions_payload(model: Model, cache: Cache) -> Sequence[IPayload]:
         },
         {
             "name": "DBW_Hostname",
-            "value": "adb-0000000000000000.12.azuredatabricks.net",
+            "value": "workspace.example.invalid",
             "meta": {
                 "IsParameterQuery": "true",
                 "Type": "Text",

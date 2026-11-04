@@ -157,36 +157,8 @@
       "property": "extract_mode"
     },
     {
-      "name": "materialized_view",
-      "property": "dataset_type"
-    },
-    {
-      "name": "streaming_table",
-      "property": "dataset_type"
-    },
-    {
       "name": "masterdata",
       "displayName": "MasterData",
-      "property": "business_area"
-    },
-    {
-      "name": "procurement",
-      "displayName": "Procurement",
-      "property": "business_area"
-    },
-    {
-      "name": "inventory",
-      "displayName": "Inventory",
-      "property": "business_area"
-    },
-    {
-      "name": "commerce",
-      "displayName": "Commerce",
-      "property": "business_area"
-    },
-    {
-      "name": "shipping",
-      "displayName": "Shipping",
       "property": "business_area"
     }
   ]
