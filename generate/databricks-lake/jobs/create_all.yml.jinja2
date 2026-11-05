@@ -2,17 +2,12 @@ resources:
   jobs:
     {{ data.job_key }}:
       name: {{ ("[${var.environment}] " + data.job_name) | tojson }}
-      permissions:
-        - service_principal_name: ${var.deploy_service_principal}
-          level: IS_OWNER
-        - service_principal_name: ${var.run_as_service_principal}
-          level: CAN_MANAGE_RUN
       max_concurrent_runs: 1
       timeout_seconds: 1800
       tags:
         platform: databricks-lake
       parameters:
-        - name: environment
+        - name: env
           default: ${var.environment}
         - name: date_start
           default: ${var.date_start}
@@ -44,7 +39,7 @@ resources:
             job_id: ${resources.jobs.{{ task.job_ref }}.id}
 {% else %}
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/{{ task.notebook_path }}
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/{{ task.notebook_path }}
             source: WORKSPACE
 {%- set task_cluster_ref = task.cluster_ref or data.cluster_ref %}
 {%- if task_cluster_ref %}

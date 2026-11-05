@@ -33,7 +33,7 @@ class LoggingFramework:
         if LoggingFramework.is_hive(catalog_name):
             return
 
-        ddl = "ALTER TABLE `%(catalog)s`.`%(schema)s`.%(table)s SET OWNER TO %(owner)s"
+        ddl = "ALTER TABLE `%(catalog)s`.`%(schema)s`.%(table)s SET OWNER TO `%(owner)s`"
         tables = ["loads", "extractions", "v_loads_jobs"]
 
         for t in tables:
@@ -44,7 +44,7 @@ class LoggingFramework:
                 "owner": owner,
             })
 
-        spark.sql("ALTER DATABASE `%(catalog)s`.`%(database)s` SET OWNER TO %(owner)s" % {
+        spark.sql("ALTER DATABASE `%(catalog)s`.`%(database)s` SET OWNER TO `%(owner)s`" % {
             "catalog": catalog_name,
             "database": zone,
             "owner": owner,

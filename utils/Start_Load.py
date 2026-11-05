@@ -25,8 +25,8 @@ import datetime
 # COMMAND ----------
 
 dbutils.widgets.text("env", "dev", "Environment")
-dbutils.widgets.text("catalog_name", "example_catalog", "Catalog Name")
-dbutils.widgets.text("owner", "example_owner", "Owner")
+dbutils.widgets.text("catalog_name", "", "Catalog Name")
+dbutils.widgets.text("owner", "", "Owner")
 
 dbutils.widgets.text("job_name", "", "Job Name")
 dbutils.widgets.text("job_run_id", "", "Job Run ID")
@@ -45,6 +45,8 @@ dbutils.widgets.text("job_run_id", "", "Job Run ID")
 env = dbutils.widgets.get("env")
 catalog_name = dbutils.widgets.get("catalog_name")
 owner = dbutils.widgets.get("owner")
+if not catalog_name or not owner:
+    raise ValueError("Set catalog_name and owner explicitly before running this notebook")
 
 job_name = dbutils.widgets.get("job_name")
 job_run_id = dbutils.widgets.get("job_run_id")

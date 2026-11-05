@@ -1,0 +1,47 @@
+bundle:
+  name: datam8-sample
+
+include:
+  - ../../output/databricks/schemas/*.yml
+  - ../../output/databricks/clusters/*.yml
+  - ../../output/databricks/jobs/*.yml
+  - ../../output/databricks/jobs/*/*.yml
+
+# External paths expand the sync root to the repository root. Re-include output
+# because .gitignore intentionally excludes generated files from source control.
+sync:
+  paths:
+    - ../../output/databricks
+    - ../../utils
+  include:
+    - ../../output/databricks/**
+    - ../../utils/**
+
+variables:
+  environment:
+    default: dev
+  catalog_name:
+    description: Your isolated existing Unity Catalog catalog
+  owner:
+    description: Your own Databricks user name (table owner)
+  cluster_id:
+    description: Existing Unity Catalog compute running Databricks Runtime 18.3 or later
+  connection_prefix:
+    description: Prefix before the modeled sqlserver connection suffix
+    default: sample_
+  date_start:
+    default: "2000-01-01"
+  date_end:
+    default: "2030-12-31"
+  unpause_schedules:
+    default: PAUSED
+
+targets:
+  dev:
+    default: true
+    mode: development
+    cluster_id: ${var.cluster_id}
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+    run_as:
+      user_name: ${workspace.current_user.userName}

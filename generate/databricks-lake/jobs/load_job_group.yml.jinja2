@@ -2,16 +2,11 @@ resources:
   jobs:
     {{ data.job_key }}:
       name: {{ ("[${var.environment}] " + data.job_name) | tojson }}
-      permissions:
-        - service_principal_name: ${var.deploy_service_principal}
-          level: IS_OWNER
-        - service_principal_name: ${var.run_as_service_principal}
-          level: CAN_MANAGE_RUN
       tags:
         platform: databricks-lake
       max_concurrent_runs: 1
       parameters:
-        - name: environment
+        - name: env
           default: ${var.environment}
         - name: date_start
           default: ${var.date_start}
@@ -51,7 +46,7 @@ resources:
       tasks:
         - task_key: Start_Load
           notebook_task:
-            notebook_path: ${workspace.root_path}/files/utils/Start_Load
+            notebook_path: ${workspace.file_path}/utils/Start_Load
 {% if data.job_value %}
             base_parameters:
               target_zone: {{ data.job_value }}
@@ -71,7 +66,7 @@ resources:
 {%- endfor %}
 {%- endif %}
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/{{ task.notebook_path }}
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/{{ task.notebook_path }}
             base_parameters:
               replication_integration_status_id: '1'
               execution_status_id: '1'
@@ -91,7 +86,7 @@ resources:
 {%- endfor %}
 {%- endif %}
           notebook_task:
-            notebook_path: ${workspace.root_path}/${var.notebook_path}/{{ task.notebook_path }}
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/{{ task.notebook_path }}
             base_parameters:
               replication_integration_status_id: '1'
               execution_status_id: '1'
@@ -110,7 +105,7 @@ resources:
 {%- endfor %}
           run_if: ALL_DONE
           notebook_task:
-            notebook_path: ${workspace.root_path}/files/utils/Complete_Load
+            notebook_path: ${workspace.file_path}/utils/Complete_Load
             source: WORKSPACE
 {% if data.serverless %}
           environment_key: serverless

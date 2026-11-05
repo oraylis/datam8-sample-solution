@@ -131,6 +131,7 @@ def _map_data_type(attribute_type: str, logical_type: str) -> str:
     mapping: dict[str, str] = {
         "long": "int64",
         "int": "int64",
+        "integer": "int64",
         "short": "int64",
         "double": "double",
         "decimal": "decimal",

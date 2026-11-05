@@ -13,9 +13,9 @@ TERMINAL = {"TERMINATED", "SKIPPED", "INTERNAL_ERROR"}
 JOB_REFERENCE = re.compile(r"\$\{resources\.jobs\.([^.]+)\.id\}")
 
 
-def generated_resources(bundle) -> dict:
+def generated_resources(output) -> dict:
     resources = {}
-    for path in sorted((bundle / "generated").rglob("*.yml")):
+    for path in sorted(output.rglob("*.yml")):
         for kind, values in (yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("resources", {}).items():
             destination = resources.setdefault(kind, {})
             if destination.keys() & values.keys():

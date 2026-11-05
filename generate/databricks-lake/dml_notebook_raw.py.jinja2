@@ -13,14 +13,14 @@ from pyspark.sql import functions as F  # noqa: F401
 
 # COMMAND ----------
 
-# MAGIC %run ../../../../../../utils/MigrationFramework
+# MAGIC %run ../../../../../../../utils/MigrationFramework
 
 # COMMAND ----------
 
 dbutils.widgets.text("connection_prefix", "sample_", "UC Connection Prefix")
 dbutils.widgets.text("env", "dev", "Environment")
-dbutils.widgets.text("catalog_name", "datam8_campus_dev_fka", "Catalog Name")
-dbutils.widgets.text("owner", "datam8_sample_dev_owner", "Owner")
+dbutils.widgets.text("catalog_name", "", "Catalog Name")
+dbutils.widgets.text("owner", "", "Owner")
 dbutils.widgets.text("job_run_id", "", "Job Run ID")
 
 # dbutils.widgets.dropdown(
@@ -37,6 +37,8 @@ dbutils.widgets.text("job_run_id", "", "Job Run ID")
 env = dbutils.widgets.get("env")
 catalog_name = dbutils.widgets.get("catalog_name")
 owner = dbutils.widgets.get("owner")
+if not catalog_name or not owner:
+    raise ValueError("Set catalog_name and owner explicitly before running this notebook")
 job_run_id = dbutils.widgets.get("job_run_id")
 # run_mode = dbutils.widgets.get("run_mode")
 # sandbox = dbutils.widgets.get("sandbox")
@@ -108,7 +110,7 @@ if not source_location:
 from pathlib import Path
 import sys
 notebook_folder = Path(dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get()).parent
-# DML notebooks are generated/notebooks/<zone>/dml/<product>/<module>/<entity>.
+# DML notebooks are output/databricks/notebooks/<zone>/dml/<product>/<module>/<entity>.
 sys.path.insert(0, str(Path("/Workspace") / notebook_folder.relative_to("/").parents[4] / "runtime"))
 from uc_sources import read_database, read_http
 {% if data.plugin == "http_api" %}
