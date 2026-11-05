@@ -16,10 +16,6 @@ logger = start_logger(__name__)
 TARGET_NAME = "databricks"
 
 
-def source_reader_kind(plugin_id: str | None) -> str | None:
-    """Keep the generated SQL reader contract independent of host plugin IDs."""
-    return "sqlserver" if plugin_id == "builtin:SQLServer" else plugin_id
-
 # Common aliases so source / canonical names converge to those defined in DataTypes.json.
 TYPE_ALIASES: dict[str, str] = {
     "integer": "int",

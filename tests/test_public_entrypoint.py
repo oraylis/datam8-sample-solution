@@ -1,7 +1,6 @@
 """Exercise the public sample binding against the real bundled SQL Server host."""
 import json
 from pathlib import Path
-import sys
 import unittest
 from unittest.mock import patch
 
@@ -11,8 +10,6 @@ from datam8.plugins import PluginManager, init_builtin_plugins
 from datam8_model.data_source import DataSource, DataSourceType
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "Generate/databricks-lake/__modules"))
-from metadata_utils import source_reader_kind
 
 
 class PublicEntrypointTests(unittest.TestCase):
@@ -55,12 +52,6 @@ class PublicEntrypointTests(unittest.TestCase):
         self.assertEqual(fields[1].numbericScale, 2)
         mappings = {item.sourceType: item.targetType for item in self.source_type.dataTypeMapping}
         self.assertEqual([mappings[field.dataType] for field in fields], ["int", "decimal"])
-
-    def test_host_binding_keeps_the_existing_generated_reader_kind(self):
-        self.assertEqual(source_reader_kind(self.source_type.pluginId), "sqlserver")
-        self.assertEqual(source_reader_kind("sqlserver"), "sqlserver")
-        self.assertEqual(source_reader_kind("oracle"), "oracle")
-        self.assertEqual(source_reader_kind("builtin:CsvFile"), "builtin:CsvFile")
 
 
 if __name__ == "__main__":

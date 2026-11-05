@@ -33,7 +33,7 @@ def main():
             resources=generated_resources(output.parent)
             manifest=json.loads((output/"manifest.json").read_text())
             external_sources=[item["external"] for item in manifest["datasets"] if item.get("external")]
-            if not external_sources or any(item["plugin"] != "sqlserver" for item in external_sources):
+            if not external_sources or any(item["plugin"] != "builtin:SQLServer" for item in external_sources):
                 raise AssertionError("The public SQL Server sample must generate SQL Server source readers")
             execution_plan(resources,manifest,required_phases=manifest["lifecycle"])
             for job in resources["jobs"].values():check_graph(job["tasks"])

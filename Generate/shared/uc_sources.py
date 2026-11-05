@@ -24,7 +24,7 @@ def database_query(connection, location, database, plugin):
     if match and not re.fullmatch(identifier + r'(?:\s*\.\s*' + identifier + r')*', table):
         table, predicate = location.strip(), None
     if not re.match(r"(?i)^select\b", table):
-        table = table.replace("[", "").replace("]", "") if plugin == "sqlserver" else table
+        table = table.replace("[", "").replace("]", "") if plugin == "builtin:SQLServer" else table
         selection = "dbtable => " + sql_literal(table)
     else:
         selection = "query => " + sql_literal(table)
@@ -35,7 +35,7 @@ def read_database(spark, connection, location, database, plugin):
     query, predicate = database_query(connection, location, database, plugin)
     frame = spark.sql(query)
     if predicate:
-        frame = frame.filter(predicate.replace("[", "`").replace("]", "`") if plugin == "sqlserver" else predicate)
+        frame = frame.filter(predicate.replace("[", "`").replace("]", "`") if plugin == "builtin:SQLServer" else predicate)
     return frame
 
 

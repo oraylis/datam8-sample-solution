@@ -2,10 +2,10 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "Generate/shared"))
-from uc_sources import database_query, fetch_http_rows
+from uc_sources import database_query, fetch_http_rows, read_database
 
 
 class Proxy:
@@ -44,7 +44,7 @@ class SourceReaderTests(unittest.TestCase):
         self.assertNotIn("sensitive", str(error.exception))
 
     def test_sqlserver_ordinary_table_and_filter(self):
-        query, predicate = database_query("sample_sqlserver", "SELECT * FROM [SalesLT].[Customer] WHERE CustomerID > 100", "adventureworks", "sqlserver")
+        query, predicate = database_query("sample_sqlserver", "SELECT * FROM [SalesLT].[Customer] WHERE CustomerID > 100", "adventureworks", "builtin:SQLServer")
         self.assertIn("dbtable => 'SalesLT.Customer'", query)
         self.assertEqual(predicate, "CustomerID > 100")
         self.assertNotIn("host", query)
@@ -52,6 +52,17 @@ class SourceReaderTests(unittest.TestCase):
     def test_oracle_uses_service_binding(self):
         query, _ = database_query("sample_oracle", '"APP"."SUPPLIERS"', "SAMPLEPDB", "oracle")
         self.assertIn("service_name => 'SAMPLEPDB'", query)
+
+    def test_sql_builtin_reader_handles_quoted_columns_without_id_translation(self):
+        spark = Mock()
+        result = read_database(
+            spark, "sample_sqlserver",
+            "SELECT * FROM [SalesLT].[Customer] WHERE [CustomerID] > 100",
+            "adventureworks", "builtin:SQLServer",
+        )
+        self.assertIn("dbtable => 'SalesLT.Customer'", spark.sql.call_args.args[0])
+        spark.sql.return_value.filter.assert_called_once_with("`CustomerID` > 100")
+        self.assertIs(result, spark.sql.return_value.filter.return_value)
 
     def test_proxy_endpoint_cannot_escape_connection(self):
         with self.assertRaises(ValueError):

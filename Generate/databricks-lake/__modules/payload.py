@@ -19,7 +19,6 @@ from datam8.utils.cache import Cache
 
 from metadata_utils import (
     MetadataResolver,
-    source_reader_kind,
     attribute_property_equals,
     build_business_key_partitions,
     build_delta_table_properties,
@@ -533,8 +532,8 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 data_source_name=data_source_name,
             )
             source_type = next((item.entity for item in model.dataSourceTypes.values() if item.entity.name == data_source_entry.type), None)
-            plugin = source_reader_kind(getattr(source_type, "pluginId", None))
-            if plugin not in {"sqlserver", "oracle", "mysql", "postgresql", "http_api"}:
+            plugin = getattr(source_type, "pluginId", None)
+            if plugin not in {"builtin:SQLServer", "oracle", "mysql", "postgresql", "http_api"}:
                 raise ValueError(f"Unsupported UC source plugin for {data_source_name}: {plugin}")
             extended = data_source_entry.extendedProperties or {}
             connection_name = extended.get("unityCatalogConnection", plugin)
@@ -833,7 +832,7 @@ def generation_manifest(model: Model, cache: Cache) -> Sequence[IPayload]:
             raw_key = "raw." + raw["full_table_name"].lower()
             data_source = resolver.data_sources[external.dataSource]
             source_type = next(item.entity for item in model.dataSourceTypes.values() if item.entity.name == data_source.type)
-            plugin = source_reader_kind(source_type.pluginId)
+            plugin = source_type.pluginId
             settings = data_source.extendedProperties or {}
             extract_mode = next((reference.value for reference in external.properties or [] if reference.property == "extract_mode"), "full")
             external_spec = {"source": data_source.name, "plugin": plugin, "connection_suffix": settings.get("unityCatalogConnection", plugin), "location": external.sourceLocation, "database": settings.get("database"), "service_name": settings.get("service_name"), "extract_mode": extract_mode}
