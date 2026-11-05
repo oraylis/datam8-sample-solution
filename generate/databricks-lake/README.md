@@ -30,7 +30,7 @@ the sources and transformations you model.
 | Core | Integrate data into reusable business entities and apply business transformations. | DDL and DML notebooks, plus referenced transformation scripts |
 | Curated | Prepare analytical entities for consumption, such as dimensions and facts. | DDL and DML notebooks for the modeled analytical tables |
 
-Layer definitions live in [Base/Zones.json](../../Base/Zones.json). Notebook
+Layer definitions live in [base/Zones.json](../../base/Zones.json). Notebook
 directories follow each zone's local folder, with product and module folders
 preserved beneath it. The sample uses `010-Stage`, `020-Core` and `030-Curated`;
 Raw notebooks are derived from the external sources.
@@ -81,7 +81,7 @@ configuration.
 ## Generated layout
 
 The target is selected as **databricks**. Its configured output root is
-`Output/databricks-lake/generated`; payloads write notebooks and bundle YAML
+`output/databricks`; payloads write notebooks and bundle YAML
 beneath it:
 
 ```text

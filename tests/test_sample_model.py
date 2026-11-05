@@ -7,11 +7,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class SampleModelTests(unittest.TestCase):
     def test_adventureworks_is_the_only_external_source(self):
-        sources = json.loads((ROOT / 'Base/DataSources.json').read_text())['dataSources']
+        sources = json.loads((ROOT / 'base/DataSources.json').read_text())['dataSources']
         self.assertEqual([s['name'] for s in sources], ['AdventureWorks'])
 
     def test_all_entity_references_resolve_inside_the_small_model(self):
-        entities = [json.loads(p.read_text()) for p in (ROOT / 'Model').rglob('*.json') if p.name != '.properties.json']
+        entities = [json.loads(p.read_text()) for p in (ROOT / 'model').rglob('*.json') if p.name != '.properties.json']
         identifiers = {e['id'] for e in entities}
         for entity in entities:
             for source in entity.get('sources', []):
@@ -23,7 +23,7 @@ class SampleModelTests(unittest.TestCase):
                 self.assertIn(relation['targetLocation'], identifiers)
 
     def test_customer_uses_the_standard_table_without_custom_views(self):
-        path = ROOT / 'Model/010-Stage/AdventureWorks/SalesLT/Customer.json'
+        path = ROOT / 'model/010-Stage/AdventureWorks/SalesLT/Customer.json'
         sources = json.loads(path.read_text())['sources']
         self.assertEqual(len(sources), 1)
         self.assertIn('[SalesLT].[Customer]', sources[0]['sourceLocation'])

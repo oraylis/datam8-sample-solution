@@ -2,7 +2,7 @@
 
 Build the semantic model that turns your consumer-layer metadata into tables,
 relationships and measures for Power BI reporting. This target generates a TMDL
-model definition from the entities in `Model/040-Consumer`, keeping the reporting
+model definition from the entities in `model/040-Consumer`, keeping the reporting
 model connected to the same metadata used for your data platform.
 
 ## What you can build
@@ -30,9 +30,9 @@ lakehouse tables; this target supplies their semantic reporting layer.
 ## Generated artifacts
 
 The target name is **powerbi** and its configured output root is
-`Output/powerbi-tabular/generated`. Payloads add a `powerbi-tabular` subdirectory,
+`output/powerbi`. Payloads add a `powerbi-tabular` subdirectory,
 so the model definition is written to
-`Output/powerbi-tabular/generated/powerbi-tabular/`.
+`output/powerbi/`.
 
 | Artifact | Role |
 | --- | --- |

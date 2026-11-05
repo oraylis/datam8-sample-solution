@@ -23,7 +23,7 @@ model changes so that the reference reflects the current metadata.
 
 ## Generated artifacts
 
-The target name is **docs** and its configured output root is `Output/docs`.
+The target name is **docs** and its configured output root is `output/docs`.
 
 | Artifact | Role |
 | --- | --- |
@@ -43,8 +43,8 @@ Or run **DataM8 CLI 2.0.0** from the solution root:
 datam8 generate docs --solution ./ORAYLISDatabricksSample.dm8s
 ```
 
-Open `Output/docs/index.md` in a Markdown viewer and follow its entity links. Open
-`Output/docs/diagrams/entity-relationships.drawio` in draw.io to explore or arrange
+Open `output/docs/index.md` in a Markdown viewer and follow its entity links. Open
+`output/docs/diagrams/entity-relationships.drawio` in draw.io to explore or arrange
 the diagram. Keep the generated Markdown and diagram together when sharing the
 reference or including it in your project's documentation.
 

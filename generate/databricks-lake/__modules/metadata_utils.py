@@ -128,7 +128,7 @@ def _select_expr(source_expr: str, target: str) -> str:
 
 @dataclass(frozen=True)
 class ZoneMetadata:
-    """Represents a zone entry from Base/Zones.json."""
+    """Represents a zone entry from base/Zones.json."""
 
     name: str
     display_name: str
@@ -349,7 +349,7 @@ class MetadataResolver:
         return zone.local_folder or zone.name
 
     def zones(self) -> list[ZoneMetadata]:
-        """Return all known zones defined in Base/Zones.json."""
+        """Return all known zones defined in base/Zones.json."""
         _, name_map = self._zones_maps
         # name_map already keyed by lower-case zone name; values are the ZoneMetadata instances.
         # Preserve insertion order from the JSON file by relying on dict value order.

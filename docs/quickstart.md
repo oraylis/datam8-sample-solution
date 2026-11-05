@@ -10,7 +10,7 @@ identities, source connections and secret integration in your own delivery proce
 Keep those bindings outside this sample and preserve the authored runtime utilities
 referenced by generated notebooks. Verify platform prerequisites independently.
 
-The [Databricks boundary](../Generate/databricks-lake/DEPLOYMENT.md) and
+The [Databricks boundary](../generate/databricks-lake/DEPLOYMENT.md) and
 [configured outputs](reference/targets.md) identify the artifacts supplied here.
 The local exercise creates no cloud resources and starts no data processing.
 Never commit live values in place of neutral source examples.

@@ -2,7 +2,7 @@
 
 The builder denormalizes entities, sources, relationships, transformations, and
 diagram coordinates into a single `DocumentationResult` consumed by Jinja
-templates in `Generate/docs`.
+templates in `generate/docs`.
 """
 
 from __future__ import annotations

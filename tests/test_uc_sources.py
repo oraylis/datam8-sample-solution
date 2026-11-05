@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "Generate/shared"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "generate/shared"))
 from uc_sources import database_query, fetch_http_rows, read_database
 
 

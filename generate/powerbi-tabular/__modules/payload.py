@@ -519,7 +519,7 @@ def database_payload(model: Model, cache: Cache) -> Sequence[IPayload]:
     return [
         BasePayload(
             data=data,
-            output_path=Path("powerbi-tabular", "database.tmdl"),
+            output_path=Path("database.tmdl"),
         )
     ]
 
@@ -539,7 +539,7 @@ def model_payload(model: Model, cache: Cache) -> Sequence[IPayload]:
     return [
         BasePayload(
             data=data,
-            output_path=Path("powerbi-tabular", "model.tmdl"),
+            output_path=Path("model.tmdl"),
         )
     ]
 
@@ -579,7 +579,7 @@ def expressions_payload(model: Model, cache: Cache) -> Sequence[IPayload]:
     return [
         BasePayload(
             data={"expressions": expressions},
-            output_path=Path("powerbi-tabular", "expressions.tmdl"),
+            output_path=Path("expressions.tmdl"),
         )
     ]
 
@@ -593,7 +593,7 @@ def relationships_payload(model: Model, cache: Cache) -> Sequence[IPayload]:
     return [
         BasePayload(
             data={"relationships": relationships},
-            output_path=Path("powerbi-tabular", "relationships.tmdl"),
+            output_path=Path("relationships.tmdl"),
         )
     ]
 
@@ -608,7 +608,7 @@ def table_payloads(model: Model, cache: Cache) -> Sequence[IPayload]:
         payloads.append(
             BasePayload(
                 data={"table": table},
-                output_path=Path("powerbi-tabular", "tables", f"{table.name}.tmdl"),
+                output_path=Path("tables", f"{table.name}.tmdl"),
             )
         )
 

@@ -53,7 +53,7 @@ This target generates Databricks notebooks and bundle resources for:
 
 ## Validation Checklist
 
-1. Run lint: `ruff check Generate/databricks-lake/__modules`
+1. Run lint: `ruff check generate/databricks-lake/__modules`
 2. Validate template rendering in local generation run.
 3. Run parity check against baseline output:
    `scripts/verify_generation_parity.ps1`

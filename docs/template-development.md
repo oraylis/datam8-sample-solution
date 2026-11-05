@@ -6,8 +6,8 @@ data. Put complex joins, ordering and target decisions in Python rather than tem
 
 ## Documentation target example
 
-Read [payload.py](../Generate/docs/__modules/payload.py) and
-[the architecture](../Generate/docs/ARCHITECTURE.md). The target builds one cached
+Read [payload.py](../generate/docs/__modules/payload.py) and
+[the architecture](../generate/docs/ARCHITECTURE.md). The target builds one cached
 documentation snapshot, then registers payloads for index, entity pages and a diagram.
 The existing index payload uses this shape:
 

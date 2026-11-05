@@ -1,14 +1,23 @@
+# Generated target outputs and local deployment state
+output/
+.databricks/
+.env
+.env.*
+!.env.example
+
 # DataM8 local files
 datam8.user
 index.json
 
-# Python environment local files
-.venv
-__pycache__
+# Local Python/editor caches
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.vs/
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
 
-# Visual Studio local files
-.vs
-
-# Installed source plugins remain local dependencies.
-Plugins/*
-!Plugins/.gitkeep
+# Installed custom source plugins remain local dependencies
+plugins/*
+!plugins/.gitkeep

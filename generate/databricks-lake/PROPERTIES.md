@@ -21,7 +21,7 @@ Extraction settings do not implicitly filter a modeled Core source.
 - **External source:** set values in its `sources[]` entry, connected to a DataSource.
 - **Source mapping:** mark a cursor with `extract_column=delta`.
 - **Attribute:** business keys and SCD history are model fields.
-- **Reusable values:** define them in `Base/PropertyValues.json`; jobs may reference schedules and clusters.
+- **Reusable values:** define them in `base/PropertyValues.json`; jobs may reference schedules and clusters.
 
 Use the value's `name` in a property reference. Effects and precedence can differ by target; each target page documents its contract.
 
@@ -53,7 +53,7 @@ its four zone-specific table-creation jobs are separate from these load jobs.
 | `data_layout` | Entity. The model contains `liquid_clustering` examples. | **No effect:** the classic DDL/DML generator does not read this property or emit liquid clustering. |
 | `dataset_type` | Entity or folder. Values: `materialized_view`, `streaming_table`. | **No effect:** this target always generates Delta tables and notebook DML; it does not select Lakeflow object types. |
 | `sequence_by`, `delete_condition` | Entity or folder. | **No effect:** these are read only by the Lakeflow target. |
-| `target` | Zone. Defined value: `power-bi`. | **No effect on this target's job or schema generation.** Databricks schema names come from each zone's `targetName` in `Base/Zones.json`. |
+| `target` | Zone. Defined value: `power-bi`. | **No effect on this target's job or schema generation.** Databricks schema names come from each zone's `targetName` in `base/Zones.json`. |
 | Attribute `sensitive` | Attribute property; present on customer attributes. | Emitted as a Unity Catalog column tag by classic DDL; it does not mask or encrypt the data. |
 
 `validate_all` is a defined `jobs` value but no current model entity or generated

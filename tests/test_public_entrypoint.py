@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class PublicEntrypointTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        source_types = json.loads((ROOT / "Base/DataSourceTypes.json").read_text())
+        source_types = json.loads((ROOT / "base/DataSourceTypes.json").read_text())
         cls.source_type = DataSourceType.model_validate(source_types["dataSourceTypes"][0])
         init_builtin_plugins(plugin_id=cls.source_type.pluginId)
         cls.plugin_class = PluginManager().get_plugin(cls.source_type.pluginId)
@@ -31,7 +31,7 @@ class PublicEntrypointTests(unittest.TestCase):
         self.assertEqual(self.source_type.authModes, self.plugin_class.get_auth_modes())
 
     def test_real_builtin_metadata_preserves_source_types_and_sample_mappings(self):
-        sources = json.loads((ROOT / "Base/DataSources.json").read_text())
+        sources = json.loads((ROOT / "base/DataSources.json").read_text())
         source = DataSource.model_validate(sources["dataSources"][0])
         source.extendedProperties["password"] = "fixture:sql-password"
         with patch("datam8.plugins.base.SecretResolver") as secrets:

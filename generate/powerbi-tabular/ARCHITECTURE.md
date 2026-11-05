@@ -47,5 +47,5 @@ This target generates TMDL artifacts for consumer entities:
 
 ## Validation Checklist
 
-1. Run lint: `ruff check Generate/powerbi-tabular/__modules`
+1. Run lint: `ruff check generate/powerbi-tabular/__modules`
 2. Generate output and verify table/relationship names with spaces still quote correctly.

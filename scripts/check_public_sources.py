@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def check_public_sources():
-    for source in json.loads((ROOT / "Base/DataSources.json").read_text())["dataSources"]:
+    for source in json.loads((ROOT / "base/DataSources.json").read_text())["dataSources"]:
         fields = source.get("extendedProperties", {})
         for key, value in fields.items():
             if not isinstance(value, str):
@@ -20,7 +20,7 @@ def check_public_sources():
                 raise ValueError(f"{source['name']}: public secret field must contain a sample reference")
             if key in {"username", "user"} and value != "sample_reader":
                 raise ValueError(f"{source['name']}: public source user must be sample_reader")
-    for folder in (ROOT / "Base", ROOT / "Model"):
+    for folder in (ROOT / "base", ROOT / "model"):
         for path in folder.rglob("*.json"):
             text = path.read_text()
             if ".cloudapp.azure.com" in text or "aut0ora0dev" in text:

@@ -1,6 +1,6 @@
 # Working in the DataM8 Public Sample
 
-This repository owns the small AdventureWorks Base/Model example, business
+This repository owns the small AdventureWorks base/Model example, business
 functions and classic Databricks, Docs and Power BI generation references.
 It supports local generation; no cloud deployment or integration runner is included.
 

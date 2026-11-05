@@ -39,7 +39,7 @@ This target produces model documentation artifacts:
 
 ## Validation Checklist
 
-1. Run lint: `ruff check Generate/docs/__modules`
+1. Run lint: `ruff check generate/docs/__modules`
 2. Generate docs and verify:
    - entity links are correct
    - diagram opens in draw.io

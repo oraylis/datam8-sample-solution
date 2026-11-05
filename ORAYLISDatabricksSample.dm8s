@@ -1,26 +1,26 @@
 {
   "schemaVersion": "2.0.0",
-  "basePath": "Base",
-  "modelPath": "Model",
-  "pluginsPath": "Plugins",
+  "basePath": "base",
+  "modelPath": "model",
+  "pluginsPath": "plugins",
   "generatorTargets": [
     {
       "name": "databricks",
       "isDefault": true,
-      "sourcePath": "Generate/databricks-lake",
-      "outputPath": "Output/databricks-lake/generated"
+      "sourcePath": "generate/databricks-lake",
+      "outputPath": "output/databricks"
     },
     {
       "name": "powerbi",
       "isDefault": false,
-      "sourcePath": "Generate/powerbi-tabular",
-      "outputPath": "Output/powerbi-tabular/generated"
+      "sourcePath": "generate/powerbi-tabular",
+      "outputPath": "output/powerbi"
     },
     {
       "name": "docs",
       "isDefault": false,
-      "sourcePath": "Generate/docs",
-      "outputPath": "Output/docs"
+      "sourcePath": "generate/docs",
+      "outputPath": "output/docs"
     }
   ]
 }

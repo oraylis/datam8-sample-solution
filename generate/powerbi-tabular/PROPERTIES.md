@@ -7,7 +7,7 @@
 - **External source:** set values in its `sources[]` entry, connected to a DataSource.
 - **Source mapping:** mark a cursor with `extract_column=delta`.
 - **Attribute:** business keys and SCD history are model fields.
-- **Reusable values:** define them in `Base/PropertyValues.json`; jobs may reference schedules and clusters.
+- **Reusable values:** define them in `base/PropertyValues.json`; jobs may reference schedules and clusters.
 
 Use the value's `name` in a property reference. Effects and precedence can differ by target; each target page documents its contract.
 
