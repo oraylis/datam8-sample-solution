@@ -2,73 +2,74 @@
 
 Start with a complete fork or copy of this repository, including `base`, `model`,
 `generate`, `plugins`, `utils`, `deployment` and the solution descriptor. Keep your
-own solution in source control. Use a disposable copy for this exercise; it does
-not change the distributed model or require a source connection.
+own solution in source control and make changes on a branch. Local model editing,
+validation and generation do not require a source connection or cloud account.
 
 ## Establish a reproducible starting point
 
 Follow [local setup](getting-started.md#use-the-cli), then commit your starting
 point. Keep `pyproject.toml` and `uv.lock` together: the lockfile binds the public
 CLI and schema dependencies. The editor schemas in `.vscode/settings.json` match
-that dependency. For the app, use a release compatible with the sample schema;
+that dependency. For the app, use a release compatible with the solution schema;
 its bundled runtime is independent of the uv environment. When upgrading, review
 compatibility notes and regenerate on a branch before updating these pins.
 
 ```powershell
 uv sync --frozen
 uv run datam8 validate --solution ./ORAYLISDatabricksSample.dm8s
-uv run python scripts/check_generation.py --target all
+uv run datam8 generate docs --solution ./ORAYLISDatabricksSample.dm8s
+uv run datam8 generate databricks --solution ./ORAYLISDatabricksSample.dm8s
+uv run datam8 generate powerbi --solution ./ORAYLISDatabricksSample.dm8s
 ```
 
-You now have local Databricks notebooks/jobs, a Power BI TMDL model and a browsable
-model reference under the three separate `output/` folders. Save a copy of this
+Open the generated documentation index and inspect the notebooks/jobs and TMDL
+under the [three target output folders](reference/targets.md). Save a copy of this
 baseline outside `output/` if you want to compare artifacts after editing.
 
-## Expose SourceSystem to report authors
+## Extend the model
 
-The Curated entity **DimCustomer** (ID `3000`) already contains `SourceSystem`.
-Expose it in **Consumer / MasterData / Customer / Customer** (ID `4000`). This is
-a semantic-layer extension: no new source import or Databricks transformation is
-needed.
+Use the DataM8 app or edit the persisted JSON and function files in your editor.
+The [user handbook](https://github.com/oraylis/datam8/blob/main/docs/user-guide/README.md)
+covers the individual editors and workflows.
 
-In the app, add a `SourceSystem` attribute to Consumer Customer with attribute type
-`Text`, data type `string`, nullable **false**, and the next ordinal number. Open
-its existing modeled source (Curated DimCustomer) and add a mapping from
-`SourceSystem` to `SourceSystem`. Save and reload to confirm both changes.
+1. Choose the layer where the change belongs. Add or modify entities and
+   attributes with the appropriate types, keys, descriptions and properties.
+   Add new entities through the app or follow the existing schema when editing
+   JSON; every entity needs a unique ID.
+2. Define where the data comes from. For an external source, configure its source
+   type and connection references. Source import and preview require your own
+   connection and credentials; stored model metadata can be edited offline.
+   For an existing modeled source, select the upstream entity and map its
+   attributes to the target attributes.
+3. Update transformations and referenced function files when the change needs
+   new logic. Maintain relationships and downstream mappings across the affected
+   layers. Expose reporting fields in the Consumer layer when report authors
+   need them.
+4. Save and reload the solution to confirm that the edits are persisted. Validate
+   before generating again.
 
-For direct JSON editing, the same changes in
-`model/040-Consumer/MasterData/Customer/Customer.json` are:
+Keep credentials outside version control and use secret references in source
+settings. For property behavior and target selection, consult the
+[model properties](model-properties.md) and [target references](reference/targets.md).
 
-```json
-{
-  "name": "SourceSystem",
-  "ordinalNumber": 11,
-  "attributeType": "Text",
-  "dataType": { "type": "string", "nullable": false },
-  "dateAdded": "2026-01-01T00:00:00Z"
-}
-```
+## Validate and review the generated changes
 
-Append this object to `attributes`, using your actual creation date. In the existing `sources` entry whose
-`sourceLocation` is `3000`, append this object to `mapping`:
+Run the validation and generation commands above again, or select the affected
+targets in the app. Check command exit codes and review the resulting artifacts:
 
-```json
-{ "sourceName": "SourceSystem", "targetName": "SourceSystem" }
-```
+- **Documentation:** changed entities, attributes, mappings and relationships
+  appear in the catalog and entity pages.
+- **Databricks:** affected Raw, Stage, Core and Curated notebooks and jobs reflect
+  the change, with the intended dependencies and table definitions.
+- **Power BI:** affected Consumer tables, columns, relationships and measures
+  appear in the generated TMDL.
 
-Validate and run the same three-target generation check again. Confirm:
-
-- The generated Consumer Customer documentation lists the new attribute and mapping.
-- `output/powerbi/tables/Customer.tmdl` contains `column SourceSystem` with
-  `dataType: string` and `sourceColumn: SourceSystem`.
-- Databricks artifacts are unchanged: this target generates Raw through Curated,
-  and the required upstream column was already present. Documentation timestamps
-  change whenever documentation is regenerated.
-
-The [offline workflow test](../tests/test_solution_workflow.py) reproduces this
-exercise on a temporary complete copy and checks target-clean isolation. For
-larger changes, maintain source/relationship references, validate all affected
-layers and review generated diffs before deploying.
+The targets cover different layers, so a model change may affect only some of
+them. Compare against your baseline and investigate unrelated differences.
+Documentation timestamps change whenever documentation is regenerated. Commit
+the authored model, template and configuration changes after review; output
+remains disposable. When changing generator code, use the contributor
+[local checks](integration-tests.md) as well.
 
 ## Prepare your own environment
 
@@ -77,7 +78,7 @@ to create tables and load data, then [Power BI project integration](powerbi-depl
 to build and publish your own report. For different output conventions, follow
 [template development](template-development.md).
 
-Keep generated output disposable. Keep your authored reports and connection
-parameters in a separate PBIP project, and maintain bundle configuration under
-`deployment/`. Local profiles, secrets and deployment state belong outside version
-control. No passwords, tokens or client secrets are supplied by this sample.
+Keep your authored reports and connection parameters in a separate PBIP project,
+and maintain bundle configuration under `deployment/`. Local profiles, secrets
+and deployment state belong outside version control. Review the generated
+changes and the impact on existing data before deploying to your own environment.

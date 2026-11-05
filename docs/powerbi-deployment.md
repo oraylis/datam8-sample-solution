@@ -26,8 +26,8 @@ for `definition.pbism`, TMDL and local cache behavior.
    A project without a cache opens with metadata and no data. Ignore local cache
    and settings in source control.
 5. Open the PBIP in Desktop **without refresh**. Check Customer, Date, Sales Order,
-   measures and relationships in Model view. For the extension exercise, check
-   `Customer[SourceSystem]`. Opening validates local model metadata; it does not
+   measures and relationships in Model view, including any changes you made to
+   Consumer metadata. Opening validates local model metadata; it does not
    establish source connectivity or successful refresh.
 
 ## Connect, refresh and publish

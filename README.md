@@ -11,7 +11,7 @@ semantic model. The first exercise runs locally without a database or cloud acco
 | --- | --- | --- |
 | Learn visual modeling | [Open the sample in the app](docs/getting-started.md#use-the-app) | Change a Customer description and confirm it survives reload |
 | Validate and generate from the command line | [Local CLI setup](docs/getting-started.md#use-the-cli) | Generate and inspect a fresh `output/docs/index.md` |
-| Build and deploy my own solution | [Extend the sample](docs/build-your-own-solution.md), then [deploy](docs/quickstart.md) | Expose SourceSystem in Customer and prepare your own Databricks/Power BI environment |
+| Build and deploy my own solution | [Extend the sample](docs/build-your-own-solution.md), then [deploy](docs/quickstart.md) | Extend your model, validate and generate it, then deploy to your own environment |
 | Change templates or target conventions | [Template development](docs/template-development.md) and [configured targets](docs/reference/targets.md) | Change one template and compare the generated output |
 | Understand the example | [Model documentation target](generate/docs/README.md) and [property references](docs/model-properties.md) | Follow Customer through Stage, Core, Curated and Consumer |
 

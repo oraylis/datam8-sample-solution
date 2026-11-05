@@ -5,8 +5,8 @@ use the pinned public CLI, change metadata and generate documentation. A source
 connection or cloud account is not required for that path.
 
 - [Local getting started](getting-started.md)
-- [Build your own solution](build-your-own-solution.md) â€” extend Consumer Customer, validate and regenerate
-- [Deploy to your own environment](quickstart.md) â€” Databricks first, then Power BI
+- [Build your own solution](build-your-own-solution.md): extend entities, attributes and mappings
+- [Deploy to your own environment](quickstart.md): Databricks first, then Power BI
 - [Configured targets and output paths](reference/targets.md)
 - [Model properties by target](model-properties.md)
 - [Databricks notebooks and job definitions](../generate/databricks-lake/README.md)

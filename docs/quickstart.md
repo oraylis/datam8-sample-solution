@@ -1,8 +1,9 @@
 # From Generated Files to Deployment
 
 First [build your own solution](build-your-own-solution.md): fork or copy the
-complete sample, keep its dependency pins, change the model, validate and generate
-all three targets. This path needs no credentials or cloud account.
+complete sample, keep its dependency pins, extend the model and its mappings,
+then validate and generate the affected targets. This path needs no credentials
+or cloud account.
 
 Once those artifacts are ready, choose the next step:
 

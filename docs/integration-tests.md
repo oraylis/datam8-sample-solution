@@ -22,8 +22,14 @@ The suite covers model references, public source placeholders, SQL Server builti
 forms/metadata and generated reader compatibility. The generation checker validates
 all targets, Python syntax, notebook cells, job graphs and runtime assets using
 the actual bundle includes, variables and sync configuration. A temporary-copy
-workflow test checks target-clean isolation and the documented SourceSystem extension.
+workflow test checks target-clean isolation and an internal Consumer extension fixture.
 It does not contact source systems or deploy generated artifacts.
+
+The offline bundle check uses the resource includes, sync paths and Git-style
+include/exclude patterns in the base bundle configuration. It checks referenced
+assets and generated resource coverage, including additional authored resources.
+Use the Databricks CLI to validate environment-specific target overrides before
+deployment, as described in the [deployment guide](../generate/databricks-lake/DEPLOYMENT.md).
 
 The generation workflow runs on pull requests, pushes to main and manual dispatch.
 It uses read-only repository permissions and public locked dependencies; no review

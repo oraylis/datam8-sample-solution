@@ -74,6 +74,6 @@ paths. Deployment is a separate step after generation.
 
 ## Next steps
 
-[Build your own solution](build-your-own-solution.md) with a concrete Consumer
-Customer extension, then follow [deployment](quickstart.md). For generator work,
+[Build your own solution](build-your-own-solution.md): extend entities, attributes
+and mappings, validate and regenerate, then follow [deployment](quickstart.md). For generator work,
 read [targets](reference/targets.md) and [template development](template-development.md).
