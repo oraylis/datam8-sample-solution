@@ -17,7 +17,7 @@ git clone https://github.com/oraylis/datam8-sample-solution.git datam8-sample
 cd datam8-sample
 ```
 
-Use a working copy for your changes. Keep Base, Model, Plugins, Generate and the
+Use a working copy for your changes. Keep `base`, `model`, `plugins`, `generate`, `utils`, `deployment` and the
 supporting configuration alongside `ORAYLISDatabricksSample.dm8s`. Copy the whole
 solution when creating another exercise directory. Autosave writes your edits to
 disk, and generation can replace files in a target output directory.
@@ -74,5 +74,6 @@ paths. Deployment is a separate step after generation.
 
 ## Next steps
 
-Read [targets](reference/targets.md), [template development](template-development.md)
-and, only when needed, [deployment preparation](quickstart.md).
+[Build your own solution](build-your-own-solution.md) with a concrete Consumer
+Customer extension, then follow [deployment](quickstart.md). For generator work,
+read [targets](reference/targets.md) and [template development](template-development.md).

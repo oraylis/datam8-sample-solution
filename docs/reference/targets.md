@@ -1,6 +1,6 @@
 # Configured Targets and Output Paths
 
-The solution descriptor contains exactly three generate-only targets.
+The solution descriptor contains exactly three local generation targets.
 
 | Target | Template source | Configured output root |
 | --- | --- | --- |
@@ -8,6 +8,7 @@ The solution descriptor contains exactly three generate-only targets.
 | powerbi | `generate/powerbi-tabular` | `output/powerbi` |
 | docs | `generate/docs` | `output/docs` |
 
-Each target writes files locally. The sample includes no deployment runner,
-environment bindings or live integration workflow. Review the
-[deployment boundary](../quickstart.md) before using generated artifacts elsewhere.
+Each target writes only inside its own output folder. The authored runtime
+notebooks in `utils/` and the neutral bundle in `deployment/databricks/` survive
+clean generation. Supply your own environment settings and follow the
+[deployment guides](../quickstart.md) after reviewing generated artifacts.

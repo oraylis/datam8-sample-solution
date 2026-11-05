@@ -72,9 +72,9 @@ finishes with `Complete_Load`. Source references become task dependencies;
 relationships used by `lookup_dimensions` also gate the dependent entity task.
 Cross-job dependencies remain in the generated execution manifest. A load job
 does not start another model job or process its entities; it reads the existing
-upstream data. The local and CI integration runner runs every selected model
-job once in dependency order and stops before downstream jobs if a prerequisite
-fails. A manually started downstream job expects its upstream data to be current.
+upstream data. Run jobs in the manifest dependency order and wait for each
+upstream job to succeed before starting a dependent job. No live integration runner
+is included. A downstream job expects its upstream data to be current.
 Schedule and compute settings come from the modeled job values and bundle
 configuration.
 
@@ -85,16 +85,17 @@ The target is selected as **databricks**. Its configured output root is
 beneath it:
 
 ```text
-Output/databricks-lake/
-  utils/                                 # Shared runtime notebooks/frameworks
-  generated/
-    notebooks/<zone>/ddl/<product>/<module>/<entity>.py
-    notebooks/<zone>/dml/<product>/<module>/<entity>.py
-    schemas/schema.yml
-    clusters/clusters.yml
-    jobs/create_all_tables.yml
-    jobs/<zone>/Create_<zone>.yml          # One parallel DDL task group per zone
-    jobs/load_<jobs-value>.yml
+output/databricks/
+  notebooks/<zone>/ddl/<product>/<module>/<entity>.py
+  notebooks/<zone>/dml/<product>/<module>/<entity>.py
+  runtime/uc_sources.py
+  schemas/schema.yml
+  clusters/clusters.yml
+  jobs/create_all_tables.yml
+  jobs/<zone>/Create_<zone>.yml
+  jobs/load_<jobs-value>.yml
+utils/                                    # Authored runtime notebooks
+deployment/databricks/databricks.yml       # Authored bundle configuration
 ```
 
 The sample therefore generates `load_sales_daily.yml` and
@@ -104,9 +105,9 @@ assignments and the other target-specific properties.
 
 The exact notebook subdirectories follow the model's folder hierarchy. Cluster
 settings are emitted when cluster metadata is configured. Generated notebooks
-reference the authored `utils` directory. The sample contains no environment-bound
-bundle entrypoint; review [deployment boundaries](DEPLOYMENT.md) before configuring
-your own platform delivery process.
+reference the authored `utils` directory. The neutral bundle includes only this
+target output and `utils/`. Follow [deployment](DEPLOYMENT.md) to supply your own
+identity, catalog, source connection and existing compatible compute.
 
 ## Generate and use the result
 

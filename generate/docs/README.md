@@ -36,11 +36,11 @@ generated pages, so it is the starting point for browsing the reference.
 
 ## Generate and use the result
 
-Use **DataM8 app 2.0.0**, select **docs** in the generator and choose **Generate**.
-Or run **DataM8 CLI 2.0.0** from the solution root:
+Use a compatible **DataM8 app**, select **docs** in the generator and choose **Generate**.
+Or run the pinned **DataM8 CLI** from the solution root:
 
 ```sh
-datam8 generate docs --solution ./ORAYLISDatabricksSample.dm8s
+uv run datam8 generate docs --solution ./ORAYLISDatabricksSample.dm8s
 ```
 
 Open `output/docs/index.md` in a Markdown viewer and follow its entity links. Open

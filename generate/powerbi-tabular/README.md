@@ -30,9 +30,7 @@ lakehouse tables; this target supplies their semantic reporting layer.
 ## Generated artifacts
 
 The target name is **powerbi** and its configured output root is
-`output/powerbi`. Payloads add a `powerbi-tabular` subdirectory,
-so the model definition is written to
-`output/powerbi/`.
+`output/powerbi`. TMDL files and `tables/` are written directly inside it.
 
 | Artifact | Role |
 | --- | --- |
@@ -44,15 +42,15 @@ so the model definition is written to
 
 ## Generate and use the result
 
-Use **DataM8 app 2.0.0**, select **powerbi** in the generator and choose
-**Generate**. Or run **DataM8 CLI 2.0.0** from the solution root:
+Use a compatible **DataM8 app**, select **powerbi** in the generator and choose
+**Generate**. Or run the pinned **DataM8 CLI** from the solution root:
 
 ```sh
-datam8 generate powerbi --solution ./ORAYLISDatabricksSample.dm8s
+uv run datam8 generate powerbi --solution ./ORAYLISDatabricksSample.dm8s
 ```
 
 Inspect the generated tables, relationship columns and measures. Integrate the
-TMDL definition into your semantic-model project and supply the Databricks
+TMDL definition into [your own Desktop/PBIP project](../../docs/powerbi-deployment.md) and supply the Databricks
 connection parameters for your environment. Publish and configure refresh through
 your Power BI deployment workflow; reports can then use the shared semantic model.
 
