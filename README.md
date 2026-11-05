@@ -10,9 +10,10 @@ semantic model. The first exercise runs locally without a database or cloud acco
 | I want to… | Begin here | First result |
 | --- | --- | --- |
 | Learn visual modeling | [Open the sample in the app](docs/getting-started.md#use-the-app) | Change a Customer description and confirm it survives reload |
-| Validate and generate from the command line | [Local CLI setup](docs/getting-started.md#use-the-cli) | Generate and inspect a fresh `Output/docs/index.md` |
+| Validate and generate from the command line | [Local CLI setup](docs/getting-started.md#use-the-cli) | Generate and inspect a fresh `output/docs/index.md` |
+| Build and deploy my own solution | [Extend the sample](docs/build-your-own-solution.md), then [deploy](docs/quickstart.md) | Extend your model, validate and generate it, then deploy to your own environment |
 | Change templates or target conventions | [Template development](docs/template-development.md) and [configured targets](docs/reference/targets.md) | Change one template and compare the generated output |
-| Understand the example | [Model documentation target](Generate/docs/README.md) and [property references](docs/model-properties.md) | Follow Customer through Stage, Core, Curated and Consumer |
+| Understand the example | [Model documentation target](generate/docs/README.md) and [property references](docs/model-properties.md) | Follow Customer through Stage, Core, Curated and Consumer |
 
 **Recommended first result:** generate `docs` and open its index. Use a disposable
 copy: autosave writes metadata, and generation can replace a target's output.
@@ -30,7 +31,7 @@ uv run datam8 validate --solution ./ORAYLISDatabricksSample.dm8s
 uv run datam8 generate docs --solution ./ORAYLISDatabricksSample.dm8s
 ```
 
-Open `Output/docs/index.md`; it should contain Customer and links to entity pages
+Open `output/docs/index.md`; it should contain Customer and links to entity pages
 and a relationship diagram. The SQL Server metadata connector is bundled with
 the pinned CLI and installed through its `sql` extra. No connector checkout,
 download token or source connection is needed for this exercise.
@@ -39,9 +40,9 @@ download token or source connection is needed for this exercise.
 
 | Target | Source | Output |
 | --- | --- | --- |
-| databricks | `Generate/databricks-lake` | `Output/databricks-lake/generated` |
-| powerbi | `Generate/powerbi-tabular` | `Output/powerbi-tabular/generated` |
-| docs | `Generate/docs` | `Output/docs` |
+| databricks | `generate/databricks-lake` | `output/databricks` |
+| powerbi | `generate/powerbi-tabular` | `output/powerbi` |
+| docs | `generate/docs` | `output/docs` |
 
 The model follows AdventureWorks customers, addresses and orders through Stage,
 Core and Curated, including DimCustomer, DimDate and FactSalesOrder. Consumer
@@ -49,9 +50,10 @@ entities retain Customer, Date, Sales Order and Total Sales. The SQL example
 uses the standard SalesLT.Customer table; no custom language-specific views are
 required. Data endpoints and secret references are neutral placeholders.
 
-This is a generate-only example. Deployment bindings, cloud resources and live
-execution are not included. Generating notebooks or TMDL does not demonstrate
-successful deployment or processing. See [output boundaries](docs/quickstart.md).
+A neutral Databricks bundle under `deployment/` and the [own-deployment guides](docs/quickstart.md)
+cover the next steps. Supply your own identity, compute, catalog and source
+connection. Credentials and live environment bindings are not included. Local
+generation does not establish successful deployment, refresh or processing.
 
 ## Learn more and contribute
 

@@ -1,35 +1,35 @@
 {
-    "json.schemas": [
-        {
-            "fileMatch": [
-                "/Base/**/*.json",
-            ],
-            "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/tags/v2.0.0-beta.1/schema/base.json"
-        },
-        {
-            "fileMatch": [
-                "/Model/**/*.json",
-                "!/Model/**/.properties.json",
-            ],
-            "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/tags/v2.0.0-beta.1/schema/model.json"
-        },
-        {
-            "fileMatch": [
-                "/Model/**/*.json",
-            ],
-            "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/tags/v2.0.0-beta.1/schema/folder.json"
-        },
-        {
-            "fileMatch": [
-                "/*.dm8s",
-            ],
-            "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/tags/v2.0.0-beta.1/schema/solution.json"
-        },
-        {
-            "fileMatch": [
-                "/Plugins/**/*.json",
-            ],
-            "url": "https://raw.githubusercontent.com/oraylis/datam8-model/refs/tags/v2.0.0-beta.1/schema/plugin.json"
-        },
-    ]
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "/base/**/*.json"
+      ],
+      "url": "https://raw.githubusercontent.com/oraylis/datam8-model/002aa65f6f127f91d06c8dc0fc4ea50ce75616fc/schema/base.json"
+    },
+    {
+      "fileMatch": [
+        "/model/**/*.json",
+        "!/model/**/.properties.json"
+      ],
+      "url": "https://raw.githubusercontent.com/oraylis/datam8-model/002aa65f6f127f91d06c8dc0fc4ea50ce75616fc/schema/model.json"
+    },
+    {
+      "fileMatch": [
+        "/model/**/.properties.json"
+      ],
+      "url": "https://raw.githubusercontent.com/oraylis/datam8-model/002aa65f6f127f91d06c8dc0fc4ea50ce75616fc/schema/folder.json"
+    },
+    {
+      "fileMatch": [
+        "/*.dm8s"
+      ],
+      "url": "https://raw.githubusercontent.com/oraylis/datam8-model/002aa65f6f127f91d06c8dc0fc4ea50ce75616fc/schema/solution.json"
+    },
+    {
+      "fileMatch": [
+        "/plugins/**/plugin.json"
+      ],
+      "url": "https://raw.githubusercontent.com/oraylis/datam8-model/002aa65f6f127f91d06c8dc0fc4ea50ce75616fc/schema/plugin.json"
+    }
+  ]
 }

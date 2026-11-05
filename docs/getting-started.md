@@ -17,7 +17,7 @@ git clone https://github.com/oraylis/datam8-sample-solution.git datam8-sample
 cd datam8-sample
 ```
 
-Use a working copy for your changes. Keep Base, Model, Plugins, Generate and the
+Use a working copy for your changes. Keep `base`, `model`, `plugins`, `generate`, `utils`, `deployment` and the
 supporting configuration alongside `ORAYLISDatabricksSample.dm8s`. Copy the whole
 solution when creating another exercise directory. Autosave writes your edits to
 disk, and generation can replace files in a target output directory.
@@ -37,7 +37,7 @@ output without installing Python or the CLI separately.
    change, edit the Stage Customer description and wait for autosave to finish.
 4. Reload the solution and confirm that your change was saved.
 5. Open **Toggle generator**, select **docs**, and choose **Generate**.
-6. Open `Output/docs/index.md` and inspect the generated model documentation.
+6. Open `output/docs/index.md` and inspect the generated model documentation.
 
 Follow the [illustrated user guide](https://github.com/oraylis/datam8/blob/main/docs/user-guide/README.md)
 for the model editors, relationships, sources and generation workflow.
@@ -60,7 +60,7 @@ installed solution connector or repository-access token is required. See
 [local checks](integration-tests.md) for contributor verification. Source import and preview need your own source settings; local
 metadata validation and generation do not need a source connection.
 
-Check the exit codes, then open `Output/docs/index.md`. It should contain Customer
+Check the exit codes, then open `output/docs/index.md`. It should contain Customer
 and links to entity pages and the relationship diagram. Edit the model or templates
 in your editor, then validate and generate again to inspect your changes.
 
@@ -74,5 +74,6 @@ paths. Deployment is a separate step after generation.
 
 ## Next steps
 
-Read [targets](reference/targets.md), [template development](template-development.md)
-and, only when needed, [deployment preparation](quickstart.md).
+[Build your own solution](build-your-own-solution.md): extend entities, attributes
+and mappings, validate and regenerate, then follow [deployment](quickstart.md). For generator work,
+read [targets](reference/targets.md) and [template development](template-development.md).

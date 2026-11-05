@@ -30,14 +30,14 @@ def main():
         for path in output.rglob("*.py"):ast.parse(path.read_text(encoding="utf-8"),filename=str(path))
         check_notebook_markdown_cells(output)
         if name=="databricks":
-            resources=generated_resources(output.parent)
+            resources=generated_resources(output)
             manifest=json.loads((output/"manifest.json").read_text())
             external_sources=[item["external"] for item in manifest["datasets"] if item.get("external")]
             if not external_sources or any(item["plugin"] != "builtin:SQLServer" for item in external_sources):
                 raise AssertionError("The public SQL Server sample must generate SQL Server source readers")
             execution_plan(resources,manifest,required_phases=manifest["lifecycle"])
             for job in resources["jobs"].values():check_graph(job["tasks"])
-            required_assets(output.parent)
+            required_assets(ROOT / "deployment/databricks", output)
         print("PASS generate-only "+name)
 
 if __name__=="__main__":main()

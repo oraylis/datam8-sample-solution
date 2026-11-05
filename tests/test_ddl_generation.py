@@ -2,7 +2,7 @@ import sys
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "Generate/databricks-lake/__modules"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "generate/databricks-lake/__modules"))
 
 from payload_helpers import build_create_table_sql
 

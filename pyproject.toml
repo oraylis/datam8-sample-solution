@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
   "datam8[sql]",
+  "pathspec==1.1.1",
   "PyYAML==6.0.3",
 ]
 
@@ -16,10 +17,13 @@ Homepage = "https://github.com/oraylis/datam8-sample-solution"
 datam8 = { git = "https://github.com/oraylis/datam8-cli", rev = "85ff50de3c7fc8e20abd4edd021d63df02c31b91" }
 
 [tool.ruff]
-line-length = 100
+line-length = 120
+fix = false
+builtins = ["spark", "sqlContext", "dbutils", "Catalog", "Table"]
 
 [tool.ruff.lint]
-select = ["I", "E4", "E7", "E9", "W", "F", "Q", "UP"]
+select = ["E", "F"]
+unfixable = ["F401"]
 
 [tool.ruff.format]
 quote-style = "double"

@@ -6,8 +6,8 @@ data. Put complex joins, ordering and target decisions in Python rather than tem
 
 ## Documentation target example
 
-Read [payload.py](../Generate/docs/__modules/payload.py) and
-[the architecture](../Generate/docs/ARCHITECTURE.md). The target builds one cached
+Read [payload.py](../generate/docs/__modules/payload.py) and
+[the architecture](../generate/docs/ARCHITECTURE.md). The target builds one cached
 documentation snapshot, then registers payloads for index, entity pages and a diagram.
 The existing index payload uses this shape:
 
@@ -27,8 +27,8 @@ it is not a complete standalone plugin. Inspect the backend's
 1. Work on a complete sample copy using a compatible app or the pinned CLI.
 2. Add/shape a field in Python and update its Jinja consumer.
 3. Generate that target in the app or with the [CLI](getting-started.md).
-4. Assert new output content, links, ordering and paths; compare unchanged output
-   with the parity script when required.
+4. Assert new output content, links, ordering and paths; compare unaffected artifacts
+   against a saved baseline outside the cleaned target output.
 5. Update the affected target architecture and central user chapter if behavior changes.
 
 Generation prepares files. Deployment credentials, resource creation and target

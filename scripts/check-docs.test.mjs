@@ -42,8 +42,8 @@ test("capture evidence rejects incomplete exports, missing images and failed acc
 });
 
 test("target reference detects stale output paths and omitted targets", () => {
-  const solution = { generatorTargets: [{ name: "docs", sourcePath: "Generate/docs", outputPath: "Output/docs" }] };
-  assert.deepEqual(checkTargetDocumentation("| docs | `Generate/docs` | `Output/docs` |\n", solution), []);
-  assert.equal(checkTargetDocumentation("| docs | `Generate/docs` | `Output/old` |\n", solution).length, 1);
+  const solution = { generatorTargets: [{ name: "docs", sourcePath: "generate/docs", outputPath: "output/docs" }] };
+  assert.deepEqual(checkTargetDocumentation("| docs | `generate/docs` | `output/docs` |\n", solution), []);
+  assert.equal(checkTargetDocumentation("| docs | `generate/docs` | `Output/old` |\n", solution).length, 1);
   assert.equal(checkTargetDocumentation("No target rows\n", solution).length, 2);
 });

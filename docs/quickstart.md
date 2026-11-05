@@ -1,16 +1,24 @@
 # From Generated Files to Deployment
 
-Start with [local generation](getting-started.md). This public example contains
-metadata and templates, not a deployment runner, environment bindings or an active
-Azure pipeline. Generated notebooks and TMDL are files for review, not evidence of
-a running data platform.
+First [build your own solution](build-your-own-solution.md): fork or copy the
+complete sample, keep its dependency pins, extend the model and its mappings,
+then validate and generate the affected targets. This path needs no credentials
+or cloud account.
 
-Before any deployment, review your platform's workspace, catalog, storage,
-identities, source connections and secret integration in your own delivery process.
-Keep those bindings outside this sample and preserve the authored runtime utilities
-referenced by generated notebooks. Verify platform prerequisites independently.
+Once those artifacts are ready, choose the next step:
 
-The [Databricks boundary](../Generate/databricks-lake/DEPLOYMENT.md) and
-[configured outputs](reference/targets.md) identify the artifacts supplied here.
-The local exercise creates no cloud resources and starts no data processing.
-Never commit live values in place of neutral source examples.
+| Task | Guide | Expected result |
+| --- | --- | --- |
+| Run the data platform in your own environment | [Databricks deployment](../generate/databricks-lake/DEPLOYMENT.md) | Personal dev bundle, created tables and ordered successful loads |
+| Create and publish a report | [Power BI Desktop/PBIP integration](powerbi-deployment.md) | Authored report using the generated semantic model and your own connection parameters |
+| Share model documentation | [Docs target](../generate/docs/README.md) | Local Markdown catalog and editable relationship diagram |
+
+The neutral bundle lives under `deployment/databricks/`, authored runtime notebooks
+under `utils/`, and disposable output under the [target folders](reference/targets.md).
+No passwords, tokens or client secrets are supplied. Keep authentication local,
+use secret references for source settings, and exclude local deployment state.
+
+Databricks deploy/run and Power BI refresh/publish are explicit operator actions
+against your own environment. They are not part of local generation or CI; review
+prerequisites and generated diffs before running them. The sample contains no live
+integration runner or XMLA publisher. Local checks do not establish cloud acceptance.
