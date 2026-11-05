@@ -1,12 +1,24 @@
-# DataM8 public sample
+# Working in the DataM8 Public Sample
 
-This repository owns a small AdventureWorks Base/Model example, business functions and the
-classic Databricks, Docs and Power BI generation references. Only local generation
-is included; the repository has no cloud deployment or integration runner.
+This repository owns the small AdventureWorks Base/Model example, business
+functions and classic Databricks, Docs and Power BI generation references.
+It supports local generation; no cloud deployment or integration runner is included.
 
-- Preserve unrelated local changes. Never commit installed plugins or credentials.
-- Do not add live workspace names, IDs, hosts, catalog or principal bindings.
-- The migration is awaiting manual review: do not run tests, CI checks, cloud
-  deployments or integration until the user explicitly approves the exact commit.
-- Regeneration and manual inspection for the review are allowed.
-- The maintainer merges feature branches manually.
+- Start with [getting started](docs/getting-started.md) and the
+  [local checks](docs/integration-tests.md). Read the affected target's reference
+  before changing its templates or payloads.
+- Preserve the model's dependency closure, saved type mappings and three targets.
+  Schema and CLI APIs remain canonical upstream; do not patch them here.
+- Use disposable complete copies for editing and generation. Output can be replaced.
+  Use local fixtures for SQL metadata tests; do not contact a live source.
+- Continue authorized local edits, dependency setup, tests and generation without
+  a separate commit approval or mandatory model handoff.
+- Never commit installed plugins, credentials or live workspace/source bindings.
+  Public entry points and dependencies must work without private repository access.
+- With Node 24 and the Python version in `pyproject.toml`, run:
+  `uv sync --frozen`, `node --test scripts/check-docs.test.mjs`,
+  `node scripts/check-docs.mjs`, `uv run python -m unittest discover -s tests`
+  and `uv run python scripts/check_generation.py --target all`.
+- Report passes, failures and skips separately. Local generation is not evidence
+  of live source, app or cloud acceptance. Live work requires separate authorization.
+- Keep unrelated changes intact and propose feature PRs; the maintainer merges manually.

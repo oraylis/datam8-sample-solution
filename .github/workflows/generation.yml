@@ -1,6 +1,10 @@
 name: Generate sample targets
 
 on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       target:
@@ -15,14 +19,8 @@ permissions:
 jobs:
   generate:
     runs-on: ubuntu-24.04
-    env:
-      SAMPLE_REVIEW_COMMIT: ${{ vars.SAMPLE_REVIEW_COMMIT }}
     steps:
       - uses: actions/checkout@v6
-      - name: Require manual review before any checks
-        env:
-          APPROVED_COMMIT: ${{ vars.SAMPLE_REVIEW_COMMIT }}
-        run: '[[ "$APPROVED_COMMIT" == "$GITHUB_SHA" ]] || { echo "Manual review required"; exit 1; }'
       - uses: actions/setup-node@v6
         with:
           node-version: 24

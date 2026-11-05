@@ -57,8 +57,7 @@ uv run datam8 generate docs --solution ./ORAYLISDatabricksSample.dm8s
 
 The CLI operates directly on the persisted local solution. No separately
 installed solution connector or repository-access token is required. See
-[local checks](integration-tests.md) for the exact-commit contributor review
-boundary. Source import and preview need your own source settings; local
+[local checks](integration-tests.md) for contributor verification. Source import and preview need your own source settings; local
 metadata validation and generation do not need a source connection.
 
 Check the exit codes, then open `Output/docs/index.md`. It should contain Customer

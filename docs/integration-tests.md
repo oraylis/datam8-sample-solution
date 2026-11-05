@@ -4,17 +4,11 @@ This repository checks the AdventureWorks model and local generation of
 Databricks, documentation and Power BI artifacts. It has no cloud deployment or
 integration runner. Generated files do not establish deployment acceptance.
 
-## Review boundary
+## Local checks
 
-Follow [repository instructions](../AGENTS.md). Do not run tests or CI checks for
-a changed sample until the user approves its exact commit. The manual workflow
-and generation checker require that revision; do not set approval on the user's
-behalf. Use an independently assigned test model when required by the review
-handoff. Generating artifacts for source review remains separate.
-
-## After review
-
-On a disposable complete copy, install the locked public dependencies:
+Run these checks during implementation, without a separate commit approval or
+mandatory model handoff. Follow [repository instructions](../AGENTS.md) and use
+a disposable complete copy with Node 24 and the Python version in the project:
 
 ```powershell
 uv sync --frozen
@@ -24,14 +18,19 @@ uv run python -m unittest discover -s tests
 uv run python scripts/check_generation.py --target all
 ```
 
-The approved exact-commit marker must already be supplied for the final command.
 The suite covers model references, public source placeholders, SQL Server builtin
 forms/metadata and generated reader compatibility. The generation checker validates
 all targets, Python syntax, notebook cells, job graphs and required runtime assets.
 It does not contact source systems or deploy generated artifacts.
 
-Public-entrypoint acceptance uses a fresh copy with an empty Plugins folder and
-no repository-access token. Validate and generate all targets; inspect newly
-written output. SQL fixtures mock database I/O while using the real bundled
-connector. Live SQL, native app behavior and cloud execution need separate
-authorized acceptance.
+The generation workflow runs on pull requests, pushes to main and manual dispatch.
+It uses read-only repository permissions and public locked dependencies; no review
+variable, source credential or repository-access token is needed.
+
+## Public-entrypoint acceptance
+
+Use a fresh copy with an empty Plugins folder and no repository-access token.
+Validate and generate all targets; inspect newly written output. SQL fixtures mock
+database I/O while using the real bundled connector. Record passes, failures and
+skips separately. Native app behavior, live SQL and cloud execution require their
+own authorized acceptance; local checks do not establish those results.

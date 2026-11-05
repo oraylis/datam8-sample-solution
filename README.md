@@ -61,8 +61,8 @@ successful deployment or processing. See [output boundaries](docs/quickstart.md)
 - [Sample cleanup history](docs/sample-cleanup.md)
 - [Source and credential policy](SECURITY.md)
 
-Follow [repository instructions](AGENTS.md) and the exact-commit review boundary
-before running tests or CI checks. Propose changes through a feature PR; the
+Follow [repository instructions](AGENTS.md) and run the relevant local checks
+during implementation. Propose changes through a feature PR; the
 maintainer merges manually. Report product issues in
 [DataM8](https://github.com/oraylis/datam8/issues), with no credentials or live
 environment details.
