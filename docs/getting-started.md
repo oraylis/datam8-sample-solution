@@ -1,10 +1,10 @@
-# Getting Started with DataM8 2.0.0
+# Get Started with the Public Sample
 
 Choose how you want to work with the sample:
 
-- **DataM8 app 2.0.0:** create and edit model entities, then generate output in the
+- **DataM8 app:** create and edit model entities, then generate output in the
   application. The app includes the generator and its runtime.
-- **DataM8 CLI 2.0.0:** edit the model and templates in your preferred editor, then
+- **DataM8 CLI:** edit the model and templates in your preferred editor, then
   validate and generate from the command line.
 
 ## Get the sample
@@ -22,10 +22,11 @@ supporting configuration alongside `ORAYLISDatabricksSample.dm8s`. Copy the whol
 solution when creating another exercise directory. Autosave writes your edits to
 disk, and generation can replace files in a target output directory.
 
-## Option 1: Use the DataM8 app
+## Use the app
 
-Install **DataM8 app 2.0.0** from the
-[desktop release](https://github.com/oraylis/datam8-frontend/releases/tag/v2.0.0).
+Install the app from the
+[current stable desktop release](https://github.com/oraylis/datam8-frontend/releases/latest),
+following its [installation and verification guide](https://github.com/oraylis/datam8-frontend/blob/main/docs/desktop-installation.md).
 The app bundles generator functionality; you can work with the model and generate
 output without installing Python or the CLI separately.
 
@@ -38,25 +39,27 @@ output without installing Python or the CLI separately.
 5. Open **Toggle generator**, select **docs**, and choose **Generate**.
 6. Open `Output/docs/index.md` and inspect the generated model documentation.
 
-Follow the [illustrated user guide](https://github.com/oraylis/datam8/blob/codex/documentation-v2/docs/user-guide/README.md)
+Follow the [illustrated user guide](https://github.com/oraylis/datam8/blob/main/docs/user-guide/README.md)
 for the model editors, relationships, sources and generation workflow.
 
-## Option 2: Use the DataM8 CLI
+## Use the CLI
 
-Use Python 3.13 or newer and uv. This sample pins the verified CLI 2.1.0
-source revision and model dependency in its project and lockfile.
+Use uv and a Python version supported by [the project](../pyproject.toml). The
+lockfile pins a public CLI revision and its SQL extra for `builtin:SQLServer`.
+The app has its own bundled runtime; consult its release compatibility notes.
 From the local sample checkout:
 
 ```powershell
 uv sync --frozen
-uv run python scripts/install_plugins.py
 uv run datam8 validate --solution ./ORAYLISDatabricksSample.dm8s
 uv run datam8 generate docs --solution ./ORAYLISDatabricksSample.dm8s
 ```
 
-The CLI operates directly on the persisted local solution. Installed plugins
-remain local dependencies. See [integration tests](integration-tests.md) for
-exact revisions, checksums, target selection and deployment commands.
+The CLI operates directly on the persisted local solution. No separately
+installed solution connector or repository-access token is required. See
+[local checks](integration-tests.md) for the exact-commit contributor review
+boundary. Source import and preview need your own source settings; local
+metadata validation and generation do not need a source connection.
 
 Check the exit codes, then open `Output/docs/index.md`. It should contain Customer
 and links to entity pages and the relationship diagram. Edit the model or templates

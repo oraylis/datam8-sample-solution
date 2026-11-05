@@ -1,7 +1,11 @@
-# Classic target: generation only
+# Classic Target: Generation Only
 
-This public target renders notebooks and resource definitions. Environment-bound
-bundle entrypoints and cloud execution live in the private
-[Solutions repository](https://github.com/oraylis/datam8-solutions).
-The utilities retained under Output are neutral runtime source assets required
-by generated references, not deployment configuration.
+This target renders notebooks and resource definitions. It contains no
+environment-bound bundle entrypoint or cloud execution workflow. Configure your
+own deployment process after reviewing platform, source and identity prerequisites;
+generated files are not deployment evidence.
+
+The utilities retained under `Output/databricks-lake/utils` are neutral runtime
+source assets required by generated references, not deployment configuration.
+Keep them separate from cleaned output. See [local generation](../../docs/getting-started.md)
+and [deployment boundaries](../../docs/quickstart.md).

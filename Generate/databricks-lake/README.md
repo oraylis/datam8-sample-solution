@@ -86,7 +86,6 @@ beneath it:
 
 ```text
 Output/databricks-lake/
-  databricks.yml                         # Maintained bundle entry point
   utils/                                 # Shared runtime notebooks/frameworks
   generated/
     notebooks/<zone>/ddl/<product>/<module>/<entity>.py
@@ -104,19 +103,18 @@ The sample therefore generates `load_sales_daily.yml` and
 assignments and the other target-specific properties.
 
 The exact notebook subdirectories follow the model's folder hierarchy. Cluster
-settings are emitted when cluster metadata is configured. The existing
-[bundle entry point](https://github.com/oraylis/datam8-solutions/tree/main/deployment) includes the
-generated resources and the shared `utils` directory. Maintain those deployment
-files alongside the generated output. See [deployment and integration](DEPLOYMENT.md)
-for the configured test environments and local run command.
+settings are emitted when cluster metadata is configured. Generated notebooks
+reference the authored `utils` directory. The sample contains no environment-bound
+bundle entrypoint; review [deployment boundaries](DEPLOYMENT.md) before configuring
+your own platform delivery process.
 
 ## Generate and use the result
 
-Use **DataM8 app 2.0.0**, select **databricks** in the generator and choose
-**Generate**. Or run **DataM8 CLI 2.0.0** from the solution root:
+Use a compatible DataM8 app, select **databricks** in the generator and choose
+**Generate**. Or use the pinned CLI from the solution root:
 
 ```sh
-datam8 generate databricks --solution ./ORAYLISDatabricksSample.dm8s
+uv run datam8 generate databricks --solution ./ORAYLISDatabricksSample.dm8s
 ```
 
 Review the notebooks, job graphs and generated paths. Configure your workspace,

@@ -1,7 +1,8 @@
-# Solutions migration and sample cleanup
+# Sample Cleanup Handoff
 
-Branch: `feature/sample-solutions-cleanup`, based on the sample main revision.
-The corresponding Solutions migration must be accepted before this cleanup merges.
+This historical handoff records the reduction to a public, generate-only sample.
+Its branch-state and review statements describe that cleanup. New revisions
+retain their own exact-commit review boundary.
 
 Retained: the small AdventureWorks customer/address/order model, its linked Core/Curated entities, classic databricks-lake, Docs, Power BI and Generate-only.
 Removed: Lakeflow target/bundle, live bundle bindings, cloud integration runner,
@@ -14,7 +15,7 @@ No tests have been run for this branch. Before the user's explicit review,
 Generate-only is dispatch-only and guarded by an approved exact commit setting.
 The independent test model subsequently checks generation, links, source privacy
 and the absence of imports of removed integration modules. PR/main triggers are
-restored only after that approval. Both branches must be reviewed together.
+restored only after that approval. Each new sample revision requires its own explicit review.
 
 ## Prior public exposure
 
@@ -27,5 +28,6 @@ and artifacts. This is an inventory, not a completed historical credential audit
 No history rewrite, artifact deletion, credential rotation or cloud destruction
 is implicitly performed. Any actual credential exposure requires separate handling.
 
-The full imported model is preserved independently under databricks/ and fabric/ in Solutions. Solutions deployments read their own platform models; they do not fetch this reduced public model. The remaining metadata intentionally contains only
-AdventureWorks and the Customer, Address, Order and Calendar dependency closure.
+The retained metadata intentionally contains only AdventureWorks and the Customer,
+Address, Order and Calendar dependency closure. The target reference documents
+the three local generation targets.
