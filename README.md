@@ -58,7 +58,6 @@ successful deployment or processing. See [output boundaries](docs/quickstart.md)
 - [Sample documentation](docs/index.md)
 - [Central illustrated handbook](https://github.com/oraylis/datam8/blob/main/docs/user-guide/README.md)
 - [Local checks and review requirements](docs/integration-tests.md)
-- [Sample cleanup history](docs/sample-cleanup.md)
 - [Source and credential policy](SECURITY.md)
 
 Follow [repository instructions](AGENTS.md) and run the relevant local checks

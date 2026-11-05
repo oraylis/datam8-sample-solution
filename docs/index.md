@@ -13,8 +13,6 @@ connection or cloud account is not required for that path.
 - [Template and payload development](template-development.md)
 - [Generation and deployment boundaries](quickstart.md)
 - [Local checks and review requirements](integration-tests.md)
-- [Historical documentation handoff](documentation-handoff.md)
-- [Sample cleanup history](sample-cleanup.md)
 - [Central user handbook](https://github.com/oraylis/datam8/blob/main/docs/user-guide/README.md)
 
 General app installation follows the stable release. The project and lockfile
