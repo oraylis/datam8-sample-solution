@@ -1,13 +1,12 @@
 [project]
 name = "datam8-sample-solution"
 version = "2.1.0"
-description = "Portable DataM8 multi-source sample solution"
+description = "Public AdventureWorks metadata and local generation example"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-  "datam8",
+  "datam8[sql]",
   "PyYAML==6.0.3",
-  "pyodbc==5.3.0",
 ]
 
 [project.urls]

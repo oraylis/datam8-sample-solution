@@ -8,5 +8,6 @@ The solution descriptor contains exactly three generate-only targets.
 | powerbi | `Generate/powerbi-tabular` | `Output/powerbi-tabular/generated` |
 | docs | `Generate/docs` | `Output/docs` |
 
-Lakeflow and all deployment/integration operations moved to the private
-[Solutions repository](https://github.com/oraylis/datam8-solutions).
+Each target writes files locally. The sample includes no deployment runner,
+environment bindings or live integration workflow. Review the
+[deployment boundary](../quickstart.md) before using generated artifacts elsewhere.

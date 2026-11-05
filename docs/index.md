@@ -1,20 +1,20 @@
 # Sample Documentation
 
-Start with **DataM8 app 2.0.0**, which bundles the generator, or install
-**the pinned DataM8 CLI 2.1.0** for command-line validation and generation.
+Start with [the local exercise](getting-started.md): open the sample in the app or
+use the pinned public CLI, change metadata and generate documentation. A source
+connection or cloud account is not required for that path.
 
 - [Local getting started](getting-started.md)
 - [Configured targets and output paths](reference/targets.md)
 - [Model properties by target](model-properties.md)
-- [Databricks: layered lakehouse, notebooks and jobs](../Generate/databricks-lake/README.md)
-- [Databricks Lakeflow: ingestion and modeled processing](https://github.com/oraylis/datam8-solutions/tree/main/databricks/Generate/databricks-lakeflow/README.md)
-- [Power BI: consumer semantic model](../Generate/powerbi-tabular/README.md)
-- [Documentation: model catalog and relationship diagram](../Generate/docs/README.md)
+- [Databricks notebooks and job definitions](../Generate/databricks-lake/README.md)
+- [Power BI consumer semantic model](../Generate/powerbi-tabular/README.md)
+- [Documentation catalog and relationship diagram](../Generate/docs/README.md)
 - [Template and payload development](template-development.md)
-- [Optional deployment preparation](quickstart.md)
-- [Integration tests, repeat checks and resume](integration-tests.md)
-- [Documentation handoff](documentation-handoff.md)
-- [Central user handbook](https://github.com/oraylis/datam8/blob/codex/documentation-v2/docs/user-guide/README.md)
+- [Generation and deployment boundaries](quickstart.md)
+- [Local checks and review requirements](integration-tests.md)
+- [Central user handbook](https://github.com/oraylis/datam8/blob/main/docs/user-guide/README.md)
 
-The getting-started guide covers both routes. Explore and edit the model, then
-generate documentation locally before setting up source connections or deployment.
+General app installation follows the stable release. The project and lockfile
+identify the sample's pinned CLI. Read technical references for another installed
+release at its matching version tag.

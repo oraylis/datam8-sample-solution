@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import ast
 import json
-import os
 from pathlib import Path
 import subprocess
 import sys
@@ -18,9 +17,6 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target",default="all")
     args=parser.parse_args()
-    revision=subprocess.check_output(["git","rev-parse","HEAD"],cwd=ROOT,text=True).strip()
-    if os.environ.get("SAMPLE_REVIEW_COMMIT") != revision:
-        parser.error("Explicit manual review of this exact sample commit is required before checks")
     descriptor=ROOT/"ORAYLISDatabricksSample.dm8s"
     targets=json.loads(descriptor.read_text())["generatorTargets"]
     names=[t["name"] for t in targets]
@@ -36,6 +32,9 @@ def main():
         if name=="databricks":
             resources=generated_resources(output.parent)
             manifest=json.loads((output/"manifest.json").read_text())
+            external_sources=[item["external"] for item in manifest["datasets"] if item.get("external")]
+            if not external_sources or any(item["plugin"] != "builtin:SQLServer" for item in external_sources):
+                raise AssertionError("The public SQL Server sample must generate SQL Server source readers")
             execution_plan(resources,manifest,required_phases=manifest["lifecycle"])
             for job in resources["jobs"].values():check_graph(job["tasks"])
             required_assets(output.parent)

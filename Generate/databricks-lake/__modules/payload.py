@@ -533,7 +533,7 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             )
             source_type = next((item.entity for item in model.dataSourceTypes.values() if item.entity.name == data_source_entry.type), None)
             plugin = getattr(source_type, "pluginId", None)
-            if plugin not in {"sqlserver", "oracle", "mysql", "postgresql", "http_api"}:
+            if plugin not in {"builtin:SQLServer", "oracle", "mysql", "postgresql", "http_api"}:
                 raise ValueError(f"Unsupported UC source plugin for {data_source_name}: {plugin}")
             extended = data_source_entry.extendedProperties or {}
             connection_name = extended.get("unityCatalogConnection", plugin)

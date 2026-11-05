@@ -15,6 +15,7 @@ logger = start_logger(__name__)
 
 TARGET_NAME = "databricks"
 
+
 # Common aliases so source / canonical names converge to those defined in DataTypes.json.
 TYPE_ALIASES: dict[str, str] = {
     "integer": "int",

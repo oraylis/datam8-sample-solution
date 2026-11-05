@@ -20,11 +20,11 @@ def documentation_index(model, cache):
 
 This excerpt belongs inside the existing module with its imports and builder;
 it is not a complete standalone plugin. Inspect the backend's
-[generate implementation](https://github.com/oraylis/datam8-cli/blob/feature/external_refresh/src/datam8/generate.py) for engine behavior.
+[generate implementation](https://github.com/oraylis/datam8-cli/blob/main/src/datam8/generate.py) for engine behavior.
 
 ## Change and verify
 
-1. Work on a complete sample copy using DataM8 app 2.0.0 or CLI 2.0.0.
+1. Work on a complete sample copy using a compatible app or the pinned CLI.
 2. Add/shape a field in Python and update its Jinja consumer.
 3. Generate that target in the app or with the [CLI](getting-started.md).
 4. Assert new output content, links, ordering and paths; compare unchanged output
