@@ -123,104 +123,65 @@
           "targetType": "string"
         }
       ],
-      "pluginId": "sqlserver",
+      "pluginId": "builtin:SQLServer",
       "connectionProperties": [
         {
           "name": "authMode",
-          "displayName": "authMode",
-          "required": true,
           "type": "string",
-          "default": "sql_user"
+          "required": true
         },
         {
           "name": "host",
-          "displayName": "host",
-          "required": false,
-          "type": "string"
+          "type": "string",
+          "required": true
         },
         {
           "name": "database",
-          "displayName": "database",
-          "required": false,
-          "type": "string"
+          "type": "string",
+          "required": true
         },
         {
           "name": "port",
-          "displayName": "port",
-          "required": false,
           "type": "number",
+          "required": true,
           "default": 1433
         },
         {
           "name": "username",
-          "displayName": "username",
-          "required": false,
-          "type": "string"
+          "type": "string",
+          "required": false
         },
         {
           "name": "password",
-          "displayName": "password",
+          "type": "secret",
+          "required": false
+        },
+        {
+          "name": "trust_server_certificate",
           "required": false,
-          "type": "secret"
+          "default": false,
+          "type": "boolean",
+          "description": "Trust unverifyable certificates, e.g. self-signed"
+        },
+        {
+          "name": "trust_server_certificate_ca",
+          "required": false,
+          "type": "string",
+          "description": "Path to a root ca to verify the server certificate against"
         },
         {
           "name": "encrypt",
-          "displayName": "encrypt",
           "required": false,
-          "description": "Enable encrypted transport",
+          "default": true,
           "type": "boolean",
-          "default": true
+          "description": "Activate SSL encryption"
         },
         {
           "name": "trusted_connection",
-          "displayName": "trusted_connection",
           "required": false,
-          "description": "Use Windows authentication",
+          "default": false,
           "type": "boolean",
-          "default": false
-        },
-        {
-          "name": "workspace_url",
-          "displayName": "workspace_url",
-          "required": false,
-          "type": "string"
-        },
-        {
-          "name": "warehouse_id",
-          "displayName": "warehouse_id",
-          "required": false,
-          "type": "string"
-        },
-        {
-          "name": "uc_connection_name",
-          "displayName": "uc_connection_name",
-          "required": false,
-          "type": "string"
-        },
-        {
-          "name": "token",
-          "displayName": "token",
-          "required": false,
-          "type": "secret"
-        },
-        {
-          "name": "client_id",
-          "displayName": "client_id",
-          "required": false,
-          "type": "string"
-        },
-        {
-          "name": "client_secret",
-          "displayName": "client_secret",
-          "required": false,
-          "type": "secret"
-        },
-        {
-          "name": "auth_scope",
-          "displayName": "auth_scope",
-          "required": false,
-          "type": "string",
-          "default": "all-apis"
+          "description": "Enables Windows Authentication"
         }
       ],
       "authModes": [
@@ -228,58 +189,25 @@
           "name": "sql_user",
           "displayName": "Username / Password",
           "required": [
-            "authMode",
-            "host",
-            "database",
-            "port",
             "username",
             "password"
           ],
           "optional": [
+            "trust_server_certificate",
+            "trust_server_certificate_ca",
             "encrypt"
           ]
         },
         {
           "name": "windows",
-          "displayName": "Windows",
+          "displayName": "Windows Authentication",
           "required": [
-            "authMode",
-            "host",
-            "database",
-            "port",
             "trusted_connection"
           ],
           "optional": [
+            "trust_server_certificate",
+            "trust_server_certificate_ca",
             "encrypt"
-          ]
-        },
-        {
-          "name": "databricks_pat",
-          "displayName": "Databricks (PAT)",
-          "required": [
-            "authMode",
-            "database",
-            "workspace_url",
-            "warehouse_id",
-            "uc_connection_name",
-            "token"
-          ],
-          "optional": []
-        },
-        {
-          "name": "databricks_oauth",
-          "displayName": "Databricks (OAuth Client Credentials)",
-          "required": [
-            "authMode",
-            "database",
-            "workspace_url",
-            "warehouse_id",
-            "uc_connection_name",
-            "client_id",
-            "client_secret"
-          ],
-          "optional": [
-            "auth_scope"
           ]
         }
       ]
