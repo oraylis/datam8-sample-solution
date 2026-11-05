@@ -45,7 +45,7 @@ From the solution root:
 ```powershell
 uv sync --frozen
 uv run datam8 validate --solution ./ORAYLISDatabricksSample.dm8s
-uv run datam8 generate databricks --solution ./ORAYLISDatabricksSample.dm8s
+uv run datam8 generate databricks --solution ./ORAYLISDatabricksSample.dm8s --clean-output
 ```
 
 Inspect `output/databricks/manifest.json`, the notebooks, and YAML resources.

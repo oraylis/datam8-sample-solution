@@ -17,14 +17,15 @@ compatibility notes and regenerate on a branch before updating these pins.
 ```powershell
 uv sync --frozen
 uv run datam8 validate --solution ./ORAYLISDatabricksSample.dm8s
-uv run datam8 generate docs --solution ./ORAYLISDatabricksSample.dm8s
-uv run datam8 generate databricks --solution ./ORAYLISDatabricksSample.dm8s
-uv run datam8 generate powerbi --solution ./ORAYLISDatabricksSample.dm8s
+uv run datam8 generate docs --solution ./ORAYLISDatabricksSample.dm8s --clean-output
+uv run datam8 generate databricks --solution ./ORAYLISDatabricksSample.dm8s --clean-output
+uv run datam8 generate powerbi --solution ./ORAYLISDatabricksSample.dm8s --clean-output
 ```
 
 Open the generated documentation index and inspect the notebooks/jobs and TMDL
-under the [three target output folders](reference/targets.md). Save a copy of this
-baseline outside `output/` if you want to compare artifacts after editing.
+under the [three target output folders](reference/targets.md). Each generation
+command replaces only its selected target's output, including stale artifacts.
+Save a copy of this baseline outside `output/` to compare artifacts after editing.
 
 ## Extend the model
 
