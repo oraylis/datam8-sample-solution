@@ -166,7 +166,7 @@
         {
           "name": "trust_server_certificate_ca",
           "required": false,
-          "type": "string",
+          "type": "boolean",
           "description": "Path to a root ca to verify the server certificate against"
         },
         {

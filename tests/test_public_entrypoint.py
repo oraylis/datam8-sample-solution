@@ -36,8 +36,11 @@ class PublicEntrypointTests(unittest.TestCase):
     def test_real_builtin_metadata_preserves_source_types_and_sample_mappings(self):
         sources = json.loads((ROOT / "Base/DataSources.json").read_text())
         source = DataSource.model_validate(sources["dataSources"][0])
-        source.extendedProperties["password"] = "local-fixture-only"
-        plugin = self.plugin_class(self.plugin_class.manifest(), source, self.source_type)
+        source.extendedProperties["password"] = "fixture:sql-password"
+        with patch("datam8.plugins.base.SecretResolver") as secrets:
+            secrets.return_value.get_secret.return_value = "local-fixture-only"
+            plugin = self.plugin_class(self.plugin_class.manifest(), source, self.source_type)
+            secrets.return_value.get_secret.assert_called_once_with("fixture:sql-password")
         rows = pl.DataFrame({
             "ordinal": [1, 2], "name": ["CustomerID", "Amount"],
             "dataType": ["int", "decimal"], "maxLength": [None, None],
