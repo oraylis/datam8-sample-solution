@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
   "datam8[sql]",
+  "pathspec==1.1.1",
   "PyYAML==6.0.3",
 ]
 

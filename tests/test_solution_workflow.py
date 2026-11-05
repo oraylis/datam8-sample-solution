@@ -1,4 +1,4 @@
-"""Exercise the documented workflow on a disposable, offline solution copy."""
+"""Check generation isolation and an internal Consumer extension fixture offline."""
 import hashlib
 import json
 from pathlib import Path
@@ -58,10 +58,10 @@ class SolutionWorkflowTests(unittest.TestCase):
                     self.assertEqual(snapshot(root / name), contents)
 
             bundle = root / "deployment/databricks"
-            assets = required_assets(bundle)
+            assets = required_assets(bundle, root / "output/databricks")
             self.assertIn("utils/MigrationFramework.py", assets)
             self.assertIn("output/databricks/runtime/uc_sources.py", assets)
-            configuration = bundle_configuration(bundle)
+            configuration = bundle_configuration(bundle, root / "output/databricks")
             self.assertEqual(configuration["targets"]["dev"]["mode"], "development")
             self.assertEqual(configuration["targets"]["dev"]["cluster_id"], "${var.cluster_id}")
             self.assertEqual(configuration["variables"]["unpause_schedules"]["default"], "PAUSED")
@@ -77,7 +77,7 @@ class SolutionWorkflowTests(unittest.TestCase):
             changed["sync"]["exclude"] = ["../../utils/**"]
             path.write_text(yaml.safe_dump(changed))
             with self.assertRaisesRegex(ValueError, "excluded"):
-                required_assets(bundle)
+                required_assets(bundle, root / "output/databricks")
             path.write_text(original)
 
             entity_path = root / "model/040-Consumer/MasterData/Customer/Customer.json"

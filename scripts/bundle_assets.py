@@ -4,24 +4,24 @@ import glob
 import os
 import re
 
+from pathspec import GitIgnoreSpec
 import yaml
 
-from databricks_jobs import generated_resources
-
-
-def bundle_configuration(bundle: Path):
-    """Load explicit generated includes; reject missing or omitted resources."""
+def bundle_configuration(bundle: Path, output: Path | None = None):
+    """Load configured resource includes; check generated coverage when supplied."""
+    bundle = bundle.resolve()
     configuration = yaml.safe_load((bundle / "databricks.yml").read_text(encoding="utf-8"))
-    root = bundle.resolve().parents[1]
     included = set()
-    for pattern in configuration["include"]:
-        matches = {Path(name).resolve() for name in glob.glob(str(bundle / pattern))}
-        if not matches or any(not path.is_relative_to(root / "output/databricks") for path in matches):
-            raise ValueError("Missing or external resource include: " + pattern)
+    for pattern in configuration.get("include", []):
+        matches = {Path(name).resolve() for name in glob.glob(str(bundle / pattern), recursive=True)
+                   if Path(name).is_file()}
+        if not matches:
+            raise ValueError("Missing resource include: " + pattern)
         included.update(matches)
-    expected = {path.resolve() for path in (root / "output/databricks").rglob("*.yml")}
-    if included != expected:
-        raise ValueError("Bundle includes must cover every generated resource YAML")
+    if output is not None:
+        expected = {path.resolve() for path in output.rglob("*") if path.suffix in {".yml", ".yaml"}}
+        if expected - included:
+            raise ValueError("Bundle includes must cover every generated resource YAML")
     for path in sorted(included):
         addition = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         for section in ("variables", "resources"):
@@ -37,39 +37,58 @@ def bundle_configuration(bundle: Path):
                         raise ValueError("Duplicate variable: " + key)
                     destination[key] = value
     references = set(re.findall(r"\$\{var\.([^}]+)\}", yaml.safe_dump(configuration)))
-    if references - configuration["variables"].keys():
-        raise ValueError("Undeclared bundle variables: " + str(sorted(references - configuration["variables"].keys())))
+    missing = references - configuration.get("variables", {}).keys()
+    if missing:
+        raise ValueError("Undeclared bundle variables: " + str(sorted(missing)))
     return configuration
 
 
-def required_assets(bundle: Path):
-    configuration = bundle_configuration(bundle)
-    root = bundle.resolve().parents[1]
-    sync = configuration["sync"]
-    roots = {(bundle / value).resolve() for value in sync["paths"]}
-    if roots != {root / "output/databricks", root / "utils"}:
-        raise ValueError("Sync must select only generated Databricks output and authored utils")
-    if Path(os.path.commonpath([bundle.resolve(), *roots])) != root:
-        raise ValueError("Unexpected bundle sync root")
+def required_assets(bundle: Path, output: Path | None = None):
+    bundle = bundle.resolve()
+    configuration = bundle_configuration(bundle, output)
+    sync = configuration.get("sync", {})
+    roots = {(bundle / value).resolve() for value in sync.get("paths", ["."])}
+    for path in roots:
+        if not path.exists():
+            raise ValueError("Missing sync path: " + str(path))
+    root = Path(os.path.commonpath([bundle, *roots]))
     required = set()
 
     def local(value):
-        prefix = "${workspace.file_path}/"
-        if not value.startswith(prefix):
-            raise ValueError("Unresolved bundle asset path: " + value)
-        path = root / value[len(prefix):]
-        if not path.is_file() and path.with_suffix(".py").is_file():
-            path = path.with_suffix(".py")
-        if not path.is_file() or not path.resolve().is_relative_to(root):
-            raise ValueError("Missing or external bundle asset: " + value)
-        required.add(path.resolve())
+        variables = configuration.get("variables", {})
+        for _ in range(len(variables) + 1):
+            resolved = value
+            for name, definition in variables.items():
+                if "default" in definition:
+                    resolved = resolved.replace("${var." + name + "}", str(definition["default"]))
+            if resolved == value:
+                break
+            value = resolved
+        for prefix in ("${workspace.file_path}/", "${workspace.root_path}/files/"):
+            if value.startswith(prefix):
+                if "${" in value[len(prefix):]:
+                    raise ValueError("Unresolved bundle asset path: " + value)
+                path = root / value[len(prefix):]
+                if not path.is_file() and path.with_suffix(".py").is_file():
+                    path = path.with_suffix(".py")
+                if not path.is_file() or not path.resolve().is_relative_to(root):
+                    raise ValueError("Missing or external bundle asset: " + value)
+                required.add(path.resolve())
+                return
+        raise ValueError("Unresolved bundle asset path: " + value)
 
-    resources = generated_resources(root / "output/databricks")
+    resources = configuration.get("resources", {})
     for job in resources.get("jobs", {}).values():
         for task in job.get("tasks", []):
             if "notebook_task" in task:
                 local(task["notebook_task"]["notebook_path"])
-    required.update(path.resolve() for path in (root / "output/databricks/runtime").glob("*.py"))
+    for pipeline in resources.get("pipelines", {}).values():
+        for library in pipeline.get("libraries", []):
+            for kind in ("file", "notebook"):
+                if kind in library:
+                    local(library[kind]["path"])
+    if output is not None:
+        required.update(path.resolve() for path in (output / "runtime").glob("*.py"))
     pending = list(required)
     while pending:
         path = pending.pop()
@@ -80,16 +99,30 @@ def required_assets(bundle: Path):
             if dependency not in required:
                 required.add(dependency)
                 pending.append(dependency)
-    # Fail closed if these simple patterns change; do not approximate the CLI's
-    # full gitignore semantics in this repository-specific offline check.
-    def covered(path, pattern):
-        if not pattern.endswith('/**') or any(char in pattern[:-3] for char in '*?!['):
-            raise ValueError("Unsupported sync pattern in offline checker: " + pattern)
-        return path.is_relative_to((bundle / pattern[:-3]).resolve())
-
+    include = GitIgnoreSpec.from_lines(sync.get("include", []))
+    exclude = GitIgnoreSpec.from_lines(sync.get("exclude", []))
     for path in required:
+        relative = Path(os.path.relpath(path, bundle)).as_posix()
         if (not any(path.is_relative_to(folder) for folder in roots)
-                or not any(covered(path, pattern) for pattern in sync.get("include", []))
-                or any(covered(path, pattern) for pattern in sync.get("exclude", []))):
-            raise ValueError("Referenced asset excluded from bundle sync: " + str(path.relative_to(root)))
+                or (_ignored(path, root) and not include.match_file(relative))
+                or exclude.match_file(relative)):
+            raise ValueError("Referenced asset excluded from bundle sync: " + path.relative_to(root).as_posix())
     return sorted(path.relative_to(root).as_posix() for path in required)
+
+
+def _ignored(path: Path, root: Path):
+    """Apply scoped .gitignore rules, including excluded parent directories."""
+    ignored = False
+    for folder in reversed([parent for parent in path.parents if parent.is_relative_to(root)]):
+        rules = folder / ".gitignore"
+        if not rules.is_file():
+            continue
+        spec = GitIgnoreSpec.from_lines(rules.read_text(encoding="utf-8").splitlines())
+        for parent in path.parents:
+            if parent != folder and parent.is_relative_to(folder):
+                if spec.match_file(parent.relative_to(folder).as_posix() + "/"):
+                    return True
+        decision = spec.check_file(path.relative_to(folder).as_posix()).include
+        if decision is not None:
+            ignored = decision
+    return ignored

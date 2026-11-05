@@ -37,7 +37,7 @@ def main():
                 raise AssertionError("The public SQL Server sample must generate SQL Server source readers")
             execution_plan(resources,manifest,required_phases=manifest["lifecycle"])
             for job in resources["jobs"].values():check_graph(job["tasks"])
-            required_assets(ROOT / "deployment/databricks")
+            required_assets(ROOT / "deployment/databricks", output)
         print("PASS generate-only "+name)
 
 if __name__=="__main__":main()
