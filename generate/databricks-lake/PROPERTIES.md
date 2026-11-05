@@ -38,7 +38,7 @@ its four zone-specific table-creation jobs are separate from these load jobs.
 
 | Property | Where and current values | Effect in this target |
 | --- | --- | --- |
-| `jobs` | Entity or folder. Current load values: `sales_daily` Ã¢â€ â€™ `Sales (Daily)`, `sales_weekly` Ã¢â€ â€™ `Sales (Weekly)`. `create_all` configures table creation. | Assigns entities to the corresponding generated job. The model value's `displayName` is the job display name. Same-job source dependencies create task edges; cross-job dependencies are recorded for ordered operator execution. |
+| `jobs` | Entity or folder. Current load values: `sales_daily` → `Sales (Daily)`, `sales_weekly` → `Sales (Weekly)`. `create_all` configures table creation. | Assigns entities to the corresponding generated job. The model value's `displayName` is the job display name. Same-job source dependencies create task edges; cross-job dependencies are recorded for ordered operator execution. |
 | `schedules` | Nested in a `jobs` property value; current schedule values are `daily` (`1 0`) and `weekly` (`0 0 2 ? * SUN`). | Attaches a Quartz schedule to the generated job. Time zone is `Europe/Amsterdam`; enablement is controlled by the bundle's `unpause_schedules` variable. |
 | `cluster` | Nested in a `jobs` property value. Values defined: `serverless`, `small`, `extra_small`. | Selects serverless job compute or a configured job cluster. Create All and the Sales Daily/Weekly jobs use `extra_small` (two `Standard_D4ds_v5` workers). |
 | `write_mode` | Entity or folder. Values: `overwrite`, `merge`, `append`. | Controls writes to modeled tables. `merge` requires business keys and uses the configured history fields; `append` adds rows; `overwrite` replaces the current output. |

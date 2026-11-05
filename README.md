@@ -7,7 +7,7 @@ semantic model. The first exercise runs locally without a database or cloud acco
 
 ## Start with your task
 
-| I want toÃ¢â‚¬Â¦ | Begin here | First result |
+| I want to… | Begin here | First result |
 | --- | --- | --- |
 | Learn visual modeling | [Open the sample in the app](docs/getting-started.md#use-the-app) | Change a Customer description and confirm it survives reload |
 | Validate and generate from the command line | [Local CLI setup](docs/getting-started.md#use-the-cli) | Generate and inspect a fresh `output/docs/index.md` |
