@@ -3,8 +3,8 @@
 Use a complete [own solution copy](../../docs/build-your-own-solution.md). The
 [neutral bundle](../../deployment/databricks/databricks.yml) deploys generated
 notebooks/jobs with your own user, an isolated dev workspace path and paused
-schedules. It requires existing compatible compute; it does not provision a
-workspace, source system, catalog, connection or service principal.
+schedules. It does not provision a workspace, source system, catalog, connection
+or service principal.
 
 ## Prepare source, catalog and identity
 
@@ -24,9 +24,9 @@ workspace, source system, catalog, connection or service principal.
   `unityCatalogConnection` setting on your solution copy. This is independent
   of the CLI's metadata connector: the latter uses `builtin:SQLServer` and
   local secret references when you explicitly import/preview a source.
-- Use existing Unity Catalog-compatible compute running **Databricks Runtime
-  18.3 or later**, with network access to SQL Server and your user's ability to
-  attach. The generated reader uses `remote_query`, not JDBC. You need
+- The generated reader uses `remote_query`, not JDBC. Jobs use the job-cluster
+  settings from the model and need access to compute running **Databricks
+  Runtime 18.3 or later**, with network access to SQL Server. You need
   `USE CONNECTION`; dedicated compute also requires `MANAGE` on the connection.
   Confirm current runtime and access requirements in the
   [manufacturer documentation](https://learn.microsoft.com/en-us/azure/databricks/query-federation/remote-queries).
@@ -46,15 +46,15 @@ From the solution root:
 uv sync --frozen
 uv run datam8 validate --solution ./ORAYLISDatabricksSample.dm8s
 uv run datam8 generate databricks --solution ./ORAYLISDatabricksSample.dm8s --clean-output
+python ./scripts/stage_databricks_bundle.py
 ```
 
 Inspect `output/databricks/manifest.json`, the notebooks, and YAML resources.
-Bundle `include` globs load every generated schema, cluster-variable and job YAML.
-`sync.paths` selects only `output/databricks` and `utils`; its common ancestor is
-the solution root. Explicit `sync.include` patterns re-include the ignored output.
-The workspace files retain `output/databricks/...` and `utils/...`, so `%run`
-references and Python runtime imports resolve together. `base`, `model`, other
-targets and local configuration are not synchronized. See the
+The staging command copies Databricks output and shared utilities under the
+bundle root. Bundle `include` globs load generated schema, cluster-variable and
+job YAML. `sync.paths` synchronizes only staged `output/` and `utils/`; workspace
+files retain `output/databricks/...` and `utils/...`, so notebook paths resolve.
+The other solution metadata and local environment are not synchronized. See the
 [bundle reference](https://docs.databricks.com/aws/en/dev-tools/bundles/reference#sync)
 for path and ignore semantics.
 
@@ -76,11 +76,14 @@ databricks bundle validate --target dev --profile sample-dev
 databricks bundle deploy --target dev --profile sample-dev
 ```
 
-Validation should resolve all variables, resources and local notebook paths.
+`cluster_id` remains an available variable for the existing environment setup;
+the bundle does not assign it to jobs because each job has its own generated
+compute configuration. Validation should resolve resources and staged notebook
+paths.
 Deployment should create the schema/job resources and upload files beneath
-`/Workspace/Users/<your-user>/.bundle/datam8-sample/dev`, with schedules paused.
-The required `cluster_id` selects an existing cluster through development mode;
-the `run_as` user is the authenticated current user. See
+`/Workspace/Users/<your-user>/.bundle/datam8-sample-cdm-demo/dev`, with schedules
+paused. Deployment does not start jobs. The `run_as` user is the authenticated
+current user. See
 [development-mode behavior](https://docs.databricks.com/aws/en/dev-tools/bundles/deployment-modes).
 Use a distinct bundle name when deploying multiple solution copies as the same
 user; dev workspace isolation does not isolate data inside a shared catalog.

@@ -10,7 +10,7 @@ import hashlib
 import re
 from typing import Any
 
-from metadata_utils import MetadataResolver
+from metadata_utils import MetadataResolver, mapping_property_equals
 
 
 def _resolve_product_module_context(
@@ -272,7 +272,7 @@ def _raw_mapping_projection(
         source_name = entry.get("source")
         target_name = entry.get("target")
         entry_props = entry.get("properties", {}) or {}
-        is_delta_column = str(entry_props.get("extract_column", "") or "").strip().lower() == "delta"
+        is_delta_column = mapping_property_equals(entry, "extract_mode", "delta")
         if target_name:
             target_columns.append(target_name)
         if source_name and target_name and source_name != target_name:

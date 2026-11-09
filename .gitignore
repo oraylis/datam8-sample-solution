@@ -1,5 +1,6 @@
 # Generated target outputs and local deployment state
 output/
+/deployment/databricks/utils/
 .databricks/
 .env
 .env.*

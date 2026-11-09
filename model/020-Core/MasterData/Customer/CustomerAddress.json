@@ -83,10 +83,6 @@
     {
       "property": "write_mode",
       "value": "overwrite"
-    },
-    {
-      "property": "data_retention",
-      "value": "7_days"
     }
   ],
   "sources": [

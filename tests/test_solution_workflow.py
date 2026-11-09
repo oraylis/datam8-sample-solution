@@ -13,6 +13,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from bundle_assets import bundle_configuration, required_assets  # noqa: E402
+from stage_databricks_bundle import stage_bundle_assets  # noqa: E402
 
 
 def snapshot(folder):
@@ -38,6 +39,8 @@ class SolutionWorkflowTests(unittest.TestCase):
             for target in targets:
                 cli("generate", target["name"], "--clean-output")
             baseline = {target["name"]: snapshot(root / target["outputPath"]) for target in targets}
+            bundle = root / "deployment/databricks"
+            stage_bundle_assets(root)
             authored = {name: snapshot(root / name) for name in ("base", "model", "utils", "deployment")}
             # A clean must remove its own stale file, and preserve every other
             # target's bytes, including unrelated files, plus authored notebooks.
@@ -57,13 +60,13 @@ class SolutionWorkflowTests(unittest.TestCase):
                 for name, contents in authored.items():
                     self.assertEqual(snapshot(root / name), contents)
 
-            bundle = root / "deployment/databricks"
-            assets = required_assets(bundle, root / "output/databricks")
+            assets = required_assets(bundle, bundle / "output/databricks")
             self.assertIn("utils/MigrationFramework.py", assets)
             self.assertIn("output/databricks/runtime/uc_sources.py", assets)
-            configuration = bundle_configuration(bundle, root / "output/databricks")
+            configuration = bundle_configuration(bundle, bundle / "output/databricks")
             self.assertEqual(configuration["targets"]["dev"]["mode"], "development")
-            self.assertEqual(configuration["targets"]["dev"]["cluster_id"], "${var.cluster_id}")
+            self.assertNotIn("cluster_id", configuration["targets"]["dev"])
+            self.assertIn("cluster_id", configuration["variables"])
             self.assertEqual(configuration["variables"]["unpause_schedules"]["default"], "PAUSED")
             self.assertEqual(configuration["resources"]["jobs"]["Create_All_Tables"]["max_concurrent_runs"], 1)
             date_tmdl = (root / "output/powerbi/tables/Date.tmdl").read_text()
@@ -74,10 +77,10 @@ class SolutionWorkflowTests(unittest.TestCase):
             path = bundle / "databricks.yml"
             original = path.read_text()
             changed = yaml.safe_load(original)
-            changed["sync"]["exclude"] = ["../../utils/**"]
+            changed["sync"]["exclude"] = ["utils/**"]
             path.write_text(yaml.safe_dump(changed))
             with self.assertRaisesRegex(ValueError, "excluded"):
-                required_assets(bundle, root / "output/databricks")
+                required_assets(bundle, bundle / "output/databricks")
             path.write_text(original)
 
             entity_path = root / "model/040-Consumer/MasterData/Customer/Customer.json"

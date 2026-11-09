@@ -1,21 +1,21 @@
 bundle:
-  name: datam8-sample
+  name: datam8-sample-cdm-demo
 
 include:
-  - ../../output/databricks/schemas/*.yml
-  - ../../output/databricks/clusters/*.yml
-  - ../../output/databricks/jobs/*.yml
-  - ../../output/databricks/jobs/*/*.yml
+  - output/databricks/schemas/*.yml
+  - output/databricks/clusters/*.yml
+  - output/databricks/jobs/*.yml
+  - output/databricks/jobs/*/*.yml
 
-# External paths expand the sync root to the repository root. Re-include output
-# because .gitignore intentionally excludes generated files from source control.
+# Run scripts/stage_databricks_bundle.py after generating the target. Keeping
+# these assets inside the bundle root avoids syncing unrelated repository files.
 sync:
   paths:
-    - ../../output/databricks
-    - ../../utils
+    - output
+    - utils
   include:
-    - ../../output/databricks/**
-    - ../../utils/**
+    - output/**
+    - utils/**
 
 variables:
   environment:
@@ -40,8 +40,8 @@ targets:
   dev:
     default: true
     mode: development
-    cluster_id: ${var.cluster_id}
     workspace:
+      host: https://adb-7405619058873076.16.azuredatabricks.net
       root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
     run_as:
       user_name: ${workspace.current_user.userName}

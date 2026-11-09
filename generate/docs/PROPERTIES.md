@@ -5,7 +5,7 @@
 - **Entity:** add a `properties` array to the entity JSON.
 - **Folder:** add a `.properties.json` file in that model folder; values inherit to descendants.
 - **External source:** set values in its `sources[]` entry, connected to a DataSource.
-- **Source mapping:** mark a cursor with `extract_column=delta`.
+- **Source mapping:** mark a cursor with `extract_mode=delta`.
 - **Attribute:** business keys and SCD history are model fields.
 - **Reusable values:** define them in `base/PropertyValues.json`; jobs may reference schedules and clusters.
 

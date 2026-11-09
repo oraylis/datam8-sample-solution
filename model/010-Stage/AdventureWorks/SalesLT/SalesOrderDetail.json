@@ -109,10 +109,6 @@
     {
       "property": "write_mode",
       "value": "merge"
-    },
-    {
-      "property": "data_retention",
-      "value": "7_days"
     }
   ],
   "sources": [
@@ -202,7 +198,7 @@
           },
           "properties": [
             {
-              "property": "extract_column",
+              "property": "extract_mode",
               "value": "delta"
             }
           ]

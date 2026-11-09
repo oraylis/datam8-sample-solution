@@ -65,6 +65,56 @@ def _properties_to_dict(properties: Iterable[Any] | None) -> dict[str, Any]:
     return result
 
 
+def mapping_property_equals(mapping: Any, property_name: str, expected_value: str) -> bool:
+    """Check a source-mapping property in either model or payload form."""
+    if isinstance(mapping, dict):
+        properties = mapping.get("properties") or {}
+        if isinstance(properties, dict):
+            value = properties.get(property_name)
+        else:
+            value = next(
+                (
+                    prop.get("value")
+                    for prop in properties
+                    if isinstance(prop, dict)
+                    and str(prop.get("property", "")).strip().lower()
+                    == property_name.strip().lower()
+                ),
+                None,
+            )
+    else:
+        properties = getattr(mapping, "properties", None) or []
+        value = next(
+            (
+                getattr(prop, "value", None)
+                for prop in properties
+                if str(getattr(prop, "property", "")).strip().lower()
+                == property_name.strip().lower()
+            ),
+            None,
+        )
+    return str(value or "").strip().lower() == expected_value.strip().lower()
+
+
+def delta_cursor_mappings(mappings: Iterable[Any]) -> list[Any]:
+    """Return source mappings marked with extract_mode=delta."""
+    return [
+        mapping
+        for mapping in mappings or []
+        if mapping_property_equals(mapping, "extract_mode", "delta")
+    ]
+
+
+def require_delta_cursor(mappings: Iterable[Any], context: str) -> Any:
+    """Require exactly one mapping-level delta cursor for a delta source."""
+    cursors = delta_cursor_mappings(mappings)
+    if len(cursors) != 1:
+        raise ValueError(
+            f"{context}: extract_mode=delta requires exactly one mapped cursor"
+        )
+    return cursors[0]
+
+
 def _attribute_property_equals(attribute: Any, property_name: str, expected_value: str) -> bool:
     """Check if an attribute exposes a property matching the provided value."""
     props = getattr(attribute, "properties", None) or []
@@ -1250,13 +1300,10 @@ class MetadataResolver:
                     }
                 )
 
-            delta_entry = next(
-                (
-                    entry
-                    for entry in mapping_entries
-                    if entry["properties"].get("extract_column") == "delta"
-                ),
-                None,
+            delta_entry = (
+                require_delta_cursor(mapping_entries, identifiers["full_table_name"])
+                if properties.get("extract_mode") == "delta"
+                else None
             )
 
             sources.append(

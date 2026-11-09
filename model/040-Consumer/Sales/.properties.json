@@ -6,10 +6,6 @@
       "name": "Sales",
       "properties": [
         {
-          "property": "business_area",
-          "value": "sales"
-        },
-        {
           "property": "jobs",
           "value": "sales_daily"
         },

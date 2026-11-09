@@ -23,11 +23,6 @@
     {
       "name": "delta",
       "displayName": "Delta",
-      "property": "extract_column"
-    },
-    {
-      "name": "delta",
-      "displayName": "Delta",
       "property": "extract_mode"
     },
     {
@@ -101,30 +96,6 @@
       ]
     },
     {
-      "name": "sales",
-      "displayName": "Sales",
-      "property": "business_area"
-    },
-    {
-      "name": "true",
-      "displayName": "Has TypeWidening",
-      "property": "enable_type_widening"
-    },
-    {
-      "name": "name",
-      "displayName": "Name Column Mapping",
-      "property": "column_mapping_mode"
-    },
-    {
-      "name": "7_days",
-      "displayName": "7 Days Data Retention",
-      "property": "data_retention"
-    },
-    {
-      "name": "power-bi",
-      "property": "target"
-    },
-    {
       "name": "create_all",
       "displayName": "Create All",
       "property": "jobs",
@@ -155,11 +126,6 @@
       "name": "full",
       "displayName": "full",
       "property": "extract_mode"
-    },
-    {
-      "name": "masterdata",
-      "displayName": "MasterData",
-      "property": "business_area"
     }
   ]
 }

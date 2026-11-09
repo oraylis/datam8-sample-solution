@@ -9,14 +9,6 @@
         {
           "property": "jobs",
           "value": "sales_daily"
-        },
-        {
-          "property": "enable_type_widening",
-          "value": "true"
-        },
-        {
-          "property": "column_mapping_mode",
-          "value": "name"
         }
       ]
     }

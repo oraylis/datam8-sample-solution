@@ -131,10 +131,6 @@
     {
       "property": "write_mode",
       "value": "merge"
-    },
-    {
-      "property": "data_retention",
-      "value": "7_days"
     }
   ],
   "sources": [

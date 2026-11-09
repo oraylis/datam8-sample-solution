@@ -66,40 +66,6 @@
       ]
     },
     {
-      "name": "data_retention",
-      "displayName": "Data Retention",
-      "schema_": "./data_retention.json",
-      "scopes": [
-        {
-          "type": "entity"
-        },
-        {
-          "type": "folder"
-        }
-      ]
-    },
-    {
-      "name": "business_area",
-      "displayName": "Business Area",
-      "scopes": [
-        {
-          "type": "entity"
-        },
-        {
-          "type": "folder"
-        }
-      ]
-    },
-    {
-      "name": "target",
-      "displayName": "Target",
-      "scopes": [
-        {
-          "type": "zone"
-        }
-      ]
-    },
-    {
       "name": "extract_mode",
       "displayName": "Extract Mode",
       "scopes": [

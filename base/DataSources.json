@@ -9,7 +9,7 @@
         "host": "sqlserver.example.invalid",
         "port": 1433,
         "username": "sample_reader",
-        "password": "ref://sample/AdventureWorks/password",
+        "password": "ref://datasources/AdventureWorks/password",
         "authMode": "sql_user",
         "unityCatalogConnection": "sqlserver",
         "database": "adventureworks",

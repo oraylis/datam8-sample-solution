@@ -6,10 +6,6 @@
       "name": "MasterData",
       "properties": [
         {
-          "property": "business_area",
-          "value": "masterdata"
-        },
-        {
           "property": "jobs",
           "value": "sales_weekly"
         },

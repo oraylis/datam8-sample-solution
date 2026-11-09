@@ -137,12 +137,7 @@
       "dateAdded": "2025-01-01T01:01:01Z"
     }
   ],
-  "properties": [
-    {
-      "property": "target",
-      "value": "power-bi"
-    }
-  ],
+  "properties": [],
   "sources": [
     {
       "sourceLocation": 3000,

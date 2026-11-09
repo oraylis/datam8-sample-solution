@@ -28,13 +28,7 @@
       "name": "consumer",
       "targetName": "platin",
       "displayName": "Consumer Tabular Layer",
-      "localFolderName": "040-Consumer",
-      "properties": [
-        {
-          "property": "target",
-          "value": "power-bi"
-        }
-      ]
+      "localFolderName": "040-Consumer"
     }
   ]
 }
