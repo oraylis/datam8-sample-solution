@@ -1,0 +1,95 @@
+resources:
+  jobs:
+    Create_raw_tables:
+      name: "[${var.environment}] Create Raw Data Layer Tables"
+      tags:
+        platform: databricks-lake
+      max_concurrent_runs: 1
+      parameters:
+        - name: env
+          default: ${var.environment}
+        - name: date_start
+          default: ${var.date_start}
+        - name: date_end
+          default: ${var.date_end}
+        - name: connection_prefix
+          default: ${var.connection_prefix}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: owner
+          default: ${var.owner}
+        - name: workspace_host
+          default: ${workspace.host}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+
+
+      job_clusters:
+
+        - job_cluster_key: cluster_extra_small
+          new_cluster: ${var.cluster_extra_small}
+
+
+      tasks:
+
+        - task_key: raw_adventureworks_saleslt_address
+
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/raw/ddl/AdventureWorks/SalesLT/Address
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: raw_adventureworks_saleslt_customer
+
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/raw/ddl/AdventureWorks/SalesLT/Customer
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: raw_adventureworks_saleslt_customeraddress
+
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/raw/ddl/AdventureWorks/SalesLT/CustomerAddress
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: raw_adventureworks_saleslt_salesorderdetail
+
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/raw/ddl/AdventureWorks/SalesLT/SalesOrderDetail
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: raw_adventureworks_saleslt_salesorderheader
+
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/raw/ddl/AdventureWorks/SalesLT/SalesOrderHeader
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+

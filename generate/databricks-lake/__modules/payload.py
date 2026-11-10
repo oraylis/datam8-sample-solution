@@ -535,17 +535,18 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
             )
             source_type = next((item.entity for item in model.dataSourceTypes.values() if item.entity.name == data_source_entry.type), None)
             plugin = getattr(source_type, "pluginId", None)
-            if plugin not in {"builtin:SQLServer", "oracle", "mysql", "postgresql", "http_api"}:
+            if plugin not in {"builtin:SQLServer", "oracle", "mysql", "postgresql", "http_api", "adls"}:
                 raise ValueError(f"Unsupported UC source plugin for {data_source_name}: {plugin}")
             extended = data_source_entry.extendedProperties or {}
             connection_name = extended.get("unityCatalogConnection", plugin)
             remote_database = extended.get("service_name") if plugin == "oracle" else extended.get("database")
-            if plugin != "http_api" and not remote_database:
+            if plugin not in {"http_api", "adls"} and not remote_database:
                 raise ValueError(f"Data source {data_source_name} requires a database/service binding")
             external = next(source for source in entity.sources if getattr(source, "dataSource", None) == data_source_name and str(source.sourceLocation) == str(raw_source["source_location"]))
             raw_columns = resolver.build_raw_columns(entity, external)
             by_name = {column["name"]: column["delta_type"] for column in raw_columns if not column["name"].startswith("__")}
             http_columns = [{"name": entry["source"], "type": by_name[entry["target"]], "nullable": True} for entry in mapping_entries if entry.get("source") and entry.get("target") in by_name]
+            dummy_columns = [{"name": entry["source"], "type": by_name[entry["target"]]} for entry in mapping_entries if entry.get("source") and entry.get("target") in by_name]
 
 
             data = {
@@ -561,6 +562,7 @@ def generate_raw_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
                 "plugin": plugin,
                 "remote_query_database": remote_database or "",
                 "http_columns_repr": repr(http_columns),
+                "dummy_columns": dummy_columns,
                 "target_types": by_name,
                 "extract_mode": extract_mode,
                 "target_columns": mapping_projection["target_columns"],

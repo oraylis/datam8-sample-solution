@@ -1,0 +1,21 @@
+resources:
+  schemas:
+    schema_raw:
+      name: raw
+      catalog_name: ${var.catalog_name}
+      comment: "Raw Data Layer"
+
+    schema_stage:
+      name: stage
+      catalog_name: ${var.catalog_name}
+      comment: "Staging Data Layer"
+
+    schema_core:
+      name: core
+      catalog_name: ${var.catalog_name}
+      comment: "Core Business Layer"
+
+    schema_curated:
+      name: curated
+      catalog_name: ${var.catalog_name}
+      comment: "Curated Analytics Layer"

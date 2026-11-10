@@ -1,0 +1,277 @@
+resources:
+  jobs:
+    Load_sales_daily:
+      name: "[${var.environment}] Sales (Daily)"
+      tags:
+        platform: databricks-lake
+      max_concurrent_runs: 1
+      parameters:
+        - name: env
+          default: ${var.environment}
+        - name: date_start
+          default: ${var.date_start}
+        - name: date_end
+          default: ${var.date_end}
+        - name: connection_prefix
+          default: ${var.connection_prefix}
+        - name: catalog_name
+          default: ${var.catalog_name}
+        - name: owner
+          default: ${var.owner}
+        - name: workspace_host
+          default: ${workspace.host}
+        - name: job_name
+          default: "{{job.name}}"
+        - name: job_run_id
+          default: "{{job.run_id}}"
+
+      job_clusters:
+        - job_cluster_key: cluster_extra_small
+          new_cluster: ${var.cluster_extra_small}
+
+      schedule:
+        quartz_cron_expression: 0 1 0 * * ?
+        timezone_id: Europe/Amsterdam
+        pause_status: ${var.unpause_schedules}
+
+      tasks:
+        - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.file_path}/utils/Start_Load
+
+            base_parameters:
+              target_zone: sales_daily
+
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: raw_address_address
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/raw/dml/AdventureWorks/SalesLT/Address
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: raw_customer_customer
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/raw/dml/AdventureWorks/SalesLT/Customer
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: raw_customeraddress_customeraddress
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/raw/dml/AdventureWorks/SalesLT/CustomerAddress
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: raw_salesorderdetail_salesorderdetail
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/raw/dml/AdventureWorks/SalesLT/SalesOrderDetail
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: raw_salesorderheader_salesorderheader
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/raw/dml/AdventureWorks/SalesLT/SalesOrderHeader
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+
+        - task_key: curated_masterdata_calendar_dimdate
+          depends_on:
+            - task_key: Start_Load
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/030-Curated/dml/MasterData/Calendar/DimDate
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: stage_adventureworks_saleslt_address
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_address_address
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/010-Stage/dml/AdventureWorks/SalesLT/Address
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: core_masterdata_address_address
+          depends_on:
+            - task_key: Start_Load
+            - task_key: stage_adventureworks_saleslt_address
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/020-Core/dml/MasterData/Address/Address
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: stage_adventureworks_saleslt_customer
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_customer_customer
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/010-Stage/dml/AdventureWorks/SalesLT/Customer
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: stage_adventureworks_saleslt_customeraddress
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_customeraddress_customeraddress
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/010-Stage/dml/AdventureWorks/SalesLT/CustomerAddress
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: core_masterdata_customer_customer
+          depends_on:
+            - task_key: Start_Load
+            - task_key: stage_adventureworks_saleslt_customeraddress
+            - task_key: stage_adventureworks_saleslt_customer
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/020-Core/dml/MasterData/Customer/Customer
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: core_masterdata_customer_customeraddress
+          depends_on:
+            - task_key: Start_Load
+            - task_key: stage_adventureworks_saleslt_customeraddress
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/020-Core/dml/MasterData/Customer/CustomerAddress
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: curated_masterdata_customer_dimcustomer
+          depends_on:
+            - task_key: Start_Load
+            - task_key: core_masterdata_customer_customer
+            - task_key: core_masterdata_customer_customeraddress
+            - task_key: core_masterdata_address_address
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/030-Curated/dml/MasterData/Customer/DimCustomer
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: stage_adventureworks_saleslt_salesorderdetail
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_salesorderdetail_salesorderdetail
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/010-Stage/dml/AdventureWorks/SalesLT/SalesOrderDetail
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+        - task_key: stage_adventureworks_saleslt_salesorderheader
+          depends_on:
+            - task_key: Start_Load
+            - task_key: raw_salesorderheader_salesorderheader
+          notebook_task:
+            notebook_path: ${workspace.file_path}/output/databricks/notebooks/010-Stage/dml/AdventureWorks/SalesLT/SalesOrderHeader
+            base_parameters:
+              replication_integration_status_id: '1'
+              execution_status_id: '1'
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+
+
+
+        - task_key: Complete_Load
+          depends_on:
+            - task_key: curated_masterdata_calendar_dimdate
+            - task_key: stage_adventureworks_saleslt_address
+            - task_key: core_masterdata_address_address
+            - task_key: stage_adventureworks_saleslt_customer
+            - task_key: stage_adventureworks_saleslt_customeraddress
+            - task_key: core_masterdata_customer_customer
+            - task_key: core_masterdata_customer_customeraddress
+            - task_key: curated_masterdata_customer_dimcustomer
+            - task_key: stage_adventureworks_saleslt_salesorderdetail
+            - task_key: stage_adventureworks_saleslt_salesorderheader
+          run_if: ALL_DONE
+          notebook_task:
+            notebook_path: ${workspace.file_path}/utils/Complete_Load
+            source: WORKSPACE
+
+          job_cluster_key: cluster_extra_small
+

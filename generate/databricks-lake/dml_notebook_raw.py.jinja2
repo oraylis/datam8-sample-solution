@@ -75,11 +75,15 @@ catalog.set_active()
 
 # COMMAND ----------
 
-# DBTITLE 1,Resolve source query through the Unity Catalog connection
+# DBTITLE 1,Prepare source extraction
 source_location = {{ data.source_location | default("", true) | tojson }}
 extract_mode = ("{{ data.extract_mode or '' }}").lower()
 connection_name = {{ data.connection_name | tojson }}
+{% if data.plugin == "adls" %}
+connection_name = ""  # The ADLS demo placeholder does not use a UC connection.
+{% else %}
 connection_name = dbutils.widgets.get("connection_prefix") + connection_name
+{% endif %}
 remote_query_database = {{ data.remote_query_database | tojson }}
 column_renames = {{ data.column_renames | default([], true) | tojson }}
 target_columns = {{ data.target_columns | default([], true) | tojson }}
@@ -115,6 +119,15 @@ sys.path.insert(0, str(Path("/Workspace") / notebook_folder.relative_to("/").par
 from uc_sources import read_database, read_http
 {% if data.plugin == "http_api" %}
 table_df = read_http(spark, connection_name, source_location, {{ data.http_columns_repr | safe }})
+{% elif data.plugin == "adls" %}
+# ADLS CDM demo placeholder: keep this source in the generated deployment plan
+# without requiring the plugin runtime. Replace this empty reader before running
+# the job to load actual Parquet data from the CDM manifest.
+table_df = spark.range(0).select(*[
+    F.lit(None).cast(column["type"]).alias(column["name"])
+    for column in {{ data.dummy_columns | tojson }}
+])
+print("ADLS CDM placeholder is active; this extraction returns zero rows.")
 {% else %}
 table_df = read_database(spark, connection_name, source_location, remote_query_database, {{ data.plugin | tojson }})
 {% endif %}
