@@ -1700,7 +1700,10 @@ def build_raw_source_name(source) -> str:
     if alias:
         return alias
 
-    schema, table = _parse_source_location(getattr(source, "sourceLocation", None))
+    location = getattr(source, "sourceLocation", None)
+    schema, table = _parse_source_location(location)
     fallback_parts = [_sanitize_identifier(schema), _sanitize_identifier(table)]
     fallback = "_".join(part for part in fallback_parts if part)
+    if not fallback and location and not location.lstrip().lower().startswith(("select ", "with ")):
+        fallback = _sanitize_identifier(location)
     return fallback or "raw_entity"
