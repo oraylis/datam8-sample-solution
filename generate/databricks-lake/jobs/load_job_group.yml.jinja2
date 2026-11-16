@@ -79,6 +79,12 @@ resources:
 {% endfor %}
 {% for task in data.entity_tasks %}
         - task_key: {{ task.task_key }}
+{% if task.quality | default(false) %}
+          max_retries: 0
+          libraries:
+            - pypi:
+                package: databricks-labs-dqx==0.16.0
+{% endif %}
 {%- if task.depends_on %}
           depends_on:
 {%- for dependency in task.depends_on %}
@@ -90,6 +96,7 @@ resources:
             base_parameters:
               replication_integration_status_id: '1'
               execution_status_id: '1'
+              quality_attempt_id: "{{ '{{task.execution_count}}' }}"
             source: WORKSPACE
 {% if data.serverless %}
           environment_key: serverless

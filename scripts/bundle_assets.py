@@ -1,6 +1,7 @@
 """Check the actual bundle configuration and its local asset closure offline."""
 from pathlib import Path
 import glob
+import json
 import os
 import re
 
@@ -19,7 +20,13 @@ def bundle_configuration(bundle: Path, output: Path | None = None):
             raise ValueError("Missing resource include: " + pattern)
         included.update(matches)
     if output is not None:
-        expected = {path.resolve() for path in output.rglob("*") if path.suffix in {".yml", ".yaml"}}
+        expected = set()
+        for path in output.rglob("*"):
+            if path.suffix not in {".yml", ".yaml"}:
+                continue
+            document = yaml.safe_load(path.read_text(encoding="utf-8"))
+            if isinstance(document, dict) and ({"resources", "variables"} & document.keys()):
+                expected.add(path.resolve())
         if expected - included:
             raise ValueError("Bundle includes must cover every generated resource YAML")
     for path in sorted(included):
@@ -76,6 +83,20 @@ def required_assets(bundle: Path, output: Path | None = None):
                 required.add(path.resolve())
                 return
         raise ValueError("Unresolved bundle asset path: " + value)
+
+    if output is not None:
+        for manifest in (output / "quality").glob("*/manifest.json"):
+            spec = json.loads(manifest.read_text(encoding="utf-8"))
+            required.add(manifest.resolve())
+            helper = root / "utils/QualityFramework.py"
+            if not helper.is_file():
+                raise ValueError("Missing shared QualityFramework.py")
+            required.add(helper.resolve())
+            for name in spec["files"].values():
+                path = manifest.parent / name
+                if not path.is_file() or not path.resolve().is_relative_to(manifest.parent.resolve()):
+                    raise ValueError("Missing or external quality rules: " + name)
+                required.add(path.resolve())
 
     resources = configuration.get("resources", {})
     for job in resources.get("jobs", {}).values():

@@ -29,6 +29,7 @@ from metadata_utils import (
     merge_table_tags,
 )
 from jobs_helpers import JobsPlanner
+from quality_payloads import quality_files, quality_spec
 from payload_helpers import (
     _build_raw_table_tag_inputs,
     _build_scd2_tracking_columns,
@@ -160,6 +161,7 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             BasePayload(
                 data={
                     "zone": zone_meta.name,
+            "quality": quality_spec(entity),
                     "zone_display": zone_meta.display_name,
                     "data_product": data_product_name,
                     "data_module": data_module_name,
@@ -439,6 +441,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
 
         data = {
             "zone": zone_meta.name,
+            "quality": quality_spec(entity),
             "zone_display": zone_meta.display_name,
             "data_product": data_product_name,
             "data_module": data_module_name,
@@ -721,6 +724,33 @@ def _get_jobs_plan(model: Model, cache: Cache) -> dict[str, Any]:
         resolver = MetadataResolver(model)
         planner = JobsPlanner(model, resolver, modelled_zones=JOB_ZONES)
         plan = planner.build()
+        entities = {w.entity.id: w.entity for w in model.modelEntities.values()}
+        for job in plan.get("load_jobs", []):
+            monitoring = []
+            for task in job["entity_tasks"]:
+                entity = entities.get(task.get("entity_id"))
+                spec = quality_spec(entity) if entity else None
+                if spec is None:
+                    continue
+                if job.get("serverless"):
+                    raise ValueError("Quality-enabled jobs require classic compute")
+                task["quality"] = True
+                if any(c["execution"] == "monitoring" for c in spec["quality"]["checks"]):
+                    path = Path(task["notebook_path"])
+                    parts = list(path.parts)
+                    parts[1] = "quality"
+                    key = f"quality_monitor_{entity.id}"
+                    monitoring.append(
+                        {
+                            "task_key": key,
+                            "notebook_path": Path(*parts).as_posix(),
+                            "depends_on": [task["task_key"]],
+                            "job_cluster_key": task.get("job_cluster_key"),
+                            "quality": True,
+                        }
+                    )
+                    job["complete_dependencies"].append(key)
+            job["entity_tasks"].extend(monitoring)
         cache.set(cache_key, plan)
         return plan
 
@@ -858,3 +888,60 @@ def generation_manifest(model: Model, cache: Cache) -> Sequence[IPayload]:
     }
     manifest = {"target": "databricks", "lifecycle": [phase for phase, value in execution_plan.items() if value], "execution_plan": execution_plan, "datasets": list(datasets.values())}
     return [BasePayload(data={"content": json.dumps(manifest, indent=2) + "\n"}, output_path=Path("manifest.json"))]
+
+
+@register_payload("runtime_file.jinja2")
+def generate_quality_assets(model: Model, cache: Cache) -> Sequence[IPayload]:
+    payloads = []
+    resolver = MetadataResolver(model)
+    for locator, wrapper in model.modelEntities.items():
+        if not locator.folders:
+            continue
+        zone = resolver.zone_from_folder(locator.folders[0])
+        if zone is None or zone.name not in MODELLED_ZONES:
+            continue
+        spec = quality_spec(wrapper.entity)
+        for path, content in quality_files(wrapper.entity).items():
+            if path.name == "manifest.json":
+                import json
+
+                _, _, product_name, module_name = _resolve_product_module_context(resolver, locator)
+                spec = json.loads(content)
+                spec["target"] = f"{zone.name}.{product_name}_{module_name}_{wrapper.entity.name}"
+                content = json.dumps(spec, indent=2) + "\n"
+            payloads.append(BasePayload(data={"content": content}, output_path=path))
+        if spec and any(c["execution"] == "monitoring" for c in spec["quality"]["checks"]):
+            notebook = Path(
+                "notebooks",
+                resolver.zone_folder_name(zone),
+                "quality",
+                *locator.folders[1:],
+                wrapper.entity.name + ".py",
+            )
+            content = (
+                "# Databricks notebook source\n"
+                + _quality_initialization(wrapper.entity.id)
+                + "\nquality_runtime.monitor(quality_rules, quality_context)\n"
+            )
+            payloads.append(BasePayload(data={"content": content}, output_path=notebook))
+    return payloads
+
+
+def _quality_initialization(entity_id: int) -> str:
+    return f"""from pathlib import Path
+import sys
+quality_root = next(
+    p for p in [Path.cwd(), *Path.cwd().parents] if (p / 'utils/QualityFramework.py').is_file()
+)
+sys.path.insert(0, str(quality_root / 'utils'))
+import QualityFramework as quality_runtime
+dbutils.widgets.text('catalog_name', '')
+dbutils.widgets.text('job_run_id', '')
+dbutils.widgets.text('quality_attempt_id', '0')
+quality_rules = quality_runtime.load_checks(quality_root / 'output/databricks/quality/{entity_id}/manifest.json')
+quality_target = dbutils.widgets.get('catalog_name') + '.' + quality_rules['target']
+quality_context = quality_runtime.context(
+    spark, quality_target, quality_rules,
+    dbutils.widgets.get('job_run_id'), dbutils.widgets.get('quality_attempt_id')
+)
+"""

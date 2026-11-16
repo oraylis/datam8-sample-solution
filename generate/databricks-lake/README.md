@@ -126,3 +126,9 @@ jobs to establish the tables and the load jobs to execute the data flow.
 For setup, see [getting started](../../docs/getting-started.md) and
 [deployment preparation](../../docs/quickstart.md). For payload contracts,
 template mappings and implementation changes, read [ARCHITECTURE.md](ARCHITECTURE.md).
+
+## Quality checks
+
+Optional entity Quality metadata generates native DQX rules, quarantine support
+and separate monitoring tasks. See the [batch runtime reference](quality.md) for
+execution, failure, storage and acceptance contracts.

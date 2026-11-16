@@ -181,3 +181,13 @@ table_instance.set_table_tags({{ data.table_tags_repr | safe }})
 {%- for column in data.column_tags %}
 table_instance.set_column_tags("{{ column.column }}", {{ column.tags_repr | safe }})
 {%- endfor %}
+
+{% if data.quality %}
+# COMMAND ----------
+from pathlib import Path
+import sys
+quality_root = next(parent for parent in [Path.cwd(), *Path.cwd().parents] if (parent / "utils/QualityFramework.py").is_file())
+sys.path.insert(0, str(quality_root / "utils"))
+import QualityFramework as quality_runtime
+quality_runtime.ensure_tables(spark, f"{catalog.name}.{zone}.{full_table_name}")
+{% endif %}

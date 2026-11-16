@@ -491,6 +491,7 @@ class JobsPlanner:
                 {
                     "task_key": task_key,
                     "notebook_path": entity.dml_notebook,
+                    "entity_id": entity.entity_id,
                     "depends_on": depends_on,
                     "job_cluster_key": cluster_variable,
                 }

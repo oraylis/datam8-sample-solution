@@ -1,0 +1,134 @@
+{
+  "id": 9001,
+  "name": "QualityProbe",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "Id",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "isBusinessKey": true,
+      "dateAdded": "2026-01-01T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "Amount",
+      "attributeType": "Regular",
+      "dataType": {
+        "type": "double",
+        "nullable": true
+      },
+      "isBusinessKey": false,
+      "dateAdded": "2026-01-01T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "Email",
+      "attributeType": "Regular",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "isBusinessKey": false,
+      "dateAdded": "2026-01-01T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "Updated",
+      "attributeType": "Regular",
+      "dataType": {
+        "type": "datetime",
+        "nullable": true
+      },
+      "isBusinessKey": false,
+      "dateAdded": "2026-01-01T00:00:00Z"
+    }
+  ],
+  "sources": [],
+  "relationships": [],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "name": "quality_probe_input",
+      "kind": "function",
+      "function": {
+        "source": "QualityProbe.py"
+      }
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    }
+  ],
+  "quality": {
+    "settings": {
+      "maxFailureRatePct": 25
+    },
+    "checks": [
+      {
+        "id": "id_required",
+        "type": "not_null",
+        "attribute": "Id",
+        "execution": "enforcement",
+        "severity": "error"
+      },
+      {
+        "id": "amount_range",
+        "type": "range",
+        "attribute": "Amount",
+        "execution": "enforcement",
+        "severity": "error",
+        "parameters": {
+          "min": 0
+        }
+      },
+      {
+        "id": "email_present",
+        "type": "sql_expression",
+        "execution": "enforcement",
+        "severity": "warning",
+        "parameters": {
+          "expression": "Email IS NOT NULL"
+        }
+      },
+      {
+        "id": "email_completeness",
+        "type": "completeness",
+        "attribute": "Email",
+        "execution": "monitoring",
+        "severity": "warning",
+        "parameters": {
+          "minCompleteness": 0.95
+        }
+      },
+      {
+        "id": "updated_fresh",
+        "type": "freshness",
+        "attribute": "Updated",
+        "execution": "monitoring",
+        "severity": "error",
+        "parameters": {
+          "maxAgeSeconds": 300
+        }
+      },
+      {
+        "id": "row_count",
+        "type": "row_count",
+        "execution": "monitoring",
+        "severity": "error",
+        "parameters": {
+          "minCount": 1
+        }
+      }
+    ]
+  }
+}

@@ -89,6 +89,20 @@ table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
 
 # COMMAND ----------
 
+
+{% if data.quality %}
+# COMMAND ----------
+from pathlib import Path
+import sys
+quality_root = next(parent for parent in [Path.cwd(), *Path.cwd().parents] if (parent / "utils/QualityFramework.py").is_file())
+sys.path.insert(0, str(quality_root / "utils"))
+import QualityFramework as quality_runtime
+quality_rules = quality_runtime.load_checks(quality_root / "output/databricks/quality/{{ data.quality.entityId }}/manifest.json")
+dbutils.widgets.text("quality_attempt_id", "0")
+quality_context = quality_runtime.context(spark, table_name_ref, quality_rules, job_run_id, dbutils.widgets.get("quality_attempt_id"))
+# COMMAND ----------
+{% endif %}
+
 {%- if data.source_mode == "raw_delta" and data.raw_sources %}
 
 # MAGIC %md
@@ -196,6 +210,15 @@ union_df = union_df.withColumns({
 # COMMAND ----------
 
 {%- endif %}
+
+{% if data.quality %}
+quality_result = quality_runtime.enforce(union_df, quality_rules, quality_context)
+quality_runtime.write_quarantine(quality_result, quality_context)
+union_df = quality_result["valid"]
+if union_df.isEmpty():
+    quality_runtime.finish_enforcement(quality_result, quality_context)
+    dbutils.notebook.exit("SKIPPED_EMPTY_QUALITY_OUTPUT")
+{% endif %}
 
 union_df.createOrReplaceTempView("union_df")
 
@@ -531,6 +554,15 @@ final_df = final_df.withColumns({
 
 # COMMAND ----------
 
+{% if data.quality %}
+quality_result = quality_runtime.enforce(final_df, quality_rules, quality_context)
+quality_runtime.write_quarantine(quality_result, quality_context)
+final_df = quality_result["valid"]
+if final_df.isEmpty():
+    quality_runtime.finish_enforcement(quality_result, quality_context)
+    dbutils.notebook.exit("SKIPPED_EMPTY_QUALITY_OUTPUT")
+{% endif %}
+
 {%- set merge_cfg = data.final_merge_config %}
 {%- if merge_cfg and merge_cfg.enabled %}
 
@@ -711,3 +743,8 @@ else:
 # COMMAND ----------
 
 {%- endif %}
+
+{% if data.quality and data.source_mode != "none" %}
+# COMMAND ----------
+quality_runtime.finish_enforcement(quality_result, quality_context)
+{% endif %}
