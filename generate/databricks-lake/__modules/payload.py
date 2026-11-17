@@ -29,7 +29,7 @@ from metadata_utils import (
     merge_table_tags,
 )
 from jobs_helpers import JobsPlanner
-from quality_payloads import quality_files, quality_spec
+from quality_payloads import notebook_quality, quality_ddl, quality_files, quality_spec
 from payload_helpers import (
     _build_raw_table_tag_inputs,
     _build_scd2_tracking_columns,
@@ -157,11 +157,12 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
             table_comment=table_comment,
             table_properties=table_properties,
         )
+        quality_sql = quality_ddl(columns, zone_meta.name, full_table_name) if quality_spec(entity) else {}
         payloads.append(
             BasePayload(
                 data={
                     "zone": zone_meta.name,
-            "quality": quality_spec(entity),
+                    "quality": notebook_quality(entity),
                     "zone_display": zone_meta.display_name,
                     "data_product": data_product_name,
                     "data_module": data_module_name,
@@ -170,6 +171,7 @@ def generate_ddl_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
                     "table_comment": table_comment,
                     "columns": columns,
                     "create_sql": create_sql,
+                    "quality_ddl": quality_sql,
                     "has_scd2_history": bool(history_config.get("scd2")),
                     "imports": imports,
                     "partitions": partitions,
@@ -441,7 +443,7 @@ def generate_dml_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
 
         data = {
             "zone": zone_meta.name,
-            "quality": quality_spec(entity),
+            "quality": notebook_quality(entity),
             "zone_display": zone_meta.display_name,
             "data_product": data_product_name,
             "data_module": data_module_name,
@@ -910,38 +912,29 @@ def generate_quality_assets(model: Model, cache: Cache) -> Sequence[IPayload]:
                 spec["target"] = f"{zone.name}.{product_name}_{module_name}_{wrapper.entity.name}"
                 content = json.dumps(spec, indent=2) + "\n"
             payloads.append(BasePayload(data={"content": content}, output_path=path))
-        if spec and any(c["execution"] == "monitoring" for c in spec["quality"]["checks"]):
-            notebook = Path(
-                "notebooks",
-                resolver.zone_folder_name(zone),
-                "quality",
-                *locator.folders[1:],
-                wrapper.entity.name + ".py",
-            )
-            content = (
-                "# Databricks notebook source\n"
-                + _quality_initialization(wrapper.entity.id)
-                + "\nquality_runtime.monitor(quality_rules, quality_context)\n"
-            )
-            payloads.append(BasePayload(data={"content": content}, output_path=notebook))
     return payloads
 
 
-def _quality_initialization(entity_id: int) -> str:
-    return f"""from pathlib import Path
-import sys
-quality_root = next(
-    p for p in [Path.cwd(), *Path.cwd().parents] if (p / 'utils/QualityFramework.py').is_file()
-)
-sys.path.insert(0, str(quality_root / 'utils'))
-import QualityFramework as quality_runtime
-dbutils.widgets.text('catalog_name', '')
-dbutils.widgets.text('job_run_id', '')
-dbutils.widgets.text('quality_attempt_id', '0')
-quality_rules = quality_runtime.load_checks(quality_root / 'output/databricks/quality/{entity_id}/manifest.json')
-quality_target = dbutils.widgets.get('catalog_name') + '.' + quality_rules['target']
-quality_context = quality_runtime.context(
-    spark, quality_target, quality_rules,
-    dbutils.widgets.get('job_run_id'), dbutils.widgets.get('quality_attempt_id')
-)
-"""
+@register_payload("quality_notebook.py.jinja2")
+def generate_quality_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]:
+    payloads = []
+    resolver = MetadataResolver(model)
+    for locator, wrapper in model.modelEntities.items():
+        if not locator.folders:
+            continue
+        zone = resolver.zone_from_folder(locator.folders[0])
+        spec = notebook_quality(wrapper.entity)
+        if zone is None or zone.name not in MODELLED_ZONES or not spec:
+            continue
+        if not (spec["monitoring_rows"] or spec["monitoring_summary"]):
+            continue
+        payloads.append(
+            BasePayload(
+                data={"quality": spec, "entity_name": wrapper.entity.name},
+                output_path=Path(
+                    "notebooks", resolver.zone_folder_name(zone), "quality",
+                    *locator.folders[1:], wrapper.entity.name + ".py",
+                ),
+            )
+        )
+    return payloads

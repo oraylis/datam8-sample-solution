@@ -11,7 +11,18 @@ Each entity with checks emits `quality/<entity ID>/manifest.json` plus native
 `enforcement.yaml`, `monitoring_rows.yaml` and `monitoring_summary.yaml`. The
 manifest retains source requirements, target mapping and a deterministic rule
 hash. Bundle synchronization includes these runtime assets; they are not bundle
-resource definitions. `utils/QualityFramework.py` contains shared execution logic.
+resource definitions. The notebooks expose the complete execution flow in named Markdown/code cells.
+DDL contains the full nullable quarantine and central-metrics SQL. DML shows native
+DQX execution, error/warning routing, distinct error-row counts and the gate after
+the target write. Monitoring has its own template with a readable SQL aggregate,
+DQX calls, status calculation and a compact result table.
+
+`utils/QualityFramework.py` provides only manifest loading, execution context,
+input/schema validation, metric formatting and idempotent audit writers. The old
+`ensure_tables`, `enforce`, `monitor` and `finish_enforcement` entry points have
+been removed. Regenerate and deploy notebooks and utilities together; do not mix
+old generated notebooks with the new helper. Existing table names, metric schema,
+rule hashes and Delta transaction identities are preserved.
 
 Enforcement runs on prepared input before SCD/merge staging. Error rows enter
 `<target>_quarantine`; warning-only rows remain valid. The target receives only
@@ -60,6 +71,12 @@ and its matching Model schema, including quality validation.
 They are not part of the public AdventureWorks model. `acceptance.py` executes
 generated DDL, DML and Monitoring notebooks against a caller-provided isolated
 `dm8_quality_test_*` catalog on classic compute. It never reads a live source.
+Generate the monitoring-only variants QualityMonitorProbe (9005, all checks),
+QualityRowsProbe (9006, first three checks) and QualitySummaryProbe (9007, last
+three checks), with all their checks set to monitoring. Keep overwrite mode and
+place `QualityProbe.py` beside the entity JSON files: transformation source paths
+are relative to that directory, not an implicit entity subdirectory. Acceptance executes these real generated notebooks, including
+invalid native YAML in a disposable workspace, and restores those files afterward.
 Upload only the fixture artifacts, shared utilities and acceptance notebook; pass
 `catalog_name`, `owner` and `workspace_root` explicitly. Do not commit real
 workspace identifiers or credentials.

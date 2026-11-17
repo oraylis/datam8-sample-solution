@@ -1,0 +1,23 @@
+# Count distinct error rows once, even when several rules fail on the same row.
+quality_has_errors = F.coalesce(F.size(F.col("_errors")) > 0, F.lit(False))
+quality_has_warnings = F.coalesce(F.size(F.col("_warnings")) > 0, F.lit(False))
+quality_aggregates = [
+    F.count("*").alias("total_rows"),
+    F.sum(F.when(quality_has_errors, 1).otherwise(0)).alias("error_rows"),
+    F.sum(F.when(quality_has_warnings, 1).otherwise(0)).alias("warning_rows"),
+]
+for rule_index, rule in enumerate(quality_record_rules):
+    result_column = "_errors" if rule["severity"] == "error" else "_warnings"
+    rule_failed = F.coalesce(
+        F.exists(F.col(result_column), lambda failure: failure["name"] == rule["id"]), F.lit(False)
+    )
+    quality_aggregates.append(F.sum(F.when(rule_failed, 1).otherwise(0)).alias(f"failed_{rule_index}"))
+quality_counts = {{ quality_record_df }}.agg(*quality_aggregates).first().asDict()
+for rule_index, rule in enumerate(quality_record_rules):
+    checked_rows = quality_counts["total_rows"]
+    failed_rows = quality_counts[f"failed_{rule_index}"] or 0
+    status = "NO_DATA" if not checked_rows else "FAILED" if failed_rows else "PASSED"
+    {{ quality_metrics }}.append(quality_runtime.metric(
+        rule, quality_context, "{{ quality_execution }}", checked_rows, failed_rows,
+        failed_rows / checked_rows if checked_rows else None, status,
+    ))

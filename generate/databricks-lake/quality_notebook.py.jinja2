@@ -1,0 +1,95 @@
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # Quality monitoring for {{ data.entity_name }}
+# MAGIC Evaluate the complete committed target. Violations are recorded; technical errors fail this task.
+
+# COMMAND ----------
+
+from pyspark.sql import functions as F
+
+dbutils.widgets.text("catalog_name", "")
+dbutils.widgets.text("job_run_id", "")
+catalog_name = dbutils.widgets.get("catalog_name")
+job_run_id = dbutils.widgets.get("job_run_id")
+if not catalog_name:
+    raise ValueError("Set catalog_name explicitly before running this notebook")
+
+# COMMAND ----------
+
+{% set quality_mode = 'monitoring' %}
+{% include '_quality_init.py.jinja2' %}
+# MAGIC %md
+# MAGIC ## Read the committed target
+# MAGIC No target rows are modified by this notebook.
+
+# COMMAND ----------
+
+monitoring_df = spark.table(quality_target)
+monitoring_metrics = []
+{% if data.quality.monitoring_rows %}
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Evaluate row-level monitoring checks with DQX
+
+# COMMAND ----------
+
+quality_record_rules = [rule for rule in quality_rules["quality"]["checks"]
+                        if rule["execution"] == "monitoring" and rule["type"] not in ("completeness", "freshness", "row_count")]
+monitoring_row_checks = quality_rules["checks"]["monitoring_rows"]
+quality_runtime.validate_check_inputs(monitoring_df, monitoring_row_checks)
+monitoring_checked_df = quality_engine.apply_checks_by_metadata(monitoring_df, monitoring_row_checks)
+{% set quality_record_df = 'monitoring_checked_df' %}
+{% set quality_metrics = 'monitoring_metrics' %}
+{% set quality_execution = 'monitoring' %}
+{% include '_quality_records.py.jinja2' %}
+{% endif %}
+{% if data.quality.monitoring_summary %}
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Calculate aggregate monitoring measures with SQL
+# MAGIC All aggregate checks share one scan and one fixed evaluation timestamp.
+# MAGIC Completeness is non-NULL / total; Freshness is seconds since the latest timestamp; Row Count evaluates zero on empty input.
+
+# COMMAND ----------
+
+monitoring_sql = {{ data.quality.summary_sql_literal | safe }}.replace("{target_table}", quality_target_ref)
+print(monitoring_sql)
+monitoring_summary_df = spark.sql(monitoring_sql, args={"evaluated_at": quality_context["evaluatedAt"]})
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Evaluate aggregate checks with DQX and determine statuses
+# MAGIC Empty completeness is NO_DATA. Missing or future timestamps fail freshness. Violations do not abort monitoring.
+
+# COMMAND ----------
+
+monitoring_summary_checks = quality_rules["checks"]["monitoring_summary"]
+quality_runtime.validate_check_inputs(monitoring_summary_df, monitoring_summary_checks)
+monitoring_summary_checked_df = quality_engine.apply_checks_by_metadata(monitoring_summary_df, monitoring_summary_checks)
+summary_value = monitoring_summary_checked_df.first().asDict(recursive=True)
+failed_check_ids = {failure["name"] for failure in (summary_value.get("_errors") or []) + (summary_value.get("_warnings") or [])}
+summary_rules = [rule for rule in quality_rules["quality"]["checks"]
+                 if rule["execution"] == "monitoring" and rule["type"] in ("completeness", "freshness", "row_count")]
+for rule in summary_rules:
+    checked_rows = summary_value["__dm8_total"]
+    measured_value = summary_value["__dm8_q_" + rule["id"]]
+    status = ("NO_DATA" if not checked_rows and rule["type"] == "completeness"
+              else "FAILED" if rule["id"] in failed_check_ids else "PASSED")
+    monitoring_metrics.append(quality_runtime.metric(
+        rule, quality_context, "monitoring", checked_rows, None, measured_value, status,
+    ))
+{% endif %}
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Persist and display monitoring results
+# MAGIC Only the central metrics table is written. Replaying the same run/attempt does not append duplicate metrics.
+
+# COMMAND ----------
+
+monitoring_metric_df = quality_runtime.write_metrics(monitoring_metrics, quality_context)
+if monitoring_metric_df is not None:
+    display(monitoring_metric_df.select("check_id", "severity", "checked_rows", "failed_rows", "measured_value", "status"))

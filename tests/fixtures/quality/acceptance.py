@@ -7,7 +7,7 @@ synthetic Delta tables are read or written. No live source connection is used.
 
 import json
 import os
-from copy import deepcopy
+import yaml
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -88,45 +88,117 @@ dbutils.notebook.run(dml, 180, dict(params, job_run_id="warning-only"))
 assert spark.table(target).count() == 1
 assert spark.table(target).first().Id == 7
 assert spark.table(target + "_quarantine").count() == 3
-# Empty-input rule metrics and empty-table aggregate semantics.
-ctx = quality.context(spark, target, spec, "empty-input")
-result = quality.enforce(spark.createDataFrame([], schema), spec, ctx)
-assert result["total"] == 0
-quality.finish_enforcement(result, ctx)
-assert all(m["status"] == "NO_DATA" for m in result["metrics"])
+# Exact threshold: one row violates two rules, but counts as one error row (25%).
+spark.createDataFrame(
+    [
+        (10, 1.0, "a@example.test", now),
+        (11, 2.0, "b@example.test", now),
+        (12, 3.0, "c@example.test", now),
+        (None, -1.0, "d@example.test", now),
+    ],
+    schema,
+).write.mode("overwrite").saveAsTable(input_table)
+dbutils.notebook.run(dml, 180, dict(params, job_run_id="threshold-boundary"))
+assert spark.table(target).count() == 3
+assert spark.table(target + "_quarantine").count() == 4
+# Run the actual generated DML for empty input, rather than calling a runtime orchestrator.
+spark.createDataFrame([], schema).write.mode("overwrite").saveAsTable(input_table)
+dbutils.notebook.run(dml, 180, dict(params, job_run_id="empty-input"))
+empty_metrics = spark.table(f"{catalog}.quality.dqx_metrics").where("run_id = 'empty-input'").collect()
+assert len(empty_metrics) == 3 and all(m.status == "NO_DATA" for m in empty_metrics)
+assert spark.table(target).count() == 3
+assert spark.table(target + "_quarantine").count() == 4
 spark.sql(f"TRUNCATE TABLE {target}")
-empty_metrics = quality.monitor(spec, quality.context(spark, target, spec, "empty-target"))
-assert {m["check_id"]: m["status"] for m in empty_metrics} == {
+dbutils.notebook.run(monitor, 180, dict(params, job_run_id="empty-target"))
+empty_metrics = spark.table(f"{catalog}.quality.dqx_metrics").where("run_id = 'empty-target'").collect()
+assert {m.check_id: m.status for m in empty_metrics} == {
     "email_completeness": "NO_DATA",
     "updated_fresh": "FAILED",
     "row_count": "FAILED",
 }
-# Invalid SQL is a technical error, including on empty targets/inputs. DQX may
-# otherwise report these checks as skipped instead of raising on some runtimes.
+# Invalid definitions are injected only into the disposable uploaded native YAML.
+# Always restore the artifact, and execute generated notebooks to exercise real preflight.
 metric_count = spark.table(f"{catalog}.quality.dqx_metrics").count()
 version = spark.sql(f"DESCRIBE HISTORY {target}").first().version
 for expression in ("NOT VALID SQL (", "missing_quality_column > 0", "1"):
-    bad = deepcopy(spec)
-    bad["checks"]["monitoring_summary"][0]["check"]["arguments"]["expression"] = expression
-    try:
-        quality.monitor(bad, quality.context(spark, target, bad, "technical-error"))
-        raise AssertionError("Technical SQL failure was hidden")
-    except AssertionError:
-        raise
-    except Exception:
-        pass
-    bad = deepcopy(spec)
-    bad["checks"]["enforcement"][0]["check"] = {
-        "function": "sql_expression", "arguments": {"expression": expression}}
-    try:
-        quality.enforce(spark.createDataFrame([], schema), bad, quality.context(spark, target, bad, "invalid-input"))
-        raise AssertionError("Technical enforcement failure was hidden on empty input")
-    except AssertionError:
-        raise
-    except Exception:
-        pass
+    for group, notebook in [("monitoring_summary", monitor), ("enforcement", dml)]:
+        rules_path = manifest.parent / spec["files"][group]
+        original = rules_path.read_text()
+        try:
+            checks = yaml.safe_load(original)
+            checks[0]["check"] = {"function": "sql_expression", "arguments": {"expression": expression}}
+            rules_path.write_text(yaml.safe_dump(checks, sort_keys=False))
+            try:
+                dbutils.notebook.run(notebook, 180, dict(params, job_run_id="technical-error"))
+                raise AssertionError("Technical SQL failure was hidden")
+            except AssertionError:
+                raise
+            except Exception:
+                pass
+        finally:
+            rules_path.write_text(original)
 assert spark.table(f"{catalog}.quality.dqx_metrics").count() == metric_count
 assert spark.sql(f"DESCRIBE HISTORY {target}").first().version == version
+# Monitoring-only variants cover row checks, aggregates and both groups together.
+monitoring_results = []
+for name, entity_id in [("QualityMonitorProbe", 9005), ("QualityRowsProbe", 9006), ("QualitySummaryProbe", 9007)]:
+    other = quality.load_checks(root / f"output/databricks/quality/{entity_id}/manifest.json")
+    other_target = catalog + "." + other["target"]
+    for table in (other_target, other_target + "_quarantine"):
+        spark.sql(f"DROP TABLE IF EXISTS {table}")
+    now = datetime.now(timezone.utc)
+    spark.createDataFrame(
+        [
+            (1, 10.0, "a@example.test", now),
+            (2, -1.0, None, now),
+            (None, 25.0, "b@example.test", now),
+            (4, 5.0, None, now),
+        ],
+        schema,
+    ).write.mode("overwrite").saveAsTable(input_table)
+    other_params = dict(params, job_run_id=name)
+    dbutils.notebook.run(str(notebooks / f"ddl/MasterData/Customer/{name}"), 180, other_params)
+    dbutils.notebook.run(str(notebooks / f"dml/MasterData/Customer/{name}"), 180, other_params)
+    assert spark.table(other_target).count() == 4
+    assert spark.table(other_target + "_quarantine").count() == 0
+    before = spark.sql(f"DESCRIBE HISTORY {other_target}").first().version
+    mon = str(notebooks / f"quality/MasterData/Customer/{name}")
+    dbutils.notebook.run(mon, 180, other_params)
+    metrics = (
+        spark.table(f"{catalog}.quality.dqx_metrics").where(f"entity_id = {entity_id} AND run_id = '{name}'").collect()
+    )
+    expected_status = {
+        "id_required": "FAILED",
+        "amount_range": "FAILED",
+        "email_present": "FAILED",
+        "email_completeness": "FAILED",
+        "updated_fresh": "PASSED",
+        "row_count": "PASSED",
+    }
+    assert len(metrics) == len(other["quality"]["checks"])
+    assert all(m.status == expected_status[m.check_id] for m in metrics)
+    metric_count = spark.table(f"{catalog}.quality.dqx_metrics").count()
+    dbutils.notebook.run(mon, 180, other_params)
+    assert spark.table(f"{catalog}.quality.dqx_metrics").count() == metric_count
+    assert spark.sql(f"DESCRIBE HISTORY {other_target}").first().version == before
+    # Future timestamps fail freshness, while monitoring continues successfully.
+    if entity_id == 9007:
+        from datetime import timedelta
+
+        spark.createDataFrame([(9, 1.0, "future@example.test", now + timedelta(days=1))], schema).write.mode(
+            "overwrite"
+        ).saveAsTable(input_table)
+        future_params = dict(params, job_run_id="future-timestamp")
+        dbutils.notebook.run(str(notebooks / f"dml/MasterData/Customer/{name}"), 180, future_params)
+        dbutils.notebook.run(mon, 180, future_params)
+        assert (
+            spark.table(f"{catalog}.quality.dqx_metrics")
+            .where(f"entity_id = {entity_id} AND run_id = 'future-timestamp' AND check_id = 'updated_fresh'")
+            .first()
+            .status
+            == "FAILED"
+        )
+    monitoring_results.append(name)
 print("QUALITY_ACCEPTANCE_PASSED")
 dbutils.notebook.exit(
     json.dumps(
@@ -135,10 +207,12 @@ dbutils.notebook.exit(
             "catalog": catalog,
             "runtime": os.environ.get("DATABRICKS_RUNTIME_VERSION"),
             "target": target,
+            "monitoring_variants": monitoring_results,
             "checks": [
                 "generated-ddl",
                 "generated-dml",
                 "threshold-after-write",
+                "threshold-boundary-distinct-error-rows",
                 "error-quarantine",
                 "warning-preserved",
                 "monitoring-read-only",

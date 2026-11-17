@@ -1,0 +1,38 @@
+# MAGIC %md
+# MAGIC ## {{ quality_mode | title }} configuration and execution context
+# MAGIC Rules are generated from the model; the manifest and native DQX YAML are loaded below.
+{% if quality_mode == "enforcement" and not data.quality.enforcement %}
+# MAGIC No enforcement checks are configured. Monitoring runs in the separate Quality notebook.
+{% endif %}
+{{ data.quality["overview_" + quality_mode] | safe }}
+
+# COMMAND ----------
+
+from pathlib import Path
+import sys
+from databricks.sdk import WorkspaceClient
+from databricks.labs.dqx.engine import DQEngineCore
+
+quality_root = next(
+    parent for parent in [Path.cwd(), *Path.cwd().parents]
+    if (parent / "utils/QualityFramework.py").is_file()
+)
+sys.path.insert(0, str(quality_root / "utils"))
+import QualityFramework as quality_runtime
+
+quality_rules = quality_runtime.load_checks(quality_root / "output/databricks/quality/{{ data.quality.entityId }}/manifest.json")
+dbutils.widgets.text("quality_attempt_id", "0")
+quality_target = catalog_name + "." + quality_rules["target"]
+quality_context = quality_runtime.context(
+    spark, quality_target, quality_rules, job_run_id, dbutils.widgets.get("quality_attempt_id")
+)
+quality_target_ref = ".".join(quality_runtime.quote(part) for part in quality_target.split("."))
+quality_engine = DQEngineCore(WorkspaceClient(), spark)
+print({
+    "target": quality_target, "quarantine": quality_target + "_quarantine",
+    "metrics": catalog_name + ".quality.dqx_metrics", "run": quality_context["runId"],
+    "attempt": quality_context["attemptId"], "rule_set_hash": quality_context["ruleSetHash"],
+    "evaluated_at": str(quality_context["evaluatedAt"]),
+})
+
+# COMMAND ----------

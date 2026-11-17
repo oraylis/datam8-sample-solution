@@ -69,3 +69,19 @@ class QualityGenerationTests(unittest.TestCase):
         self.assertIn("COALESCE", native_check(checks[2])["check"]["arguments"]["expression"])
         entity.quality = None
         self.assertEqual(quality_files(entity), {})
+
+    def test_quality_ddl_strips_constraints_and_sql_literals_preserve_escapes(self):
+        from quality_payloads import quality_ddl, sql_python_literal
+
+        columns = [
+            {"name": "Identity", "delta_type": "BIGINT", "delta_nullable": False, "metadata": {"surrogate_key": True}}
+        ]
+        statements = quality_ddl(columns, "core", "Example")
+        ddl = eval(statements["quarantine_sql"], {"__builtins__": {}})
+        self.assertIn("`Identity` BIGINT", ddl)
+        for constraint in ["NOT NULL", "IDENTITY", "PRIMARY KEY"]:
+            self.assertNotIn(constraint, ddl)
+        text = 'SELECT """quoted""", \\path\nFROM `a``b`'
+        self.assertEqual(eval(sql_python_literal(text), {"__builtins__": {}}), text)
+        with self.assertRaisesRegex(ValueError, "reserved"):
+            quality_ddl([{"name": "_errors", "delta_type": "STRING"}], "core", "Bad")

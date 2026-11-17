@@ -1,0 +1,15 @@
+try:
+    quality_metric_df = quality_runtime.write_metrics(enforcement_metrics, quality_context)
+    if quality_metric_df is not None:
+        display(quality_metric_df.select("check_id", "execution", "severity", "checked_rows", "failed_rows", "measured_value", "status"))
+    # The gate runs only after valid target rows and audit metrics have been written.
+    failure_rate_pct = 100 * quality_error_rows / quality_total_rows if quality_total_rows else 0.0
+    max_failure_rate_pct = quality_rules["quality"].get("settings", {}).get("maxFailureRatePct")
+    print({"error_rate_pct": failure_rate_pct, "max_failure_rate_pct": max_failure_rate_pct})
+    if quality_total_rows and max_failure_rate_pct is not None and failure_rate_pct > max_failure_rate_pct:
+        raise quality_runtime.QualityThresholdExceeded(
+            f"Quality error rate {failure_rate_pct:.2f}% exceeds {max_failure_rate_pct}% after writing valid rows"
+        )
+finally:
+    if quality_checked_df is not None:
+        quality_checked_df.unpersist()

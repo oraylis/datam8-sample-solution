@@ -81,3 +81,81 @@ def quality_files(entity: Any) -> dict[Path, str]:
     spec["files"] = {group: f"{group}.yaml" for group in groups}
     files[root / "manifest.json"] = json.dumps(spec, indent=2, ensure_ascii=False) + "\n"
     return files
+
+
+def notebook_quality(entity: Any) -> dict[str, Any] | None:
+    spec = quality_spec(entity)
+    if spec is None:
+        return None
+    checks = spec["quality"]["checks"]
+    spec["enforcement"] = [c for c in checks if c["execution"] == "enforcement"]
+    spec["monitoring_rows"] = [
+        c
+        for c in checks
+        if c["execution"] == "monitoring" and c["type"] not in ("completeness", "freshness", "row_count")
+    ]
+    spec["monitoring_summary"] = [
+        c for c in checks if c["execution"] == "monitoring" and c not in spec["monitoring_rows"]
+    ]
+    overview = [
+        "| ID | Execution | Severity | Type | Attribute | Parameters |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    for c in checks:
+        values = [
+            c["id"],
+            c["execution"],
+            c["severity"],
+            c["type"],
+            c.get("attribute", ""),
+            json.dumps(c.get("parameters", {}), ensure_ascii=False),
+        ]
+        overview.append("| " + " | ".join(str(v).replace("|", "&#124;").replace("\n", " ") for v in values) + " |")
+    spec["overview"] = "\n".join("# MAGIC " + line for line in overview)
+    for execution in ("enforcement", "monitoring"):
+        lines = overview[:2] + [line for line, check in zip(overview[2:], checks) if check["execution"] == execution]
+        spec["overview_" + execution] = "\n".join("# MAGIC " + line for line in lines)
+    aggregates = ["COUNT(*) AS `__dm8_total`"]
+    for c in spec["monitoring_summary"]:
+        attr = quoted(c.get("attribute", ""))
+        expression = (
+            "COUNT(*)"
+            if c["type"] == "row_count"
+            else f"COUNT({attr}) / NULLIF(COUNT(*), 0)"
+            if c["type"] == "completeness"
+            else f"CAST(:evaluated_at AS DOUBLE) - CAST(MAX({attr}) AS DOUBLE)"
+        )
+        aggregates.append(expression + " AS " + quoted("__dm8_q_" + c["id"]))
+    spec["summary_sql"] = "SELECT\n  " + ",\n  ".join(aggregates) + "\nFROM {target_table}"
+    spec["summary_sql_literal"] = sql_python_literal(spec["summary_sql"])
+    return spec
+
+
+def quality_ddl(columns: list[dict], zone: str, table: str) -> dict[str, str]:
+    reserved = [
+        c["name"]
+        for c in columns
+        if c["name"].startswith("__dm8_dq_") or c["name"] in ("_errors", "_warnings", "_dq_info")
+    ]
+    if reserved:
+        raise ValueError("Target uses reserved quality audit column names: " + ", ".join(reserved))
+    fields = [f"{quoted(c['name'])} {c['delta_type']}" for c in columns]
+    fields.append("`__dm8_dq_audit` STRING")
+    statements = {
+        "quarantine_sql": f"CREATE TABLE IF NOT EXISTS `{{catalog_name}}`.{quoted(zone)}."
+        f"{quoted(table + '_quarantine')} (\n  "
+        + ",\n  ".join(fields)
+        + "\n) USING DELTA;",
+        "metrics_schema_sql": "CREATE SCHEMA IF NOT EXISTS `{catalog_name}`.quality;",
+        "metrics_sql": """CREATE TABLE IF NOT EXISTS `{catalog_name}`.quality.dqx_metrics (
+  entity_id BIGINT, target_table STRING, run_id STRING, attempt_id STRING, rule_set_hash STRING,
+  check_id STRING, execution STRING, severity STRING, evaluated_at TIMESTAMP, checked_rows BIGINT,
+  failed_rows BIGINT, measured_value DOUBLE, parameters STRING, status STRING
+) USING DELTA;""",
+    }
+    return {name: sql_python_literal(sql) for name, sql in statements.items()}
+
+
+def sql_python_literal(sql: str) -> str:
+    """Keep SQL readable across source lines without allowing Python string escapes."""
+    return '"""' + sql.replace("\\", "\\\\").replace('"""', '\\"""') + '"""'

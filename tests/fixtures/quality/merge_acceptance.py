@@ -29,6 +29,9 @@ for name, entity_id, expected in [
         spark.sql(f"DROP TABLE IF EXISTS {table}")
     notebooks = root / "output/databricks/notebooks/020-Core"
     dbutils.notebook.run(str(notebooks / f"ddl/MasterData/Customer/{name}"), 180, params)
+    quarantine_schema = spark.table(target + "_quarantine").schema
+    assert all(field.nullable for field in quarantine_schema)
+    assert all(not any(key.startswith("delta.identity") for key in field.metadata) for field in quarantine_schema)
     for step, amount in enumerate((10.0, 20.0)):
         spark.createDataFrame(
             [(1, amount, "a@example.test", datetime.now(timezone.utc))],

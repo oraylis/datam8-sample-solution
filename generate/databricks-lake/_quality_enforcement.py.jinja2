@@ -1,0 +1,49 @@
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Enforcement: evaluate input and route invalid rows
+# MAGIC Error rows enter quarantine; warning-only rows remain valid. Metrics and the quality gate follow the target write.
+
+# COMMAND ----------
+
+quality_input_columns = {{ quality_input }}.columns
+quality_record_rules = [rule for rule in quality_rules["quality"]["checks"] if rule["execution"] == "enforcement"]
+enforcement_checks = quality_rules["checks"]["enforcement"]
+enforcement_metrics = []
+quality_checked_df = None
+quality_total_rows = 0
+quality_error_rows = 0
+if enforcement_checks:
+    quality_runtime.validate_check_inputs({{ quality_input }}, enforcement_checks)
+    quality_checked_df = quality_engine.apply_checks_by_metadata({{ quality_input }}, enforcement_checks).persist()
+    try:
+{% set quality_record_df = 'quality_checked_df' %}
+{% set quality_metrics = 'enforcement_metrics' %}
+{% set quality_execution = 'enforcement' %}
+{% filter indent(8, true) %}{% include '_quality_records.py.jinja2' %}{% endfilter %}
+        quality_total_rows = quality_counts["total_rows"]
+        quality_error_rows = quality_counts["error_rows"] or 0
+        quality_invalid_df = quality_checked_df.where(quality_has_errors)
+        {{ quality_input }} = quality_checked_df.where(~quality_has_errors).select(*quality_input_columns)
+        print({"input_rows": quality_total_rows, "valid_rows": quality_total_rows - quality_error_rows,
+               "error_rows": quality_error_rows, "warning_rows": quality_counts["warning_rows"] or 0})
+    except Exception:
+        quality_checked_df.unpersist()
+        raise
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Persist quarantine before writing the target
+# MAGIC The shared writer adds audit JSON and an idempotent Delta transaction identity.
+
+# COMMAND ----------
+
+if enforcement_checks:
+    quality_runtime.write_quarantine(quality_invalid_df, quality_error_rows, quality_context)
+# Do not overwrite an existing target with empty or all-invalid input.
+if {{ quality_input }}.isEmpty():
+{% filter indent(4, true) %}{% include '_quality_finish.py.jinja2' %}{% endfilter %}
+    dbutils.notebook.exit("SKIPPED_EMPTY_QUALITY_OUTPUT")
+
+# COMMAND ----------

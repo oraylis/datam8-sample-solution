@@ -184,10 +184,36 @@ table_instance.set_column_tags("{{ column.column }}", {{ column.tags_repr | safe
 
 {% if data.quality %}
 # COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Quality storage: nullable quarantine and central metrics
+# MAGIC Quarantine retains invalid values without target constraints or identity generation.
+# MAGIC Audit records use __dm8_dq_audit; the target table is not copied or truncated.
+{{ data.quality.overview | safe }}
+
+# COMMAND ----------
+
 from pathlib import Path
 import sys
 quality_root = next(parent for parent in [Path.cwd(), *Path.cwd().parents] if (parent / "utils/QualityFramework.py").is_file())
 sys.path.insert(0, str(quality_root / "utils"))
 import QualityFramework as quality_runtime
-quality_runtime.ensure_tables(spark, f"{catalog.name}.{zone}.{full_table_name}")
+quality_runtime.validate_target_columns(spark.table(table_name).schema)
+
+# COMMAND ----------
+
+# DBTITLE 1,Create nullable quarantine table
+quarantine_sql = {{ data.quality_ddl.quarantine_sql | safe }}.replace("{catalog_name}", catalog_name.replace("`", "``"))
+print(quarantine_sql)
+spark.sql(quarantine_sql)
+
+# COMMAND ----------
+
+# DBTITLE 1,Create central quality schema and metrics table
+metrics_schema_sql = {{ data.quality_ddl.metrics_schema_sql | safe }}.replace("{catalog_name}", catalog_name.replace("`", "``"))
+metrics_sql = {{ data.quality_ddl.metrics_sql | safe }}.replace("{catalog_name}", catalog_name.replace("`", "``"))
+print(metrics_schema_sql)
+spark.sql(metrics_schema_sql)
+print(metrics_sql)
+spark.sql(metrics_sql)
 {% endif %}
