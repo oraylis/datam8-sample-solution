@@ -61,6 +61,14 @@ targets and local configuration are not synchronized. See the
 [bundle reference](https://docs.databricks.com/aws/en/dev-tools/bundles/reference#sync)
 for path and ignore semantics.
 
+Match the on-disk spelling of sync paths exactly, including on macOS and Windows.
+For example, an old `Output` directory must be renamed to `output` before
+generation; local file access may succeed while case-sensitive sync filters omit
+the artifacts. The offline asset check rejects this mismatch. Inspect
+`databricks bundle sync --dry-run --full` before deploying and verify that the
+required notebooks, runtime modules and quality rules exist in the workspace
+before starting jobs.
+
 ## Authenticate, validate and deploy
 
 Install the [Databricks CLI](https://docs.databricks.com/aws/en/dev-tools/cli/install)

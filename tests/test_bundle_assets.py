@@ -76,6 +76,12 @@ class BundleAssetsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Missing %run dependency"):
             self.check()
 
+    def test_sync_path_case_must_match_even_on_case_insensitive_filesystems(self):
+        (self.root / "code").rename(self.root / "code-renaming")
+        (self.root / "code-renaming").rename(self.root / "Code")
+        with self.assertRaisesRegex(ValueError, "Sync path casing differs from the filesystem"):
+            self.check()
+
     def test_generated_resource_coverage_remains_required(self):
         self.write("artifacts/omitted.yml", "resources: {}\n")
         with self.assertRaisesRegex(ValueError, "cover every generated resource YAML"):

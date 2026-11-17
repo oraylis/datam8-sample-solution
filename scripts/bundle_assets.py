@@ -63,15 +63,34 @@ def bundle_configuration(bundle: Path, output: Path | None = None):
     return configuration
 
 
+def check_sync_path_case(root: Path, path: Path):
+    """Reject paths that only resolve because the local filesystem ignores case."""
+    current = root
+    for part in path.relative_to(root).parts:
+        if not current.is_dir():
+            return
+        names = {child.name for child in current.iterdir()}
+        if part not in names:
+            actual = next((name for name in names if name.casefold() == part.casefold()), None)
+            if actual is not None:
+                raise ValueError(
+                    f"Sync path casing differs from the filesystem: {current / part}; "
+                    f"rename {current / actual} to match before generating and deploying"
+                )
+            return
+        current /= part
+
+
 def required_assets(bundle: Path, output: Path | None = None):
     bundle = bundle.resolve()
     configuration = bundle_configuration(bundle, output)
     sync = configuration.get("sync", {})
     roots = {(bundle / value).resolve() for value in sync.get("paths", ["."])}
+    root = Path(os.path.commonpath([bundle, *roots]))
     for path in roots:
+        check_sync_path_case(root, path)
         if not path.exists():
             raise ValueError("Missing sync path: " + str(path))
-    root = Path(os.path.commonpath([bundle, *roots]))
     required = set()
 
     def local(value):

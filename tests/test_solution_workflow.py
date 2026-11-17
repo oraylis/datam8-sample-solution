@@ -15,6 +15,11 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from bundle_assets import bundle_configuration, required_assets  # noqa: E402
 
 
+def ignore_local_artifacts(directory, names):
+    excluded = {".git", ".venv", "output", "__pycache__", ".ruff_cache", ".databricks"}
+    return [name for name in names if name.casefold() in excluded]
+
+
 def snapshot(folder):
     return {path.relative_to(folder).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
             for path in folder.rglob("*") if path.is_file()}
@@ -24,8 +29,7 @@ class SolutionWorkflowTests(unittest.TestCase):
     def test_clean_isolation_bundle_assets_and_consumer_extension(self):
         with tempfile.TemporaryDirectory(prefix="datam8-workflow-") as directory:
             root = Path(directory) / "solution"
-            shutil.copytree(ROOT, root, ignore=shutil.ignore_patterns(
-                ".git", ".venv", "output", "__pycache__", ".ruff_cache", ".databricks"))
+            shutil.copytree(ROOT, root, ignore=ignore_local_artifacts)
             descriptor = root / "ORAYLISDatabricksSample.dm8s"
 
             def cli(*arguments):
