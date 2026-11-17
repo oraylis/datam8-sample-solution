@@ -1,8 +1,7 @@
 import sys
 from pathlib import Path
-from types import SimpleNamespace
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "generate/shared"))
 from uc_sources import database_query, fetch_http_rows, read_database
@@ -44,14 +43,16 @@ class SourceReaderTests(unittest.TestCase):
         self.assertNotIn("sensitive", str(error.exception))
 
     def test_sqlserver_ordinary_table_and_filter(self):
-        query, predicate = database_query("sample_sqlserver", "SELECT * FROM [SalesLT].[Customer] WHERE CustomerID > 100", "adventureworks", "builtin:SQLServer")
-        self.assertIn("dbtable => 'SalesLT.Customer'", query)
+        query, predicate, parameters = database_query("sample_sqlserver", "SELECT * FROM [SalesLT].[Customer] WHERE CustomerID > 100", "adventureworks", "builtin:SQLServer")
+        self.assertIn("dbtable => :source_relation", query)
+        self.assertEqual(parameters["source_relation"], "SalesLT.Customer")
         self.assertEqual(predicate, "CustomerID > 100")
         self.assertNotIn("host", query)
 
     def test_oracle_uses_service_binding(self):
-        query, _ = database_query("sample_oracle", '"APP"."SUPPLIERS"', "SAMPLEPDB", "oracle")
-        self.assertIn("service_name => 'SAMPLEPDB'", query)
+        query, _, parameters = database_query("sample_oracle", '"APP"."SUPPLIERS"', "SAMPLEPDB", "oracle")
+        self.assertIn("service_name => :database", query)
+        self.assertEqual(parameters["database"], "SAMPLEPDB")
 
     def test_sql_builtin_reader_handles_quoted_columns_without_id_translation(self):
         spark = Mock()
@@ -60,9 +61,21 @@ class SourceReaderTests(unittest.TestCase):
             "SELECT * FROM [SalesLT].[Customer] WHERE [CustomerID] > 100",
             "adventureworks", "builtin:SQLServer",
         )
-        self.assertIn("dbtable => 'SalesLT.Customer'", spark.sql.call_args.args[0])
+        self.assertIn("dbtable => :source_relation", spark.sql.call_args.args[0])
+        self.assertEqual(spark.sql.call_args.kwargs["args"]["source_relation"], "SalesLT.Customer")
         spark.sql.return_value.filter.assert_called_once_with("`CustomerID` > 100")
         self.assertIs(result, spark.sql.return_value.filter.return_value)
+
+    def test_native_query_literals_reach_spark_unchanged_as_bound_parameters(self):
+        spark = Mock()
+        native = "SELECT *, 'AdventureWorks_US' AS SourceSystem, 'O''Brien' AS Label FROM [SalesLT].[Customer]"
+        read_database(spark, "sample_sqlserver", native, "adventureworks", "builtin:SQLServer")
+        query = spark.sql.call_args.args[0]
+        self.assertIn("query => :source_relation", query)
+        self.assertNotIn("AdventureWorks_US", query)
+        self.assertEqual(spark.sql.call_args.kwargs["args"], {
+            "connection": "sample_sqlserver", "database": "adventureworks", "source_relation": native})
+        spark.sql.return_value.filter.assert_not_called()
 
     def test_proxy_endpoint_cannot_escape_connection(self):
         with self.assertRaises(ValueError):

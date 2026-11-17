@@ -1,6 +1,10 @@
 bundle:
   name: datam8-sample
 
+experimental:
+  # Keep physical schema names aligned with generated notebook references.
+  skip_name_prefix_for_schema: true
+
 include:
   - ../../output/databricks/schemas/*.yml
   - ../../output/databricks/clusters/*.yml

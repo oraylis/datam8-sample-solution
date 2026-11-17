@@ -87,3 +87,14 @@ class BundleAssetsTests(unittest.TestCase):
             "notebook_path": "${workspace.file_path}/notebook"}}]}}}}
         (self.bundle / "databricks.yml").write_text(yaml.safe_dump(self.configuration), encoding="utf-8")
         self.assertEqual(required_assets(self.bundle), ["notebook.py"])
+
+    def test_development_prefix_must_not_change_generated_schema_names(self):
+        self.configuration["resources"] = {"schemas": {"schema_raw": {"name": "raw", "catalog_name": "isolated"}}}
+        self.configuration["targets"] = {"dev": {"mode": "development"}}
+        with self.assertRaisesRegex(ValueError, "preserve generated schema names"):
+            self.check()
+        self.configuration["targets"]["dev"]["presets"] = {"name_prefix": ""}
+        with self.assertRaisesRegex(ValueError, "preserve generated schema names"):
+            self.check()
+        self.configuration["experimental"] = {"skip_name_prefix_for_schema": True}
+        self.assertIn("code/nested/entry.py", self.check())

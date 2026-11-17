@@ -59,8 +59,11 @@ Upload only the fixture artifacts, shared utilities and acceptance notebook; pas
 `catalog_name`, `owner` and `workspace_root` explicitly. Do not commit real
 workspace identifiers or credentials.
 
-The public sample's SQL reader requires DBR 18.3 or later. Synthetic Quality
-acceptance can run on classic DBR 16.4; that result does not validate the SQL reader.
+The public sample's SQL reader requires `remote_query` support (DBR 18.3).
+Current Runtime 18 LTS is selected with `18.x-scala2.13`; check the actual runtime
+and execute a bounded source query rather than looking only for an explicit
+`18.3` key in the versions API. Synthetic Quality acceptance can run on classic
+DBR 16.4; that result does not validate the SQL reader.
 
 The additional `merge_acceptance.py` fixture covers append, SCD1 merge and SCD2
 history with the same rules. Its module docstring specifies the three variants

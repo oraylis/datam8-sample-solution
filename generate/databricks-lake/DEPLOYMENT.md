@@ -30,6 +30,9 @@ workspace, source system, catalog, connection or service principal.
   `USE CONNECTION`; dedicated compute also requires `MANAGE` on the connection.
   Confirm current runtime and access requirements in the
   [manufacturer documentation](https://learn.microsoft.com/en-us/azure/databricks/query-federation/remote-queries).
+  The current Runtime 18 LTS is selected through the API key
+  `18.x-scala2.13` (the running cluster reports 18.3). Do not infer feature
+  availability only from whether `spark-versions` lists an explicit `18.3` key.
   Generated cluster metadata is illustrative; the mandatory dev cluster override
   below avoids provisioning those clusters or relying on their example settings.
 
@@ -76,12 +79,21 @@ databricks bundle validate --target dev --profile sample-dev
 databricks bundle deploy --target dev --profile sample-dev
 ```
 
+The CLI also supports the direct deployment engine. If Terraform provider
+initialization is unavailable, set `DATABRICKS_BUNDLE_ENGINE=direct` for the bundle
+commands on a CLI version that exposes that engine in `databricks bundle schema`.
+Use the same engine consistently for subsequent deployments of that bundle.
+
 Validation should resolve all variables, resources and local notebook paths.
 Deployment should create the schema/job resources and upload files beneath
 `/Workspace/Users/<your-user>/.bundle/datam8-sample/dev`, with schedules paused.
 The required `cluster_id` selects an existing cluster through development mode;
 the `run_as` user is the authenticated current user. See
 [development-mode behavior](https://docs.databricks.com/aws/en/dev-tools/bundles/deployment-modes).
+The bundle sets `experimental.skip_name_prefix_for_schema: true` because generated
+notebooks refer to the model's physical schema names (Databricks CLI 0.255+). Use a separate catalog for
+each isolated deployment; workspace paths alone do not isolate data. Job display
+names retain the development and environment prefixes.
 Use a distinct bundle name when deploying multiple solution copies as the same
 user; dev workspace isolation does not isolate data inside a shared catalog.
 

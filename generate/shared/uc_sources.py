@@ -7,10 +7,6 @@ import re
 import time
 
 
-def sql_literal(value):
-    return "'" + str(value).replace("'", "''") + "'"
-
-
 def database_query(connection, location, database, plugin):
     option = "service_name" if plugin == "oracle" else "database"
     if not database:
@@ -25,15 +21,18 @@ def database_query(connection, location, database, plugin):
         table, predicate = location.strip(), None
     if not re.match(r"(?i)^select\b", table):
         table = table.replace("[", "").replace("]", "") if plugin == "builtin:SQLServer" else table
-        selection = "dbtable => " + sql_literal(table)
+        selection = "dbtable => :source_relation"
     else:
-        selection = "query => " + sql_literal(table)
-    return f"SELECT * FROM remote_query({sql_literal(connection)}, {option} => {sql_literal(database)}, {selection})", predicate
+        selection = "query => :source_relation"
+    parameters = {"connection": connection, "database": database, "source_relation": table}
+    query = f"SELECT * FROM remote_query(:connection, {option} => :database, {selection})"
+    return query, predicate, parameters
 
 
 def read_database(spark, connection, location, database, plugin):
-    query, predicate = database_query(connection, location, database, plugin)
-    frame = spark.sql(query)
+    query, predicate, parameters = database_query(connection, location, database, plugin)
+    # Bind opaque native SQL without changing quotes or backslashes in its literals.
+    frame = spark.sql(query, args=parameters)
     if predicate:
         frame = frame.filter(predicate.replace("[", "`").replace("]", "`") if plugin == "builtin:SQLServer" else predicate)
     return frame

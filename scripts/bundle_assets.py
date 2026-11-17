@@ -43,6 +43,19 @@ def bundle_configuration(bundle: Path, output: Path | None = None):
                     if key in destination:
                         raise ValueError("Duplicate variable: " + key)
                     destination[key] = value
+    # Generated notebooks use physical zone names. A development-mode prefix
+    # changes schema resources without changing those notebook references.
+    if configuration.get("resources", {}).get("schemas"):
+        for target in configuration.get("targets", {}).values():
+            if target.get("mode") != "development":
+                continue
+            experimental = {**configuration.get("experimental", {}),
+                            **target.get("experimental", {})}
+            if experimental.get("skip_name_prefix_for_schema") is not True:
+                raise ValueError(
+                    "Development mode must preserve generated schema names: "
+                    "set experimental.skip_name_prefix_for_schema to true"
+                )
     references = set(re.findall(r"\$\{var\.([^}]+)\}", yaml.safe_dump(configuration)))
     missing = references - configuration.get("variables", {}).keys()
     if missing:
