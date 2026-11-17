@@ -6,6 +6,7 @@ synthetic Delta tables are read or written. No live source connection is used.
 """
 
 import json
+import os
 from copy import deepcopy
 import sys
 from datetime import datetime, timezone
@@ -100,23 +101,39 @@ assert {m["check_id"]: m["status"] for m in empty_metrics} == {
     "updated_fresh": "FAILED",
     "row_count": "FAILED",
 }
-# A malformed SQL expression is a technical execution error, never a quality pass.
-
-bad = deepcopy(spec)
-bad["checks"]["monitoring_summary"][0]["check"]["arguments"]["expression"] = "NOT VALID SQL ("
-try:
-    quality.monitor(bad, quality.context(spark, target, bad, "technical-error"))
-    raise AssertionError("Technical SQL failure was hidden")
-except AssertionError:
-    raise
-except Exception:
-    pass
+# Invalid SQL is a technical error, including on empty targets/inputs. DQX may
+# otherwise report these checks as skipped instead of raising on some runtimes.
+metric_count = spark.table(f"{catalog}.quality.dqx_metrics").count()
+version = spark.sql(f"DESCRIBE HISTORY {target}").first().version
+for expression in ("NOT VALID SQL (", "missing_quality_column > 0", "1"):
+    bad = deepcopy(spec)
+    bad["checks"]["monitoring_summary"][0]["check"]["arguments"]["expression"] = expression
+    try:
+        quality.monitor(bad, quality.context(spark, target, bad, "technical-error"))
+        raise AssertionError("Technical SQL failure was hidden")
+    except AssertionError:
+        raise
+    except Exception:
+        pass
+    bad = deepcopy(spec)
+    bad["checks"]["enforcement"][0]["check"] = {
+        "function": "sql_expression", "arguments": {"expression": expression}}
+    try:
+        quality.enforce(spark.createDataFrame([], schema), bad, quality.context(spark, target, bad, "invalid-input"))
+        raise AssertionError("Technical enforcement failure was hidden on empty input")
+    except AssertionError:
+        raise
+    except Exception:
+        pass
+assert spark.table(f"{catalog}.quality.dqx_metrics").count() == metric_count
+assert spark.sql(f"DESCRIBE HISTORY {target}").first().version == version
 print("QUALITY_ACCEPTANCE_PASSED")
 dbutils.notebook.exit(
     json.dumps(
         {
             "status": "PASSED",
             "catalog": catalog,
+            "runtime": os.environ.get("DATABRICKS_RUNTIME_VERSION"),
             "target": target,
             "checks": [
                 "generated-ddl",

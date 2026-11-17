@@ -28,6 +28,10 @@ FALSE/NULL fails. Completeness counts non-NULL values. Freshness evaluates the
 latest timestamp, rejecting future timestamps. Empty record input and empty
 Completeness yield `NO_DATA`; Freshness fails and Row Count evaluates zero.
 Monitoring violations do not fail the task; technical execution errors do.
+The runtime resolves SQL expressions and referenced columns against the input
+schema before invoking DQX, and requires Boolean SQL results. Invalid syntax,
+missing columns and non-Boolean expressions fail even on empty input; they cannot
+be silently reported as skipped checks or `NO_DATA` metrics.
 
 ## Storage and recovery
 
@@ -51,7 +55,8 @@ or an exactly-once recovery system.
 ## Acceptance fixtures
 
 The synthetic entity and function in `tests/fixtures/quality` are opt-in fixtures
-for a disposable solution running the matching Model/Generator feature branches.
+for a disposable solution. Run `uv sync --frozen` to use the locked CLI revision
+and its matching Model schema, including quality validation.
 They are not part of the public AdventureWorks model. `acceptance.py` executes
 generated DDL, DML and Monitoring notebooks against a caller-provided isolated
 `dm8_quality_test_*` catalog on classic compute. It never reads a live source.

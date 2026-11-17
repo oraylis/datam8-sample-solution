@@ -14,7 +14,7 @@ dependencies = [
 Homepage = "https://github.com/oraylis/datam8-sample-solution"
 
 [tool.uv.sources]
-datam8 = { git = "https://github.com/oraylis/datam8-cli", rev = "85ff50de3c7fc8e20abd4edd021d63df02c31b91" }
+datam8 = { git = "https://github.com/oraylis/datam8-cli", rev = "07614afa7560e2c55825206da798e2926e32dbb4" }
 
 [tool.ruff]
 line-length = 120

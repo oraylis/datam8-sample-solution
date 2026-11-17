@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -226,8 +226,8 @@ wheels = [
 
 [[package]]
 name = "datam8"
-version = "2.1.0"
-source = { git = "https://github.com/oraylis/datam8-cli?rev=85ff50de3c7fc8e20abd4edd021d63df02c31b91#85ff50de3c7fc8e20abd4edd021d63df02c31b91" }
+version = "2.1.1"
+source = { git = "https://github.com/oraylis/datam8-cli?rev=07614afa7560e2c55825206da798e2926e32dbb4#07614afa7560e2c55825206da798e2926e32dbb4" }
 dependencies = [
     { name = "deepdiff" },
     { name = "jinja2" },
@@ -258,7 +258,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "datam8", extras = ["sql"], git = "https://github.com/oraylis/datam8-cli?rev=85ff50de3c7fc8e20abd4edd021d63df02c31b91" },
+    { name = "datam8", extras = ["sql"], git = "https://github.com/oraylis/datam8-cli?rev=07614afa7560e2c55825206da798e2926e32dbb4" },
     { name = "pathspec", specifier = "==1.1.1" },
     { name = "pyyaml", specifier = "==6.0.3" },
 ]

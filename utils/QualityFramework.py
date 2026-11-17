@@ -51,6 +51,22 @@ def _engine(ctx):
     return DQEngineCore(WorkspaceClient(), ctx["spark"])
 
 
+def _apply_checks(df, checks, ctx):
+    from pyspark.sql import functions as F, types as T
+
+    # DQX can report an invalid expression/column as skipped. Resolve supported
+    # inputs first so technical configuration errors also fail on empty data.
+    for check in checks:
+        arguments = check["check"].get("arguments", {})
+        if check["check"]["function"] == "sql_expression":
+            datatype = df.select(F.expr(arguments["expression"])).schema.fields[0].dataType
+            if not isinstance(datatype, T.BooleanType):
+                raise ValueError(f"Quality SQL check {check['name']} must return BOOLEAN")
+        elif "column" in arguments:
+            df.select(F.col(arguments["column"])).schema
+    return _engine(ctx).apply_checks_by_metadata(df, checks)
+
+
 def _has_result(column, check_id=None):
     from pyspark.sql import functions as F
 
@@ -117,8 +133,12 @@ def enforce(df, spec, ctx):
             "checked": None,
             "threshold": None,
         }
-    checked = _engine(ctx).apply_checks_by_metadata(df, spec["checks"]["enforcement"]).persist()
-    total, errors, metrics = _records(checked, rules, ctx, "enforcement")
+    checked = _apply_checks(df, spec["checks"]["enforcement"], ctx).persist()
+    try:
+        total, errors, metrics = _records(checked, rules, ctx, "enforcement")
+    except Exception:
+        checked.unpersist()
+        raise
     return {
         "valid": checked.where(~_has_result("_errors")).select(*df.columns),
         "invalid": checked.where(_has_result("_errors")),
@@ -224,7 +244,7 @@ def monitor(spec, ctx):
     row_rules = [c for c in rules if c["type"] not in ("completeness", "freshness", "row_count")]
     metrics = []
     if row_rules:
-        checked = _engine(ctx).apply_checks_by_metadata(df, spec["checks"]["monitoring_rows"])
+        checked = _apply_checks(df, spec["checks"]["monitoring_rows"], ctx)
         _, _, metrics = _records(checked, row_rules, ctx, "monitoring")
     summary_rules = [c for c in rules if c not in row_rules]
     if summary_rules:
@@ -241,7 +261,7 @@ def monitor(spec, ctx):
                 )
             aggregates.append(measure.alias("__dm8_q_" + rule["id"]))
         summary = df.agg(*aggregates)
-        checked = _engine(ctx).apply_checks_by_metadata(summary, spec["checks"]["monitoring_summary"])
+        checked = _apply_checks(summary, spec["checks"]["monitoring_summary"], ctx)
         value = checked.first().asDict(recursive=True)
         failed_ids = {r["name"] for r in (value.get("_errors") or []) + (value.get("_warnings") or [])}
         for rule in summary_rules:
