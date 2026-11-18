@@ -22,7 +22,8 @@ monitoring. Native rule YAML and an audit manifest are under
 calls, valid/invalid split, metrics and threshold decision. The shared
 `utils/QualityFramework.py` contains technical validation and idempotent audit I/O.
 
-Native `dqx` definitions pass their function and JSON arguments directly to DQX
+The shared quality schema stores open definitions without a tool catalogue. This
+target passes native function names and JSON arguments directly to DQX
 0.16.0; there is no DataM8 function allow-list. Reference DataFrames and additional
 PyPI dependencies come from the entity model. The self-contained
 [native fixture](../../tests/fixtures/quality/QualityNativeProbe.json) demonstrates

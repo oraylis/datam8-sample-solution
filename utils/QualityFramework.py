@@ -30,8 +30,7 @@ def load_checks(manifest_path):
             raise ValueError(f"Invalid generated DQX checks: {status}")
         spec["checks"][mode] = checks
     for rule in spec["quality"]["checks"]:
-        if rule["type"] == "dqx":
-            rule["severity"] = "warning" if rule["definition"].get("criticality") == "warn" else "error"
+        rule["severity"] = "warning" if rule["definition"].get("criticality") == "warn" else "error"
     return spec
 
 
@@ -85,6 +84,25 @@ def validate_check_inputs(df, checks, ref_dfs=None):
                     raise ValueError("DQX filter must return BOOLEAN")
 
 
+def validate_monitoring_query(spark, query):
+    """Resolve a read-only SQL input without executing a command against the target."""
+    from databricks.labs.dqx.utils import is_sql_query_safe
+
+    if not is_sql_query_safe(query):
+        raise ValueError("Monitoring input must be a read-only SQL query")
+    plan = spark._jsparkSession.sessionState().sqlParser().parsePlan(query)
+    command = spark._jvm.java.lang.Class.forName("org.apache.spark.sql.catalyst.plans.logical.Command")
+
+    def validate(node):
+        if command.isAssignableFrom(node.getClass()):
+            raise ValueError("Monitoring input must not execute SQL commands")
+        children = node.children().iterator()
+        while children.hasNext():
+            validate(children.next())
+
+    validate(plan)
+
+
 def validate_target_columns(schema):
     if any(f.name.startswith("__dm8_dq_") or f.name in ("_errors", "_warnings", "_dq_info") for f in schema):
         raise ValueError("Target uses reserved quality audit column names")
@@ -108,7 +126,7 @@ def metric(rule, ctx, execution, total, failed, measured, status):
         "checked_rows": int(total),
         "failed_rows": int(failed) if failed is not None else None,
         "measured_value": float(measured) if measured is not None else None,
-        "parameters": json.dumps(rule.get("parameters", rule.get("definition", {})), sort_keys=True),
+        "parameters": json.dumps(rule["definition"], sort_keys=True),
         "status": status,
     }
 

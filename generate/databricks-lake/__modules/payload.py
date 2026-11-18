@@ -983,7 +983,7 @@ def generate_quality_notebooks(model: Model, cache: Cache) -> Sequence[IPayload]
         spec = notebook_quality(wrapper.entity)
         if zone is None or zone.name not in MODELLED_ZONES or not spec:
             continue
-        if not (spec["monitoring_rows"] or spec["monitoring_summary"]):
+        if not spec["monitoring_groups"]:
             continue
         payloads.append(
             BasePayload(

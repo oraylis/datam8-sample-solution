@@ -199,6 +199,35 @@ for name, entity_id in [("QualityMonitorProbe", 9005), ("QualityRowsProbe", 9006
             == "FAILED"
         )
     monitoring_results.append(name)
+# Declared SQL inputs are read-only, and model-declared metric expressions fail technically.
+version = spark.sql(f"DESCRIBE HISTORY {target}").first().version
+for sql in (f"DELETE FROM {target}", f"DROP TABLE {target}"):
+    try:
+        quality.validate_monitoring_query(spark, sql)
+        raise AssertionError("A monitoring SQL command was accepted")
+    except ValueError:
+        pass
+original_manifest = manifest.read_text()
+metric_count = spark.table(f"{catalog}.quality.dqx_metrics").count()
+try:
+    for expression in ("1", "missing_metric_column > 0"):
+        changed = json.loads(original_manifest)
+        projected_rule = next(
+            rule for rule in changed["quality"]["checks"] if "metrics" in rule["definition"].get("datam8", {})
+        )
+        projected_rule["definition"]["datam8"]["metrics"]["no_data_when"] = expression
+        manifest.write_text(json.dumps(changed))
+        try:
+            dbutils.notebook.run(monitor, 180, dict(params, job_run_id="invalid-metric-projection"))
+            raise AssertionError("Invalid model metric expression was ignored")
+        except AssertionError:
+            raise
+        except Exception:
+            pass
+finally:
+    manifest.write_text(original_manifest)
+assert spark.table(f"{catalog}.quality.dqx_metrics").count() == metric_count
+assert spark.sql(f"DESCRIBE HISTORY {target}").first().version == version
 print("QUALITY_ACCEPTANCE_PASSED")
 dbutils.notebook.exit(
     json.dumps(

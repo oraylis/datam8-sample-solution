@@ -58,62 +58,35 @@ if quality_upstream_task and quality_upstream_result != "success":
 
 monitoring_df = spark.table(quality_target)
 monitoring_metrics = []
-{% if data.quality.monitoring_rows %}
+{% for group in data.quality.monitoring_groups %}
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Evaluate row-level monitoring checks with DQX
+# MAGIC ## Evaluate monitoring input: {{ group.input }}
+# MAGIC The model declares the input SQL and optional metric projections. Native DQX owns the check function semantics.
 
 # COMMAND ----------
 
-quality_record_rules = [rule for rule in quality_rules["quality"]["checks"]
-                        if rule["execution"] == "monitoring" and rule["type"] not in ("completeness", "freshness", "row_count")]
-monitoring_row_checks = quality_rules["checks"]["monitoring_rows"]
-quality_runtime.validate_check_inputs(monitoring_df, monitoring_row_checks, quality_reference_dfs)
-monitoring_checked_df = quality_engine.apply_checks_by_metadata(monitoring_df, monitoring_row_checks, ref_dfs=quality_reference_dfs)
+{% if group.sql_literal %}
+monitoring_sql = {{ group.sql_literal | safe }}.replace("{target_table}", quality_target_ref)
+quality_runtime.validate_monitoring_query(spark, monitoring_sql)
+print(monitoring_sql)
+monitoring_input_df = spark.sql(monitoring_sql, args={"evaluated_at": quality_context["evaluatedAt"]})
+{% else %}
+monitoring_input_df = monitoring_df
+{% endif %}
+monitoring_checks = quality_rules["checks"]["{{ group.key }}"]
+monitoring_rules = [rule for rule in quality_rules["quality"]["checks"]
+                    if rule["id"] in {{ group.ids | tojson }}]
+quality_runtime.validate_check_inputs(monitoring_input_df, monitoring_checks, quality_reference_dfs)
+monitoring_checked_df = quality_engine.apply_checks_by_metadata(monitoring_input_df, monitoring_checks, ref_dfs=quality_reference_dfs)
+quality_record_rules = [rule for rule in monitoring_rules if "metrics" not in rule["definition"].get("datam8", {})]
 {% set quality_record_df = 'monitoring_checked_df' %}
 {% set quality_metrics = 'monitoring_metrics' %}
 {% set quality_execution = 'monitoring' %}
 {% include '_quality_records.py.jinja2' %}
-{% endif %}
-{% if data.quality.monitoring_summary %}
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Calculate aggregate monitoring measures with SQL
-# MAGIC All aggregate checks share one scan and one fixed evaluation timestamp.
-# MAGIC Completeness is non-NULL / total; Freshness is seconds since the latest timestamp; Row Count evaluates zero on empty input.
-
-# COMMAND ----------
-
-monitoring_sql = {{ data.quality.summary_sql_literal | safe }}.replace("{target_table}", quality_target_ref)
-print(monitoring_sql)
-monitoring_summary_df = spark.sql(monitoring_sql, args={"evaluated_at": quality_context["evaluatedAt"]})
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Evaluate aggregate checks with DQX and determine statuses
-# MAGIC Empty completeness is NO_DATA. Missing or future timestamps fail freshness. Violations do not abort monitoring.
-
-# COMMAND ----------
-
-monitoring_summary_checks = quality_rules["checks"]["monitoring_summary"]
-quality_runtime.validate_check_inputs(monitoring_summary_df, monitoring_summary_checks, quality_reference_dfs)
-monitoring_summary_checked_df = quality_engine.apply_checks_by_metadata(monitoring_summary_df, monitoring_summary_checks, ref_dfs=quality_reference_dfs)
-summary_value = monitoring_summary_checked_df.first().asDict(recursive=True)
-failed_check_ids = {failure["name"] for failure in (summary_value.get("_errors") or []) + (summary_value.get("_warnings") or [])}
-summary_rules = [rule for rule in quality_rules["quality"]["checks"]
-                 if rule["execution"] == "monitoring" and rule["type"] in ("completeness", "freshness", "row_count")]
-for rule in summary_rules:
-    checked_rows = summary_value["__dm8_total"]
-    measured_value = summary_value["__dm8_q_" + rule["id"]]
-    status = ("NO_DATA" if not checked_rows and rule["type"] == "completeness"
-              else "FAILED" if rule["id"] in failed_check_ids else "PASSED")
-    monitoring_metrics.append(quality_runtime.metric(
-        rule, quality_context, "monitoring", checked_rows, None, measured_value, status,
-    ))
-{% endif %}
+{% include '_quality_projected_metrics.py.jinja2' %}
+{% endfor %}
 # COMMAND ----------
 
 # MAGIC %md

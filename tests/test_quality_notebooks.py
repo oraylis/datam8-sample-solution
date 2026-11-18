@@ -144,9 +144,9 @@ class QualityNotebookTests(unittest.TestCase):
 
     def test_only_configured_groups_are_rendered(self):
         self.assertIn("monitoring_checked_df", self.notebook("quality", "QualityMonitorProbe"))
-        self.assertIn("monitoring_summary_df", self.notebook("quality", "QualityMonitorProbe"))
-        self.assertNotIn("monitoring_summary_df", self.notebook("quality", "QualityRowsProbe"))
-        self.assertNotIn("monitoring_checked_df", self.notebook("quality", "QualitySummaryProbe"))
+        self.assertIn("monitoring_sql =", self.notebook("quality", "QualityMonitorProbe"))
+        self.assertNotIn("monitoring_sql =", self.notebook("quality", "QualityRowsProbe"))
+        self.assertNotIn("monitoring_input_df = monitoring_df", self.notebook("quality", "QualitySummaryProbe"))
         for name in ["QualityEnforceProbe", "QualityNoneProbe"]:
             self.assertFalse((self.output / f"notebooks/020-Core/quality/MasterData/Customer/{name}.py").exists())
         self.assertNotIn("quality_runtime", self.notebook("dml", "QualityNoneProbe"))
@@ -160,8 +160,9 @@ class QualityNotebookTests(unittest.TestCase):
             self.assertIn('dbutils.notebook.exit("SKIPPED_EMPTY_QUALITY_OUTPUT")', code)
         jobs = yaml.safe_load((self.output / "jobs/load_sales_daily.yml").read_text())["resources"]["jobs"]
         tasks = [t for job in jobs.values() for t in job["tasks"]]
-        matching = [t for t in tasks
-                    if t.get("notebook_task", {}).get("notebook_path", "").endswith("/QualityMonitorProbe")]
+        matching = [
+            t for t in tasks if t.get("notebook_task", {}).get("notebook_path", "").endswith("/QualityMonitorProbe")
+        ]
         self.assertEqual(len(matching), 2)
         for task in matching:
             if "/dml/" in task["notebook_task"]["notebook_path"]:

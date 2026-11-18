@@ -71,62 +71,117 @@
   ],
   "quality": {
     "settings": {
-      "maxFailureRatePct": 25
+      "maxFailureRatePct": 25,
+      "inputs": {
+        "summary": {
+          "sql": "SELECT\n  COUNT(*) AS `__dm8_total`,\n  COUNT(`Email`) / NULLIF(COUNT(*), 0) AS `__dm8_q_email_completeness`,\n  CAST(:evaluated_at AS DOUBLE) - CAST(MAX(`Updated`) AS DOUBLE) AS `__dm8_q_updated_fresh`,\n  COUNT(*) AS `__dm8_q_row_count`\nFROM {target_table}"
+        }
+      }
     },
     "checks": [
       {
         "id": "id_required",
-        "type": "not_null",
-        "attribute": "Id",
         "execution": "enforcement",
-        "severity": "error"
+        "definition": {
+          "criticality": "error",
+          "check": {
+            "function": "is_not_null",
+            "arguments": {
+              "column": "`Id`"
+            }
+          }
+        }
       },
       {
         "id": "amount_range",
-        "type": "range",
-        "attribute": "Amount",
         "execution": "enforcement",
-        "severity": "error",
-        "parameters": {
-          "min": 0
+        "definition": {
+          "criticality": "error",
+          "check": {
+            "function": "is_not_less_than",
+            "arguments": {
+              "column": "`Amount`",
+              "limit": 0
+            }
+          }
         }
       },
       {
         "id": "email_present",
-        "type": "sql_expression",
         "execution": "enforcement",
-        "severity": "warning",
-        "parameters": {
-          "expression": "Email IS NOT NULL"
+        "definition": {
+          "criticality": "warn",
+          "check": {
+            "function": "sql_expression",
+            "arguments": {
+              "expression": "COALESCE((Email IS NOT NULL), FALSE)",
+              "msg": "email_present"
+            }
+          }
         }
       },
       {
         "id": "email_completeness",
-        "type": "completeness",
-        "attribute": "Email",
         "execution": "monitoring",
-        "severity": "warning",
-        "parameters": {
-          "minCompleteness": 0.95
+        "definition": {
+          "criticality": "warn",
+          "datam8": {
+            "input": "summary",
+            "metrics": {
+              "checked_rows": "`__dm8_total`",
+              "measured_value": "`__dm8_q_email_completeness`",
+              "no_data_when": "`__dm8_total` = 0"
+            }
+          },
+          "check": {
+            "function": "sql_expression",
+            "arguments": {
+              "expression": "COALESCE((`__dm8_q_email_completeness` >= 0.95), FALSE)",
+              "msg": "email_completeness"
+            }
+          }
         }
       },
       {
         "id": "updated_fresh",
-        "type": "freshness",
-        "attribute": "Updated",
         "execution": "monitoring",
-        "severity": "error",
-        "parameters": {
-          "maxAgeSeconds": 300
+        "definition": {
+          "criticality": "error",
+          "datam8": {
+            "input": "summary",
+            "metrics": {
+              "checked_rows": "`__dm8_total`",
+              "measured_value": "`__dm8_q_updated_fresh`"
+            }
+          },
+          "check": {
+            "function": "sql_expression",
+            "arguments": {
+              "expression": "COALESCE((`__dm8_q_updated_fresh` BETWEEN 0 AND 300), FALSE)",
+              "msg": "updated_fresh"
+            }
+          }
         }
       },
       {
         "id": "row_count",
-        "type": "row_count",
         "execution": "monitoring",
-        "severity": "error",
-        "parameters": {
-          "minCount": 1
+        "definition": {
+          "criticality": "error",
+          "datam8": {
+            "input": "summary",
+            "metrics": {
+              "checked_rows": "`__dm8_total`",
+              "measured_value": "`__dm8_q_row_count`"
+            }
+          },
+          "check": {
+            "function": "sql_expression",
+            "arguments": {
+              "expression": "COALESCE((`__dm8_q_row_count` >= 1), FALSE)",
+              "msg": "row_count"
+            }
+          }
         }
       }
     ]

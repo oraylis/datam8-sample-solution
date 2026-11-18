@@ -85,7 +85,6 @@
     "checks": [
       {
         "id": "native_required",
-        "type": "dqx",
         "execution": "enforcement",
         "definition": {
           "check": {
@@ -100,7 +99,6 @@
       },
       {
         "id": "native_allowed",
-        "type": "dqx",
         "execution": "enforcement",
         "definition": {
           "check": {
@@ -119,7 +117,6 @@
       },
       {
         "id": "native_unique_input",
-        "type": "dqx",
         "execution": "enforcement",
         "definition": {
           "check": {
@@ -134,7 +131,6 @@
       },
       {
         "id": "native_email",
-        "type": "dqx",
         "execution": "enforcement",
         "definition": {
           "check": {
@@ -152,7 +148,6 @@
       },
       {
         "id": "native_unique_target",
-        "type": "dqx",
         "execution": "monitoring",
         "definition": {
           "check": {
@@ -167,7 +162,6 @@
       },
       {
         "id": "native_reference",
-        "type": "dqx",
         "execution": "monitoring",
         "definition": {
           "check": {

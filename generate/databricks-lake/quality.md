@@ -1,92 +1,97 @@
 # Batch Quality Runtime Reference
 
-Quality metadata belongs to the pinned DataM8 Model; validation belongs to the
-Generator. This target translates it directly into native DQX checks without an
-ODCS dependency. The runtime dependency is `databricks-labs-dqx==0.16.0` on
-**classic compute**. Quality-enabled jobs reject serverless configuration.
+The shared DataM8 schema stores opaque rule definitions and open target options.
+It has no tool or check catalogue. This target interprets definitions as native
+DQX metadata and runs `databricks-labs-dqx==0.16.0` on classic compute. Other targets
+can interpret different definition formats without changes to Model, CLI or the
+shared editor. Quality-enabled jobs reject serverless configuration.
 
-## Artifacts and execution
+## Native definitions and artifacts
 
-Each entity with checks emits `quality/<entity ID>/manifest.json` plus native
-`enforcement.yaml`, `monitoring_rows.yaml` and `monitoring_summary.yaml`. The
-manifest retains source requirements, target mapping and a deterministic rule
-hash. Bundle synchronization includes these runtime assets; they are not bundle
-resource definitions. The notebooks expose the complete execution flow in named Markdown/code cells.
-DDL contains the full nullable quarantine and central-metrics SQL. DML shows native
-DQX execution, error/warning routing, distinct error-row counts and the gate after
-the target write. Monitoring has its own template with a readable SQL aggregate,
-DQX calls, status calculation and a compact result table.
+A check has `id`, `execution`, `definition`, and optional `description`. For this
+target the definition contains the native DQX envelope: `check.function`, optional
+arguments, criticality, filters, per-column expansion, messages and metadata.
+There is no function allow-list or translation of DataM8 check types. DQX validates
+function names and signatures. `user_metadata.datam8_check_id` is injected for
+stable audit attribution and must not be supplied in the model.
 
-`utils/QualityFramework.py` provides only manifest loading, execution context,
-input/schema validation, metric formatting and idempotent audit writers. The old
-`ensure_tables`, `enforce`, `monitor` and `finish_enforcement` entry points have
-been removed. Regenerate and deploy notebooks and utilities together; do not mix
-old generated notebooks with the new helper. Existing table names, metric schema,
-rule hashes and Delta transaction identities are preserved.
+Each entity emits `quality/<entity ID>/manifest.json`, `enforcement.yaml` and a
+YAML file for each configured monitoring input. Rules without an input option use
+the complete target; native row and dataset checks share the same DQX API.
 
-Enforcement runs on prepared input before SCD/merge staging. Error rows enter
-`<target>_quarantine`; warning-only rows remain valid. The target receives only
-original input columns. Quarantine is persisted before target writes, followed by
-rule metrics. A configured failure percentage stops the DML task after valid
-rows have been written, only when the distinct error-row percentage is strictly
-greater than the threshold. No configured threshold means no quality gate.
-Empty valid input skips target writes, including overwrite.
+Notebooks expose the flow in named cells. DDL shows complete nullable quarantine
+and metrics SQL. DML shows DQX execution, the valid/invalid split, quarantine,
+target writes, metrics and the strictly-greater-than threshold decision. Monitoring
+shows target reads, declared input SQL, DQX calls, metric projections and writes.
+`utils/QualityFramework.py` contains technical loading, context, input validation,
+metric formatting and idempotent audit I/O. It has no check implementations.
 
-Monitoring has a separate dependent notebook task and reads the entire target.
-Not Null, numeric Range and SQL Expression run on records; Completeness,
-Freshness and Row Count use a common aggregate input. SQL TRUE passes and
-FALSE/NULL fails. Completeness counts non-NULL values. Freshness evaluates the
-latest timestamp, rejecting future timestamps. Empty record input and empty
-Completeness yield `NO_DATA`; Freshness fails and Row Count evaluates zero.
-Monitoring violations do not fail the task; technical execution errors do.
-The runtime resolves SQL expressions and referenced columns against the input
-schema before invoking DQX, and requires Boolean SQL results. Invalid syntax,
-missing columns and non-Boolean expressions fail even on empty input; they cannot
-be silently reported as skipped checks or `NO_DATA` metrics.
+## Declarative SQL inputs and metrics
 
-## Storage and recovery
+Additional settings are target-owned. `settings.dependencies` declares PyPI
+requirements for tasks that execute quality; monitoring-only DML has no DQX
+initialization or quality libraries. Named `settings.inputs` declare read-only SQL
+for monitoring. `{target_table}` expands to the quoted target; `:evaluated_at` binds
+a single fixed evaluation time. SQL is generated visibly in the notebook and
+validated before execution. SQL commands that modify data are rejected.
 
-DDL initializes nullable quarantine columns without target identity/NOT NULL
-constraints, plus a JSON audit column containing rule violations and run, attempt,
-time and version information. Metrics are stored centrally in
-`<catalog>.quality.dqx_metrics`, one row per rule and execution attempt.
+A rule's optional `definition.datam8` is consumed by this target before passing
+the remaining native envelope to DQX. `input` selects a named input. An optional
+`metrics` object declares scalar SQL expressions `checked_rows`, `measured_value`,
+`failed_rows` and `no_data_when` (`checked_rows` is required). A metric projection
+requires exactly one result row; `no_data_when` must be Boolean. Without metric
+projections, metrics count checked/failed rows and record their failure ratio.
+These options are generic and do not infer behavior from function names or IDs.
 
-The executing identity needs access to target tables and permission to create the
-quality schema, create/alter/write quarantine and metrics tables, and read all
-monitoring input. Retention and grants are operator-managed. No automatic cleanup
-is performed. Reserve `__dm8_dq_*`, `_errors`, `_warnings` and `_dq_info`.
+The [fixture](../../tests/fixtures/quality/QualityProbe.json) models a shared SQL
+aggregate for completeness, latest-timestamp age and row count. Its native SQL
+checks and metric expressions explicitly retain these policies: empty completeness
+is `NO_DATA`; missing/future timestamps fail freshness; row count evaluates zero.
+The calculations and policies are model data, not runtime check categories.
 
-Audit appends use Delta transaction identities for idempotence within the same
-run/attempt. Quality DML has zero automatic retries. These writes and the target
-write are separate transactions: a failed target write can leave quarantine, and
-a failed metrics write can follow a committed target. A new run follows the
-existing append/overwrite/merge semantics; this is not a cross-table transaction
-or an exactly-once recovery system.
+## Execution and storage
 
-## Acceptance fixtures
+Enforcement checks original prepared input before SCD/merge staging. Error rows
+enter `<target>_quarantine`; warning-only rows remain valid. Empty/all-invalid
+output does not overwrite the target. Audit metrics are written before a gate
+failure; the gate counts distinct error rows once. Monitoring violations are
+results; technical errors fail the task, including on empty inputs.
 
-The synthetic entity and function in `tests/fixtures/quality` are opt-in fixtures
-for a disposable solution. Run `uv sync --frozen` to use the locked CLI revision
-and its matching Model schema, including quality validation.
-They are not part of the public AdventureWorks model. `acceptance.py` executes
-generated DDL, DML and Monitoring notebooks against a caller-provided isolated
-`dm8_quality_test_*` catalog on classic compute. It never reads a live source.
-Generate the monitoring-only variants QualityMonitorProbe (9005, all checks),
-QualityRowsProbe (9006, first three checks) and QualitySummaryProbe (9007, last
-three checks), with all their checks set to monitoring. Keep overwrite mode and
-place `QualityProbe.py` beside the entity JSON files: transformation source paths
-are relative to that directory, not an implicit entity subdirectory. Acceptance executes these real generated notebooks, including
-invalid native YAML in a disposable workspace, and restores those files afterward.
-Upload only the fixture artifacts, shared utilities and acceptance notebook; pass
-`catalog_name`, `owner` and `workspace_root` explicitly. Do not commit real
-workspace identifiers or credentials.
+After a gate failure with committed valid rows, monitoring can run via `ALL_DONE`
+and an attempt-specific signal. Technical failures, failed reference loads and
+failed all-invalid loads exit before quality evaluation. Successful empty loads
+retain monitoring behavior. Dependent entity loads still depend on DML success.
 
-The public sample's SQL reader requires `remote_query` support (DBR 18.3).
-Current Runtime 18 LTS is selected with `18.x-scala2.13`; check the actual runtime
-and execute a bounded source query rather than looking only for an explicit
-`18.3` key in the versions API. Synthetic Quality acceptance can run on classic
-DBR 16.4; that result does not validate the SQL reader.
+Quarantine columns are nullable without target identity, NOT NULL or PK constraints,
+plus `__dm8_dq_audit`. Central metrics use `<catalog>.quality.dqx_metrics`, one row
+per rule, execution, run and attempt. Delta transaction identities prevent repeated
+audit writes for the same identity. Target, quarantine and metrics writes are
+separate transactions; a new run follows normal append/overwrite/merge behavior.
+Reserve `__dm8_dq_*`, `_errors`, `_warnings` and `_dq_info` for runtime output.
+No automatic retention cleanup is performed.
 
-The additional `merge_acceptance.py` fixture covers append, SCD1 merge and SCD2
-history with the same rules. Its module docstring specifies the three variants
-to generate from `QualityProbe.json` on the disposable solution.
+## Metadata conversion and acceptance
+
+Legacy check shapes require explicit conversion. Preview selected entity files:
+
+```sh
+python scripts/convert_quality_definitions.py path/to/Entity.json
+python scripts/convert_quality_definitions.py path/to/Entity.json --write
+```
+
+The converter is a one-time metadata utility, never called by generation/runtime.
+It preserves IDs and turns old aggregate semantics into declared SQL and metric
+projections. New hashes are expected; existing audit history and table schemas
+remain intact. No database migration or MigrationFramework change is needed.
+
+Use disposable copies for local generation and tests. Acceptance notebooks under
+`tests/fixtures/quality` run only with explicit isolated `dm8_quality_test_*`
+catalogs and classic clusters. Place the function `QualityProbe.py` beside entity
+JSON files. Upload generated assets, utilities and fixtures together; do not mix
+old notebooks with new helpers. Tests cover native definitions, declared aggregates,
+thresholds, warnings, empty/all-invalid input, append/SCD1/SCD2 and repair isolation.
+
+The public SQL reader requires DBR 18.3 `remote_query` support. The Runtime 18 LTS
+selector is `18.x-scala2.13`; verify the actual runtime and source connectivity.
+Do not commit workspace/source bindings or credentials. Database schema changes
+are performed explicitly in SQL; the existing MigrationFramework is unchanged.
