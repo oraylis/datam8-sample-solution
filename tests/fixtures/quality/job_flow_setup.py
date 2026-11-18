@@ -11,6 +11,12 @@ assert catalog.startswith("dm8_quality_test_")
 scenario = dbutils.widgets.get("scenario")
 if scenario == "reference_failure":
     raise RuntimeError("Intentional technical reference-load failure for dependency acceptance")
+if scenario == "repair_technical":
+    # A new attempt fails before quality evaluation; an earlier gate signal must not authorize monitoring.
+    spark.createDataFrame([(2,)], "Id INT").write.mode("overwrite").option("overwriteSchema", "true").saveAsTable(
+        catalog + ".acceptance.job_flow_input"
+    )
+    dbutils.notebook.exit("PREPARED_REPAIR_TECHNICAL_FAILURE")
 now = datetime.now(timezone.utc)
 schema = "Id INT, Amount DOUBLE, Email STRING, Updated TIMESTAMP"
 rows = {
@@ -23,6 +29,11 @@ rows = {
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.acceptance")
 spark.createDataFrame(rows, schema).write.mode("overwrite").saveAsTable(catalog + ".acceptance.job_flow_input")
 if scenario == "gate":
+    spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.core")
+    spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.quality")
+    spark.createDataFrame([(1,), (2,)], "Id INT").write.mode("overwrite").saveAsTable(
+        catalog + ".quality.native_reference"
+    )
     root = Path(dbutils.widgets.get("workspace_root"))
     dbutils.notebook.run(
         str(root / "output/databricks/notebooks/020-Core/ddl/MasterData/Customer/QualityNativeProbe"),

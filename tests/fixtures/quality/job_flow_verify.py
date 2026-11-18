@@ -8,6 +8,7 @@ for key in ("catalog_name", "job_run_id"):
 catalog = dbutils.widgets.get("catalog_name")
 assert catalog.startswith("dm8_quality_test_")
 run_id = dbutils.widgets.get("job_run_id")
+dbutils.widgets.text("expected_target_version", "")
 results = {}
 for scenario, enforcement, monitoring in [
     ("gate", 4, 2),
@@ -28,4 +29,9 @@ for scenario, enforcement, monitoring in [
     results[scenario] = counts
 target = spark.table(catalog + ".core.MasterData_Customer_QualityNativeProbe")
 assert target.count() == 1 and target.first().Id == 2
-dbutils.notebook.exit(json.dumps({"status": "PASSED", "job_run_id": run_id, "scenarios": results}))
+version = spark.sql(f"DESCRIBE HISTORY `{catalog}`.core.MasterData_Customer_QualityNativeProbe").first().version
+if dbutils.widgets.get("expected_target_version"):
+    assert version == int(dbutils.widgets.get("expected_target_version"))
+dbutils.notebook.exit(
+    json.dumps({"status": "PASSED", "job_run_id": run_id, "scenarios": results, "target_version": version})
+)
