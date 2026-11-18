@@ -135,7 +135,7 @@ assert spark.sql(f"DESCRIBE HISTORY {target}").first().version == version
 from databricks.labs.dqx.engine import DQEngineCore  # noqa: E402
 from databricks.sdk import WorkspaceClient  # noqa: E402
 
-spaced_rule = [{"name": "spaced", "check": {"function": "is_not_null", "arguments": {"column": "Customer Name"}}}]
+spaced_rule = [{"name": "spaced", "check": {"function": "is_not_null", "arguments": {"column": "`Customer Name`"}}}]
 engine = DQEngineCore(WorkspaceClient(), spark)
 for data in ([], [("example",)]):
     df = spark.createDataFrame(data, "`Customer Name` STRING")
