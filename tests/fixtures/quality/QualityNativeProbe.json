@@ -1,0 +1,189 @@
+{
+  "id": 9011,
+  "name": "QualityNativeProbe",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "Id",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "isBusinessKey": true,
+      "dateAdded": "2026-01-01T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 2,
+      "name": "Amount",
+      "attributeType": "Regular",
+      "dataType": {
+        "type": "double",
+        "nullable": true
+      },
+      "isBusinessKey": false,
+      "dateAdded": "2026-01-01T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 3,
+      "name": "Email",
+      "attributeType": "Regular",
+      "dataType": {
+        "type": "string",
+        "nullable": true
+      },
+      "isBusinessKey": false,
+      "dateAdded": "2026-01-01T00:00:00Z"
+    },
+    {
+      "ordinalNumber": 4,
+      "name": "Updated",
+      "attributeType": "Regular",
+      "dataType": {
+        "type": "datetime",
+        "nullable": true
+      },
+      "isBusinessKey": false,
+      "dateAdded": "2026-01-01T00:00:00Z"
+    }
+  ],
+  "sources": [],
+  "relationships": [],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "name": "quality_probe_input",
+      "kind": "function",
+      "function": {
+        "source": "QualityProbe.py"
+      }
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    }
+  ],
+  "quality": {
+    "settings": {
+      "maxFailureRatePct": 25,
+      "dependencies": [
+        "python-dateutil==2.9.0.post0"
+      ]
+    },
+    "referenceDatasets": {
+      "permitted": {
+        "table": "{catalog_name}.quality.native_reference",
+        "execution": "monitoring"
+      }
+    },
+    "checks": [
+      {
+        "id": "native_required",
+        "type": "dqx",
+        "execution": "enforcement",
+        "definition": {
+          "check": {
+            "function": "is_not_null",
+            "for_each_column": [
+              "Id",
+              "Amount"
+            ]
+          },
+          "name": "Required fields"
+        }
+      },
+      {
+        "id": "native_allowed",
+        "type": "dqx",
+        "execution": "enforcement",
+        "definition": {
+          "check": {
+            "function": "is_in_list",
+            "arguments": {
+              "column": "Id",
+              "allowed": [
+                1,
+                2,
+                4
+              ]
+            }
+          },
+          "filter": "Id IS NOT NULL"
+        }
+      },
+      {
+        "id": "native_unique_input",
+        "type": "dqx",
+        "execution": "enforcement",
+        "definition": {
+          "check": {
+            "function": "is_unique",
+            "arguments": {
+              "columns": [
+                "Id"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": "native_email",
+        "type": "dqx",
+        "execution": "enforcement",
+        "definition": {
+          "check": {
+            "function": "is_not_null_and_not_empty",
+            "arguments": {
+              "column": "Email",
+              "trim_strings": true
+            }
+          },
+          "criticality": "warn",
+          "user_metadata": {
+            "owner": "quality-test"
+          }
+        }
+      },
+      {
+        "id": "native_unique_target",
+        "type": "dqx",
+        "execution": "monitoring",
+        "definition": {
+          "check": {
+            "function": "is_unique",
+            "arguments": {
+              "columns": [
+                "Id"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": "native_reference",
+        "type": "dqx",
+        "execution": "monitoring",
+        "definition": {
+          "check": {
+            "function": "foreign_key",
+            "arguments": {
+              "columns": [
+                "Id"
+              ],
+              "ref_columns": [
+                "Id"
+              ],
+              "ref_df_name": "permitted"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

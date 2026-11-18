@@ -90,7 +90,7 @@ table_name_ref = "`%(catalog)s`.`%(schema)s`.`%(table)s`" % {
 # COMMAND ----------
 
 
-{% if data.quality %}
+{% if data.quality and data.quality.enforcement %}
 {% set quality_mode = 'enforcement' %}
 {% include '_quality_init.py.jinja2' %}
 {% endif %}
@@ -203,9 +203,14 @@ union_df = union_df.withColumns({
 
 {%- endif %}
 
-{% if data.quality %}
+{% if data.quality and data.quality.enforcement %}
 {% set quality_input = "union_df" %}
 {% include '_quality_enforcement.py.jinja2' %}
+{% elif data.quality %}
+# Preserve existing data when a quality-enabled load has no input.
+# Monitoring-only loads do not import or initialize DQX here.
+if union_df.isEmpty():
+    dbutils.notebook.exit("SKIPPED_EMPTY_QUALITY_OUTPUT")
 {% endif %}
 
 union_df.createOrReplaceTempView("union_df")
@@ -542,9 +547,14 @@ final_df = final_df.withColumns({
 
 # COMMAND ----------
 
-{% if data.quality %}
+{% if data.quality and data.quality.enforcement %}
 {% set quality_input = "final_df" %}
 {% include '_quality_enforcement.py.jinja2' %}
+{% elif data.quality %}
+# Preserve existing data when a quality-enabled load has no input.
+# Monitoring-only loads do not import or initialize DQX here.
+if final_df.isEmpty():
+    dbutils.notebook.exit("SKIPPED_EMPTY_QUALITY_OUTPUT")
 {% endif %}
 
 {%- set merge_cfg = data.final_merge_config %}
@@ -728,7 +738,7 @@ else:
 
 {%- endif %}
 
-{% if data.quality and data.source_mode != "none" %}
+{% if data.quality and data.quality.enforcement and data.source_mode != "none" %}
 # COMMAND ----------
 # MAGIC %md
 # MAGIC ## Persist enforcement metrics and apply the quality gate

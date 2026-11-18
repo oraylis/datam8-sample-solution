@@ -11,6 +11,27 @@ from quality_payloads import native_check, quality_files  # noqa: E402
 
 
 class QualityGenerationTests(unittest.TestCase):
+    def test_native_definitions_are_passed_through_without_a_function_allowlist(self):
+        import copy
+
+        for function in ["is_unique", "foreign_key", "future_native_function"]:
+            definition = {
+                "name": "native label",
+                "criticality": "warn",
+                "filter": "Id > 0",
+                "check": {
+                    "function": function,
+                    "arguments": {"arbitrary": {"nested": [None, 2]}},
+                    "for_each_column": ["Id", "Amount"],
+                },
+                "user_metadata": {"owner": "team"},
+            }
+            before = copy.deepcopy(definition)
+            result = native_check({"id": "stable", "type": "dqx", "definition": definition})
+            self.assertEqual(definition, before)
+            result["user_metadata"].pop("datam8_check_id")
+            self.assertEqual(result, before)
+
     def test_native_rules_and_stable_manifest(self):
         checks = [
             {"id": "required", "type": "not_null", "attribute": "A b", "execution": "enforcement", "severity": "error"},

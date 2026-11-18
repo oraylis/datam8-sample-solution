@@ -52,5 +52,47 @@ for name, entity_id, expected in [
         assert current.first().Amount == 20.0
         assert rows.where("__IsCurrent = false").first().Amount == 10.0
     assert spark.table(target + "_quarantine").count() == 0
-    results.append({"entity": name, "rows": expected, "status": "PASSED"})
+    before = spark.sql(f"DESCRIBE HISTORY {target}").first().version
+    spark.createDataFrame([], "Id INT, Amount DOUBLE, Email STRING, Updated TIMESTAMP").write.mode(
+        "overwrite"
+    ).saveAsTable(input_table)
+    dbutils.notebook.run(
+        str(notebooks / f"dml/MasterData/Customer/{name}"), 180, dict(params, job_run_id=f"{name}-empty")
+    )
+    assert spark.sql(f"DESCRIBE HISTORY {target}").first().version == before
+    spark.createDataFrame(
+        [(None, -1.0, None, datetime.now(timezone.utc))],
+        "Id INT, Amount DOUBLE, Email STRING, Updated TIMESTAMP",
+    ).write.mode("overwrite").saveAsTable(input_table)
+    try:
+        dbutils.notebook.run(
+            str(notebooks / f"dml/MasterData/Customer/{name}"), 180, dict(params, job_run_id=f"{name}-invalid")
+        )
+        raise AssertionError("Expected an all-invalid quality gate failure")
+    except AssertionError:
+        raise
+    except Exception:
+        pass
+    assert spark.sql(f"DESCRIBE HISTORY {target}").first().version == before
+    assert spark.table(target).count() == expected
+    assert spark.table(target + "_quarantine").count() == 1
+    spark.createDataFrame(
+        [(2, 30.0, None, datetime.now(timezone.utc))],
+        "Id INT, Amount DOUBLE, Email STRING, Updated TIMESTAMP",
+    ).write.mode("overwrite").saveAsTable(input_table)
+    dbutils.notebook.run(
+        str(notebooks / f"dml/MasterData/Customer/{name}"), 180, dict(params, job_run_id=f"{name}-warning")
+    )
+    assert spark.table(target).count() == expected + 1
+    assert spark.table(target + "_quarantine").count() == 1
+    results.append(
+        {
+            "entity": name,
+            "rows": expected + 1,
+            "status": "PASSED",
+            "empty_preserved": True,
+            "all_invalid_preserved": True,
+            "warnings_valid": True,
+        }
+    )
 dbutils.notebook.exit(json.dumps({"status": "PASSED", "results": results}))

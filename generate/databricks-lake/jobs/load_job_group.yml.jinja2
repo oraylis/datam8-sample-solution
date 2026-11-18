@@ -84,6 +84,13 @@ resources:
           libraries:
             - pypi:
                 package: databricks-labs-dqx==0.16.0
+{% for requirement in task.quality_dependencies | default([]) %}
+            - pypi:
+                package: {{ requirement | tojson }}
+{% endfor %}
+{% endif %}
+{% if task.run_if | default(false) %}
+          run_if: {{ task.run_if }}
 {% endif %}
 {%- if task.depends_on %}
           depends_on:
@@ -97,6 +104,12 @@ resources:
               replication_integration_status_id: '1'
               execution_status_id: '1'
               quality_attempt_id: "{{ '{{task.execution_count}}' }}"
+{% if task.quality_upstream_task | default(false) %}
+              quality_upstream_task: {{ task.quality_upstream_task }}
+              quality_upstream_result: "{{ '{{tasks.' ~ task.quality_upstream_task ~ '.result_state}}' }}"
+              quality_upstream_attempt: "{{ '{{tasks.' ~ task.quality_upstream_task ~ '.execution_count}}' }}"
+              quality_reference_results: '{ {% for dependency in task.quality_reference_tasks | default([]) %}"{{ dependency }}": "{{ '{{tasks.' ~ dependency ~ '.result_state}}' }}"{% if not loop.last %}, {% endif %}{% endfor %} }'
+{% endif %}
             source: WORKSPACE
 {% if data.serverless %}
           environment_key: serverless

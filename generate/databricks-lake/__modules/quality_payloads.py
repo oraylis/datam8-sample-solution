@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -24,6 +25,11 @@ def quality_spec(entity: Any) -> dict[str, Any] | None:
 
 
 def native_check(check: dict[str, Any]) -> dict[str, Any]:
+    if check["type"] == "dqx":
+        native = copy.deepcopy(check["definition"])
+        native.setdefault("name", check["id"])
+        native["user_metadata"] = {**(native.get("user_metadata") or {}), "datam8_check_id": check["id"]}
+        return native
     kind, params = check["type"], check.get("parameters", {})
     attr = quoted(check.get("attribute", ""))
     if kind == "not_null":
@@ -105,10 +111,10 @@ def notebook_quality(entity: Any) -> dict[str, Any] | None:
         values = [
             c["id"],
             c["execution"],
-            c["severity"],
+            c.get("severity", "warning" if c.get("definition", {}).get("criticality") == "warn" else "error"),
             c["type"],
             c.get("attribute", ""),
-            json.dumps(c.get("parameters", {}), ensure_ascii=False),
+            json.dumps(c.get("parameters", c.get("definition", {})), ensure_ascii=False),
         ]
         overview.append("| " + " | ".join(str(v).replace("|", "&#124;").replace("\n", " ") for v in values) + " |")
     spec["overview"] = "\n".join("# MAGIC " + line for line in overview)

@@ -42,3 +42,9 @@ Validate and generate all targets; inspect newly written output. SQL fixtures mo
 database I/O while using the real bundled connector. Record passes, failures and
 skips separately. Native app behavior, live SQL and cloud execution require their
 own authorized acceptance; local checks do not establish those results.
+
+The quality fixtures exercise generated notebook phases, nullable quarantine
+DDL, native DQX definition passthrough, monitoring-only load isolation, guarded
+monitoring after a threshold failure and reference/dependency generation. The
+acceptance notebooks under `tests/fixtures/quality/` require an explicitly selected
+isolated catalog and classic cluster; they are not run by routine local tests.

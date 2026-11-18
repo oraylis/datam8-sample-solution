@@ -14,8 +14,8 @@ quality_checked_df = None
 quality_total_rows = 0
 quality_error_rows = 0
 if enforcement_checks:
-    quality_runtime.validate_check_inputs({{ quality_input }}, enforcement_checks)
-    quality_checked_df = quality_engine.apply_checks_by_metadata({{ quality_input }}, enforcement_checks).persist()
+    quality_runtime.validate_check_inputs({{ quality_input }}, enforcement_checks, quality_reference_dfs)
+    quality_checked_df = quality_engine.apply_checks_by_metadata({{ quality_input }}, enforcement_checks, ref_dfs=quality_reference_dfs).persist()
     try:
 {% set quality_record_df = 'quality_checked_df' %}
 {% set quality_metrics = 'enforcement_metrics' %}

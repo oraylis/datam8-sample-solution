@@ -7,6 +7,10 @@ try:
     max_failure_rate_pct = quality_rules["quality"].get("settings", {}).get("maxFailureRatePct")
     print({"error_rate_pct": failure_rate_pct, "max_failure_rate_pct": max_failure_rate_pct})
     if quality_total_rows and max_failure_rate_pct is not None and failure_rate_pct > max_failure_rate_pct:
+        if quality_total_rows > quality_error_rows:
+            # The downstream monitor may inspect committed rows after this gate failure.
+            # Include the attempt so a repair cannot reuse a previous attempt's signal.
+            dbutils.jobs.taskValues.set(key="quality_gate_after_write", value={"attempt": quality_context["attemptId"]})
         raise quality_runtime.QualityThresholdExceeded(
             f"Quality error rate {failure_rate_pct:.2f}% exceeds {max_failure_rate_pct}% after writing valid rows"
         )

@@ -1,9 +1,6 @@
 # MAGIC %md
 # MAGIC ## {{ quality_mode | title }} configuration and execution context
 # MAGIC Rules are generated from the model; the manifest and native DQX YAML are loaded below.
-{% if quality_mode == "enforcement" and not data.quality.enforcement %}
-# MAGIC No enforcement checks are configured. Monitoring runs in the separate Quality notebook.
-{% endif %}
 {{ data.quality["overview_" + quality_mode] | safe }}
 
 # COMMAND ----------
@@ -28,6 +25,10 @@ quality_context = quality_runtime.context(
 )
 quality_target_ref = ".".join(quality_runtime.quote(part) for part in quality_target.split("."))
 quality_engine = DQEngineCore(WorkspaceClient(), spark)
+quality_reference_dfs = {
+    alias: spark.table(table.replace("{catalog_name}", catalog_name))
+    for alias, table in quality_rules.get("references", {}).get("{{ quality_mode }}", {}).items()
+}
 print({
     "target": quality_target, "quarantine": quality_target + "_quarantine",
     "metrics": catalog_name + ".quality.dqx_metrics", "run": quality_context["runId"],

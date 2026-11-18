@@ -16,6 +16,38 @@ if not catalog_name:
 
 # COMMAND ----------
 
+{% if data.quality.enforcement %}
+# MAGIC %md
+# MAGIC ## Check the upstream load outcome
+# MAGIC After a failed load, monitor only when this attempt committed valid rows and then exceeded the quality threshold.
+# MAGIC Technical load failures do not start a quality evaluation. Successful empty loads retain their normal monitoring behavior.
+
+# COMMAND ----------
+
+dbutils.widgets.text("quality_upstream_task", "")
+dbutils.widgets.text("quality_upstream_result", "")
+dbutils.widgets.text("quality_upstream_attempt", "")
+dbutils.widgets.text("quality_reference_results", "{}")
+import json
+
+if any(state != "success" for state in json.loads(dbutils.widgets.get("quality_reference_results")).values()):
+    dbutils.notebook.exit("SKIPPED_REFERENCE_LOAD_FAILURE")
+quality_upstream_task = dbutils.widgets.get("quality_upstream_task")
+quality_upstream_result = dbutils.widgets.get("quality_upstream_result")
+if quality_upstream_task and quality_upstream_result != "success":
+    quality_gate_signal = dbutils.jobs.taskValues.get(
+        taskKey=quality_upstream_task, key="quality_gate_after_write", default={},
+    )
+    quality_committed_gate = (
+        quality_upstream_result == "failed" and isinstance(quality_gate_signal, dict)
+        and quality_gate_signal.get("attempt") == dbutils.widgets.get("quality_upstream_attempt")
+    )
+    if not quality_committed_gate:
+        dbutils.notebook.exit("SKIPPED_UPSTREAM_TECHNICAL_FAILURE_OR_NO_COMMITTED_ROWS")
+
+# COMMAND ----------
+
+{% endif %}
 {% set quality_mode = 'monitoring' %}
 {% include '_quality_init.py.jinja2' %}
 # MAGIC %md
@@ -37,8 +69,8 @@ monitoring_metrics = []
 quality_record_rules = [rule for rule in quality_rules["quality"]["checks"]
                         if rule["execution"] == "monitoring" and rule["type"] not in ("completeness", "freshness", "row_count")]
 monitoring_row_checks = quality_rules["checks"]["monitoring_rows"]
-quality_runtime.validate_check_inputs(monitoring_df, monitoring_row_checks)
-monitoring_checked_df = quality_engine.apply_checks_by_metadata(monitoring_df, monitoring_row_checks)
+quality_runtime.validate_check_inputs(monitoring_df, monitoring_row_checks, quality_reference_dfs)
+monitoring_checked_df = quality_engine.apply_checks_by_metadata(monitoring_df, monitoring_row_checks, ref_dfs=quality_reference_dfs)
 {% set quality_record_df = 'monitoring_checked_df' %}
 {% set quality_metrics = 'monitoring_metrics' %}
 {% set quality_execution = 'monitoring' %}
@@ -67,8 +99,8 @@ monitoring_summary_df = spark.sql(monitoring_sql, args={"evaluated_at": quality_
 # COMMAND ----------
 
 monitoring_summary_checks = quality_rules["checks"]["monitoring_summary"]
-quality_runtime.validate_check_inputs(monitoring_summary_df, monitoring_summary_checks)
-monitoring_summary_checked_df = quality_engine.apply_checks_by_metadata(monitoring_summary_df, monitoring_summary_checks)
+quality_runtime.validate_check_inputs(monitoring_summary_df, monitoring_summary_checks, quality_reference_dfs)
+monitoring_summary_checked_df = quality_engine.apply_checks_by_metadata(monitoring_summary_df, monitoring_summary_checks, ref_dfs=quality_reference_dfs)
 summary_value = monitoring_summary_checked_df.first().asDict(recursive=True)
 failed_check_ids = {failure["name"] for failure in (summary_value.get("_errors") or []) + (summary_value.get("_warnings") or [])}
 summary_rules = [rule for rule in quality_rules["quality"]["checks"]

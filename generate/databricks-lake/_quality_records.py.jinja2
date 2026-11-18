@@ -5,14 +5,21 @@ quality_aggregates = [
     F.count("*").alias("total_rows"),
     F.sum(F.when(quality_has_errors, 1).otherwise(0)).alias("error_rows"),
     F.sum(F.when(quality_has_warnings, 1).otherwise(0)).alias("warning_rows"),
+    F.sum(F.when(
+        F.coalesce(F.exists(F.col("_errors"), lambda failure: failure["skipped"]), F.lit(False))
+        | F.coalesce(F.exists(F.col("_warnings"), lambda failure: failure["skipped"]), F.lit(False)),
+        1,
+    ).otherwise(0)).alias("skipped_rows"),
 ]
 for rule_index, rule in enumerate(quality_record_rules):
     result_column = "_errors" if rule["severity"] == "error" else "_warnings"
     rule_failed = F.coalesce(
-        F.exists(F.col(result_column), lambda failure: failure["name"] == rule["id"]), F.lit(False)
+        F.exists(F.col(result_column), lambda failure: F.coalesce(failure["user_metadata"]["datam8_check_id"], failure["name"]) == rule["id"]), F.lit(False)
     )
     quality_aggregates.append(F.sum(F.when(rule_failed, 1).otherwise(0)).alias(f"failed_{rule_index}"))
 quality_counts = {{ quality_record_df }}.agg(*quality_aggregates).first().asDict()
+if quality_counts["skipped_rows"]:
+    raise ValueError("DQX skipped checks due to invalid technical configuration; refusing a partial evaluation")
 for rule_index, rule in enumerate(quality_record_rules):
     checked_rows = quality_counts["total_rows"]
     failed_rows = quality_counts[f"failed_{rule_index}"] or 0

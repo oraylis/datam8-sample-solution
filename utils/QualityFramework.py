@@ -29,6 +29,9 @@ def load_checks(manifest_path):
         if status.has_errors:
             raise ValueError(f"Invalid generated DQX checks: {status}")
         spec["checks"][mode] = checks
+    for rule in spec["quality"]["checks"]:
+        if rule["type"] == "dqx":
+            rule["severity"] = "warning" if rule["definition"].get("criticality") == "warn" else "error"
     return spec
 
 
@@ -44,19 +47,42 @@ def context(spark, target_table, spec, job_run_id="", attempt_id=""):
     }
 
 
-def validate_check_inputs(df, checks):
+def validate_check_inputs(df, checks, ref_dfs=None):
+    from databricks.labs.dqx.manager import DQRuleManager
+    from databricks.labs.dqx.checks_serializer import deserialize_checks
     from pyspark.sql import functions as F, types as T
 
-    # DQX can report an invalid expression/column as skipped. Resolve supported
-    # inputs first so technical configuration errors also fail on empty data.
+    # Use the pinned DQX metadata parser and schema resolver for every rule type,
+    # including per-column expansion and column names containing spaces.
+    # Fail technical configuration errors even when the input has no rows.
+    for rule in deserialize_checks(checks):
+        manager = DQRuleManager(
+            check=rule,
+            df=df,
+            spark=df.sparkSession,
+            engine_user_metadata={},
+            run_time_overwrite=None,
+            run_id="preflight",
+            ref_dfs=ref_dfs,
+        )
+        if (
+            manager.has_invalid_columns
+            or manager.has_invalid_filter
+            or manager.has_invalid_custom_message
+            or manager.invalid_sql_expression
+        ):
+            raise ValueError(f"Unresolvable DQX inputs for {rule.name}")
     for check in checks:
         arguments = check["check"].get("arguments", {})
         if check["check"]["function"] == "sql_expression":
             datatype = df.select(F.expr(arguments["expression"])).schema.fields[0].dataType
             if not isinstance(datatype, T.BooleanType):
                 raise ValueError(f"Quality SQL check {check['name']} must return BOOLEAN")
-        elif "column" in arguments:
-            df.select(F.col(arguments["column"])).schema
+        for condition in [check.get("filter"), arguments.get("row_filter")]:
+            if condition:
+                datatype = df.select(F.expr(condition)).schema.fields[0].dataType
+                if not isinstance(datatype, T.BooleanType):
+                    raise ValueError("DQX filter must return BOOLEAN")
 
 
 def validate_target_columns(schema):
@@ -82,7 +108,7 @@ def metric(rule, ctx, execution, total, failed, measured, status):
         "checked_rows": int(total),
         "failed_rows": int(failed) if failed is not None else None,
         "measured_value": float(measured) if measured is not None else None,
-        "parameters": json.dumps(rule.get("parameters", {}), sort_keys=True),
+        "parameters": json.dumps(rule.get("parameters", rule.get("definition", {})), sort_keys=True),
         "status": status,
     }
 

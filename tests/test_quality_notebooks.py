@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -53,6 +54,9 @@ class QualityNotebookTests(unittest.TestCase):
             (path / f"{name}.json").write_text(json.dumps(entity))
             (path / name).mkdir(exist_ok=True)
             shutil.copy2(ROOT / "tests/fixtures/quality/QualityProbe.py", path / "QualityProbe.py")
+        native = json.loads((ROOT / "tests/fixtures/quality/QualityNativeProbe.json").read_text())
+        native["quality"]["referenceDatasets"]["loaded"] = {"entityId": 9001, "execution": "monitoring"}
+        (path / "QualityNativeProbe.json").write_text(json.dumps(native))
         result = subprocess.run(
             [
                 sys.executable,
@@ -147,3 +151,77 @@ class QualityNotebookTests(unittest.TestCase):
             self.assertFalse((self.output / f"notebooks/020-Core/quality/MasterData/Customer/{name}.py").exists())
         self.assertNotIn("quality_runtime", self.notebook("dml", "QualityNoneProbe"))
         self.assertNotIn("enforcement_metrics", self.notebook("dml", "QualityNoDmlProbe"))
+
+    def test_monitoring_only_has_no_dqx_in_load_notebook_or_task(self):
+        for name in ["QualityMonitorProbe", "QualityRowsProbe", "QualitySummaryProbe"]:
+            code = self.notebook("dml", name)
+            for text in ["DQEngine", "QualityFramework", "quality_reference_dfs", "enforcement_metrics"]:
+                self.assertNotIn(text, code)
+            self.assertIn('dbutils.notebook.exit("SKIPPED_EMPTY_QUALITY_OUTPUT")', code)
+        jobs = yaml.safe_load((self.output / "jobs/load_sales_daily.yml").read_text())["resources"]["jobs"]
+        tasks = [t for job in jobs.values() for t in job["tasks"]]
+        matching = [t for t in tasks
+                    if t.get("notebook_task", {}).get("notebook_path", "").endswith("/QualityMonitorProbe")]
+        self.assertEqual(len(matching), 2)
+        for task in matching:
+            if "/dml/" in task["notebook_task"]["notebook_path"]:
+                self.assertNotIn("libraries", task)
+            else:
+                self.assertNotIn("run_if", task)
+                self.assertIn("libraries", task)
+
+    def test_gate_monitoring_is_attempt_guarded_and_native_references_are_resolved(self):
+        code = self.notebook("quality")
+        self.assertLess(code.index("quality_upstream_result"), code.index("DQEngineCore"))
+        self.assertIn('quality_gate_signal.get("attempt")', code)
+        self.assertIn('quality_context["attemptId"]', self.notebook("dml"))
+        manifest = json.loads((self.output / "quality/9011/manifest.json").read_text())
+        self.assertEqual(manifest["references"]["enforcement"], {})
+        self.assertIn("MasterData_Customer_QualityProbe", manifest["references"]["monitoring"]["loaded"])
+        native = yaml.safe_load((self.output / "quality/9011/enforcement.yaml").read_text())
+        self.assertEqual(native[0]["name"], "Required fields")
+        self.assertEqual(native[0]["check"]["for_each_column"], ["Id", "Amount"])
+        self.assertEqual(native[0]["user_metadata"]["datam8_check_id"], "native_required")
+        self.assertEqual(native[1]["check"]["arguments"]["allowed"], [1, 2, 4])
+        jobs = yaml.safe_load((self.output / "jobs/load_sales_daily.yml").read_text())["resources"]["jobs"]
+        tasks = [t for job in jobs.values() for t in job["tasks"]]
+        monitor = next(t for t in tasks if t["task_key"] == "quality_monitor_9011")
+        self.assertEqual(monitor["run_if"], "ALL_DONE")
+        self.assertIn("{{tasks.", monitor["notebook_task"]["base_parameters"]["quality_upstream_result"])
+        self.assertIn({"pypi": {"package": "python-dateutil==2.9.0.post0"}}, monitor["libraries"])
+
+    def test_native_rule_changes_and_last_rule_deletion_remove_stale_assets(self):
+        with tempfile.TemporaryDirectory(prefix="dm8-native-crud-") as temporary:
+            root = Path(temporary) / "solution"
+            shutil.copytree(self.root, root, ignore=shutil.ignore_patterns("output", "__pycache__"))
+            entity_path = root / "model/020-Core/MasterData/Customer/QualityNativeProbe.json"
+            entity = json.loads(entity_path.read_text())
+            for mode in ("monitoring", "enforcement", "deleted"):
+                if mode == "deleted":
+                    entity["quality"]["checks"] = []
+                else:
+                    for check in entity["quality"]["checks"]:
+                        check["execution"] = mode
+                entity_path.write_text(json.dumps(entity))
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        "-m",
+                        "datam8",
+                        "generate",
+                        "databricks",
+                        "-s",
+                        str(root / "ORAYLISDatabricksSample.dm8s"),
+                        "--clean-output",
+                    ],
+                    cwd=root,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                output = root / "output/databricks"
+                dml = (output / "notebooks/020-Core/dml/MasterData/Customer/QualityNativeProbe.py").read_text()
+                monitor = output / "notebooks/020-Core/quality/MasterData/Customer/QualityNativeProbe.py"
+                self.assertEqual("DQEngineCore" in dml, mode == "enforcement")
+                self.assertEqual(monitor.exists(), mode == "monitoring")
+                self.assertEqual((output / "quality/9011/manifest.json").exists(), mode != "deleted")

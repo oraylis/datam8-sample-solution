@@ -29,7 +29,7 @@ from metadata_utils import (
     merge_table_tags,
 )
 from jobs_helpers import JobsPlanner
-from quality_payloads import notebook_quality, quality_ddl, quality_files, quality_spec
+from quality_payloads import notebook_quality, quality_ddl, quality_files, quality_spec, quoted
 from payload_helpers import (
     _build_raw_table_tag_inputs,
     _build_scd2_tracking_columns,
@@ -736,7 +736,10 @@ def _get_jobs_plan(model: Model, cache: Cache) -> dict[str, Any]:
                     continue
                 if job.get("serverless"):
                     raise ValueError("Quality-enabled jobs require classic compute")
-                task["quality"] = True
+                has_enforcement = any(c["execution"] == "enforcement" for c in spec["quality"]["checks"])
+                task["quality"] = has_enforcement
+                task["quality_dependencies"] = spec["quality"].get("settings", {}).get("dependencies", [])
+                task["quality_references"] = spec["quality"].get("referenceDatasets", {}) if has_enforcement else {}
                 if any(c["execution"] == "monitoring" for c in spec["quality"]["checks"]):
                     path = Path(task["notebook_path"])
                     parts = list(path.parts)
@@ -749,10 +752,46 @@ def _get_jobs_plan(model: Model, cache: Cache) -> dict[str, Any]:
                             "depends_on": [task["task_key"]],
                             "job_cluster_key": task.get("job_cluster_key"),
                             "quality": True,
+                            "quality_dependencies": task["quality_dependencies"],
+                            "quality_references": spec["quality"].get("referenceDatasets", {}),
+                            "quality_execution": "monitoring",
+                            "quality_upstream_task": task["task_key"] if has_enforcement else None,
+                            "run_if": "ALL_DONE" if has_enforcement else None,
                         }
                     )
                     job["complete_dependencies"].append(key)
             job["entity_tasks"].extend(monitoring)
+            entity_tasks = {
+                t["entity_id"]: t["task_key"] for t in job["entity_tasks"] if t.get("entity_id") is not None
+            }
+            for task in job["entity_tasks"]:
+                execution = task.get("quality_execution", "enforcement")
+                task["quality_reference_tasks"] = []
+                for reference in task.get("quality_references", {}).values():
+                    if reference.get("execution", execution) != execution:
+                        continue
+                    dependency = entity_tasks.get(reference.get("entityId"))
+                    if dependency and dependency != task["task_key"] and dependency not in task["depends_on"]:
+                        task["depends_on"].append(dependency)
+                    if dependency and dependency not in (task["task_key"], task.get("quality_upstream_task")):
+                        task["quality_reference_tasks"].append(dependency)
+            # Reference bindings must never produce an unschedulable job graph.
+            graph = {t["task_key"]: t.get("depends_on", []) for t in job["entity_tasks"]}
+            visited, active = set(), set()
+
+            def visit(key):
+                if key in active:
+                    raise ValueError(f"Quality references introduce a job dependency cycle at {key}")
+                if key in visited:
+                    return
+                active.add(key)
+                for dependency in graph.get(key, []):
+                    visit(dependency)
+                active.remove(key)
+                visited.add(key)
+
+            for key in graph:
+                visit(key)
         cache.set(cache_key, plan)
         return plan
 
@@ -910,6 +949,24 @@ def generate_quality_assets(model: Model, cache: Cache) -> Sequence[IPayload]:
                 _, _, product_name, module_name = _resolve_product_module_context(resolver, locator)
                 spec = json.loads(content)
                 spec["target"] = f"{zone.name}.{product_name}_{module_name}_{wrapper.entity.name}"
+                spec["references"] = {"enforcement": {}, "monitoring": {}}
+                for alias, binding in spec["quality"].get("referenceDatasets", {}).items():
+                    if "table" in binding:
+                        table = binding["table"]
+                    else:
+                        reference_locator, reference = next(
+                            (loc, item) for loc, item in model.modelEntities.items()
+                            if item.entity.id == binding["entityId"] and not item.is_deleted
+                        )
+                        reference_zone = resolver.zone_from_folder(reference_locator.folders[0])
+                        _, _, product, module = _resolve_product_module_context(resolver, reference_locator)
+                        table = (
+                            "{catalog_name}." + quoted(reference_zone.name) + "."
+                            + quoted(f"{product}_{module}_{reference.entity.name}")
+                        )
+                    for execution in ("enforcement", "monitoring"):
+                        if binding.get("execution", execution) == execution:
+                            spec["references"][execution][alias] = table
                 content = json.dumps(spec, indent=2) + "\n"
             payloads.append(BasePayload(data={"content": content}, output_path=path))
     return payloads

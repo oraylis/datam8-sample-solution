@@ -227,7 +227,7 @@ wheels = [
 [[package]]
 name = "datam8"
 version = "2.1.1"
-source = { git = "https://github.com/oraylis/datam8-cli?rev=07614afa7560e2c55825206da798e2926e32dbb4#07614afa7560e2c55825206da798e2926e32dbb4" }
+source = { git = "https://github.com/oraylis/datam8-cli?rev=9adc35c8294279ac6524df59e47991365ea2bbc0#9adc35c8294279ac6524df59e47991365ea2bbc0" }
 dependencies = [
     { name = "deepdiff" },
     { name = "jinja2" },
@@ -258,7 +258,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "datam8", extras = ["sql"], git = "https://github.com/oraylis/datam8-cli?rev=07614afa7560e2c55825206da798e2926e32dbb4" },
+    { name = "datam8", extras = ["sql"], git = "https://github.com/oraylis/datam8-cli?rev=9adc35c8294279ac6524df59e47991365ea2bbc0" },
     { name = "pathspec", specifier = "==1.1.1" },
     { name = "pyyaml", specifier = "==6.0.3" },
 ]
