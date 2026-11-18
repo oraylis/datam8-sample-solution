@@ -27,7 +27,10 @@ rows = {
     "reference": [(2, 5.0, "c", now)],
 }[scenario]
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.acceptance")
-spark.createDataFrame(rows, schema).write.mode("overwrite").saveAsTable(catalog + ".acceptance.job_flow_input")
+spark.createDataFrame(rows, schema).write.mode("overwrite").option("overwriteSchema", "true").saveAsTable(
+    catalog + ".acceptance.job_flow_input"
+)
+assert spark.table(catalog + ".acceptance.job_flow_input").columns == ["Id", "Amount", "Email", "Updated"]
 if scenario == "gate":
     spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.core")
     spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.quality")
