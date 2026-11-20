@@ -130,7 +130,7 @@ class QualityNotebookTests(unittest.TestCase):
         for removed in ["enforce(", "finish_enforcement(", "monitor(", "ensure_tables("]:
             self.assertNotIn("quality_runtime." + removed, code)
 
-    def test_monitoring_contains_sql_dqx_statuses_and_no_target_write(self):
+    def test_monitoring_contains_sql_dqx_statuses_and_no_framework_target_write(self):
         code = self.notebook("quality")
         for part in [
             "COUNT(Email) * 1.0 / NULLIF(COUNT(*), 0)",

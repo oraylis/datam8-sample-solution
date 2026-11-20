@@ -196,7 +196,7 @@ dbutils.notebook.exit(
             "warnings_preserved": True,
             "empty_input": True,
             "technical_failures": len(invalid),
-            "monitoring_readonly": True,
+            "select_monitoring_preserves_target": True,
             "replay_idempotent": True,
         }
     )
