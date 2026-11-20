@@ -214,6 +214,15 @@ class QualityNotebookTests(unittest.TestCase):
             shutil.copytree(self.root, root, ignore=shutil.ignore_patterns("output", "__pycache__"))
             entity_path = root / "model/020-Core/MasterData/Customer/QualityNativeProbe.json"
             entity = json.loads(entity_path.read_text())
+            legacy = root / "output/databricks/quality/9011"
+            legacy.mkdir(parents=True)
+            for filename in [
+                "manifest.json",
+                "enforcement.yaml",
+                "monitoring_rows.yaml",
+                "monitoring_aggregate_old.yaml",
+            ]:
+                (legacy / filename).write_text("obsolete quality artifact")
             for mode in ("monitoring", "enforcement", "deleted"):
                 if mode == "deleted":
                     entity["quality"]["checks"] = []
@@ -245,6 +254,8 @@ class QualityNotebookTests(unittest.TestCase):
                 self.assertEqual("DQEngineCore" in dml, mode == "enforcement")
                 self.assertEqual(monitor.exists(), mode == "monitoring")
                 self.assertFalse((output / "quality").exists())
+                self.assertTrue((output / "manifest.json").is_file())
+                self.assertTrue((output / "jobs/load_sales_daily.yml").is_file())
 
     def test_rules_are_inline_and_removed_constructs_never_appear(self):
         self.assertFalse((self.output / "quality").exists())
