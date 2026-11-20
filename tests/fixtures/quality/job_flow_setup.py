@@ -34,10 +34,13 @@ assert spark.table(catalog + ".acceptance.job_flow_input").columns == ["Id", "Am
 if scenario == "gate":
     spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.core")
     spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.quality")
-    spark.createDataFrame([(1,), (2,)], "Id INT").write.mode("overwrite").saveAsTable(
-        catalog + ".quality.native_reference"
-    )
     root = Path(dbutils.widgets.get("workspace_root"))
+    for phase in ("ddl", "dml"):
+        dbutils.notebook.run(
+            str(root / f"output/databricks/notebooks/020-Core/{phase}/MasterData/Customer/QualityReferenceProbe"),
+            180,
+            {"catalog_name": catalog, "owner": dbutils.widgets.get("owner")},
+        )
     dbutils.notebook.run(
         str(root / "output/databricks/notebooks/020-Core/ddl/MasterData/Customer/QualityNativeProbe"),
         180,

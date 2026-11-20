@@ -70,119 +70,43 @@
     }
   ],
   "quality": {
-    "settings": {
-      "maxFailureRatePct": 25,
-      "inputs": {
-        "summary": {
-          "sql": "SELECT\n  COUNT(*) AS `__dm8_total`,\n  COUNT(`Email`) / NULLIF(COUNT(*), 0) AS `__dm8_q_email_completeness`,\n  CAST(:evaluated_at AS DOUBLE) - CAST(MAX(`Updated`) AS DOUBLE) AS `__dm8_q_updated_fresh`,\n  COUNT(*) AS `__dm8_q_row_count`\nFROM {target_table}"
-        }
-      }
-    },
+    "maxFailureRatePct": 25,
     "checks": [
       {
         "id": "id_required",
         "execution": "enforcement",
-        "definition": {
-          "criticality": "error",
-          "check": {
-            "function": "is_not_null",
-            "arguments": {
-              "column": "`Id`"
-            }
-          }
-        }
+        "expression": "Id IS NOT NULL"
       },
       {
         "id": "amount_range",
         "execution": "enforcement",
-        "definition": {
-          "criticality": "error",
-          "check": {
-            "function": "is_not_less_than",
-            "arguments": {
-              "column": "`Amount`",
-              "limit": 0
-            }
-          }
-        }
+        "expression": "Amount >= 0"
       },
       {
         "id": "email_present",
         "execution": "enforcement",
-        "definition": {
-          "criticality": "warn",
-          "check": {
-            "function": "sql_expression",
-            "arguments": {
-              "expression": "COALESCE((Email IS NOT NULL), FALSE)",
-              "msg": "email_present"
-            }
-          }
-        }
+        "severity": "warning",
+        "expression": "Email IS NOT NULL"
       },
       {
         "id": "email_completeness",
         "execution": "monitoring",
-        "definition": {
-          "criticality": "warn",
-          "datam8": {
-            "input": "summary",
-            "metrics": {
-              "checked_rows": "`__dm8_total`",
-              "measured_value": "`__dm8_q_email_completeness`",
-              "no_data_when": "`__dm8_total` = 0"
-            }
-          },
-          "check": {
-            "function": "sql_expression",
-            "arguments": {
-              "expression": "COALESCE((`__dm8_q_email_completeness` >= 0.95), FALSE)",
-              "msg": "email_completeness"
-            }
-          }
-        }
+        "severity": "warning",
+        "sql": "SELECT COUNT(*) AS checked_rows, COUNT(Email) * 1.0 / NULLIF(COUNT(*), 0) AS measured_value FROM {target}",
+        "expression": "measured_value >= 0.95",
+        "onEmpty": "no_data"
       },
       {
         "id": "updated_fresh",
         "execution": "monitoring",
-        "definition": {
-          "criticality": "error",
-          "datam8": {
-            "input": "summary",
-            "metrics": {
-              "checked_rows": "`__dm8_total`",
-              "measured_value": "`__dm8_q_updated_fresh`"
-            }
-          },
-          "check": {
-            "function": "sql_expression",
-            "arguments": {
-              "expression": "COALESCE((`__dm8_q_updated_fresh` BETWEEN 0 AND 300), FALSE)",
-              "msg": "updated_fresh"
-            }
-          }
-        }
+        "sql": "SELECT COUNT(*) AS checked_rows, TIMESTAMPDIFF(MICROSECOND, MAX(Updated), CURRENT_TIMESTAMP) / 1000000.0 AS measured_value FROM {target}",
+        "expression": "measured_value BETWEEN 0 AND 300"
       },
       {
         "id": "row_count",
         "execution": "monitoring",
-        "definition": {
-          "criticality": "error",
-          "datam8": {
-            "input": "summary",
-            "metrics": {
-              "checked_rows": "`__dm8_total`",
-              "measured_value": "`__dm8_q_row_count`"
-            }
-          },
-          "check": {
-            "function": "sql_expression",
-            "arguments": {
-              "expression": "COALESCE((`__dm8_q_row_count` >= 1), FALSE)",
-              "msg": "row_count"
-            }
-          }
-        }
+        "sql": "SELECT COUNT(*) AS checked_rows, COUNT(*) AS measured_value FROM {target}",
+        "expression": "measured_value >= 1"
       }
     ]
   }

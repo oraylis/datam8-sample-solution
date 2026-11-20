@@ -44,7 +44,7 @@ skips separately. Native app behavior, live SQL and cloud execution require thei
 own authorized acceptance; local checks do not establish those results.
 
 The quality fixtures exercise generated notebook phases, nullable quarantine
-DDL, native DQX definition passthrough, monitoring-only load isolation, guarded
+DDL, SQL-to-DQX translation and window uniqueness, monitoring-only load isolation, guarded
 monitoring after a threshold failure and reference/dependency generation. The
 acceptance notebooks under `tests/fixtures/quality/` require an explicitly selected
 isolated catalog and classic cluster; they are not run by routine local tests.

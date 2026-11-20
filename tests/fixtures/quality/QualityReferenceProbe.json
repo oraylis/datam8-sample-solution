@@ -1,0 +1,39 @@
+{
+  "id": 9012,
+  "name": "QualityReferenceProbe",
+  "attributes": [
+    {
+      "ordinalNumber": 1,
+      "name": "Id",
+      "attributeType": "ID",
+      "dataType": {
+        "type": "int",
+        "nullable": true
+      },
+      "isBusinessKey": true,
+      "dateAdded": "2026-01-01T00:00:00Z"
+    }
+  ],
+  "sources": [],
+  "relationships": [],
+  "transformations": [
+    {
+      "stepNo": 1,
+      "name": "quality_reference_fixture",
+      "kind": "function",
+      "function": {
+        "source": "QualityReferenceProbe.py"
+      }
+    }
+  ],
+  "properties": [
+    {
+      "property": "jobs",
+      "value": "sales_daily"
+    },
+    {
+      "property": "write_mode",
+      "value": "overwrite"
+    }
+  ]
+}

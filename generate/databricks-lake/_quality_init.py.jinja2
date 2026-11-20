@@ -25,9 +25,13 @@ quality_context = quality_runtime.context(
 )
 quality_target_ref = ".".join(quality_runtime.quote(part) for part in quality_target.split("."))
 quality_engine = DQEngineCore(WorkspaceClient(), spark)
-quality_reference_dfs = {
-    alias: spark.table(table.replace("{catalog_name}", catalog_name))
-    for alias, table in quality_rules.get("references", {}).get("{{ quality_mode }}", {}).items()
+quality_query_args = {
+    "dm8_target": quality_target_ref,
+    "evaluated_at": quality_context["evaluatedAt"],
+    **{
+        "dm8_ref_" + alias: table.replace("{catalog_name}", catalog_name)
+        for alias, table in quality_rules.get("references", {}).get("monitoring", {}).items()
+    },
 }
 print({
     "target": quality_target, "quarantine": quality_target + "_quarantine",

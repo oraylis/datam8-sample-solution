@@ -7,6 +7,7 @@ at import time. Target writes remain owned by generated DML notebooks.
 from __future__ import annotations
 
 import json
+import math
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -30,7 +31,7 @@ def load_checks(manifest_path):
             raise ValueError(f"Invalid generated DQX checks: {status}")
         spec["checks"][mode] = checks
     for rule in spec["quality"]["checks"]:
-        rule["severity"] = "warning" if rule["definition"].get("criticality") == "warn" else "error"
+        rule.setdefault("severity", "error")
     return spec
 
 
@@ -86,10 +87,6 @@ def validate_check_inputs(df, checks, ref_dfs=None):
 
 def validate_monitoring_query(spark, query):
     """Resolve a read-only SQL input without executing a command against the target."""
-    from databricks.labs.dqx.utils import is_sql_query_safe
-
-    if not is_sql_query_safe(query):
-        raise ValueError("Monitoring input must be a read-only SQL query")
     plan = spark._jsparkSession.sessionState().sqlParser().parsePlan(query)
     command = spark._jvm.java.lang.Class.forName("org.apache.spark.sql.catalyst.plans.logical.Command")
 
@@ -101,6 +98,44 @@ def validate_monitoring_query(spark, query):
             validate(children.next())
 
     validate(plan)
+
+
+def validate_boolean_expression(df, expression):
+    """Validate the original compiled expression before COALESCE normalization."""
+    from pyspark.sql import functions as F, types as T
+
+    datatype = df.select(F.expr(expression)).schema.fields[0].dataType
+    if not isinstance(datatype, T.BooleanType):
+        raise ValueError("Quality expression must return BOOLEAN")
+
+
+def validate_aggregate_result(df):
+    """Validate the fixed scalar-query schema and values without changing data."""
+    from pyspark.sql import types as T
+
+    if len(df.columns) != 2 or set(df.columns) != {"checked_rows", "measured_value"}:
+        raise ValueError("Monitoring SQL must return exactly checked_rows and measured_value")
+    count_type = df.schema["checked_rows"].dataType
+    if not (
+        isinstance(count_type, (T.ByteType, T.ShortType, T.IntegerType, T.LongType))
+        or isinstance(count_type, T.DecimalType)
+        and count_type.scale == 0
+    ):
+        raise ValueError("checked_rows must have an integer data type")
+    measure_type = df.schema["measured_value"].dataType
+    if not isinstance(measure_type, (T.NumericType, T.NullType)):
+        raise ValueError("measured_value must be numeric or NULL")
+    rows = df.take(2)
+    if len(rows) != 1:
+        raise ValueError("Monitoring SQL must return exactly one row")
+    row = rows[0]
+    count = row["checked_rows"]
+    measured = row["measured_value"]
+    if count is None or isinstance(count, bool) or not 0 <= count <= 9223372036854775807:
+        raise ValueError("checked_rows must be a nonnegative, non-NULL BIGINT-compatible integer")
+    if measured is not None and not math.isfinite(float(measured)):
+        raise ValueError("measured_value must be finite or NULL")
+    return {"checked_rows": int(count), "measured_value": measured}
 
 
 def validate_target_columns(schema):
@@ -126,7 +161,7 @@ def metric(rule, ctx, execution, total, failed, measured, status):
         "checked_rows": int(total),
         "failed_rows": int(failed) if failed is not None else None,
         "measured_value": float(measured) if measured is not None else None,
-        "parameters": json.dumps(rule["definition"], sort_keys=True),
+        "parameters": json.dumps(rule, sort_keys=True),
         "status": status,
     }
 

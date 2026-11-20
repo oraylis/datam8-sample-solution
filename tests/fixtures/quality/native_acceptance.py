@@ -1,5 +1,5 @@
 # Databricks notebook source
-"""Opt-in acceptance of generated native DQX rules on isolated classic compute."""
+"""Opt-in acceptance of generated SQL expressions, windows and entity references."""
 
 import json
 import sys
@@ -19,7 +19,14 @@ import QualityFramework as quality  # noqa: E402
 
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.acceptance")
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.quality")
-spark.createDataFrame([(1,), (2,)], "Id INT").write.mode("overwrite").saveAsTable(catalog + ".quality.native_reference")
+spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.core")
+reference_params = {"catalog_name": catalog, "owner": dbutils.widgets.get("owner")}
+for phase in ("ddl", "dml"):
+    dbutils.notebook.run(
+        str(root / f"output/databricks/notebooks/020-Core/{phase}/MasterData/Customer/QualityReferenceProbe"),
+        180,
+        reference_params,
+    )
 input_table = catalog + ".acceptance.native_input"
 schema = "Id INT, Amount DOUBLE, Email STRING, Updated TIMESTAMP"
 now = datetime.now(timezone.utc)
@@ -109,12 +116,9 @@ original = rules_path.read_text()
 count = spark.table(catalog + ".quality.dqx_metrics").count()
 version = spark.sql(f"DESCRIBE HISTORY {target}").first().version
 invalid = [
-    {"check": {"function": "unknown_dqx_function"}},
-    {"check": {"function": "is_in_list", "arguments": {"column": "Id"}}},
-    {"check": {"function": "is_not_null", "arguments": {"column": "missing_column"}}},
+    {"check": {"function": "sql_expression", "arguments": {"expression": "missing_column IS NOT NULL"}}},
     {"check": {"function": "sql_expression", "arguments": {"expression": "1"}}},
     {"check": {"function": "sql_expression", "arguments": {"expression": "NOT VALID SQL ("}}},
-    {"check": {"function": "is_not_null", "arguments": {"column": "Id"}}, "filter": "missing_column > 0"},
 ]
 try:
     for definition in invalid:
@@ -135,7 +139,12 @@ assert spark.sql(f"DESCRIBE HISTORY {target}").first().version == version
 from databricks.labs.dqx.engine import DQEngineCore  # noqa: E402
 from databricks.sdk import WorkspaceClient  # noqa: E402
 
-spaced_rule = [{"name": "spaced", "check": {"function": "is_not_null", "arguments": {"column": "`Customer Name`"}}}]
+spaced_rule = [
+    {
+        "name": "spaced",
+        "check": {"function": "sql_expression", "arguments": {"expression": "`Customer Name` IS NOT NULL"}},
+    }
+]
 engine = DQEngineCore(WorkspaceClient(), spark)
 for data in ([], [("example",)]):
     df = spark.createDataFrame(data, "`Customer Name` STRING")
@@ -143,17 +152,52 @@ for data in ([], [("example",)]):
     checked = engine.apply_checks_by_metadata(df, spaced_rule)
     assert checked.where("size(_errors) > 0").count() == 0
 
+# Fixed aggregate result schema and values fail technically before metric persistence.
+invalid_results = [
+    spark.createDataFrame([], "checked_rows LONG, measured_value DOUBLE"),
+    spark.createDataFrame([(1, 1.0), (2, 2.0)], "checked_rows LONG, measured_value DOUBLE"),
+    spark.createDataFrame([(1.0, 1.0)], "checked_rows DOUBLE, measured_value DOUBLE"),
+    spark.createDataFrame([(None, 1.0)], "checked_rows LONG, measured_value DOUBLE"),
+    spark.createDataFrame([(-1, 1.0)], "checked_rows LONG, measured_value DOUBLE"),
+    spark.createDataFrame([(1, "value")], "checked_rows LONG, measured_value STRING"),
+    spark.createDataFrame([(1, float("nan"))], "checked_rows LONG, measured_value DOUBLE"),
+    spark.createDataFrame([(1, float("inf"))], "checked_rows LONG, measured_value DOUBLE"),
+    spark.createDataFrame([(1, 1.0, 1)], "checked_rows LONG, measured_value DOUBLE, extra INT"),
+    spark.createDataFrame([(1, 1.0)], "wrong LONG, measured_value DOUBLE"),
+    spark.sql("SELECT CAST('9223372036854775808' AS DECIMAL(20,0)) AS checked_rows, 1.0 AS measured_value"),
+]
+for invalid_result in invalid_results:
+    try:
+        quality.validate_aggregate_result(invalid_result)
+        raise AssertionError("Invalid aggregate result was accepted")
+    except ValueError:
+        pass
+assert quality.validate_aggregate_result(
+    spark.createDataFrame([(0, None)], "checked_rows LONG, measured_value DOUBLE")
+) == {"checked_rows": 0, "measured_value": None}
+# The original expression must remain Boolean, including on empty inputs.
+for expression in ("1", "COUNT(*) OVER (PARTITION BY Id)"):
+    try:
+        quality.validate_boolean_expression(spark.createDataFrame([], schema), expression)
+        raise AssertionError("A non-Boolean original expression was accepted")
+    except ValueError:
+        pass
+assert spark.table(catalog + ".quality.dqx_metrics").count() == count
+assert spark.sql(f"DESCRIBE HISTORY {target}").first().version == version
+
 dbutils.notebook.exit(
     json.dumps(
         {
             "status": "PASSED",
             "run_id": run_id,
             "checks": list(main),
-            "native_metadata": True,
-            "for_each_column": True,
+            "sql_metadata": True,
+            "combined_required_expression": True,
             "filtered_list": True,
             "dataset_enforcement": True,
             "reference_monitoring": True,
+            "invalid_aggregate_results": len(invalid_results),
+            "original_boolean_validation": True,
             "warnings_preserved": True,
             "empty_input": True,
             "technical_failures": len(invalid),

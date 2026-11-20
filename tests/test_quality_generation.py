@@ -6,20 +6,20 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import yaml
+from sqlglot.errors import SqlglotError
 from datam8.errors import Datam8ValidationError
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "generate/databricks-lake/__modules"))
-sys.path.insert(0, str(ROOT / "scripts"))
 from quality_payloads import (  # noqa: E402
+    compile_sql,
     native_check,
     notebook_quality,
     quality_files,
     quality_ddl,
-    sql_python_literal,
     quality_spec,
+    sql_python_literal,
 )
-from convert_quality_definitions import convert_quality  # noqa: E402
 
 
 def entity(quality):
@@ -27,119 +27,89 @@ def entity(quality):
 
 
 class QualityGenerationTests(unittest.TestCase):
-    def test_model_definitions_produce_native_checks_and_explicit_sql(self):
+    def test_fixed_sql_rules_generate_native_dqx_and_explicit_queries(self):
         quality = json.loads((ROOT / "tests/fixtures/quality/QualityProbe.json").read_text())["quality"]
+        before = copy.deepcopy(quality)
         files = quality_files(entity(quality))
         self.assertEqual(files, quality_files(entity(quality)))
         native = yaml.safe_load(files[Path("quality/77/enforcement.yaml")])
-        self.assertEqual(native[0]["check"]["function"], "is_not_null")
+        self.assertTrue(all(c["check"]["function"] == "sql_expression" for c in native))
+        self.assertEqual(native[0]["check"]["arguments"]["expression"], "COALESCE((NOT Id IS NULL), FALSE)")
         self.assertEqual(native[0]["user_metadata"]["datam8_check_id"], "id_required")
-        summary = yaml.safe_load(files[Path("quality/77/monitoring_summary.yaml")])
-        self.assertEqual(len(summary), 3)
-        self.assertTrue(all("datam8" not in c for c in summary))
+        self.assertEqual(native[2]["criticality"], "warn")
         spec = notebook_quality(entity(quality))
-        self.assertIn("COUNT(`Email`) / NULLIF(COUNT(*), 0)", spec["quality"]["settings"]["inputs"]["summary"]["sql"])
-        self.assertNotIn('rule["type"]', (ROOT / "generate/databricks-lake/quality_notebook.py.jinja2").read_text())
+        self.assertEqual(len(spec["monitoring_groups"]), 3)
+        self.assertEqual(quality, before)
         self.assertEqual(quality_files(SimpleNamespace(id=77, quality=None)), {})
 
-    def test_native_passthrough_has_no_function_catalogue_or_mutation(self):
-        for function in ["is_unique", "foreign_key", "future_native_function"]:
-            definition = {
-                "name": "display",
-                "criticality": "warn",
-                "filter": "Id > 0",
-                "check": {"function": function, "arguments": {"any": [None, {"nested": 2}]}},
-                "user_metadata": {"owner": "team"},
-            }
-            original = copy.deepcopy(definition)
-            result = native_check({"id": "stable", "definition": definition})
-            self.assertEqual(definition, original)
-            result["user_metadata"].pop("datam8_check_id")
-            self.assertEqual(result, original)
+    def test_uniqueness_is_a_window_expression_without_new_schema_fields(self):
+        expression = "Id IS NULL OR COUNT(*) OVER (PARTITION BY Id, Tenant) = 1"
+        check = {"id": "unique", "execution": "enforcement", "expression": expression}
+        native = native_check(check)
+        self.assertIn(expression, native["check"]["arguments"]["expression"])
+        self.assertEqual(native["check"]["function"], "sql_expression")
 
-    def test_only_the_selected_target_rejects_another_tools_dialect(self):
-        with self.assertRaisesRegex(Datam8ValidationError, "DQX target"):
-            quality_spec(
-                entity({"checks": [{"id": "other", "execution": "monitoring", "definition": {"assertion": "x"}}]})
-            )
+    def test_placeholders_are_bound_relations_not_text_replacements(self):
+        sql = (
+            "SELECT COUNT(*) AS checked_rows, "
+            "MAX(CASE WHEN Email = '{target}' THEN 1 ELSE 0 END) AS measured_value FROM {target}"
+        )
+        result = compile_sql(sql, query=True)
+        self.assertIn("'{target}'", result["text"])
+        self.assertIn("IDENTIFIER(:dm8_target)", result["text"])
+        result = compile_sql(
+            "WITH refs AS (SELECT DISTINCT Id FROM {references.allowed}) "
+            "SELECT COUNT(*) AS checked_rows, COUNT(t.Id) AS measured_value "
+            "FROM {target} t LEFT JOIN refs r ON t.Id = r.Id",
+            query=True,
+            references={"allowed": {"entityId": 1}},
+        )
+        self.assertEqual(result["references"], ["allowed"])
+        self.assertIn("IDENTIFIER(:dm8_ref_allowed)", result["text"])
 
-    def test_invalid_target_options_have_structured_validation_errors(self):
-        for option in [{"user_metadata": 0}, {"datam8": {"input": []}}]:
-            with self.subTest(option=option), self.assertRaises(Datam8ValidationError):
-                quality_spec(entity({"checks": [{
-                    "id": "check", "execution": "monitoring",
-                    "definition": {"check": {"function": "is_not_null"}, **option},
-                }]}))
+    def test_clock_and_time_argument_order_are_explicit(self):
+        result = compile_sql(
+            "SELECT COUNT(*) AS checked_rows, "
+            "TIMESTAMPDIFF(MICROSECOND, MAX(Updated), CURRENT_TIMESTAMP) / 1000000.0 "
+            "AS measured_value FROM {target}",
+            query=True,
+        )
+        self.assertIn("TIMESTAMPDIFF(MICROSECOND, MAX(Updated), :evaluated_at)", result["text"])
+        self.assertIn("__dm8_dq_evaluated_at", compile_sql("Updated <= CURRENT_TIMESTAMP")["text"])
+        self.assertTrue(result["uses_clock"])
+        self.assertEqual(compile_sql('"Customer Key" IS NOT NULL')["text"], "NOT `Customer Key` IS NULL")
 
-    def test_arbitrary_sql_inputs_and_metrics_are_declared_without_check_categories(self):
-        quality = {
-            "settings": {"inputs": {"custom_total": {"sql": "SELECT SUM(Price) AS amount FROM {target_table}"}}},
-            "checks": [
-                {
-                    "id": "sum_limit",
-                    "execution": "monitoring",
-                    "definition": {
-                        "check": {"function": "sql_expression", "arguments": {"expression": "amount > 50"}},
-                        "datam8": {
-                            "input": "custom_total",
-                            "metrics": {"checked_rows": "1", "measured_value": "amount"},
-                        },
-                    },
-                }
-            ],
-        }
-        spec = notebook_quality(entity(quality))
-        self.assertEqual(spec["monitoring_groups"][0]["input"], "custom_total")
-        self.assertIn("SUM(Price)", spec["monitoring_groups"][0]["sql_literal"])
+    def test_unsupported_sql_is_rejected_explicitly(self):
+        for expression in [
+            "RAND() > 0",
+            "custom_rule(Id)",
+            "COUNT(*) > 0",
+            "MAX(Id) OVER (PARTITION BY Id) > 0",
+            "COUNT(*) OVER (PARTITION BY Id ORDER BY Updated) = 1",
+            "Id > 1; SELECT 1",
+            "EXISTS(SELECT 1 FROM physical_table)",
+            "__dm8_dq_evaluated_at IS NULL",
+        ]:
+            with self.subTest(expression=expression), self.assertRaises((ValueError, SqlglotError)):
+                compile_sql(expression)
+        for sql in [
+            "DELETE FROM {target}",
+            "SELECT COUNT(*) AS checked_rows, 1 AS measured_value FROM physical_table",
+            "SELECT COUNT(*) AS checked_rows, 1 AS measured_value FROM {references.unknown}",
+            "SELECT 1 AS checked_rows, 2 AS measured_value, 3 AS extra",
+            "WITH RECURSIVE x AS (SELECT 1) SELECT 1 AS checked_rows, 1 AS measured_value FROM x",
+        ]:
+            with self.subTest(sql=sql), self.assertRaises((ValueError, SqlglotError)):
+                compile_sql(sql, query=True)
 
-    def test_explicit_metadata_conversion_is_idempotent_and_preserves_aggregate_policy(self):
-        old = {
-            "checks": [
-                {
-                    "id": "required",
-                    "type": "not_null",
-                    "execution": "enforcement",
-                    "severity": "error",
-                    "attribute": "Id",
-                },
-                {
-                    "id": "complete",
-                    "type": "completeness",
-                    "execution": "monitoring",
-                    "severity": "warning",
-                    "attribute": "Email",
-                    "parameters": {"minCompleteness": 0.95},
-                },
-                {
-                    "id": "fresh",
-                    "type": "freshness",
-                    "execution": "monitoring",
-                    "severity": "error",
-                    "attribute": "Updated",
-                    "parameters": {"maxAgeSeconds": 300},
-                },
-                {
-                    "id": "count",
-                    "type": "row_count",
-                    "execution": "monitoring",
-                    "severity": "error",
-                    "parameters": {"minCount": 1},
-                },
-            ]
-        }
-        original = copy.deepcopy(old)
-        result = convert_quality(old)
-        self.assertEqual(old, original)
-        self.assertEqual(convert_quality(result), result)
-        self.assertEqual([c["id"] for c in result["checks"]], [c["id"] for c in old["checks"]])
-        self.assertTrue(all("type" not in c for c in result["checks"]))
-        checks = result["checks"]
-        self.assertIn("no_data_when", checks[1]["definition"]["datam8"]["metrics"])
-        self.assertNotIn("no_data_when", checks[2]["definition"]["datam8"]["metrics"])
-        self.assertIn("BETWEEN 0 AND 300", checks[2]["definition"]["check"]["arguments"]["expression"])
-        self.assertIn("COUNT(*)", result["settings"]["inputs"]["summary"]["sql"])
+    def test_target_errors_identify_entity_check_and_field(self):
+        with self.assertRaises(Datam8ValidationError) as caught:
+            quality_spec(entity({"checks": [{"id": "bad", "execution": "enforcement", "expression": "RAND() > 0"}]}))
+        self.assertEqual(caught.exception.details["entityId"], 77)
+        self.assertEqual(caught.exception.details["checkId"], "bad")
+        self.assertEqual(caught.exception.details["field"], "quality.checks.bad.expression")
 
-    def test_quality_ddl_is_nullable_and_literals_preserve_sql(self):
+    def test_ddl_is_nullable_and_literals_preserve_sql(self):
         ddl = eval(
             quality_ddl([{"name": "Identity", "delta_type": "BIGINT"}], "core", "Example")["quarantine_sql"],
             {"__builtins__": {}},

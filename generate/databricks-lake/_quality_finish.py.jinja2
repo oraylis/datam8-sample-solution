@@ -4,7 +4,7 @@ try:
         display(quality_metric_df.select("check_id", "execution", "severity", "checked_rows", "failed_rows", "measured_value", "status"))
     # The gate runs only after valid target rows and audit metrics have been written.
     failure_rate_pct = 100 * quality_error_rows / quality_total_rows if quality_total_rows else 0.0
-    max_failure_rate_pct = quality_rules["quality"].get("settings", {}).get("maxFailureRatePct")
+    max_failure_rate_pct = quality_rules["quality"].get("maxFailureRatePct")
     print({"error_rate_pct": failure_rate_pct, "max_failure_rate_pct": max_failure_rate_pct})
     if quality_total_rows and max_failure_rate_pct is not None and failure_rate_pct > max_failure_rate_pct:
         if quality_total_rows > quality_error_rows:

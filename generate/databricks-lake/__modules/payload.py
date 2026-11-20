@@ -738,8 +738,8 @@ def _get_jobs_plan(model: Model, cache: Cache) -> dict[str, Any]:
                     raise ValueError("Quality-enabled jobs require classic compute")
                 has_enforcement = any(c["execution"] == "enforcement" for c in spec["quality"]["checks"])
                 task["quality"] = has_enforcement
-                task["quality_dependencies"] = spec["quality"].get("settings", {}).get("dependencies", [])
-                task["quality_references"] = spec["quality"].get("referenceDatasets", {}) if has_enforcement else {}
+                task["quality_dependencies"] = []
+                task["quality_references"] = {}
                 if any(c["execution"] == "monitoring" for c in spec["quality"]["checks"]):
                     path = Path(task["notebook_path"])
                     parts = list(path.parts)
@@ -753,7 +753,10 @@ def _get_jobs_plan(model: Model, cache: Cache) -> dict[str, Any]:
                             "job_cluster_key": task.get("job_cluster_key"),
                             "quality": True,
                             "quality_dependencies": task["quality_dependencies"],
-                            "quality_references": spec["quality"].get("referenceDatasets", {}),
+                            "quality_references": {
+                                alias: binding for alias, binding in spec["quality"].get("references", {}).items()
+                                if any(alias in item["references"] for item in spec["compiled"].values())
+                            },
                             "quality_execution": "monitoring",
                             "quality_upstream_task": task["task_key"] if has_enforcement else None,
                             "run_if": "ALL_DONE" if has_enforcement else None,
@@ -950,23 +953,20 @@ def generate_quality_assets(model: Model, cache: Cache) -> Sequence[IPayload]:
                 spec = json.loads(content)
                 spec["target"] = f"{zone.name}.{product_name}_{module_name}_{wrapper.entity.name}"
                 spec["references"] = {"enforcement": {}, "monitoring": {}}
-                for alias, binding in spec["quality"].get("referenceDatasets", {}).items():
-                    if "table" in binding:
-                        table = binding["table"]
-                    else:
-                        reference_locator, reference = next(
-                            (loc, item) for loc, item in model.modelEntities.items()
-                            if item.entity.id == binding["entityId"] and not item.is_deleted
-                        )
-                        reference_zone = resolver.zone_from_folder(reference_locator.folders[0])
-                        _, _, product, module = _resolve_product_module_context(resolver, reference_locator)
-                        table = (
-                            "{catalog_name}." + quoted(reference_zone.name) + "."
-                            + quoted(f"{product}_{module}_{reference.entity.name}")
-                        )
-                    for execution in ("enforcement", "monitoring"):
-                        if binding.get("execution", execution) == execution:
-                            spec["references"][execution][alias] = table
+                for alias, binding in spec["quality"].get("references", {}).items():
+                    if not any(alias in item["references"] for item in spec["compiled"].values()):
+                        continue
+                    reference_locator, reference = next(
+                        (loc, item) for loc, item in model.modelEntities.items()
+                        if item.entity.id == binding["entityId"] and not item.is_deleted
+                    )
+                    reference_zone = resolver.zone_from_folder(reference_locator.folders[0])
+                    _, _, product, module = _resolve_product_module_context(resolver, reference_locator)
+                    table = (
+                        "{catalog_name}." + quoted(reference_zone.name) + "."
+                        + quoted(f"{product}_{module}_{reference.entity.name}")
+                    )
+                    spec["references"]["monitoring"][alias] = table
                 content = json.dumps(spec, indent=2) + "\n"
             payloads.append(BasePayload(data={"content": content}, output_path=path))
     return payloads

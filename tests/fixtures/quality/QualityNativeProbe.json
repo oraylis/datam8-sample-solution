@@ -70,113 +70,45 @@
     }
   ],
   "quality": {
-    "settings": {
-      "maxFailureRatePct": 25,
-      "dependencies": [
-        "python-dateutil==2.9.0.post0"
-      ]
-    },
-    "referenceDatasets": {
+    "maxFailureRatePct": 25,
+    "references": {
       "permitted": {
-        "table": "{catalog_name}.quality.native_reference",
-        "execution": "monitoring"
+        "entityId": 9012
       }
     },
     "checks": [
       {
         "id": "native_required",
         "execution": "enforcement",
-        "definition": {
-          "check": {
-            "function": "is_not_null",
-            "for_each_column": [
-              "Id",
-              "Amount"
-            ]
-          },
-          "name": "Required fields"
-        }
+        "expression": "Id IS NOT NULL AND Amount IS NOT NULL"
       },
       {
         "id": "native_allowed",
         "execution": "enforcement",
-        "definition": {
-          "check": {
-            "function": "is_in_list",
-            "arguments": {
-              "column": "Id",
-              "allowed": [
-                1,
-                2,
-                4
-              ]
-            }
-          },
-          "filter": "Id IS NOT NULL"
-        }
+        "expression": "Id IS NULL OR Id IN (1, 2, 4)"
       },
       {
         "id": "native_unique_input",
         "execution": "enforcement",
-        "definition": {
-          "check": {
-            "function": "is_unique",
-            "arguments": {
-              "columns": [
-                "Id"
-              ]
-            }
-          }
-        }
+        "expression": "Id IS NULL OR COUNT(*) OVER (PARTITION BY Id) = 1"
       },
       {
         "id": "native_email",
         "execution": "enforcement",
-        "definition": {
-          "check": {
-            "function": "is_not_null_and_not_empty",
-            "arguments": {
-              "column": "Email",
-              "trim_strings": true
-            }
-          },
-          "criticality": "warn",
-          "user_metadata": {
-            "owner": "quality-test"
-          }
-        }
+        "severity": "warning",
+        "expression": "Email IS NOT NULL AND LENGTH(TRIM(Email)) > 0"
       },
       {
         "id": "native_unique_target",
         "execution": "monitoring",
-        "definition": {
-          "check": {
-            "function": "is_unique",
-            "arguments": {
-              "columns": [
-                "Id"
-              ]
-            }
-          }
-        }
+        "expression": "Id IS NULL OR COUNT(*) OVER (PARTITION BY Id) = 1"
       },
       {
         "id": "native_reference",
         "execution": "monitoring",
-        "definition": {
-          "check": {
-            "function": "foreign_key",
-            "arguments": {
-              "columns": [
-                "Id"
-              ],
-              "ref_columns": [
-                "Id"
-              ],
-              "ref_df_name": "permitted"
-            }
-          }
-        }
+        "sql": "SELECT COUNT(*) AS checked_rows, SUM(CASE WHEN t.Id IS NOT NULL AND r.Id IS NULL THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(*), 0) AS measured_value FROM {target} t LEFT JOIN (SELECT DISTINCT Id FROM {references.permitted}) r ON t.Id = r.Id",
+        "expression": "measured_value = 0",
+        "onEmpty": "no_data"
       }
     ]
   }

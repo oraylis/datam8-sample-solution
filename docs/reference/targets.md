@@ -22,17 +22,19 @@ monitoring. Native rule YAML and an audit manifest are under
 calls, valid/invalid split, metrics and threshold decision. The shared
 `utils/QualityFramework.py` contains technical validation and idempotent audit I/O.
 
-The shared quality schema stores open definitions without a tool catalogue. This
-target passes native function names and JSON arguments directly to DQX
-0.16.0; there is no DataM8 function allow-list. Reference DataFrames and additional
-PyPI dependencies come from the entity model. The self-contained
-[native fixture](../../tests/fixtures/quality/QualityNativeProbe.json) demonstrates
-per-column expansion, list membership, uniqueness, filters, warnings and foreign
-keys without Python code per rule. Named entity references become table bindings
-and dependencies on their load tasks when they run in the same job. References
-outside that job must already exist. Bindings can be limited to monitoring or
-enforcement. Editing, adding or removing model rules takes effect after clean
-regeneration and deployment of notebooks, manifests and job resources together.
+The shared quality schema has fixed SQL fields. This solution's payloads and
+templates validate a bounded SQL profile, resolve entity references and emit DQX
+0.16.0 `sql_expression` rules. There is no DataM8 check-type catalogue or free
+native definition object. The [SQL fixture](../../tests/fixtures/quality/QualityNativeProbe.json)
+uses combined required fields, list conditions, window uniqueness, warnings and
+reference monitoring without Python implementations per check.
+
+References use model entity IDs and become bound query relations and load-task
+dependencies when their entities run in the same job. References outside that job
+must already exist. Extra packages belong in job/bundle configuration. Editing,
+adding or removing rules takes effect after clean regeneration and deployment of
+notebooks, manifests and job resources together. Old rule formats are rejected;
+there is no converter or migration.
 
 Monitoring-only entities initialize DQX only in their monitoring task. For mixed
 entities monitoring uses `ALL_DONE` with an attempt-specific guard: after a failed

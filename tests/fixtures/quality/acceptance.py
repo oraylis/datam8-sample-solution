@@ -121,7 +121,7 @@ assert {m.check_id: m.status for m in empty_metrics} == {
 metric_count = spark.table(f"{catalog}.quality.dqx_metrics").count()
 version = spark.sql(f"DESCRIBE HISTORY {target}").first().version
 for expression in ("NOT VALID SQL (", "missing_quality_column > 0", "1"):
-    for group, notebook in [("monitoring_summary", monitor), ("enforcement", dml)]:
+    for group, notebook in [("monitoring_aggregate_email_completeness", monitor), ("enforcement", dml)]:
         rules_path = manifest.parent / spec["files"][group]
         original = rules_path.read_text()
         try:
@@ -199,7 +199,7 @@ for name, entity_id in [("QualityMonitorProbe", 9005), ("QualityRowsProbe", 9006
             == "FAILED"
         )
     monitoring_results.append(name)
-# Declared SQL inputs are read-only, and model-declared metric expressions fail technically.
+# SQL inputs remain read-only; original expressions are validated even for NO_DATA.
 version = spark.sql(f"DESCRIBE HISTORY {target}").first().version
 for sql in (f"DELETE FROM {target}", f"DROP TABLE {target}"):
     try:
@@ -212,14 +212,11 @@ metric_count = spark.table(f"{catalog}.quality.dqx_metrics").count()
 try:
     for expression in ("1", "missing_metric_column > 0"):
         changed = json.loads(original_manifest)
-        projected_rule = next(
-            rule for rule in changed["quality"]["checks"] if "metrics" in rule["definition"].get("datam8", {})
-        )
-        projected_rule["definition"]["datam8"]["metrics"]["no_data_when"] = expression
+        changed["compiled"]["email_completeness"]["expression"] = expression
         manifest.write_text(json.dumps(changed))
         try:
-            dbutils.notebook.run(monitor, 180, dict(params, job_run_id="invalid-metric-projection"))
-            raise AssertionError("Invalid model metric expression was ignored")
+            dbutils.notebook.run(monitor, 180, dict(params, job_run_id="invalid-original-expression"))
+            raise AssertionError("Invalid original expression was ignored")
         except AssertionError:
             raise
         except Exception:

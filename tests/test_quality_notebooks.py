@@ -55,7 +55,9 @@ class QualityNotebookTests(unittest.TestCase):
             (path / name).mkdir(exist_ok=True)
             shutil.copy2(ROOT / "tests/fixtures/quality/QualityProbe.py", path / "QualityProbe.py")
         native = json.loads((ROOT / "tests/fixtures/quality/QualityNativeProbe.json").read_text())
-        native["quality"]["referenceDatasets"]["loaded"] = {"entityId": 9001, "execution": "monitoring"}
+        reference = json.loads((ROOT / "tests/fixtures/quality/QualityReferenceProbe.json").read_text())
+        (path / "QualityReferenceProbe.json").write_text(json.dumps(reference))
+        shutil.copy2(ROOT / "tests/fixtures/quality/QualityReferenceProbe.py", path / "QualityReferenceProbe.py")
         (path / "QualityNativeProbe.json").write_text(json.dumps(native))
         result = subprocess.run(
             [
@@ -131,9 +133,9 @@ class QualityNotebookTests(unittest.TestCase):
     def test_monitoring_contains_sql_dqx_statuses_and_no_target_write(self):
         code = self.notebook("quality")
         for part in [
-            "COUNT(`Email`) / NULLIF(COUNT(*), 0)",
-            "CAST(MAX(`Updated`) AS DOUBLE)",
-            "CAST(:evaluated_at AS DOUBLE)",
+            "COUNT(Email) * 1.0 / NULLIF(COUNT(*), 0)",
+            "TIMESTAMPDIFF(MICROSECOND, MAX(Updated), :evaluated_at)",
+            "IDENTIFIER(:dm8_target)",
             "quality_engine.apply_checks_by_metadata",
             '"NO_DATA"',
             "display(monitoring_metric_df.select",
@@ -178,18 +180,24 @@ class QualityNotebookTests(unittest.TestCase):
         self.assertIn('quality_context["attemptId"]', self.notebook("dml"))
         manifest = json.loads((self.output / "quality/9011/manifest.json").read_text())
         self.assertEqual(manifest["references"]["enforcement"], {})
-        self.assertIn("MasterData_Customer_QualityProbe", manifest["references"]["monitoring"]["loaded"])
+        self.assertIn("MasterData_Customer_QualityReferenceProbe", manifest["references"]["monitoring"]["permitted"])
         native = yaml.safe_load((self.output / "quality/9011/enforcement.yaml").read_text())
-        self.assertEqual(native[0]["name"], "Required fields")
-        self.assertEqual(native[0]["check"]["for_each_column"], ["Id", "Amount"])
+        self.assertTrue(all(check["check"]["function"] == "sql_expression" for check in native))
         self.assertEqual(native[0]["user_metadata"]["datam8_check_id"], "native_required")
-        self.assertEqual(native[1]["check"]["arguments"]["allowed"], [1, 2, 4])
+        self.assertIn("PARTITION BY Id", native[2]["check"]["arguments"]["expression"])
         jobs = yaml.safe_load((self.output / "jobs/load_sales_daily.yml").read_text())["resources"]["jobs"]
         tasks = [t for job in jobs.values() for t in job["tasks"]]
         monitor = next(t for t in tasks if t["task_key"] == "quality_monitor_9011")
         self.assertEqual(monitor["run_if"], "ALL_DONE")
         self.assertIn("{{tasks.", monitor["notebook_task"]["base_parameters"]["quality_upstream_result"])
-        self.assertIn({"pypi": {"package": "python-dateutil==2.9.0.post0"}}, monitor["libraries"])
+        self.assertEqual(monitor["libraries"], [{"pypi": {"package": "databricks-labs-dqx==0.16.0"}}])
+        self.assertTrue(
+            any(
+                "QualityReferenceProbe" in dependency["task_key"]
+                or dependency["task_key"].endswith("qualityreferenceprobe")
+                for dependency in monitor["depends_on"]
+            )
+        )
 
     def test_native_rule_changes_and_last_rule_deletion_remove_stale_assets(self):
         with tempfile.TemporaryDirectory(prefix="dm8-native-crud-") as temporary:
@@ -201,6 +209,8 @@ class QualityNotebookTests(unittest.TestCase):
                 if mode == "deleted":
                     entity["quality"]["checks"] = []
                 else:
+                    if mode == "enforcement":
+                        entity["quality"]["checks"] = [c for c in entity["quality"]["checks"] if "sql" not in c]
                     for check in entity["quality"]["checks"]:
                         check["execution"] = mode
                 entity_path.write_text(json.dumps(entity))
