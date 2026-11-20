@@ -10,29 +10,10 @@ import json
 import math
 import uuid
 from datetime import datetime, timezone
-from pathlib import Path
 
 
 class QualityThresholdExceeded(RuntimeError):
     pass
-
-
-def load_checks(manifest_path):
-    import yaml
-    from databricks.labs.dqx.engine import DQEngineCore
-
-    path = Path(manifest_path)
-    spec = json.loads(path.read_text(encoding="utf-8"))
-    spec["checks"] = {}
-    for mode, filename in spec["files"].items():
-        checks = yaml.safe_load((path.parent / filename).read_text(encoding="utf-8"))
-        status = DQEngineCore.validate_checks(checks)
-        if status.has_errors:
-            raise ValueError(f"Invalid generated DQX checks: {status}")
-        spec["checks"][mode] = checks
-    for rule in spec["quality"]["checks"]:
-        rule.setdefault("severity", "error")
-    return spec
 
 
 def context(spark, target_table, spec, job_run_id="", attempt_id=""):
@@ -45,68 +26,6 @@ def context(spark, target_table, spec, job_run_id="", attempt_id=""):
         "attemptId": str(attempt_id or "0"),
         "evaluatedAt": datetime.now(timezone.utc),
     }
-
-
-def validate_check_inputs(df, checks, ref_dfs=None):
-    from databricks.labs.dqx.manager import DQRuleManager
-    from databricks.labs.dqx.checks_serializer import deserialize_checks
-    from pyspark.sql import functions as F, types as T
-
-    # Use the pinned DQX metadata parser and schema resolver for every rule type,
-    # including per-column expansion and column names containing spaces.
-    # Fail technical configuration errors even when the input has no rows.
-    for rule in deserialize_checks(checks):
-        manager = DQRuleManager(
-            check=rule,
-            df=df,
-            spark=df.sparkSession,
-            engine_user_metadata={},
-            run_time_overwrite=None,
-            run_id="preflight",
-            ref_dfs=ref_dfs,
-        )
-        if (
-            manager.has_invalid_columns
-            or manager.has_invalid_filter
-            or manager.has_invalid_custom_message
-            or manager.invalid_sql_expression
-        ):
-            raise ValueError(f"Unresolvable DQX inputs for {rule.name}")
-    for check in checks:
-        arguments = check["check"].get("arguments", {})
-        if check["check"]["function"] == "sql_expression":
-            datatype = df.select(F.expr(arguments["expression"])).schema.fields[0].dataType
-            if not isinstance(datatype, T.BooleanType):
-                raise ValueError(f"Quality SQL check {check['name']} must return BOOLEAN")
-        for condition in [check.get("filter"), arguments.get("row_filter")]:
-            if condition:
-                datatype = df.select(F.expr(condition)).schema.fields[0].dataType
-                if not isinstance(datatype, T.BooleanType):
-                    raise ValueError("DQX filter must return BOOLEAN")
-
-
-def validate_monitoring_query(spark, query):
-    """Resolve a read-only SQL input without executing a command against the target."""
-    plan = spark._jsparkSession.sessionState().sqlParser().parsePlan(query)
-    command = spark._jvm.java.lang.Class.forName("org.apache.spark.sql.catalyst.plans.logical.Command")
-
-    def validate(node):
-        if command.isAssignableFrom(node.getClass()):
-            raise ValueError("Monitoring input must not execute SQL commands")
-        children = node.children().iterator()
-        while children.hasNext():
-            validate(children.next())
-
-    validate(plan)
-
-
-def validate_boolean_expression(df, expression):
-    """Validate the original compiled expression before COALESCE normalization."""
-    from pyspark.sql import functions as F, types as T
-
-    datatype = df.select(F.expr(expression)).schema.fields[0].dataType
-    if not isinstance(datatype, T.BooleanType):
-        raise ValueError("Quality expression must return BOOLEAN")
 
 
 def validate_aggregate_result(df):
@@ -156,7 +75,7 @@ def metric(rule, ctx, execution, total, failed, measured, status):
         "rule_set_hash": ctx["ruleSetHash"],
         "check_id": rule["id"],
         "execution": execution,
-        "severity": rule["severity"],
+        "severity": rule.get("severity", "error"),
         "evaluated_at": ctx["evaluatedAt"],
         "checked_rows": int(total),
         "failed_rows": int(failed) if failed is not None else None,

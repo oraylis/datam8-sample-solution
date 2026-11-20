@@ -107,7 +107,7 @@
         "id": "native_reference",
         "execution": "monitoring",
         "sql": "SELECT COUNT(*) AS checked_rows, SUM(CASE WHEN t.Id IS NOT NULL AND r.Id IS NULL THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(*), 0) AS measured_value FROM {target} t LEFT JOIN (SELECT DISTINCT Id FROM {references.permitted}) r ON t.Id = r.Id",
-        "expression": "measured_value = 0",
+        "expression": "COALESCE(measured_value = 0, FALSE)",
         "onEmpty": "no_data"
       }
     ]

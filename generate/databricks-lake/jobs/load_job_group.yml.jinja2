@@ -84,10 +84,7 @@ resources:
           libraries:
             - pypi:
                 package: databricks-labs-dqx==0.16.0
-{% for requirement in task.quality_dependencies | default([]) %}
-            - pypi:
-                package: {{ requirement | tojson }}
-{% endfor %}
+
 {% endif %}
 {% if task.run_if | default(false) %}
           run_if: {{ task.run_if }}

@@ -186,9 +186,12 @@ table_instance.set_column_tags("{{ column.column }}", {{ column.tags_repr | safe
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Quality storage: nullable quarantine and central metrics
+# MAGIC ## Quality storage
+# MAGIC Central metrics record each check result.
+{% if data.quality.enforcement %}
 # MAGIC Quarantine retains invalid values without target constraints or identity generation.
-# MAGIC Audit records use __dm8_dq_audit; the target table is not copied or truncated.
+# MAGIC Audit records use __dm8_dq_audit.
+{% endif %}
 {{ data.quality.overview | safe }}
 
 # COMMAND ----------
@@ -202,12 +205,14 @@ quality_runtime.validate_target_columns(spark.table(table_name).schema)
 
 # COMMAND ----------
 
+{% if data.quality.enforcement %}
 # DBTITLE 1,Create nullable quarantine table
 quarantine_sql = {{ data.quality_ddl.quarantine_sql | safe }}.replace("{catalog_name}", catalog_name.replace("`", "``"))
 print(quarantine_sql)
 spark.sql(quarantine_sql)
 
 # COMMAND ----------
+{% endif %}
 
 # DBTITLE 1,Create central quality schema and metrics table
 metrics_schema_sql = {{ data.quality_ddl.metrics_schema_sql | safe }}.replace("{catalog_name}", catalog_name.replace("`", "``"))

@@ -8,14 +8,13 @@ dependencies = [
   "datam8[sql]",
   "pathspec==1.1.1",
   "PyYAML==6.0.3",
-  "sqlglot==30.33.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/oraylis/datam8-sample-solution"
 
 [tool.uv.sources]
-datam8 = { git = "https://github.com/oraylis/datam8-cli", rev = "c3f4b04e90bae6c4a7b259b67a44c2b98b0fae0e" }
+datam8 = { git = "https://github.com/oraylis/datam8-cli", rev = "c746093c366db90470e9b3c5c473eceb5e7a4ed4" }
 
 [tool.ruff]
 line-length = 120

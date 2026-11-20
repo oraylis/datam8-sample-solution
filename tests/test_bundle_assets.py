@@ -104,3 +104,13 @@ class BundleAssetsTests(unittest.TestCase):
             self.check()
         self.configuration["experimental"] = {"skip_name_prefix_for_schema": True}
         self.assertIn("code/nested/entry.py", self.check())
+
+    def test_inline_quality_helper_is_a_transitive_asset_without_rule_files(self):
+        self.write("code/nested/entry.py", "import QualityFramework as quality_runtime\n")
+        self.write("utils/QualityFramework.py", "# Technical helper\n")
+        self.configuration["sync"]["paths"].append("../utils")
+        self.assertIn("utils/QualityFramework.py", self.check())
+        self.assertFalse((self.root / "artifacts/quality").exists())
+        (self.root / "utils/QualityFramework.py").unlink()
+        with self.assertRaisesRegex(ValueError, "Missing shared QualityFramework"):
+            self.check()

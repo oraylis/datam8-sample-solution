@@ -134,7 +134,7 @@ class QualityNotebookTests(unittest.TestCase):
         code = self.notebook("quality")
         for part in [
             "COUNT(Email) * 1.0 / NULLIF(COUNT(*), 0)",
-            "TIMESTAMPDIFF(MICROSECOND, MAX(Updated), :evaluated_at)",
+            "TIMESTAMPDIFF(MICROSECOND, MAX(Updated), CURRENT_TIMESTAMP)",
             "IDENTIFIER(:dm8_target)",
             "quality_engine.apply_checks_by_metadata",
             '"NO_DATA"',
@@ -148,7 +148,7 @@ class QualityNotebookTests(unittest.TestCase):
         self.assertIn("monitoring_checked_df", self.notebook("quality", "QualityMonitorProbe"))
         self.assertIn("monitoring_sql =", self.notebook("quality", "QualityMonitorProbe"))
         self.assertNotIn("monitoring_sql =", self.notebook("quality", "QualityRowsProbe"))
-        self.assertNotIn("monitoring_input_df = monitoring_df", self.notebook("quality", "QualitySummaryProbe"))
+        self.assertNotIn("apply_checks_by_metadata(monitoring_df,", self.notebook("quality", "QualitySummaryProbe"))
         for name in ["QualityEnforceProbe", "QualityNoneProbe"]:
             self.assertFalse((self.output / f"notebooks/020-Core/quality/MasterData/Customer/{name}.py").exists())
         self.assertNotIn("quality_runtime", self.notebook("dml", "QualityNoneProbe"))
@@ -178,13 +178,22 @@ class QualityNotebookTests(unittest.TestCase):
         self.assertLess(code.index("quality_upstream_result"), code.index("DQEngineCore"))
         self.assertIn('quality_gate_signal.get("attempt")', code)
         self.assertIn('quality_context["attemptId"]', self.notebook("dml"))
-        manifest = json.loads((self.output / "quality/9011/manifest.json").read_text())
-        self.assertEqual(manifest["references"]["enforcement"], {})
-        self.assertIn("MasterData_Customer_QualityReferenceProbe", manifest["references"]["monitoring"]["permitted"])
-        native = yaml.safe_load((self.output / "quality/9011/enforcement.yaml").read_text())
-        self.assertTrue(all(check["check"]["function"] == "sql_expression" for check in native))
-        self.assertEqual(native[0]["user_metadata"]["datam8_check_id"], "native_required")
-        self.assertIn("PARTITION BY Id", native[2]["check"]["arguments"]["expression"])
+        native_code = self.notebook("dml", "QualityNativeProbe")
+        monitor_code = self.notebook("quality", "QualityNativeProbe")
+        self.assertIn("MasterData_Customer_QualityReferenceProbe", monitor_code)
+        assignment = next(
+            n
+            for n in ast.walk(ast.parse(native_code))
+            if isinstance(n, ast.Assign)
+            and any(isinstance(t, ast.Name) and t.id == "enforcement_checks" for t in n.targets)
+        )
+        native = ast.literal_eval(assignment.value)
+        fixture = json.loads((ROOT / "tests/fixtures/quality/QualityNativeProbe.json").read_text())
+        self.assertEqual(
+            [r["check"]["arguments"]["expression"] for r in native],
+            [r["expression"] for r in fixture["quality"]["checks"] if r["execution"] == "enforcement"],
+        )
+        self.assertTrue(all("user_metadata" not in check for check in native))
         jobs = yaml.safe_load((self.output / "jobs/load_sales_daily.yml").read_text())["resources"]["jobs"]
         tasks = [t for job in jobs.values() for t in job["tasks"]]
         monitor = next(t for t in tasks if t["task_key"] == "quality_monitor_9011")
@@ -235,4 +244,55 @@ class QualityNotebookTests(unittest.TestCase):
                 monitor = output / "notebooks/020-Core/quality/MasterData/Customer/QualityNativeProbe.py"
                 self.assertEqual("DQEngineCore" in dml, mode == "enforcement")
                 self.assertEqual(monitor.exists(), mode == "monitoring")
-                self.assertEqual((output / "quality/9011/manifest.json").exists(), mode != "deleted")
+                self.assertFalse((output / "quality").exists())
+
+    def test_rules_are_inline_and_removed_constructs_never_appear(self):
+        self.assertFalse((self.output / "quality").exists())
+        for file in self.output.rglob("*.py"):
+            code = file.read_text()
+            for removed in [
+                "load_checks(",
+                "validate_boolean_expression(",
+                "validate_check_inputs(",
+                "validate_monitoring_query(",
+                "validate_checks(",
+                "__dm8_dq_evaluated_at",
+                "datam8_check_id",
+                "manifest.json",
+                "enforcement.yaml",
+            ]:
+                self.assertNotIn(removed, code, str(file))
+        for name in ["QualityMonitorProbe", "QualityRowsProbe", "QualitySummaryProbe"]:
+            ddl = self.notebook("ddl", name)
+            self.assertNotIn("quarantine_sql", ddl)
+            self.assertNotIn("_quarantine", ddl)
+            self.assertIn("quality.dqx_metrics (", ddl)
+
+    def test_arbitrary_and_invalid_sql_generate_without_syntax_validation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "solution"
+            shutil.copytree(self.root, root, ignore=shutil.ignore_patterns("output", "__pycache__"))
+            entity_path = root / "model/020-Core/MasterData/Customer/QualityProbe.json"
+            data = json.loads(entity_path.read_text())
+            expression = "NOT VALID SQL ( CURRENT_TIMESTAMP TIMESTAMPDIFF("
+            data["quality"]["checks"][0]["expression"] = expression
+            data["quality"]["checks"][-1]["sql"] = "invalid SELECT FROM {target} -- keep this"
+            entity_path.write_text(json.dumps(data))
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "datam8",
+                    "generate",
+                    "databricks",
+                    "-s",
+                    str(root / "ORAYLISDatabricksSample.dm8s"),
+                    "--clean-output",
+                ],
+                cwd=root,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            code = (root / "output/databricks/notebooks/020-Core/dml/MasterData/Customer/QualityProbe.py").read_text()
+            self.assertIn(repr(expression), code)

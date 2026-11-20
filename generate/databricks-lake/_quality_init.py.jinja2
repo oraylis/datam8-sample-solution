@@ -1,6 +1,6 @@
 # MAGIC %md
 # MAGIC ## {{ quality_mode | title }} configuration and execution context
-# MAGIC Rules are generated from the model; the manifest and native DQX YAML are loaded below.
+# MAGIC Rules are generated from the model; native DQX rules and audit metadata appear directly below.
 {{ data.quality["overview_" + quality_mode] | safe }}
 
 # COMMAND ----------
@@ -17,24 +17,26 @@ quality_root = next(
 sys.path.insert(0, str(quality_root / "utils"))
 import QualityFramework as quality_runtime
 
-quality_rules = quality_runtime.load_checks(quality_root / "output/databricks/quality/{{ data.quality.entityId }}/manifest.json")
+quality_rules = {{ data.quality.config_literal | safe }}
 dbutils.widgets.text("quality_attempt_id", "0")
 quality_target = catalog_name + "." + quality_rules["target"]
 quality_context = quality_runtime.context(
     spark, quality_target, quality_rules, job_run_id, dbutils.widgets.get("quality_attempt_id")
 )
-quality_target_ref = ".".join(quality_runtime.quote(part) for part in quality_target.split("."))
 quality_engine = DQEngineCore(WorkspaceClient(), spark)
+{% if quality_mode == 'monitoring' and data.quality.monitoring_aggregates %}
 quality_query_args = {
-    "dm8_target": quality_target_ref,
-    "evaluated_at": quality_context["evaluatedAt"],
-    **{
-        "dm8_ref_" + alias: table.replace("{catalog_name}", catalog_name)
-        for alias, table in quality_rules.get("references", {}).get("monitoring", {}).items()
-    },
+    "dm8_target": ".".join(quality_runtime.quote(part) for part in quality_target.split(".")),
+{% for alias, table in data.quality.get("reference_tables", {}).items() %}
+    "dm8_ref_{{ alias }}": quality_runtime.quote(catalog_name) + {{ table | safe }},
+{% endfor %}
 }
+{% endif %}
 print({
-    "target": quality_target, "quarantine": quality_target + "_quarantine",
+    "target": quality_target,
+{% if data.quality.enforcement %}
+    "quarantine": quality_target + "_quarantine",
+{% endif %}
     "metrics": catalog_name + ".quality.dqx_metrics", "run": quality_context["runId"],
     "attempt": quality_context["attemptId"], "rule_set_hash": quality_context["ruleSetHash"],
     "evaluated_at": str(quality_context["evaluatedAt"]),

@@ -23,8 +23,7 @@ for name, entity_id, expected in [
     ("QualityMergeProbe", 9003, 1),
     ("QualityHistoryProbe", 9004, 2),
 ]:
-    spec = json.loads((root / f"output/databricks/quality/{entity_id}/manifest.json").read_text())
-    target = catalog + "." + spec["target"]
+    target = catalog + ".core.MasterData_Customer_" + name
     for table in (target, target + "_quarantine"):
         spark.sql(f"DROP TABLE IF EXISTS {table}")
     notebooks = root / "output/databricks/notebooks/020-Core"

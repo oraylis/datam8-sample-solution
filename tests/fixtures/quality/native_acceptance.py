@@ -7,7 +7,6 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-import yaml
 
 for key in ("catalog_name", "owner", "workspace_root"):
     dbutils.widgets.text(key, "")
@@ -16,6 +15,9 @@ assert catalog.startswith("dm8_quality_test_"), "Use an isolated quality test ca
 root = Path(dbutils.widgets.get("workspace_root"))
 sys.path.insert(0, str(root / "utils"))
 import QualityFramework as quality  # noqa: E402
+
+sys.path.insert(0, str(root / "tests/fixtures/quality"))
+from fixture_support import notebook_configuration, expect_expression_failure  # noqa: E402
 
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.acceptance")
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.quality")
@@ -41,8 +43,7 @@ notebooks = root / "output/databricks/notebooks/020-Core"
 paths = {
     phase: str(notebooks / f"{phase}/MasterData/Customer/QualityNativeProbe") for phase in ("ddl", "dml", "quality")
 }
-manifest = root / "output/databricks/quality/9011/manifest.json"
-spec = quality.load_checks(manifest)
+spec = notebook_configuration(paths["dml"])
 target = catalog + "." + spec["target"]
 for table in (target, target + "_quarantine"):
     spark.sql(f"DROP TABLE IF EXISTS {table}")
@@ -109,29 +110,13 @@ dbutils.notebook.run(paths["dml"], 180, dict(params, job_run_id=run_id + "-empty
 assert spark.table(target).count() == 1
 assert all(m["status"] == "NO_DATA" for m in metrics(run_id + "-empty").values())
 
-# Native DQX's own parser/resolver must reject technical errors before any write,
-# even when the source is empty. The temporary YAML is always restored.
-rules_path = manifest.parent / spec["files"]["enforcement"]
-original = rules_path.read_text()
+# Technical errors are observed during native execution on nonempty input.
+spark.createDataFrame([(1, 1.0, "a@example.test", now)], schema).write.mode("overwrite").saveAsTable(input_table)
 count = spark.table(catalog + ".quality.dqx_metrics").count()
 version = spark.sql(f"DESCRIBE HISTORY {target}").first().version
-invalid = [
-    {"check": {"function": "sql_expression", "arguments": {"expression": "missing_column IS NOT NULL"}}},
-    {"check": {"function": "sql_expression", "arguments": {"expression": "1"}}},
-    {"check": {"function": "sql_expression", "arguments": {"expression": "NOT VALID SQL ("}}},
-]
-try:
-    for definition in invalid:
-        rules_path.write_text(yaml.safe_dump([{"name": "invalid_native", **definition}], sort_keys=False))
-        try:
-            dbutils.notebook.run(paths["dml"], 180, dict(params, job_run_id=run_id + "-invalid"))
-            raise AssertionError("Invalid native check was silently ignored")
-        except AssertionError:
-            raise
-        except Exception:
-            pass
-finally:
-    rules_path.write_text(original)
+invalid = ["missing_column IS NOT NULL", "1", "NOT VALID SQL ("]
+for expression in invalid:
+    expect_expression_failure(dbutils, paths["dml"], expression, dict(params, job_run_id=run_id + "-invalid"))
 assert spark.table(catalog + ".quality.dqx_metrics").count() == count
 assert spark.sql(f"DESCRIBE HISTORY {target}").first().version == version
 
@@ -148,9 +133,26 @@ spaced_rule = [
 engine = DQEngineCore(WorkspaceClient(), spark)
 for data in ([], [("example",)]):
     df = spark.createDataFrame(data, "`Customer Name` STRING")
-    quality.validate_check_inputs(df, spaced_rule)
     checked = engine.apply_checks_by_metadata(df, spaced_rule)
     assert checked.where("size(_errors) > 0").count() == 0
+
+# NULL semantics come only from the model expression, never a generated wrapper.
+null_input = spark.createDataFrame([(None,), (-1.0,), (1.0,)], "Amount DOUBLE")
+null_results = {}
+for name, expression, expected in [
+    ("native_null", "Amount >= 0", 1),
+    ("explicit_null_failure", "COALESCE(Amount >= 0, FALSE)", 2),
+]:
+    checks = [
+        {
+            "name": name,
+            "criticality": "error",
+            "check": {"function": "sql_expression", "arguments": {"expression": expression}},
+        }
+    ]
+    failures = engine.apply_checks_by_metadata(null_input, checks).where("size(_errors) > 0").count()
+    assert failures == expected, (name, failures)
+    null_results[name] = failures
 
 # Fixed aggregate result schema and values fail technically before metric persistence.
 invalid_results = [
@@ -175,13 +177,6 @@ for invalid_result in invalid_results:
 assert quality.validate_aggregate_result(
     spark.createDataFrame([(0, None)], "checked_rows LONG, measured_value DOUBLE")
 ) == {"checked_rows": 0, "measured_value": None}
-# The original expression must remain Boolean, including on empty inputs.
-for expression in ("1", "COUNT(*) OVER (PARTITION BY Id)"):
-    try:
-        quality.validate_boolean_expression(spark.createDataFrame([], schema), expression)
-        raise AssertionError("A non-Boolean original expression was accepted")
-    except ValueError:
-        pass
 assert spark.table(catalog + ".quality.dqx_metrics").count() == count
 assert spark.sql(f"DESCRIBE HISTORY {target}").first().version == version
 
@@ -192,12 +187,12 @@ dbutils.notebook.exit(
             "run_id": run_id,
             "checks": list(main),
             "sql_metadata": True,
+            "null_semantics": null_results,
             "combined_required_expression": True,
             "filtered_list": True,
             "dataset_enforcement": True,
             "reference_monitoring": True,
             "invalid_aggregate_results": len(invalid_results),
-            "original_boolean_validation": True,
             "warnings_preserved": True,
             "empty_input": True,
             "technical_failures": len(invalid),

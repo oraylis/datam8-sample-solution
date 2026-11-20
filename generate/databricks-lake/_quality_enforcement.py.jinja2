@@ -8,18 +8,14 @@
 
 quality_input_columns = {{ quality_input }}.columns
 quality_record_rules = [rule for rule in quality_rules["quality"]["checks"] if rule["execution"] == "enforcement"]
-enforcement_checks = quality_rules["checks"]["enforcement"]
+enforcement_checks = {{ data.quality.enforcement_checks_literal | safe }}
 enforcement_metrics = []
 quality_checked_df = None
 quality_total_rows = 0
 quality_error_rows = 0
 if enforcement_checks:
     quality_runtime.validate_target_columns({{ quality_input }}.schema)
-    quality_evaluation_df = {{ quality_input }}.withColumn("__dm8_dq_evaluated_at", F.lit(quality_context["evaluatedAt"]))
-    for rule in quality_record_rules:
-        quality_runtime.validate_boolean_expression(quality_evaluation_df, quality_rules["compiled"][rule["id"]]["expression"])
-    quality_runtime.validate_check_inputs(quality_evaluation_df, enforcement_checks)
-    quality_checked_df = quality_engine.apply_checks_by_metadata(quality_evaluation_df, enforcement_checks).persist()
+    quality_checked_df = quality_engine.apply_checks_by_metadata({{ quality_input }}, enforcement_checks).persist()
     try:
 {% set quality_record_df = 'quality_checked_df' %}
 {% set quality_metrics = 'enforcement_metrics' %}

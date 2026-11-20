@@ -1,305 +1,157 @@
-"""Solution-owned SQL validation, Databricks translation and native DQX payloads."""
+"""Solution-owned native DQX metadata and literal monitoring table bindings."""
 
 from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
 from typing import Any
 
-import sqlglot
-from sqlglot import exp
-from sqlglot.optimizer.scope import traverse_scope
-from sqlglot.tokens import TokenType, Tokenizer
-import yaml
 from datam8.errors import Datam8ValidationError
 from datam8.quality import validate_quality_value
-
-CLOCK_COLUMN = "__dm8_dq_evaluated_at"
-_ALLOWED_NODES = frozenset(
-    """
-Alias Identifier Column Literal Null Boolean Star Paren And Or Not EQ NEQ LT LTE GT GTE
-NullSafeEQ NullSafeNEQ Add Sub Mul Div Mod Neg Is In Between Like Escape Case If Cast
-DataType DataTypeParam Coalesce Nullif Trim Length RegexpLike Count Sum Min Max Window
-Select From Join Where Group Having Subquery With CTE Table TableAlias Distinct
-CurrentTimestamp TimestampDiff Var
-""".split()
-)
-_ALLOWED_TYPES = frozenset(
-    "BOOLEAN TINYINT SMALLINT INT BIGINT FLOAT DOUBLE DECIMAL CHAR VARCHAR TEXT DATE TIMESTAMP TIMESTAMPTZ".split()
-)
 
 
 def quoted(name: str) -> str:
     return "`" + name.replace("`", "``") + "`"
 
 
-def _placeholders(text: str, references: dict, query: bool) -> tuple[str, dict[str, str]]:
-    """Recognize relation placeholders only outside literals and comments."""
-    tokens = Tokenizer().tokenize(text)
-    replacements = []
-    bindings = {}
+def bind_monitoring_sql(sql: str, references: dict) -> tuple[str, list[str]]:
+    """Bind placeholders outside quotes/comments; leave every other byte alone.
+
+    This scanner does not parse or validate SQL. IDENTIFIER parameters keep model
+    table bindings separate from SQL text. Quoted tokens, escaped/doubled quotes,
+    line comments and nested block comments are copied verbatim.
+    """
+    parts, used = [], set()
     index = 0
-    while index < len(tokens):
-        token = tokens[index]
-        if token.token_type == TokenType.L_BRACE:
-            end = index + 1
-            while end < len(tokens) and tokens[end].token_type != TokenType.R_BRACE:
-                end += 1
-            if end == len(tokens):
-                raise ValueError("Unclosed relation placeholder")
-            key = text[token.start + 1 : tokens[end].end]
-            if not query:
-                raise ValueError("Relation placeholders are only allowed in monitoring sql")
-            if key == "target":
-                parameter = "dm8_target"
-            elif key.startswith("references.") and key[11:] in references:
-                parameter = "dm8_ref_" + key[11:]
-            else:
-                raise ValueError("Unknown relation placeholder {" + key + "}")
-            sentinel = "__dm8_sql_source_" + str(len(bindings))
-            bindings[sentinel] = parameter
-            replacements.append((token.start, tokens[end].end + 1, sentinel))
-            index = end
-        elif token.token_type == TokenType.R_BRACE:
-            raise ValueError("Unexpected closing relation placeholder")
-        elif token.text.startswith("__dm8_sql_source_") and token.token_type != TokenType.STRING:
-            raise ValueError("Reserved SQL identifier")
-        index += 1
-    for start, end, replacement in reversed(replacements):
-        text = text[:start] + replacement + text[end:]
-    return text, bindings
-
-
-def compile_sql(text: str, *, query: bool = False, references: dict | None = None) -> dict[str, Any]:
-    """Compile the bounded public SQL profile; never execute SQL during generation."""
-    prepared, bindings = _placeholders(text, references or {}, query)
-    trees = sqlglot.parse(prepared)
-    if len(trees) != 1 or trees[0] is None:
-        raise ValueError("Exactly one SQL expression or query is required")
-    tree = trees[0]
-    if query != isinstance(tree, exp.Select):
-        raise ValueError("Expected a SELECT query" if query else "Expected a Boolean expression, not a query")
-
-    def normalize_time(node):
-        if isinstance(node, exp.TimestampDiff):
-            # The public syntax is TIMESTAMPDIFF(unit, start, end); the generic
-            # SQLGlot parser's field order differs. Normalize explicitly.
-            unit = node.this
-            if not isinstance(unit, (exp.Column, exp.Var)) or unit.name.upper() not in ("SECOND", "MICROSECOND"):
-                raise ValueError("TIMESTAMPDIFF supports SECOND and MICROSECOND")
-            return exp.TimestampDiff(
-                this=node.args["unit"].copy(),
-                expression=node.expression.copy(),
-                unit=exp.Var(this=unit.name.upper()),
+    while index < len(sql):
+        start = index
+        if sql[index] in ("'", '"', "`"):
+            quote = sql[index]
+            raw = (
+                index > 0
+                and sql[index - 1] in "rR"
+                and (index < 2 or not (sql[index - 2].isalnum() or sql[index - 2] == "_"))
             )
-        return node
+            backslash_escape = quote != "`" and not raw
+            delimiter = quote * 3 if quote != "`" and sql.startswith(quote * 3, index) else quote
+            index += len(delimiter)
+            while index < len(sql):
+                if backslash_escape and sql[index] == "\\":
+                    index += 2
+                elif sql.startswith(delimiter, index):
+                    index += len(delimiter)
+                    if len(delimiter) == 1 and sql.startswith(delimiter, index):
+                        index += 1
+                    else:
+                        break
+                else:
+                    index += 1
+        elif sql.startswith("--", index):
+            while index < len(sql) and sql[index] not in "\r\n":
+                index += 1
+        elif sql.startswith("/*", index):
+            index += 2
+            depth = 1
+            while index < len(sql) and depth:
+                if sql.startswith("/*", index):
+                    depth += 1
+                    index += 2
+                elif sql.startswith("*/", index):
+                    depth -= 1
+                    index += 2
+                else:
+                    index += 1
+        elif sql.startswith("{target}", index):
+            parts.append("IDENTIFIER(:dm8_target)")
+            index += len("{target}")
+            continue
+        elif sql.startswith("{references.", index) and "}" in sql[index:]:
+            end = sql.index("}", index)
+            alias = sql[index + len("{references.") : end]
+            if alias not in references:
+                raise ValueError("Unknown quality reference alias: " + alias)
+            used.add(alias)
+            parts.append("IDENTIFIER(:dm8_ref_" + alias + ")")
+            index = end + 1
+            continue
+        else:
+            index += 1
+        parts.append(sql[start:index])
+    return "".join(parts), sorted(used)
 
-    tree = tree.transform(normalize_time)
-    for node in tree.walk():
-        name = type(node).__name__
-        if name not in _ALLOWED_NODES:
-            raise ValueError(f"Unsupported SQL construct: {name}")
-        node.comments = []
-        if isinstance(node, exp.With) and node.args.get("recursive"):
-            raise ValueError("Recursive CTEs are not supported")
-        if isinstance(node, exp.Join) and (node.side not in ("", "LEFT") or node.kind not in ("", "INNER")):
-            raise ValueError("Only INNER and LEFT JOIN are supported")
-        if isinstance(node, exp.Window):
-            if (
-                not isinstance(node.this, (exp.Count, exp.Sum))
-                or not node.args.get("partition_by")
-                or node.args.get("order")
-                or node.args.get("spec")
-            ):
-                raise ValueError("Windows require COUNT/SUM and PARTITION BY without ORDER BY or a frame")
-        if isinstance(node, exp.DataType) and node.this.name not in _ALLOWED_TYPES:
-            raise ValueError("Unsupported SQL cast type: " + node.this.name)
-        if isinstance(node, exp.Column) and node.name.startswith("__dm8_dq_"):
-            raise ValueError("Expressions must not reference reserved quality columns")
-        if not query:
-            if isinstance(node, (exp.Select, exp.Table, exp.Subquery)):
-                raise ValueError("Expression subqueries are not supported; use monitoring sql")
-            if isinstance(node, exp.AggFunc) and node.find_ancestor(exp.Window) is None:
-                raise ValueError("Row expressions require aggregate functions inside a supported window")
-    used_bindings = {}
-    used_references = set()
-    if query:
-        if len(tree.expressions) != 2 or {x.alias_or_name for x in tree.expressions} != {
-            "checked_rows",
-            "measured_value",
-        }:
-            raise ValueError("Monitoring sql must select exactly checked_rows and measured_value")
-        for scope in traverse_scope(tree):
-            ctes = {name.casefold() for name in scope.cte_sources}
-            for table in scope.tables:
-                if table.name in bindings and not table.db and not table.catalog:
-                    used_bindings[id(table)] = bindings[table.name]
-                elif table.db or table.catalog or table.name.casefold() not in ctes:
-                    raise ValueError("Table access requires {target} or a declared {references.alias}")
-        if len(used_bindings) != len(bindings):
-            raise ValueError("Relation placeholders must occur as table references")
-        for parameter in used_bindings.values():
-            if parameter.startswith("dm8_ref_"):
-                used_references.add(parameter[8:])
 
-        def bind_table(node):
-            parameter = used_bindings.get(id(node))
-            if parameter:
-                alias = node.args.get("alias")
-                return exp.Table(
-                    this=exp.Anonymous(this="IDENTIFIER", expressions=[exp.Placeholder(this=parameter)]),
-                    alias=alias.copy() if alias is not None else None,
-                )
-            return node
-
-        tree = tree.transform(bind_table, copy=False)
-    uses_clock = any(isinstance(n, exp.CurrentTimestamp) for n in tree.walk())
-    tree = tree.transform(
-        lambda n: (
-            (exp.Placeholder(this="evaluated_at") if query else exp.column(CLOCK_COLUMN))
-            if isinstance(n, exp.CurrentTimestamp)
-            else n
-        )
-    )
+def native_check(rule: dict[str, Any]) -> dict[str, Any]:
+    arguments = {"expression": rule["expression"]}
+    if "description" in rule:
+        arguments["msg"] = rule["description"]
     return {
-        "text": tree.sql(dialect="databricks", unsupported_level=sqlglot.ErrorLevel.RAISE),
-        "uses_clock": uses_clock,
-        "references": sorted(used_references),
+        "name": rule["id"],
+        "criticality": "warn" if rule.get("severity", "error") == "warning" else "error",
+        "check": {"function": "sql_expression", "arguments": arguments},
     }
 
 
-def validate_target_quality(value: dict[str, Any]) -> dict[str, dict]:
-    validate_quality_value(value)
-    compiled = {}
-    for rule in value["checks"]:
-        field = "expression"
-        try:
-            expression = compile_sql(rule["expression"])
-            result = {
-                "id": rule["id"],
-                "expression": expression["text"],
-                "uses_clock": expression["uses_clock"],
-                "references": [],
-            }
-            if "sql" in rule:
-                field = "sql"
-                query = compile_sql(rule["sql"], query=True, references=value.get("references", {}))
-                result.update(sql=query["text"], references=query["references"])
-            compiled[rule["id"]] = result
-        except (ValueError, sqlglot.errors.SqlglotError) as error:
-            raise Datam8ValidationError(
-                message=f"Quality check {rule['id']} {field}: {error}",
-                details={"checkId": rule["id"], "field": f"quality.checks.{rule['id']}.{field}"},
-            ) from error
-    return compiled
-
-
-def quality_spec(entity: Any) -> dict[str, Any] | None:
+def notebook_quality(entity: Any, target: str) -> dict[str, Any] | None:
     quality = getattr(entity, "quality", None)
     if quality is None or not quality.checks:
         return None
     value = quality.model_dump(mode="json", exclude_none=True)
-    try:
-        compiled = validate_target_quality(value)
-    except Datam8ValidationError as error:
-        raise Datam8ValidationError(
-            message=f"Entity {entity.id}: {error}",
-            details={**(error.details or {}), "entityId": entity.id},
-        ) from error
+    validate_quality_value(value)
+    checks = value["checks"]
+    enforcement = [r for r in checks if r["execution"] == "enforcement"]
+    rows = [r for r in checks if r["execution"] == "monitoring" and "sql" not in r]
+    aggregates, references = [], set()
+    for rule in checks:
+        if "sql" not in rule:
+            continue
+        try:
+            sql, used = bind_monitoring_sql(rule["sql"], value.get("references", {}))
+        except ValueError as error:
+            raise Datam8ValidationError(
+                message=f"Entity {entity.id} quality check {rule['id']} sql binding: {error}",
+                details={"entityId": entity.id, "checkId": rule["id"], "field": f"quality.checks.{rule['id']}.sql"},
+            ) from error
+        references.update(used)
+        aggregates.append(
+            {
+                "rule_literal": repr(rule),
+                "checks_literal": repr([native_check(rule)]),
+                "sql_literal": sql_python_literal(sql),
+            }
+        )
     digest = hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-    return {"entityId": entity.id, "ruleSetHash": digest, "quality": value, "compiled": compiled}
-
-
-def native_check(rule: dict[str, Any], expression: str | None = None) -> dict[str, Any]:
-    expression = expression if expression is not None else compile_sql(rule["expression"])["text"]
-    return {
-        "name": rule["id"],
-        "criticality": "warn" if rule.get("severity", "error") == "warning" else "error",
-        "check": {
-            "function": "sql_expression",
-            "arguments": {
-                "expression": f"COALESCE(({expression}), FALSE)",
-                "msg": rule.get("description") or rule["id"],
-            },
-        },
-        "user_metadata": {"datam8_check_id": rule["id"]},
+    spec = {
+        "config_literal": repr({"entityId": entity.id, "ruleSetHash": digest, "target": target, "quality": value}),
+        "enforcement": enforcement,
+        "enforcement_checks_literal": repr([native_check(r) for r in enforcement]),
+        "monitoring_rows": rows,
+        "row_checks_literal": repr([native_check(r) for r in rows]),
+        "monitoring_aggregates": aggregates,
+        "used_references": sorted(references),
     }
-
-
-def monitoring_groups(spec: dict[str, Any]) -> list[dict[str, Any]]:
-    groups = []
-    rows = [r for r in spec["quality"]["checks"] if r["execution"] == "monitoring" and "sql" not in r]
-    if rows:
-        groups.append({"key": "monitoring_rows", "rules": rows, "ids": [r["id"] for r in rows], "aggregate": False})
-    for rule in spec["quality"]["checks"]:
-        if "sql" in rule:
-            compiled = spec["compiled"][rule["id"]]
-            groups.append(
-                {
-                    "key": "monitoring_aggregate_" + rule["id"],
-                    "rules": [rule],
-                    "ids": [rule["id"]],
-                    "aggregate": True,
-                    "sql_literal": sql_python_literal(compiled["sql"]),
-                    "references": compiled["references"],
-                    "on_empty": rule.get("onEmpty", "evaluate"),
-                }
-            )
-    return groups
-
-
-def quality_files(entity: Any) -> dict[Path, str]:
-    spec = quality_spec(entity)
-    if spec is None:
-        return {}
-    groups = {"enforcement": [r for r in spec["quality"]["checks"] if r["execution"] == "enforcement"]}
-    groups.update({g["key"]: g["rules"] for g in monitoring_groups(spec)})
-    root = Path("quality", str(entity.id))
-    files = {
-        root / f"{key}.yaml": yaml.safe_dump(
-            [native_check(rule, spec["compiled"][rule["id"]]["expression"]) for rule in rules],
-            sort_keys=False,
-            allow_unicode=True,
-        )
-        for key, rules in groups.items()
-    }
-    spec["files"] = {key: f"{key}.yaml" for key in groups}
-    spec["expression_groups"] = {key: [rule["id"] for rule in rules] for key, rules in groups.items()}
-    files[root / "manifest.json"] = json.dumps(spec, indent=2, ensure_ascii=False) + "\n"
-    return files
-
-
-def notebook_quality(entity: Any) -> dict[str, Any] | None:
-    spec = quality_spec(entity)
-    if spec is None:
-        return None
-    checks = spec["quality"]["checks"]
-    spec["enforcement"] = [r for r in checks if r["execution"] == "enforcement"]
-    spec["monitoring_groups"] = monitoring_groups(spec)
     heading = ["| ID | Execution | Severity | Expression | On empty |", "| --- | --- | --- | --- | --- |"]
-    lines = [
-        "| "
-        + " | ".join(
-            str(v).replace("|", "&#124;").replace("\n", " ")
-            for v in [
-                r["id"],
-                r["execution"],
-                r.get("severity", "error"),
-                r["expression"],
-                r.get("onEmpty", "evaluate") if "sql" in r else "NO_DATA",
-            ]
-        )
-        + " |"
-        for r in checks
-    ]
     for mode in ("enforcement", "monitoring", "all"):
-        overview = heading + [line for line, rule in zip(lines, checks) if mode == "all" or rule["execution"] == mode]
-        spec["overview" if mode == "all" else "overview_" + mode] = "\n".join("# MAGIC " + line for line in overview)
+        lines = heading + [
+            "| "
+            + " | ".join(
+                str(v).replace("|", "&#124;").replace("\n", " ")
+                for v in [
+                    r["id"],
+                    r["execution"],
+                    r.get("severity", "error"),
+                    r["expression"],
+                    r.get("onEmpty", "evaluate") if "sql" in r else "NO_DATA",
+                ]
+            )
+            + " |"
+            for r in checks
+            if mode == "all" or r["execution"] == mode
+        ]
+        spec["overview" if mode == "all" else "overview_" + mode] = "\n".join("# MAGIC " + line for line in lines)
     return spec
 
 
-def quality_ddl(columns: list[dict], zone: str, table: str) -> dict[str, str]:
+def quality_ddl(columns: list[dict], zone: str, table: str, *, enforcement: bool = True) -> dict[str, str]:
     reserved = [
         c["name"]
         for c in columns
@@ -319,6 +171,8 @@ def quality_ddl(columns: list[dict], zone: str, table: str) -> dict[str, str]:
   failed_rows BIGINT, measured_value DOUBLE, parameters STRING, status STRING
 ) USING DELTA;""",
     }
+    if not enforcement:
+        del statements["quarantine_sql"]
     return {name: sql_python_literal(sql) for name, sql in statements.items()}
 
 

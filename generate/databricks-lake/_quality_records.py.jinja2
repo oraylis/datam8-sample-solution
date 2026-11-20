@@ -12,9 +12,9 @@ quality_aggregates = [
     ).otherwise(0)).alias("skipped_rows"),
 ]
 for rule_index, rule in enumerate(quality_record_rules):
-    result_column = "_errors" if rule["severity"] == "error" else "_warnings"
+    result_column = "_errors" if rule.get("severity", "error") == "error" else "_warnings"
     rule_failed = F.coalesce(
-        F.exists(F.col(result_column), lambda failure: F.coalesce(failure["user_metadata"]["datam8_check_id"], failure["name"]) == rule["id"]), F.lit(False)
+        F.exists(F.col(result_column), lambda failure: failure["name"] == rule["id"]), F.lit(False)
     )
     quality_aggregates.append(F.sum(F.when(rule_failed, 1).otherwise(0)).alias(f"failed_{rule_index}"))
 quality_counts = {{ quality_record_df }}.agg(*quality_aggregates).first().asDict()

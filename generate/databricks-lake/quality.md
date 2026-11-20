@@ -1,114 +1,115 @@
 # SQL Quality Runtime Reference
 
-The shared DataM8 schema has a fixed SQL contract. Checks have `id`, `execution`
-and `expression`, with optional `severity` (default `error`), `description`,
-monitoring-only `sql` and `onEmpty` (default `evaluate`, only with `sql`). The
-entity-wide gate is `quality.maxFailureRatePct`; `quality.references` binds aliases
-to active model `entityId` values. Unknown fields and older formats are rejected.
-There is no converter, migration, check-type catalogue or compatibility path.
+The shared DataM8 schema is a fixed SQL contract: `id`, `execution`, `expression`,
+optional `severity` (default `error`), `description`, monitoring-only `sql` and
+`onEmpty` (`evaluate` by default, only with `sql`). `quality.maxFailureRatePct`
+controls the entity gate; `quality.references` binds aliases to active entity IDs.
+Unknown fields and older formats are rejected. There is no migration or converter.
 
-Only this solution's payloads and templates translate model SQL into Databricks
-SQL and native `databricks-labs-dqx==0.16.0` metadata. Model, CLI and the shared UI
-have no DQX mapping. Technical validation and audit I/O remain in
-`utils/QualityFramework.py`; it does not interpret alternate rule dialects.
+## Literal SQL and native execution
 
-## Supported SQL profile
+This solution generates native `databricks-labs-dqx==0.16.0` `sql_expression` rules
+in the notebooks. The model's `expression` is passed byte-for-byte unchanged as
+`check.arguments.expression`: no COALESCE wrapper, parentheses, SQL parsing,
+function substitution, clock binding, optimization or dialect translation.
+`CURRENT_TIMESTAMP` and `TIMESTAMPDIFF` retain their native Databricks semantics.
+Use the SQL dialect supported by the selected runtime. Model, CLI and frontend
+validate the structure, not SQL syntax, resolution or Boolean types.
 
-The pinned SQLGlot parser and an explicit AST allow-list support literals,
-ANSI-quoted identifiers, arithmetic and comparisons, Boolean operators, NULL
-checks, IN, BETWEEN, LIKE and null-safe equality; CASE, CAST, COALESCE, NULLIF,
-TRIM, LENGTH and REGEXP_LIKE; COUNT, SUM, MIN and MAX. Row expressions may use
-COUNT/SUM windows with PARTITION BY, without ORDER BY or explicit frames.
-Non-windowed aggregates belong in monitoring queries, not row expressions.
+The DQX rule `name` is the DataM8 check ID. Severity selects native `error` or
+`warn`; a description supplies `msg`. Without a description, DQX generates its own
+message. There is no custom check-ID metadata or catalogue of check types.
 
-Monitoring SQL supports SELECT, nonrecursive CTEs, subqueries, DISTINCT, filters,
-grouping and INNER/LEFT JOIN. It must select exactly `checked_rows` and
-`measured_value`. Unsupported functions, UDFs, statements, query shapes and table
-bindings fail explicitly. This is a bounded adapter, not a general SQL transpiler.
+NULL handling belongs to the model and the native engine. To fail a nullable
+comparison explicitly, use `COALESCE(Amount >= 0, FALSE)`. For freshness with a
+nullable measurement use `COALESCE(measured_value BETWEEN 0 AND 300, FALSE)`.
+The generator never inserts that logic. Rules, SQL and run/audit configuration
+appear directly in the DML and monitoring notebooks; no Quality manifests or
+rule YAML files are generated or loaded.
 
-`CURRENT_TIMESTAMP` binds to the notebook's fixed evaluation instant. The public
-`TIMESTAMPDIFF(unit, start, end)` supports SECOND and MICROSECOND. The adapter
-normalizes argument order explicitly. Freshness uses MICROSECOND / 1000000.0,
-preserving subsecond resolution and rejecting missing/future timestamps through
-the model's Boolean condition. There is no freshness-specific runtime function.
+## Monitoring bindings and result contract
 
-`{target}` and declared `{references.alias}` occur only as query relations. The
-payload turns them into bound `IDENTIFIER(:parameter)` clauses. Quoted strings
-containing placeholder text remain literals. Physical table names are prohibited;
-CTE names are resolved within their scope. Reference bindings and job dependencies
-are generated from model entities. Extra packages belong in job/bundle libraries,
-not the entity's Quality definition.
+Monitoring SQL is also unchanged except for `{target}` and declared
+`{references.alias}` placeholders. A small scanner skips SQL strings, quoted
+identifiers (including doubled quotes), [raw SQL literals](https://docs.databricks.com/aws/en/sql/language-manual/data-types/string-type)
+and comments, then binds real placeholders through
+`IDENTIFIER(:dm8_target)` and `IDENTIFIER(:dm8_ref_alias)` parameters. Table names
+are resolved from the model and safely quoted. Unknown aliases are binding errors.
+Only references actually used outside quotes/comments add job dependencies.
+This is table binding, not a SQL parser or a SQL capability allow-list. Native
+physical SQL table names are not blocked and are subject to runtime permissions.
 
-## Enforcement and uniqueness
-
-All row expressions are checked against the complete prepared input before valid
-and invalid rows are split and before SCD/merge staging. For example:
-
-```sql
-Id IS NULL OR COUNT(*) OVER (PARTITION BY Id) = 1
-```
-
-This preserves DQX's default NULL-distinct uniqueness: every non-NULL duplicate
-is invalid, and unique/NULL rows pass this check. For composite keys, OR together
-the key NULL guards. To treat NULLs as equal, omit the guards. Filtered uniqueness
-uses a conditional SUM window and passes rows outside the filter explicitly.
-No deduplication, representative-row selection or implicit row filtering occurs.
-
-The original compiled expression must resolve to BOOLEAN, even for empty data.
-The payload emits DQX `sql_expression` with `COALESCE((expression), FALSE)` so only
-TRUE passes. Error rows enter `<target>_quarantine`; warnings remain valid. Empty
-or all-invalid output preserves existing target data. The gate counts distinct
-error rows once and fails strictly above the configured percentage after valid
-target writes and metric persistence.
-
-## Monitoring contract
-
-Without `sql`, expressions evaluate the complete committed target; empty input
-reports NO_DATA. With `sql`, the query must return exactly one row and two columns:
+Without `sql`, row monitoring evaluates the complete committed target; empty input
+reports NO_DATA. An aggregate query must return exactly one row and exactly:
 
 - `checked_rows`: a nonnegative, non-NULL integer fitting BIGINT.
 - `measured_value`: a finite numeric value or NULL.
 
-Wrong schemas, zero/multiple result rows, negative/NULL/overflow counts and
-nonfinite measures are technical failures. Original expression type validation
-always precedes the on-empty decision. `onEmpty: no_data` reports NO_DATA when
-`checked_rows = 0` without evaluating the business condition; `evaluate` evaluates
-normally. Aggregate `failed_rows` is NULL; the two fixed columns supply the other
-metrics. Monitoring violations are results; technical errors fail the task.
+The technical helper validates this result's shape, types and values, not its SQL.
+`onEmpty: no_data` reports NO_DATA when `checked_rows = 0` and skips the DQX
+condition after result validation; `evaluate` executes the condition. Aggregate
+`failed_rows` stays NULL. Monitoring violations become results; observable
+technical errors or DQX skips fail the task.
 
-The [fixture](../../tests/fixtures/quality/QualityProbe.json) models completeness,
-freshness and row count with this contract. A
-[second fixture](../../tests/fixtures/quality/QualityNativeProbe.json) uses windows
-and a [model entity reference](../../tests/fixtures/quality/QualityReferenceProbe.json).
-Reference keys are deduplicated before joining so reference duplicates cannot
-multiply checked rows.
+The [basic fixture](../../tests/fixtures/quality/QualityProbe.json) expresses
+completeness, freshness and row count directly in SQL. The
+[window/reference fixture](../../tests/fixtures/quality/QualityNativeProbe.json)
+uses a [model entity reference](../../tests/fixtures/quality/QualityReferenceProbe.json).
+Its SQL explicitly deduplicates reference keys and defines NULL/filter semantics.
 
-## Storage and jobs
+## Enforcement, audit and jobs
 
-Generated notebooks show nullable quarantine/metric DDL, SQL, native DQX calls,
-counts, writes and gate decisions in named cells. Whole business records are not
-automatically displayed. Quarantine columns omit target identity, NOT NULL and PK
-constraints and add `__dm8_dq_audit`. Metrics remain in
-`<catalog>.quality.dqx_metrics` with their existing schema. Parameters record the
-fixed check fields. Run/attempt transaction identities make audit writes idempotent.
-Target, quarantine and metrics remain separate Delta transactions.
+Enforcement runs on the full prepared input before splitting or SCD/merge staging.
+For example, `Id IS NULL OR COUNT(*) OVER (PARTITION BY Id) = 1` marks every
+non-NULL duplicate and preserves unique rows and all row copies. NULL guards,
+composite keys and filtered conditional SUM windows belong to the expression.
+The generator does not deduplicate or filter rule inputs.
 
-Monitoring-only DML has no DQX initialization or quality library dependencies.
-Mixed jobs use ALL_DONE and an attempt-specific committed-gate signal. Technical
-failures, failed reference loads and failed all-invalid loads skip monitoring
-quality evaluation; successful empty loads retain monitoring behavior. Repairs
-cannot reuse earlier attempt signals. Schedules and ordinary load dependencies
-remain unchanged. Quality tasks require classic compute; serverless is rejected.
+Error rows enter quarantine; warnings remain in the valid stream. Empty and
+all-invalid outputs preserve existing targets. The gate counts each erroneous
+row once and fails strictly above its configured percentage, after valid target
+writes and metric persistence. These remain separate Delta transactions.
+
+Only entities with enforcement checks receive a nullable quarantine table with
+`__dm8_dq_audit`, without target identity, NOT NULL or PK constraints. Every
+configured entity receives central metric DDL. The existing metric and audit
+schemas, rule-set hashes, run/attempt IDs and idempotent transaction identities
+remain in use. Whole business records are not automatically displayed.
+
+Monitoring-only DML has no Quality/DQX imports or library dependency. Mixed jobs
+retain ALL_DONE and the attempt-specific committed-gate signal: technical failures,
+failed all-invalid loads and failed reference loads skip monitoring evaluation;
+successful empty loads retain their normal monitoring behavior. Repairs cannot
+reuse an earlier attempt's signal. Cycle detection, schedules and ordinary job
+orchestration are unchanged. Quality jobs require classic compute.
+
+## Runtime and permission boundaries
+
+SQL validity is determined by Databricks/DQX during execution. Generation can
+succeed with invalid SQL. The framework rejects skipped checks when DQX exposes
+skip results; on empty input certain invalid rules may not produce any error or
+skip rows and cannot reliably be detected. NO_DATA is not proof of rule validity.
+An aggregate `no_data` condition is intentionally not executed.
+
+Monitoring SQL is **not guaranteed read-only**. Arbitrary model SQL executes with
+the task principal's permissions, and side effects can occur before result-shape
+validation fails. Use only trusted model configurations. Parameterized table
+bindings protect those names; they do not sandbox the surrounding SQL.
+Operators must constrain Unity Catalog and compute permissions: monitor principals
+need SELECT on targets/references and metric-write permissions, not target/reference
+write or schema-management permissions. DML needs its intended target/quarantine
+writes; DDL requires separate creation/management rights. A shared principal with
+broader rights retains those rights inside model SQL. The framework does not
+change principals, grants or existing job orchestration.
 
 ## Verification and deployment
 
-Use disposable copies for local generation and tests. Acceptance notebooks under
-`tests/fixtures/quality` require explicit isolated `dm8_quality_test_*` catalogs and
-classic compute. Generate and upload all matching notebooks, utilities, manifests
-and YAMLs together while affected jobs are stopped. Deleted checks remove obsolete
-generated assets/tasks; they do not delete historical audit data or tables.
+Run local tests and clean generation on disposable copies. Acceptance notebooks
+under `tests/fixtures/quality` require an explicitly isolated `dm8_quality_test_*`
+catalog and classic compute. Generate and upload the matching notebooks, functions
+and technical helper together while affected jobs are stopped. Clean generation
+removes old Quality manifests/YAMLs; keep the general solution manifest, job YAMLs
+and bundle. Deleted checks do not remove historical audit data or existing tables.
 
-No metadata or database migration is performed. MigrationFramework, existing live
-schemas and audit history remain unchanged. The SQL source reader requires DBR
-18.3 remote_query support; verify the actual runtime and source connectivity.
-Never commit private workspace bindings or credentials.
+Do not change MigrationFramework, migrate databases or reset live data for this
+cleanup. Never commit private workspace bindings or credentials.

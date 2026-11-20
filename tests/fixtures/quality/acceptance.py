@@ -7,7 +7,6 @@ synthetic Delta tables are read or written. No live source connection is used.
 
 import json
 import os
-import yaml
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,7 +17,8 @@ catalog = dbutils.widgets.get("catalog_name")
 root = Path(dbutils.widgets.get("workspace_root"))
 assert catalog.startswith("dm8_quality_test_"), "Use an isolated quality test catalog"
 sys.path.insert(0, str(root / "utils"))
-import QualityFramework as quality  # noqa: E402
+sys.path.insert(0, str(root / "tests/fixtures/quality"))
+from fixture_support import notebook_configuration, expect_expression_failure  # noqa: E402
 
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.core")
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.acceptance")
@@ -39,8 +39,7 @@ notebooks = root / "output/databricks/notebooks/020-Core"
 ddl = str(notebooks / "ddl/MasterData/Customer/QualityProbe")
 dml = str(notebooks / "dml/MasterData/Customer/QualityProbe")
 monitor = str(notebooks / "quality/MasterData/Customer/QualityProbe")
-manifest = root / "output/databricks/quality/9001/manifest.json"
-spec = quality.load_checks(manifest)
+spec = notebook_configuration(dml)
 target = catalog + "." + spec["target"]
 for table in (target, target + "_quarantine", catalog + ".quality.dqx_metrics"):
     spark.sql(f"DROP TABLE IF EXISTS {table}")
@@ -116,33 +115,23 @@ assert {m.check_id: m.status for m in empty_metrics} == {
     "updated_fresh": "FAILED",
     "row_count": "FAILED",
 }
-# Invalid definitions are injected only into the disposable uploaded native YAML.
-# Always restore the artifact, and execute generated notebooks to exercise real preflight.
+# Invalid SQL is accepted by generation; DQX/Spark fails or reports skips at execution.
+# Use nonempty data: native DQX may not expose invalid rules on empty inputs.
+spark.createDataFrame([(99, 1.0, "valid@example.test", now)], schema).write.mode("overwrite").saveAsTable(input_table)
+dbutils.notebook.run(dml, 180, dict(params, job_run_id="negative-test-setup"))
 metric_count = spark.table(f"{catalog}.quality.dqx_metrics").count()
 version = spark.sql(f"DESCRIBE HISTORY {target}").first().version
 for expression in ("NOT VALID SQL (", "missing_quality_column > 0", "1"):
-    for group, notebook in [("monitoring_aggregate_email_completeness", monitor), ("enforcement", dml)]:
-        rules_path = manifest.parent / spec["files"][group]
-        original = rules_path.read_text()
-        try:
-            checks = yaml.safe_load(original)
-            checks[0]["check"] = {"function": "sql_expression", "arguments": {"expression": expression}}
-            rules_path.write_text(yaml.safe_dump(checks, sort_keys=False))
-            try:
-                dbutils.notebook.run(notebook, 180, dict(params, job_run_id="technical-error"))
-                raise AssertionError("Technical SQL failure was hidden")
-            except AssertionError:
-                raise
-            except Exception:
-                pass
-        finally:
-            rules_path.write_text(original)
+    expect_expression_failure(dbutils, dml, expression, dict(params, job_run_id="technical-error"))
+expect_expression_failure(
+    dbutils, monitor, "NOT VALID SQL (", dict(params, job_run_id="technical-monitor"), assignment="monitoring_checks"
+)
 assert spark.table(f"{catalog}.quality.dqx_metrics").count() == metric_count
 assert spark.sql(f"DESCRIBE HISTORY {target}").first().version == version
 # Monitoring-only variants cover row checks, aggregates and both groups together.
 monitoring_results = []
 for name, entity_id in [("QualityMonitorProbe", 9005), ("QualityRowsProbe", 9006), ("QualitySummaryProbe", 9007)]:
-    other = quality.load_checks(root / f"output/databricks/quality/{entity_id}/manifest.json")
+    other = notebook_configuration(notebooks / f"quality/MasterData/Customer/{name}")
     other_target = catalog + "." + other["target"]
     for table in (other_target, other_target + "_quarantine"):
         spark.sql(f"DROP TABLE IF EXISTS {table}")
@@ -160,7 +149,7 @@ for name, entity_id in [("QualityMonitorProbe", 9005), ("QualityRowsProbe", 9006
     dbutils.notebook.run(str(notebooks / f"ddl/MasterData/Customer/{name}"), 180, other_params)
     dbutils.notebook.run(str(notebooks / f"dml/MasterData/Customer/{name}"), 180, other_params)
     assert spark.table(other_target).count() == 4
-    assert spark.table(other_target + "_quarantine").count() == 0
+    assert not spark.catalog.tableExists(other_target + "_quarantine")
     before = spark.sql(f"DESCRIBE HISTORY {other_target}").first().version
     mon = str(notebooks / f"quality/MasterData/Customer/{name}")
     dbutils.notebook.run(mon, 180, other_params)
@@ -199,32 +188,6 @@ for name, entity_id in [("QualityMonitorProbe", 9005), ("QualityRowsProbe", 9006
             == "FAILED"
         )
     monitoring_results.append(name)
-# SQL inputs remain read-only; original expressions are validated even for NO_DATA.
-version = spark.sql(f"DESCRIBE HISTORY {target}").first().version
-for sql in (f"DELETE FROM {target}", f"DROP TABLE {target}"):
-    try:
-        quality.validate_monitoring_query(spark, sql)
-        raise AssertionError("A monitoring SQL command was accepted")
-    except ValueError:
-        pass
-original_manifest = manifest.read_text()
-metric_count = spark.table(f"{catalog}.quality.dqx_metrics").count()
-try:
-    for expression in ("1", "missing_metric_column > 0"):
-        changed = json.loads(original_manifest)
-        changed["compiled"]["email_completeness"]["expression"] = expression
-        manifest.write_text(json.dumps(changed))
-        try:
-            dbutils.notebook.run(monitor, 180, dict(params, job_run_id="invalid-original-expression"))
-            raise AssertionError("Invalid original expression was ignored")
-        except AssertionError:
-            raise
-        except Exception:
-            pass
-finally:
-    manifest.write_text(original_manifest)
-assert spark.table(f"{catalog}.quality.dqx_metrics").count() == metric_count
-assert spark.sql(f"DESCRIBE HISTORY {target}").first().version == version
 print("QUALITY_ACCEPTANCE_PASSED")
 dbutils.notebook.exit(
     json.dumps(
@@ -241,7 +204,7 @@ dbutils.notebook.exit(
                 "threshold-boundary-distinct-error-rows",
                 "error-quarantine",
                 "warning-preserved",
-                "monitoring-read-only",
+                "select-monitoring-preserves-target",
                 "audit-idempotence",
                 "all-invalid-overwrite",
                 "empty-input",

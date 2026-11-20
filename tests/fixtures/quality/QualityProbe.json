@@ -80,7 +80,7 @@
       {
         "id": "amount_range",
         "execution": "enforcement",
-        "expression": "Amount >= 0"
+        "expression": "COALESCE(Amount >= 0, FALSE)"
       },
       {
         "id": "email_present",
@@ -93,20 +93,20 @@
         "execution": "monitoring",
         "severity": "warning",
         "sql": "SELECT COUNT(*) AS checked_rows, COUNT(Email) * 1.0 / NULLIF(COUNT(*), 0) AS measured_value FROM {target}",
-        "expression": "measured_value >= 0.95",
+        "expression": "COALESCE(measured_value >= 0.95, FALSE)",
         "onEmpty": "no_data"
       },
       {
         "id": "updated_fresh",
         "execution": "monitoring",
         "sql": "SELECT COUNT(*) AS checked_rows, TIMESTAMPDIFF(MICROSECOND, MAX(Updated), CURRENT_TIMESTAMP) / 1000000.0 AS measured_value FROM {target}",
-        "expression": "measured_value BETWEEN 0 AND 300"
+        "expression": "COALESCE(measured_value BETWEEN 0 AND 300, FALSE)"
       },
       {
         "id": "row_count",
         "execution": "monitoring",
         "sql": "SELECT COUNT(*) AS checked_rows, COUNT(*) AS measured_value FROM {target}",
-        "expression": "measured_value >= 1"
+        "expression": "COALESCE(measured_value >= 1, FALSE)"
       }
     ]
   }

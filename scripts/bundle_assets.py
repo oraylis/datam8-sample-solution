@@ -1,7 +1,6 @@
 """Check the actual bundle configuration and its local asset closure offline."""
 from pathlib import Path
 import glob
-import json
 import os
 import re
 
@@ -116,20 +115,6 @@ def required_assets(bundle: Path, output: Path | None = None):
                 return
         raise ValueError("Unresolved bundle asset path: " + value)
 
-    if output is not None:
-        for manifest in (output / "quality").glob("*/manifest.json"):
-            spec = json.loads(manifest.read_text(encoding="utf-8"))
-            required.add(manifest.resolve())
-            helper = root / "utils/QualityFramework.py"
-            if not helper.is_file():
-                raise ValueError("Missing shared QualityFramework.py")
-            required.add(helper.resolve())
-            for name in spec["files"].values():
-                path = manifest.parent / name
-                if not path.is_file() or not path.resolve().is_relative_to(manifest.parent.resolve()):
-                    raise ValueError("Missing or external quality rules: " + name)
-                required.add(path.resolve())
-
     resources = configuration.get("resources", {})
     for job in resources.get("jobs", {}).values():
         for task in job.get("tasks", []):
@@ -145,7 +130,15 @@ def required_assets(bundle: Path, output: Path | None = None):
     pending = list(required)
     while pending:
         path = pending.pop()
-        for target in re.findall(r"(?m)^# MAGIC %run\s+([^\s]+)", path.read_text(encoding="utf-8")):
+        source = path.read_text(encoding="utf-8")
+        if re.search(r"(?m)^import QualityFramework as quality_runtime$", source):
+            helper = root / "utils/QualityFramework.py"
+            if not helper.is_file():
+                raise ValueError("Missing shared QualityFramework.py")
+            if helper not in required:
+                required.add(helper)
+                pending.append(helper)
+        for target in re.findall(r"(?m)^# MAGIC %run\s+([^\s]+)", source):
             dependency = (path.parent / target).with_suffix(".py").resolve()
             if not dependency.is_relative_to(root) or not dependency.is_file():
                 raise ValueError("Missing %run dependency in " + str(path.relative_to(root)))
